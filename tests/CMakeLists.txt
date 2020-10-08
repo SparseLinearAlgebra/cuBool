@@ -1,0 +1,6 @@
+add_executable(test_basic_cuda test_basic_cuda.cu)
+target_link_libraries(test_basic_cuda PUBLIC gtest)
+target_compile_features(test_basic_cuda PUBLIC cxx_std_11)
+set_target_properties(test_basic_cuda PROPERTIES CXX_STANDARD 11)
+set_target_properties(test_basic_cuda PROPERTIES CXX_STANDARD_REQUIRED YES)
+set_target_properties(test_basic_cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
