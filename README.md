@@ -1,5 +1,7 @@
 # CUBOOL
 
+[![Ubuntu](https://github.com/JetBrains-Research/cuBool/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/JetBrains-Research/cuBool/actions)
+
 CuBool is a C++ linear boolean algebra library primitives and operations for 
 work with dense and sparse matrices on the NVIDIA CUDA platform. The primary 
 goal of the library is implementation, testing and profiling algorithms for
