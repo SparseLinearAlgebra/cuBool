@@ -1,3 +1,5 @@
+# Original script from https://github.com/ptheywood/cuda-cmake-github-actions
+
 name: Ubuntu
 
 on:
@@ -9,13 +11,14 @@ on:
 
 jobs:
   build:
-    name: Build Library on ${{ matrix.os }} and GCC ${{ matrix.gcc }}
+    name: Build Library on ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
           - os: ubuntu-18.04
-            gcc: 6
+            cuda: "10.2"
+            gcc: 8
     env:
       build_dir: "build"
       config: "Release"
@@ -26,11 +29,18 @@ jobs:
           submodules: true
 
       - name: Install CUDA
+        env:
+          cuda: ${{ matrix.cuda }}
         run: |
-          sudo apt-get update
-          sudo apt-get install nvidia-cuda-toolkit
-          sudo apt-get install nvidia-cuda-dev
-          nvcc -V
+          source ./scripts/install_cuda_ubuntu.sh
+          if [[ $? -eq 0 ]]; then
+            # Set paths for subsequent steps, using ${CUDA_PATH}
+            echo "Adding CUDA to CUDA_PATH, PATH and LD_LIBRARY_PATH"
+            echo "CUDA_PATH::${CUDA_PATH}" >> $$GITHUB_ENV
+            echo "${CUDA_PATH}/bin" >> $$GITHUB_PATH
+            echo "LD_LIBRARY_PATH=${CUDA_PATH}/lib:${LD_LIBRARY_PATH}" >> $$GITHUB_ENV
+          fi
+        shell: bash
 
       - name: Install and configure GCC and GXX
         run: |
@@ -45,6 +55,3 @@ jobs:
       - name: Build library sources
         working-directory: ${{ env.build_dir }}
         run: cmake --build . --target all --verbose -j `nproc`
-
-
-
