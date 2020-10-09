@@ -16,9 +16,9 @@ jobs:
         include:
           - os: ubuntu-18.04
             gcc: 8
-      env:
-        build_dir: "build"
-        config: "Release"
+    env:
+      build_dir: "build"
+      config: "Release"
 
     steps:
       - uses: actions/checkout@v2
