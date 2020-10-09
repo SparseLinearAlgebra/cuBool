@@ -1,7 +1,10 @@
 # CUBOOL
 
-Linear Boolean algebra primitives and operations for working with dense and 
-sparse matrices on the NVIDIA CUDA C++ platform.
+CuBool is a C++ linear boolean algebra library primitives and operations for 
+work with dense and sparse matrices on the NVIDIA CUDA platform. The primary 
+goal of the library is implementation, testing and profiling algorithms for
+solving *formal-language-constrained problems*, such as *context-free* 
+and *recursive* path queries with various semantics for graph databases.
 
 The name of the library is formed by a combination of words *Cuda* and *Boolean*,
 what literally means *Cuda with Boolean* and sounds very similar to the name of 
@@ -61,8 +64,8 @@ $ Built on Sun_Jul_28_19:07:16_PDT_2019
 $ Cuda compilation tools, release 10.1, V10.1.243
 ```
 
-**Bonus Step:** In order to have CUDA support in the CLion IDE, you will have to do
-overwrite global alias to the `gcc` and `g++` compilers:
+**Bonus Step:** In order to have CUDA support in the CLion IDE, you will have to
+overwrite global alias for the `gcc` and `g++` compilers:
 
 ```shell script
 $ sudo rm /usr/bin/gcc
@@ -86,9 +89,8 @@ Run the following commands in the command shell to download the repository,
 make `build` directory, configure `cmake build` and run compilation process:
 
 ```shell script
-$ git clone --recursive https://github.com/JetBrains-Research/cuBool.git
+$ git clone --recurse-submodules https://github.com/JetBrains-Research/cuBool.git
 $ cd cuBool
-$ git submodule update --init --recursive
 $ mkdir build
 $ cd build
 $ cmake .. -DCUBOOL_BUILD_TESTS=YES
@@ -107,10 +109,13 @@ $ cmake --build .
 
 ## Directory structure
 
-- `cubool` - library source-code
-- `docs` - documents, text files and various helpful stuff
-- `tests` - gtest-based unit-tests collection
-- `thirdparty` - project dependencies
+```
+cuBool
+├── src - library source-code
+├── docs - documents, text files and various helpful stuff
+├── tests - gtest-based unit-tests collection
+└── thirdparty - project dependencies
+```
 
 ## License
 
