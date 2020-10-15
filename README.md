@@ -28,6 +28,7 @@ the programming language *COBOL*.
 - [ ] Sparse CSR kronecker
 - [ ] Wrapper for Python API 
 - [ ] User guide
+- [ ] Unit Tests collection
 
 ## Requirements
 
@@ -97,6 +98,7 @@ $ mkdir build
 $ cd build
 $ cmake .. -DCUBOOL_BUILD_TESTS=YES
 $ cmake --build .
+$ sh ../scripts/test_run_all.sh
 ```
 
 > Note: in order to provide correct GCC version for CUDA sources compiling,
@@ -113,10 +115,13 @@ $ cmake --build .
 
 ```
 cuBool
+├── .github - GitHub Actions CI setup 
 ├── src - library source-code
 ├── docs - documents, text files and various helpful stuff
 ├── tests - gtest-based unit-tests collection
-└── thirdparty - project dependencies
+├── scripts - short utility programs 
+├── thirdparty - project dependencies
+└── CMakeLists.txt - library cmake config, add this as sub-directory to your project
 ```
 
 ## License
