@@ -85,14 +85,18 @@ echo "PIN_FILENAME ${PIN_FILENAME}"
 echo "PIN_URL ${PIN_URL}"
 echo "APT_KEY_URL ${APT_KEY_URL}"
 
+sudo apt-get clean
+sudo apt-get autoclean
+sudo apt-get purge
+sudo apt-get autoremove -y
+sudo rm -fv /var/lib/apt/lists/*
+
 ## Install
 echo "Adding CUDA Repository"
 wget ${PIN_URL}
 sudo mv ${PIN_FILENAME} /etc/apt/preferences.d/cuda-repository-pin-600
 sudo apt-key adv --fetch-keys ${APT_KEY_URL}
 sudo add-apt-repository "deb ${REPO_URL} /"
-sudo rm -r /var/lib/apt/lists/* -vf
-sudo apt-get clean
 sudo apt-get update
 
 echo "Installing CUDA packages ${CUDA_PACKAGES}"
