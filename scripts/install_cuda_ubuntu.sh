@@ -58,6 +58,9 @@ if [ -z ${UBUNTU_VERSION} ]; then
     exit 1
 fi
 
+sudo rm -r /var/lib/apt/lists/*
+sudo apt-get clean
+sudo apt-get update
 
 CUDA_PACKAGES=""
 for package in "${CUDA_PACKAGES_IN[@]}"
