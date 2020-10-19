@@ -44,6 +44,21 @@ static void TestDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
     free(ptr);
 }
 
+// Query library version info
+TEST(CuBoolVersion, Query) {
+    int major;
+    int minor;
+    int version;
+
+    CuBoolGetLibraryVersion(&major, &minor, &version);
+
+    std::cout << "Major: " << major << std::endl;
+    std::cout << "Minor: " << minor << std::endl;
+    std::cout << "Version: " << version << std::endl;
+
+    EXPECT_NE(version, 0);
+}
+
 // Test cubool library instance creation and destruction
 TEST(CuBoolInstance, Setup) {
     CuBoolError error;

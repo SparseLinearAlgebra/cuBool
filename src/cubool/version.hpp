@@ -24,12 +24,12 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CUBOOL_VERSION_H
-#define CUBOOL_CUBOOL_VERSION_H
+#ifndef CUBOOL_VERSION_HPP
+#define CUBOOL_VERSION_HPP
 
 #include <cubool/cubool_build.h>
 
-#define CUBOOL_VERSION (CUBOOL_VERSION_MAJOR << 4u) | (CUBOOL_VERSION_MINOR)
+#define CUBOOL_VERSION ((uint32_t) CUBOOL_VERSION_MAJOR << 4u) | ((uint32_t) CUBOOL_VERSION_MINOR)
 #define CUBOOL_VERSION_STRING #CUBOOL_VERSION_MAJOR "." #CUBOOL_VERSION_MINOR
 
-#endif //CUBOOL_CUBOOL_VERSION_H
+#endif //CUBOOL_VERSION_HPP

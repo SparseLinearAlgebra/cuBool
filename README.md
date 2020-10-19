@@ -2,8 +2,8 @@
 
 [![Ubuntu](https://github.com/JetBrains-Research/cuBool/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/JetBrains-Research/cuBool/actions)
 
-CuBool is a C++ linear boolean algebra library primitives and operations for 
-work with dense and sparse matrices on the NVIDIA CUDA platform. The primary 
+CuBool is a linear boolean algebra library primitives and operations for 
+work with dense and sparse matrices written on the NVIDIA CUDA platform. The primary 
 goal of the library is implementation, testing and profiling algorithms for
 solving *formal-language-constrained problems*, such as *context-free* 
 and *recursive* path queries with various semantics for graph databases.
@@ -14,8 +14,8 @@ the programming language *COBOL*.
 
 ## Features
 
-- [ ] Generic matrix representation
-- [ ] Generic serialization
+- [ ] Library C interface
+- [ ] Library instance/context
 - [ ] Dense boolean matrix
 - [ ] Dense boolean matrix operations
 - [ ] Dense multiplication 
@@ -97,7 +97,7 @@ $ cd cuBool
 $ mkdir build
 $ cd build
 $ cmake .. -DCUBOOL_BUILD_TESTS=YES
-$ cmake --build .
+$ cmake --build . --target all -j `nproc`
 $ sh ../scripts/test_run_all.sh
 ```
 

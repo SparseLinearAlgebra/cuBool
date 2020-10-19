@@ -25,7 +25,24 @@
 /**********************************************************************************/
 
 #include <cubool/cubool.h>
+#include <cubool/version.hpp>
 #include <cubool/instance.hpp>
+
+CuBoolError CuBoolGetLibraryVersion(int* major, int* minor, int* version) {
+    if (major) {
+        *major = CUBOOL_VERSION_MAJOR;
+    }
+
+    if (minor) {
+        *minor = CUBOOL_VERSION_MINOR;
+    }
+
+    if (version) {
+        *version = CUBOOL_VERSION;
+    }
+
+    return CUBOOL_ERROR_SUCCESS;
+}
 
 CuBoolError CuBoolCreateInstance(const CuBoolInstanceDesc* instanceDesc, CuBoolInstance* instance) {
     if (!instanceDesc) {

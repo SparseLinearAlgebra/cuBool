@@ -28,14 +28,24 @@
 #define CUBOOL_CUBOOL_H
 
 #include <cubool/cubool_types.h>
-#include <cubool/cubool_version.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
     /**
+     * Query library version number in form MAJOR.MINOR
+     *
+     * @param major Major version number part
+     * @param minor Minor version number part
+     * @param version Composite integer version
+     * @return Error code on this operations
+     */
+    CuBoolError CuBoolGetLibraryVersion(int* major, int* minor, int* version);
+
+    /**
      * Initialize library instance object, which provides context to all library operations and objects
+     *
      * @param instanceDesc User provided instance configuration for memory operations and error handling
      * @param instance Pointer to the place where to store instance handler
      * @return Error code on this operations
@@ -44,6 +54,7 @@ extern "C" {
 
     /**
      * Destroy library instance and all objects, which were created on this library context.
+     *
      * @note Invalidates all handler to the resources, created within this library instance
      * @param instance An instance object reference to perform this operation
      * @return Error code on this operations
