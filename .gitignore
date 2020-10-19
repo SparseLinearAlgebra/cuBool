@@ -4,3 +4,4 @@
 # Build files
 /cmake-build-debug
 /build
+/include/cubool/cubool_build.h

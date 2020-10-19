@@ -24,69 +24,39 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <gtest/gtest.h>
-#include <memory>
+#ifndef CUBOOL_GPU_BUFFER_HPP
+#define CUBOOL_GPU_BUFFER_HPP
 
-// Simple kernel to sum float matrices
+#include <cubool/cubool_types.h>
 
-__global__ void kernelAdd(unsigned int n, const float* a, const float* b, float* c) {
-    unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-    unsigned int j = blockDim.y * blockIdx.y + threadIdx.y;
+namespace cubool {
 
-    unsigned int idx = n * i + j;
+    class GpuBuffer {
+    public:
+        explicit GpuBuffer(class Instance& instance);
+        GpuBuffer(const GpuBuffer& other);
+        GpuBuffer(GpuBuffer&& other) noexcept;
+        ~GpuBuffer();
 
-    if (i < n * n) {
-        c[idx] = a[idx] + b[idx];
-    }
+        /** Resize buffer. Previous buffer content will be lost */
+        CuBoolError resizeNoContentKeep(CuBoolSize_t size);
+        CuBoolError copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
+        CuBoolError transferFromCpu(CuBoolCpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
+        CuBoolError transferToCpu(CuBoolCpuPtr_t destination, CuBoolSize_t size, CuBoolSize_t readOffset) const;
+
+        bool isEmpty() const { return mSize == 0; }
+        bool isNotEmpty() const { return mSize > 0; }
+
+        CuBoolGpuConstPtr_t getMemory() const { return mMemory; }
+        CuBoolGpuPtr_t getMemory() { return mMemory; }
+        CuBoolSize_t getSize() const { return mSize; }
+
+    private:
+        CuBoolSize_t mSize = 0;
+        CuBoolGpuPtr_t mMemory = nullptr;
+        class Instance* mInstancePtr = nullptr;
+    };
+
 }
 
-// Test cuda device support.
-TEST(Cuda, BasicExample) {
-    const unsigned int N = 128;
-    const unsigned int NxN = N * N;
-    const unsigned int THREADS_PER_BLOCK = 8;
-
-    float *a, *device_a;
-    float *b, *device_b;
-    float *c, *device_c;
-
-    a = (float*) malloc(sizeof(float) * NxN);
-    b = (float*) malloc(sizeof(float) * NxN);
-    c = (float*) malloc(sizeof(float) * NxN);
-
-    for (int i = 0; i < NxN; i++) {
-        a[i] = (float) i / 2.0f;
-        b[i] = (float) -i / 4.0f;
-    }
-
-    cudaMalloc(&device_a, sizeof(float) * NxN);
-    cudaMalloc(&device_b, sizeof(float) * NxN);
-    cudaMalloc(&device_c, sizeof(float) * NxN);
-
-    cudaMemcpy(device_a, a, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-    cudaMemcpy(device_b, b, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-
-    dim3 blocks(N / THREADS_PER_BLOCK, N / THREADS_PER_BLOCK);
-    dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
-
-    kernelAdd<<<blocks, threads>>>(N, device_a, device_b, device_c);
-
-    cudaDeviceSynchronize();
-    cudaMemcpy(c, device_c, sizeof(float) * NxN, cudaMemcpyDeviceToHost);
-
-    for (int i = 0; i < NxN; i++) {
-        EXPECT_EQ(c[i], a[i] + b[i]);
-    }
-
-    cudaFree(device_a);
-    cudaFree(device_b);
-    cudaFree(device_c);
-    free(a);
-    free(b);
-    free(c);
-}
-
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+#endif //CUBOOL_GPU_BUFFER_HPP

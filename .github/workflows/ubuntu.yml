@@ -55,7 +55,3 @@ jobs:
       - name: Build library sources
         working-directory: ${{ env.build_dir }}
         run: cmake --build . --target all --verbose -j `nproc`
-
-      - name: Run all tests
-        working-directory: ${{ env.build_dir }}
-        run: sh ../scripts/tests_run_all.sh

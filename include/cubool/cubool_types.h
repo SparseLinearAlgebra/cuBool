@@ -24,69 +24,64 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <gtest/gtest.h>
-#include <memory>
+#ifndef CUBOOL_CUBOOL_TYPES_H
+#define CUBOOL_CUBOOL_TYPES_H
 
-// Simple kernel to sum float matrices
+#include <memory.h>
 
-__global__ void kernelAdd(unsigned int n, const float* a, const float* b, float* c) {
-    unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-    unsigned int j = blockDim.y * blockIdx.y + threadIdx.y;
+typedef size_t      CuBoolSize_t;
+typedef void*       CuBoolCpuPtr_t;
+typedef const void* CuBoolCpuConstPtr_t;
+typedef void*       CuBoolGpuPtr_t;
+typedef const void* CuBoolGpuConstPtr_t;
 
-    unsigned int idx = n * i + j;
+typedef enum CuBoolError {
+    CUBOOL_ERROR_SUCCESS,
+    CUBOOL_ERROR_ERROR,
+    CUBOOL_ERROR_MEM_OP_FAILED,
+    CUBOOL_ERROR_INVALID_ARGUMENT,
+    CUBOOL_ERROR_INVALID_STATE,
+    CUBOOL_ERROR_NOT_IMPLEMENTED
+} CuBoolStatus;
 
-    if (i < n * n) {
-        c[idx] = a[idx] + b[idx];
-    }
-}
+typedef enum CuBoolGpuMemoryType {
+    CUBOOL_GPU_MEMORY_TYPE_MANAGED,
+    CUBOOL_GPU_MEMORY_TYPE_GENERIC
+} CuBoolGpuMemoryType;
 
-// Test cuda device support.
-TEST(Cuda, BasicExample) {
-    const unsigned int N = 128;
-    const unsigned int NxN = N * N;
-    const unsigned int THREADS_PER_BLOCK = 8;
+typedef enum CuBoolMajorOrder {
+    CUBOOL_MAJOR_ORDER_ROW,
+    CUBOOL_MAJOR_ORDER_COLUMN,
+} CuBoolMajorOrder;
 
-    float *a, *device_a;
-    float *b, *device_b;
-    float *c, *device_c;
+typedef struct CuBoolGpuAllocation {
+    CuBoolGpuMemoryType memoryType;
+    CuBoolGpuPtr_t memoryPtr;
+    CuBoolSize_t size;
+} CuBoolGpuAllocation;
 
-    a = (float*) malloc(sizeof(float) * NxN);
-    b = (float*) malloc(sizeof(float) * NxN);
-    c = (float*) malloc(sizeof(float) * NxN);
+typedef CuBoolCpuPtr_t  (*CuBoolCpuMemAllocateFun)(CuBoolSize_t size, void* userData);
+typedef void            (*CuBoolCpuMemDeallocateFun)(CuBoolCpuPtr_t ptr, void* userData);
+typedef void            (*CuBoolErrorMsgFun)(CuBoolError status, const char* message, void* userData);
 
-    for (int i = 0; i < NxN; i++) {
-        a[i] = (float) i / 2.0f;
-        b[i] = (float) -i / 4.0f;
-    }
+typedef struct CuBoolAllocationCallback {
+    void* userData;
+    CuBoolCpuMemAllocateFun allocateFun;
+    CuBoolCpuMemDeallocateFun deallocateFun;
+} CuAllocationCallback;
 
-    cudaMalloc(&device_a, sizeof(float) * NxN);
-    cudaMalloc(&device_b, sizeof(float) * NxN);
-    cudaMalloc(&device_c, sizeof(float) * NxN);
+typedef struct CuBoolErrorCallback {
+    void* userData;
+    CuBoolErrorMsgFun errorMsgFun;
+} CuBoolErrorCallback;
 
-    cudaMemcpy(device_a, a, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-    cudaMemcpy(device_b, b, sizeof(float) * NxN, cudaMemcpyHostToDevice);
+typedef struct CuBoolInstanceDesc {
+    CuBoolGpuMemoryType memoryType;
+    CuBoolErrorCallback errorCallback;
+    CuAllocationCallback allocationCallback;
+} CuBoolInstanceDesc;
 
-    dim3 blocks(N / THREADS_PER_BLOCK, N / THREADS_PER_BLOCK);
-    dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
+typedef struct CuBoolInstance_t*    CuBoolInstance;
+typedef struct CuBoolMatrixDense_t* CuBoolMatrixDense;
 
-    kernelAdd<<<blocks, threads>>>(N, device_a, device_b, device_c);
-
-    cudaDeviceSynchronize();
-    cudaMemcpy(c, device_c, sizeof(float) * NxN, cudaMemcpyDeviceToHost);
-
-    for (int i = 0; i < NxN; i++) {
-        EXPECT_EQ(c[i], a[i] + b[i]);
-    }
-
-    cudaFree(device_a);
-    cudaFree(device_b);
-    cudaFree(device_c);
-    free(a);
-    free(b);
-    free(c);
-}
-
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+#endif //CUBOOL_CUBOOL_TYPES_H

@@ -25,65 +25,46 @@
 /**********************************************************************************/
 
 #include <gtest/gtest.h>
-#include <memory>
+#include <cubool/cubool.h>
 
-// Simple kernel to sum float matrices
+#include <iostream>
 
-__global__ void kernelAdd(unsigned int n, const float* a, const float* b, float* c) {
-    unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-    unsigned int j = blockDim.y * blockIdx.y + threadIdx.y;
-
-    unsigned int idx = n * i + j;
-
-    if (i < n * n) {
-        c[idx] = a[idx] + b[idx];
-    }
+static void TestErrorFun(CuBoolError error, const char* message, void* _) {
+    std::cout << "CuBool Error: " << message << std::endl;
 }
 
-// Test cuda device support.
-TEST(Cuda, BasicExample) {
-    const unsigned int N = 128;
-    const unsigned int NxN = N * N;
-    const unsigned int THREADS_PER_BLOCK = 8;
+static CuBoolCpuPtr_t TestAllocateFun(CuBoolSize_t size, void* _) {
+    CuBoolCpuPtr_t ptr = malloc(size);
+    std::cout << "Cubool Allocate: " << size << " " << ptr << std::endl;
+    return ptr;
+}
 
-    float *a, *device_a;
-    float *b, *device_b;
-    float *c, *device_c;
+static void TestDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
+    std::cout << "Cubool Deallocate: " << ptr << std::endl;
+    free(ptr);
+}
 
-    a = (float*) malloc(sizeof(float) * NxN);
-    b = (float*) malloc(sizeof(float) * NxN);
-    c = (float*) malloc(sizeof(float) * NxN);
+// Test cubool library instance creation and destruction
+TEST(CuBoolInstance, Setup) {
+    CuBoolError error;
+    CuBoolInstance instance = nullptr;
 
-    for (int i = 0; i < NxN; i++) {
-        a[i] = (float) i / 2.0f;
-        b[i] = (float) -i / 4.0f;
-    }
+    CuBoolInstanceDesc instanceDesc{};
+    instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
+    instanceDesc.errorCallback.userData = nullptr;
+    instanceDesc.errorCallback.errorMsgFun = TestErrorFun;
+    instanceDesc.allocationCallback.userData = nullptr;
+    instanceDesc.allocationCallback.allocateFun = TestAllocateFun;
+    instanceDesc.allocationCallback.deallocateFun = TestDeallocateFun;
 
-    cudaMalloc(&device_a, sizeof(float) * NxN);
-    cudaMalloc(&device_b, sizeof(float) * NxN);
-    cudaMalloc(&device_c, sizeof(float) * NxN);
+    error = CuBoolCreateInstance(&instanceDesc, &instance);
+    EXPECT_EQ(error, CUBOOL_ERROR_SUCCESS);
+    EXPECT_NE(instance, nullptr);
 
-    cudaMemcpy(device_a, a, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-    cudaMemcpy(device_b, b, sizeof(float) * NxN, cudaMemcpyHostToDevice);
+    error = CuBoolDestroyInstance(instance);
+    EXPECT_EQ(error, CUBOOL_ERROR_SUCCESS);
 
-    dim3 blocks(N / THREADS_PER_BLOCK, N / THREADS_PER_BLOCK);
-    dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
-
-    kernelAdd<<<blocks, threads>>>(N, device_a, device_b, device_c);
-
-    cudaDeviceSynchronize();
-    cudaMemcpy(c, device_c, sizeof(float) * NxN, cudaMemcpyDeviceToHost);
-
-    for (int i = 0; i < NxN; i++) {
-        EXPECT_EQ(c[i], a[i] + b[i]);
-    }
-
-    cudaFree(device_a);
-    cudaFree(device_b);
-    cudaFree(device_c);
-    free(a);
-    free(b);
-    free(c);
+    instance = nullptr;
 }
 
 int main(int argc, char *argv[]) {

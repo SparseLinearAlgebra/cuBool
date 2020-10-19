@@ -24,69 +24,12 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <gtest/gtest.h>
-#include <memory>
+#ifndef CUBOOL_CUBOOL_VERSION_H
+#define CUBOOL_CUBOOL_VERSION_H
 
-// Simple kernel to sum float matrices
+#include <cubool/cubool_build.h>
 
-__global__ void kernelAdd(unsigned int n, const float* a, const float* b, float* c) {
-    unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-    unsigned int j = blockDim.y * blockIdx.y + threadIdx.y;
+#define CUBOOL_VERSION (CUBOOL_VERSION_MAJOR << 4u) | (CUBOOL_VERSION_MINOR)
+#define CUBOOL_VERSION_STRING #CUBOOL_VERSION_MAJOR "." #CUBOOL_VERSION_MINOR
 
-    unsigned int idx = n * i + j;
-
-    if (i < n * n) {
-        c[idx] = a[idx] + b[idx];
-    }
-}
-
-// Test cuda device support.
-TEST(Cuda, BasicExample) {
-    const unsigned int N = 128;
-    const unsigned int NxN = N * N;
-    const unsigned int THREADS_PER_BLOCK = 8;
-
-    float *a, *device_a;
-    float *b, *device_b;
-    float *c, *device_c;
-
-    a = (float*) malloc(sizeof(float) * NxN);
-    b = (float*) malloc(sizeof(float) * NxN);
-    c = (float*) malloc(sizeof(float) * NxN);
-
-    for (int i = 0; i < NxN; i++) {
-        a[i] = (float) i / 2.0f;
-        b[i] = (float) -i / 4.0f;
-    }
-
-    cudaMalloc(&device_a, sizeof(float) * NxN);
-    cudaMalloc(&device_b, sizeof(float) * NxN);
-    cudaMalloc(&device_c, sizeof(float) * NxN);
-
-    cudaMemcpy(device_a, a, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-    cudaMemcpy(device_b, b, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-
-    dim3 blocks(N / THREADS_PER_BLOCK, N / THREADS_PER_BLOCK);
-    dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
-
-    kernelAdd<<<blocks, threads>>>(N, device_a, device_b, device_c);
-
-    cudaDeviceSynchronize();
-    cudaMemcpy(c, device_c, sizeof(float) * NxN, cudaMemcpyDeviceToHost);
-
-    for (int i = 0; i < NxN; i++) {
-        EXPECT_EQ(c[i], a[i] + b[i]);
-    }
-
-    cudaFree(device_a);
-    cudaFree(device_b);
-    cudaFree(device_c);
-    free(a);
-    free(b);
-    free(c);
-}
-
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+#endif //CUBOOL_CUBOOL_VERSION_H

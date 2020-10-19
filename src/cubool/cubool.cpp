@@ -24,69 +24,75 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <gtest/gtest.h>
-#include <memory>
+#include <cubool/cubool.h>
+#include <cubool/instance.hpp>
 
-// Simple kernel to sum float matrices
-
-__global__ void kernelAdd(unsigned int n, const float* a, const float* b, float* c) {
-    unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-    unsigned int j = blockDim.y * blockIdx.y + threadIdx.y;
-
-    unsigned int idx = n * i + j;
-
-    if (i < n * n) {
-        c[idx] = a[idx] + b[idx];
+CuBoolError CuBoolCreateInstance(const CuBoolInstanceDesc* instanceDesc, CuBoolInstance* instance) {
+    if (!instanceDesc) {
+        // Instance descriptor could not be null
+        return CUBOOL_ERROR_INVALID_ARGUMENT;
     }
+
+    if (!instance) {
+        // Null to safe instance reference
+        return CUBOOL_ERROR_INVALID_ARGUMENT;
+    }
+
+    auto& desc = *instanceDesc;
+    auto& allocator = desc.allocationCallback;
+
+    CuBoolSize_t instanceSize = sizeof(cubool::Instance);
+    CuBoolCpuPtr_t instanceMem = nullptr;
+
+    if (allocator.allocateFun && allocator.deallocateFun) {
+        instanceMem = allocator.allocateFun(instanceSize, allocator.userData);
+    }
+    else {
+        instanceMem = malloc(instanceSize);
+    }
+
+    if (!instanceMem) {
+        // Failed to allocate instance
+        return CUBOOL_ERROR_MEM_OP_FAILED;
+    }
+
+    auto instanceImpl = new(instanceMem) cubool::Instance(desc);
+
+    // Raw cast. We expose to the user non-existing language structure
+    *instance = (CuBoolInstance) instanceImpl;
+
+    return CUBOOL_ERROR_SUCCESS;
 }
 
-// Test cuda device support.
-TEST(Cuda, BasicExample) {
-    const unsigned int N = 128;
-    const unsigned int NxN = N * N;
-    const unsigned int THREADS_PER_BLOCK = 8;
-
-    float *a, *device_a;
-    float *b, *device_b;
-    float *c, *device_c;
-
-    a = (float*) malloc(sizeof(float) * NxN);
-    b = (float*) malloc(sizeof(float) * NxN);
-    c = (float*) malloc(sizeof(float) * NxN);
-
-    for (int i = 0; i < NxN; i++) {
-        a[i] = (float) i / 2.0f;
-        b[i] = (float) -i / 4.0f;
+CuBoolError CuBoolDestroyInstance(CuBoolInstance instance) {
+    if (!instance) {
+        // Null instance passed
+        return CUBOOL_ERROR_INVALID_ARGUMENT;
     }
 
-    cudaMalloc(&device_a, sizeof(float) * NxN);
-    cudaMalloc(&device_b, sizeof(float) * NxN);
-    cudaMalloc(&device_c, sizeof(float) * NxN);
+    auto instanceImpl = (cubool::Instance*) instance;
 
-    cudaMemcpy(device_a, a, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-    cudaMemcpy(device_b, b, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-
-    dim3 blocks(N / THREADS_PER_BLOCK, N / THREADS_PER_BLOCK);
-    dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
-
-    kernelAdd<<<blocks, threads>>>(N, device_a, device_b, device_c);
-
-    cudaDeviceSynchronize();
-    cudaMemcpy(c, device_c, sizeof(float) * NxN, cudaMemcpyDeviceToHost);
-
-    for (int i = 0; i < NxN; i++) {
-        EXPECT_EQ(c[i], a[i] + b[i]);
+    if (instanceImpl->hasUserDefinedAllocator()) {
+        auto allocator = instanceImpl->getUserDefinedAllocator();
+        instanceImpl->~Instance();
+        allocator.deallocateFun(instanceImpl, allocator.userData);
+    }
+    else {
+        instanceImpl->~Instance();
+        free(instanceImpl);
     }
 
-    cudaFree(device_a);
-    cudaFree(device_b);
-    cudaFree(device_c);
-    free(a);
-    free(b);
-    free(c);
+    return CUBOOL_ERROR_SUCCESS;
 }
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+CuBoolError CuBoolCreateMatrixDense(CuBoolInstance instance, CuBoolMatrixDense* matrix) {
+    return CUBOOL_ERROR_NOT_IMPLEMENTED;
+}
+
+CuBoolError CuBoolDestroyMatrixDense(CuBoolInstance instance, CuBoolMatrixDense matrix) {
+    return CUBOOL_ERROR_NOT_IMPLEMENTED;
+}
+
+CuBoolError CuBoolMultiplyAdd(CuBoolInstance instance, CuBoolMatrixDense result, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c) {
+    return CUBOOL_ERROR_NOT_IMPLEMENTED;
 }

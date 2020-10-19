@@ -24,69 +24,49 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <gtest/gtest.h>
-#include <memory>
+#ifndef CUBOOL_MATRIX_DENSE_HPP
+#define CUBOOL_MATRIX_DENSE_HPP
 
-// Simple kernel to sum float matrices
+#include <cubool/cubool_types.h>
+#include <cubool/utils/gpu_buffer.hpp>
 
-__global__ void kernelAdd(unsigned int n, const float* a, const float* b, float* c) {
-    unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-    unsigned int j = blockDim.y * blockIdx.y + threadIdx.y;
+#include <cinttypes>
+#include <vector>
 
-    unsigned int idx = n * i + j;
+namespace cubool {
 
-    if (i < n * n) {
-        c[idx] = a[idx] + b[idx];
-    }
+    class MatrixDense {
+    public:
+        // How we actually pack this matrix inmemory
+        // This info approached by kernels code
+        using PACK_TYPE = uint32_t;
+        static const CuBoolSize_t BYTE_SIZE_IN_BITS = 8; // 8 bits per byte?
+        static const CuBoolSize_t PACK_TYPE_SIZE_BITS = sizeof(PACK_TYPE) * BYTE_SIZE_IN_BITS;
+
+        explicit MatrixDense(class Instance& instance);
+        MatrixDense(const MatrixDense& other) = delete;
+        MatrixDense(MatrixDense&& other) noexcept = delete;
+        ~MatrixDense() = default;
+
+        CuBoolError resize(CuBoolSize_t rows, CuBoolSize_t columns);
+        CuBoolError writeValues(const std::vector<std::pair<CuBoolSize_t,CuBoolSize_t>> &values);
+        CuBoolError readValues(std::vector<std::pair<CuBoolSize_t,CuBoolSize_t>> &values) const;
+
+        CuBoolSize_t getRowsCount() const { return mRows; }
+        CuBoolSize_t getColumnsCount() const { return mColumns; }
+
+        static void getRowPackedIndex(CuBoolSize_t rowIndex, CuBoolSize_t &rowPackIdxMajor, CuBoolSize_t &rowPackIdxMinor);
+        static CuBoolSize_t getRowsPackedFromRows(CuBoolSize_t rows);
+        static CuBoolSize_t getBufferSizeFromRowsColumns(CuBoolSize_t rowsPacked, CuBoolSize_t columns);
+
+    private:
+        GpuBuffer mBuffer;
+        CuBoolSize_t mRows = 0;
+        CuBoolSize_t mColumns = 0;
+        CuBoolSize_t mRowsPacked = 0;
+        class Instance* mInstancePtr = nullptr;
+    };
+
 }
 
-// Test cuda device support.
-TEST(Cuda, BasicExample) {
-    const unsigned int N = 128;
-    const unsigned int NxN = N * N;
-    const unsigned int THREADS_PER_BLOCK = 8;
-
-    float *a, *device_a;
-    float *b, *device_b;
-    float *c, *device_c;
-
-    a = (float*) malloc(sizeof(float) * NxN);
-    b = (float*) malloc(sizeof(float) * NxN);
-    c = (float*) malloc(sizeof(float) * NxN);
-
-    for (int i = 0; i < NxN; i++) {
-        a[i] = (float) i / 2.0f;
-        b[i] = (float) -i / 4.0f;
-    }
-
-    cudaMalloc(&device_a, sizeof(float) * NxN);
-    cudaMalloc(&device_b, sizeof(float) * NxN);
-    cudaMalloc(&device_c, sizeof(float) * NxN);
-
-    cudaMemcpy(device_a, a, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-    cudaMemcpy(device_b, b, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-
-    dim3 blocks(N / THREADS_PER_BLOCK, N / THREADS_PER_BLOCK);
-    dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
-
-    kernelAdd<<<blocks, threads>>>(N, device_a, device_b, device_c);
-
-    cudaDeviceSynchronize();
-    cudaMemcpy(c, device_c, sizeof(float) * NxN, cudaMemcpyDeviceToHost);
-
-    for (int i = 0; i < NxN; i++) {
-        EXPECT_EQ(c[i], a[i] + b[i]);
-    }
-
-    cudaFree(device_a);
-    cudaFree(device_b);
-    cudaFree(device_c);
-    free(a);
-    free(b);
-    free(c);
-}
-
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+#endif //CUBOOL_MATRIX_DENSE_HPP

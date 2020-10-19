@@ -24,69 +24,74 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <gtest/gtest.h>
+#include <cubool/utils/cpu_buffer.hpp>
+#include <cubool/instance.hpp>
+
 #include <memory>
 
-// Simple kernel to sum float matrices
+namespace cubool {
 
-__global__ void kernelAdd(unsigned int n, const float* a, const float* b, float* c) {
-    unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-    unsigned int j = blockDim.y * blockIdx.y + threadIdx.y;
-
-    unsigned int idx = n * i + j;
-
-    if (i < n * n) {
-        c[idx] = a[idx] + b[idx];
-    }
-}
-
-// Test cuda device support.
-TEST(Cuda, BasicExample) {
-    const unsigned int N = 128;
-    const unsigned int NxN = N * N;
-    const unsigned int THREADS_PER_BLOCK = 8;
-
-    float *a, *device_a;
-    float *b, *device_b;
-    float *c, *device_c;
-
-    a = (float*) malloc(sizeof(float) * NxN);
-    b = (float*) malloc(sizeof(float) * NxN);
-    c = (float*) malloc(sizeof(float) * NxN);
-
-    for (int i = 0; i < NxN; i++) {
-        a[i] = (float) i / 2.0f;
-        b[i] = (float) -i / 4.0f;
+    CpuBuffer::CpuBuffer(class Instance &instance) {
+        mInstancePtr = &instance;
     }
 
-    cudaMalloc(&device_a, sizeof(float) * NxN);
-    cudaMalloc(&device_b, sizeof(float) * NxN);
-    cudaMalloc(&device_c, sizeof(float) * NxN);
-
-    cudaMemcpy(device_a, a, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-    cudaMemcpy(device_b, b, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-
-    dim3 blocks(N / THREADS_PER_BLOCK, N / THREADS_PER_BLOCK);
-    dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
-
-    kernelAdd<<<blocks, threads>>>(N, device_a, device_b, device_c);
-
-    cudaDeviceSynchronize();
-    cudaMemcpy(c, device_c, sizeof(float) * NxN, cudaMemcpyDeviceToHost);
-
-    for (int i = 0; i < NxN; i++) {
-        EXPECT_EQ(c[i], a[i] + b[i]);
+    CpuBuffer::CpuBuffer(const CpuBuffer &other) {
+        mInstancePtr = other.mInstancePtr;
+        resizeNoContentKeep(other.mSize);
+        copy(other.mMemory, other.mSize, 0);
     }
 
-    cudaFree(device_a);
-    cudaFree(device_b);
-    cudaFree(device_c);
-    free(a);
-    free(b);
-    free(c);
-}
+    CpuBuffer::CpuBuffer(CpuBuffer &&other) noexcept {
+        mInstancePtr = other.mInstancePtr;
+        mMemory = other.mMemory;
+        mSize = other.mSize;
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+        other.mMemory = nullptr;
+        other.mSize = 0;
+    }
+
+    CpuBuffer::~CpuBuffer() {
+        resizeNoContentKeep(0);
+    }
+
+    CuBoolError CpuBuffer::resizeNoContentKeep(CuBoolSize_t size) {
+        if (isNotEmpty()) {
+            CuBoolError error = mInstancePtr->deallocate(mMemory);
+            mMemory = nullptr;
+            mSize = 0;
+
+            if (error != CUBOOL_ERROR_SUCCESS) {
+                return error;
+            }
+        }
+
+        if (size > 0) {
+            mSize = size;
+            return mInstancePtr->allocate(&mMemory, mSize);
+        }
+
+        return CUBOOL_ERROR_SUCCESS;
+    }
+
+    CuBoolError CpuBuffer::copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset) {
+        if (size == 0) {
+            return CUBOOL_ERROR_SUCCESS;
+        }
+
+        if (!source) {
+            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Null pointer to copy passed");
+            return CUBOOL_ERROR_INVALID_ARGUMENT;
+        }
+
+        if (size + writeOffset > mSize) {
+            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Write region out of buffer bounds");
+            return CUBOOL_ERROR_INVALID_ARGUMENT;
+        }
+
+        CuBoolCpuPtr_t destination = ((uint8_t*)mMemory) + writeOffset;
+        memcpy(destination, source, size);
+
+        return CUBOOL_ERROR_SUCCESS;
+    }
+
 }
