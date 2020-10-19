@@ -11,9 +11,10 @@ on:
 
 jobs:
   build:
-    name: Build Library on ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
+    name: Build ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-18.04
