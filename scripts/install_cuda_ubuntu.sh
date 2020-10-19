@@ -65,7 +65,6 @@ fi
 CUDA_PACKAGES=""
 for package in "${CUDA_PACKAGES_IN[@]}"
 do :
-    # @todo This is not perfect. Should probably provide a separate list for diff versions
     # cuda-compiler-X-Y if CUDA >= 9.1 else cuda-nvcc-X-Y
     if [[ "${package}" == "nvcc" ]] && version_ge "$CUDA_VERSION_MAJOR_MINOR" "9.1" ; then
         package="compiler"
@@ -92,6 +91,8 @@ wget ${PIN_URL}
 sudo mv ${PIN_FILENAME} /etc/apt/preferences.d/cuda-repository-pin-600
 sudo apt-key adv --fetch-keys ${APT_KEY_URL}
 sudo add-apt-repository "deb ${REPO_URL} /"
+sudo rm -r /var/lib/apt/lists/* -vf
+sudo apt-get clean
 sudo apt-get update
 
 echo "Installing CUDA packages ${CUDA_PACKAGES}"
