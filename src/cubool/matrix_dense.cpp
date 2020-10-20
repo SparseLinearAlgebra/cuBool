@@ -34,41 +34,93 @@ namespace cubool {
         mInstancePtr = &instance;
     }
 
-    CuBoolError MatrixDense::resize(CuBoolSize_t rows, CuBoolSize_t columns) {
+    CuBoolStatus MatrixDense::resize(CuBoolSize_t rows, CuBoolSize_t columns) {
         mRows = rows;
         mColumns = columns;
         mRowsPacked = getRowsPackedFromRows(rows);
+        mColumnsPadded = getColumnsPaddedFromColumns(columns);
 
-        CuBoolSize_t bufferSize = getBufferSizeFromRowsColumns(mRowsPacked, mColumns);
+        mStride = mColumnsPadded * sizeof(PackType_t);
+
+        CuBoolSize_t bufferSize = mStride * mRowsPacked;
         return mBuffer.resizeNoContentKeep(bufferSize);
     }
 
-    CuBoolError MatrixDense::writeValues(const std::vector<std::pair<CuBoolSize_t, CuBoolSize_t>> &values) {
-        if (mBuffer.isEmpty() && !values.empty()) {
-            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_STATE, "An attempt to write values to empty matrix");
-            return CUBOOL_ERROR_INVALID_STATE;
+    CuBoolStatus MatrixDense::writeValues(const std::vector<CuBoolPair> &values) {
+        return writeValues(values.size(), values.data());
+    }
+
+    CuBoolStatus MatrixDense::readValues(std::vector<CuBoolPair> &values) const {
+        if (mBuffer.isEmpty()) {
+            // nothing to read, buffer is empty (matrix 0x0)
+            return CUBOOL_STATUS_SUCCESS;
+        }
+
+        CuBoolSize_t bufferSize = mBuffer.getSize();
+        CpuBuffer bufferTmp(*mInstancePtr);
+
+        CuBoolStatus error = bufferTmp.resizeNoContentKeep(bufferSize);
+
+        if (error != CUBOOL_STATUS_SUCCESS) {
+            return error;
+        }
+
+        // Read values to host into tmp buffer.
+        // May take a while
+        error = mBuffer.transferToCpu(bufferTmp.getMemory(), bufferSize, 0);
+
+        if (error != CUBOOL_STATUS_SUCCESS) {
+            return error;
+        }
+
+        auto readBuffer = (const PackType_t*) bufferTmp.getMemory();
+
+        for (CuBoolSize_t i = 0; i < mRowsPacked; i++) {
+            for (CuBoolSize_t j = 0; j < mColumns; j++) {
+                PackType_t pack = readBuffer[i * mColumnsPadded + j];
+
+                for (CuBoolSize_t k = 0; k < PACK_TYPE_SIZE_BITS; k++) {
+                    CuBoolSize_t rowIdx = i * PACK_TYPE_SIZE_BITS + k;
+                    CuBoolSize_t columnIdx = j;
+
+                    if (rowIdx < mRows && ((pack & 0x1u) != 0x0u)) {
+                        values.push_back(CuBoolPair{ rowIdx, columnIdx });
+                    }
+
+                    pack = pack >> 1u;
+                }
+            }
+        }
+
+        return CUBOOL_STATUS_SUCCESS;
+    }
+
+    CuBoolStatus MatrixDense::writeValues(CuBoolSize_t count, const CuBoolPair *values) {
+        if (mBuffer.isEmpty() && count > 0) {
+            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_STATE, "An attempt to write values to empty matrix");
+            return CUBOOL_STATUS_INVALID_STATE;
         }
 
         // Allocate buffer to form matrix image on the cpu side
         CuBoolSize_t bufferSize = mBuffer.getSize();
         CpuBuffer bufferTmp(*mInstancePtr);
 
-        CuBoolError error = bufferTmp.resizeNoContentKeep(bufferSize);
+        CuBoolStatus error = bufferTmp.resizeNoContentKeep(bufferSize);
 
-        if (error != CUBOOL_ERROR_SUCCESS) {
+        if (error != CUBOOL_STATUS_SUCCESS) {
             return error;
         }
 
         memset(bufferTmp.getMemory(), 0x0, bufferSize);
 
-        auto writeBuffer = (PACK_TYPE*) bufferTmp.getMemory();
+        auto writeBuffer = (PackType_t*) bufferTmp.getMemory();
 
-        for (const auto& p: values) {
-            CuBoolSize_t rowIdx = p.first;
-            CuBoolSize_t columnIdx = p.first;
+        for (CuBoolSize_t idx = 0; idx < count; idx++) {
+            CuBoolSize_t rowIdx = values[idx].i;
+            CuBoolSize_t columnIdx = values[idx].j;
 
-            if (rowIdx >= mRows || columnIdx > mColumns) {
-                mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Out of matrix bounds value");
+            if (rowIdx >= mRows || columnIdx >= mColumns) {
+                mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Out of matrix bounds value");
                 continue;
             }
 
@@ -78,57 +130,37 @@ namespace cubool {
 
             getRowPackedIndex(rowIdx, i, k);
 
-            PACK_TYPE value = writeBuffer[i * mColumns + j];
-
-            value |= (1u << k);
-
-            writeBuffer[i * mColumns + j] = value;
+            writeBuffer[i * mColumnsPadded + j] |= (1u << k);
         }
 
         return mBuffer.transferFromCpu(bufferTmp.getMemory(), bufferSize, 0);
     }
 
-    CuBoolError MatrixDense::readValues(std::vector<std::pair<CuBoolSize_t, CuBoolSize_t>> &values) const {
-        if (mBuffer.isEmpty()) {
-            // nothing to read, buffer is empty (matrix 0x0)
-            return CUBOOL_ERROR_SUCCESS;
+    CuBoolStatus MatrixDense::readValues(CuBoolSize_t *count, CuBoolPair **values) const {
+        std::vector<CuBoolPair> valuesVector;
+
+        CuBoolStatus status = readValues(valuesVector);
+
+        if (status != CUBOOL_STATUS_SUCCESS) {
+            return status;
         }
 
-        CuBoolSize_t bufferSize = mBuffer.getSize();
-        CpuBuffer bufferTmp(*mInstancePtr);
+        *count = valuesVector.size();
+        *values = nullptr;
 
-        CuBoolError error = bufferTmp.resizeNoContentKeep(bufferSize);
+        if (*count > 0) {
+            CuBoolCpuPtr_t mem;
+            status = mInstancePtr->allocate(&mem, valuesVector.size()  * sizeof(CuBoolPair));
 
-        if (error != CUBOOL_ERROR_SUCCESS) {
-            return error;
-        }
-
-        // Read values to host into tmp buffer.
-        // May take a while
-        error = mBuffer.transferToCpu(bufferTmp.getMemory(), bufferSize, 0);
-
-        if (error != CUBOOL_ERROR_SUCCESS) {
-            return error;
-        }
-
-        auto readBuffer = (const PACK_TYPE*) bufferTmp.getMemory();
-
-        for (CuBoolSize_t i = 0; i < mRowsPacked; i++) {
-            for (CuBoolSize_t j = 0; j < mColumns; j++) {
-                PACK_TYPE pack = readBuffer[i * mColumns + j];
-
-                for (CuBoolSize_t k = 0; k < PACK_TYPE_SIZE_BITS; k++) {
-                    CuBoolSize_t rowIdx = i * PACK_TYPE_SIZE_BITS + k;
-                    CuBoolSize_t columnIdx = j;
-
-                    if (rowIdx < mRows && columnIdx < mColumns && ((pack & 0x1u) != 0x0u)) {
-                        values.emplace_back(rowIdx, columnIdx);
-                    }
-                }
+            if (status != CUBOOL_STATUS_SUCCESS) {
+                return status;
             }
+
+            *values = (CuBoolPair*) mem;
+            memcpy(mem, valuesVector.data(), valuesVector.size() * sizeof(CuBoolPair));
         }
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
     void MatrixDense::getRowPackedIndex(CuBoolSize_t rowIndex, CuBoolSize_t &rowPackIdxMajor, CuBoolSize_t &rowPackIdxMinor) {
@@ -140,8 +172,8 @@ namespace cubool {
         return rows / PACK_TYPE_SIZE_BITS + (rows % PACK_TYPE_SIZE_BITS? 1: 0);
     }
 
-    CuBoolSize_t MatrixDense::getBufferSizeFromRowsColumns(CuBoolSize_t rowsPacked, CuBoolSize_t columns) {
-        return rowsPacked * columns * PACK_TYPE_SIZE_BITS;
+    CuBoolSize_t MatrixDense::getColumnsPaddedFromColumns(CuBoolSize_t columns) {
+        return columns + (columns % PACK_TYPE_SIZE_BITS? PACK_TYPE_SIZE_BITS - columns % PACK_TYPE_SIZE_BITS: 0);
     }
 
 }

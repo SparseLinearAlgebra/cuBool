@@ -30,7 +30,7 @@
 #include <cubool/cubool_types.h>
 #include <cubool/matrix_dense.hpp>
 
-#include <unordered_map>
+#include <unordered_set>
 
 namespace cubool {
 
@@ -41,27 +41,32 @@ namespace cubool {
         Instance(Instance&& other) noexcept = delete;
         ~Instance() = default;
 
-        CuBoolError allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const;
-        CuBoolError allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const;
+        CuBoolStatus createMatrixDense(MatrixDense* &matrixDense);
+        CuBoolStatus validateMatrixDense(MatrixDense* matrixDense);
+        CuBoolStatus destroyMatrixDense(MatrixDense* matrixDense);
 
-        CuBoolError deallocate(CuBoolCpuPtr_t ptr) const;
-        CuBoolError deallocateOnGpu(CuBoolGpuPtr_t ptr) const;
+        CuBoolStatus allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const;
+        CuBoolStatus allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const;
 
-        void errorMessage(CuBoolError status, const char* message) const;
+        CuBoolStatus deallocate(CuBoolCpuPtr_t ptr) const;
+        CuBoolStatus deallocateOnGpu(CuBoolGpuPtr_t ptr) const;
+
+        void sendMessage(CuBoolStatus status, const char* message) const;
+        void printDeviceCapabilities() const;
 
         bool hasUserDefinedAllocator() const;
         bool hasUserDefinedErrorCallback() const;
 
         const CuBoolAllocationCallback& getUserDefinedAllocator() const { return mAllocCallback; }
 
-    private:
-        template<typename K, typename V>
-        using Map = std::unordered_map<K,V>;
+        static bool isCudaDeviceSupported();
+        static void queryDeviceCapabilities(CuBoolDeviceCaps& deviceCaps);
 
-        Map<CuBoolMatrixDense,MatrixDense> mMatrixDenseMap;
+    private:
+        std::unordered_set<MatrixDense*> mMatrixDense;
 
         CuBoolAllocationCallback mAllocCallback{};
-        CuBoolErrorCallback mErrorCallback{};
+        CuBoolMessageCallback mMessageCallback{};
         CuBoolGpuMemoryType mMemoryType{};
     };
 

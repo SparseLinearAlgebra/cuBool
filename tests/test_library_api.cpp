@@ -29,18 +29,18 @@
 
 #include <iostream>
 
-static void TestErrorFun(CuBoolError error, const char* message, void* _) {
-    std::cout << "CuBool Error: " << message << std::endl;
+static void TestMsgFun(CuBoolStatus error, const char* message, void* _) {
+    std::cout << "CuBool: " << message << std::endl;
 }
 
 static CuBoolCpuPtr_t TestAllocateFun(CuBoolSize_t size, void* _) {
     CuBoolCpuPtr_t ptr = malloc(size);
-    std::cout << "Cubool Allocate: " << size << " " << ptr << std::endl;
+    std::cout << "Cubool: Allocate: " << size << " " << ptr << std::endl;
     return ptr;
 }
 
 static void TestDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
-    std::cout << "Cubool Deallocate: " << ptr << std::endl;
+    std::cout << "Cubool: Deallocate: " << ptr << std::endl;
     free(ptr);
 }
 
@@ -61,23 +61,23 @@ TEST(CuBoolVersion, Query) {
 
 // Test cubool library instance creation and destruction
 TEST(CuBoolInstance, Setup) {
-    CuBoolError error;
+    CuBoolStatus error;
     CuBoolInstance instance = nullptr;
 
     CuBoolInstanceDesc instanceDesc{};
     instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
     instanceDesc.errorCallback.userData = nullptr;
-    instanceDesc.errorCallback.errorMsgFun = TestErrorFun;
+    instanceDesc.errorCallback.msgFun = TestMsgFun;
     instanceDesc.allocationCallback.userData = nullptr;
     instanceDesc.allocationCallback.allocateFun = TestAllocateFun;
     instanceDesc.allocationCallback.deallocateFun = TestDeallocateFun;
 
     error = CuBoolCreateInstance(&instanceDesc, &instance);
-    EXPECT_EQ(error, CUBOOL_ERROR_SUCCESS);
+    EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
     EXPECT_NE(instance, nullptr);
 
     error = CuBoolDestroyInstance(instance);
-    EXPECT_EQ(error, CUBOOL_ERROR_SUCCESS);
+    EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
 
     instance = nullptr;
 }

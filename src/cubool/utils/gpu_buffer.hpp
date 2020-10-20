@@ -39,10 +39,10 @@ namespace cubool {
         ~GpuBuffer();
 
         /** Resize buffer. Previous buffer content will be lost */
-        CuBoolError resizeNoContentKeep(CuBoolSize_t size);
-        CuBoolError copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
-        CuBoolError transferFromCpu(CuBoolCpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
-        CuBoolError transferToCpu(CuBoolCpuPtr_t destination, CuBoolSize_t size, CuBoolSize_t readOffset) const;
+        CuBoolStatus resizeNoContentKeep(CuBoolSize_t size);
+        CuBoolStatus copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
+        CuBoolStatus transferFromCpu(CuBoolCpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
+        CuBoolStatus transferToCpu(CuBoolCpuPtr_t destination, CuBoolSize_t size, CuBoolSize_t readOffset) const;
 
         bool isEmpty() const { return mSize == 0; }
         bool isNotEmpty() const { return mSize > 0; }

@@ -39,8 +39,8 @@ namespace cubool {
         CpuBuffer(CpuBuffer&& other) noexcept;
         ~CpuBuffer();
 
-        CuBoolError resizeNoContentKeep(CuBoolSize_t size);
-        CuBoolError copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
+        CuBoolStatus resizeNoContentKeep(CuBoolSize_t size);
+        CuBoolStatus copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
 
         bool isEmpty() const { return mSize == 0; }
         bool isNotEmpty() const { return mSize > 0; }

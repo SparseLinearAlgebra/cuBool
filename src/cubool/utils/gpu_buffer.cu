@@ -27,6 +27,8 @@
 #include <cubool/utils/gpu_buffer.hpp>
 #include <cubool/instance.hpp>
 
+#include <string>
+
 namespace cubool {
 
     GpuBuffer::GpuBuffer(class Instance &instance) {
@@ -52,13 +54,13 @@ namespace cubool {
         resizeNoContentKeep(0);
     }
 
-    CuBoolError GpuBuffer::resizeNoContentKeep(CuBoolSize_t size) {
+    CuBoolStatus GpuBuffer::resizeNoContentKeep(CuBoolSize_t size) {
         if (isNotEmpty()) {
-            CuBoolError error = mInstancePtr->deallocateOnGpu(mMemory);
+            CuBoolStatus error = mInstancePtr->deallocateOnGpu(mMemory);
             mSize = 0;
             mMemory = nullptr;
 
-            if (error != CUBOOL_ERROR_SUCCESS) {
+            if (error != CUBOOL_STATUS_SUCCESS) {
                 return error;
             }
         }
@@ -68,22 +70,22 @@ namespace cubool {
             return mInstancePtr->allocateOnGpu(&mMemory, mSize);
         }
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
-    CuBoolError GpuBuffer::copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset) {
+    CuBoolStatus GpuBuffer::copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset) {
         if (size == 0) {
-            return CUBOOL_ERROR_SUCCESS;
+            return CUBOOL_STATUS_SUCCESS;
         }
 
         if (!source) {
-            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Null pointer to copy passed");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Null pointer to copy passed");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         if (size + writeOffset > mSize) {
-            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Write region out of buffer bounds");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Write region out of buffer bounds");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         CuBoolGpuPtr_t destination = ((uint8_t*)mMemory) + writeOffset;
@@ -93,26 +95,26 @@ namespace cubool {
             std::string message = "Failed to copy gpu buffers data: ";
             message += cudaGetErrorString(error);
 
-            mInstancePtr->errorMessage(CUBOOL_ERROR_MEM_OP_FAILED, message.c_str());
-            return CUBOOL_ERROR_MEM_OP_FAILED;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_MEM_OP_FAILED, message.c_str());
+            return CUBOOL_STATUS_MEM_OP_FAILED;
         }
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
-    CuBoolError GpuBuffer::transferFromCpu(CuBoolCpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset) {
+    CuBoolStatus GpuBuffer::transferFromCpu(CuBoolCpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset) {
         if (size == 0) {
-            return CUBOOL_ERROR_SUCCESS;
+            return CUBOOL_STATUS_SUCCESS;
         }
 
         if (!source) {
-            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Null pointer to transfer passed");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Null pointer to transfer passed");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         if (size + writeOffset > mSize) {
-            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Write region out of buffer bounds");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Write region out of buffer bounds");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         CuBoolGpuPtr_t destination = ((uint8_t*)mMemory) + writeOffset;
@@ -122,26 +124,26 @@ namespace cubool {
             std::string message = "Failed to transfer data from cpu to gpu buffer: ";
             message += cudaGetErrorString(error);
 
-            mInstancePtr->errorMessage(CUBOOL_ERROR_MEM_OP_FAILED, message.c_str());
-            return CUBOOL_ERROR_MEM_OP_FAILED;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_MEM_OP_FAILED, message.c_str());
+            return CUBOOL_STATUS_MEM_OP_FAILED;
         }
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
-    CuBoolError GpuBuffer::transferToCpu(CuBoolCpuPtr_t destination, CuBoolSize_t size, CuBoolSize_t readOffset) const {
+    CuBoolStatus GpuBuffer::transferToCpu(CuBoolCpuPtr_t destination, CuBoolSize_t size, CuBoolSize_t readOffset) const {
         if (size == 0) {
-            return CUBOOL_ERROR_SUCCESS;
+            return CUBOOL_STATUS_SUCCESS;
         }
 
         if (!destination) {
-            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Null pointer to transfer to passed");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Null pointer to transfer to passed");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         if (readOffset + size > mSize) {
-            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Copy region out of buffer bounds");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Copy region out of buffer bounds");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         CuBoolGpuConstPtr_t source = ((const uint8_t*)mMemory) + readOffset;
@@ -151,11 +153,11 @@ namespace cubool {
             std::string message = "Failed to transfer data from gpu buffer to cpu: ";
             message += cudaGetErrorString(error);
 
-            mInstancePtr->errorMessage(CUBOOL_ERROR_MEM_OP_FAILED, message.c_str());
-            return CUBOOL_ERROR_MEM_OP_FAILED;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_MEM_OP_FAILED, message.c_str());
+            return CUBOOL_STATUS_MEM_OP_FAILED;
         }
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
 }

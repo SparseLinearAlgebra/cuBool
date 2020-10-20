@@ -29,21 +29,19 @@
 
 #include <memory.h>
 
-typedef size_t      CuBoolSize_t;
-typedef void*       CuBoolCpuPtr_t;
-typedef const void* CuBoolCpuConstPtr_t;
-typedef void*       CuBoolGpuPtr_t;
-typedef const void* CuBoolGpuConstPtr_t;
-
-typedef enum CuBoolError {
-    CUBOOL_ERROR_SUCCESS,
-    CUBOOL_ERROR_ERROR,
-    CUBOOL_ERROR_MEM_OP_FAILED,
-    CUBOOL_ERROR_INVALID_ARGUMENT,
-    CUBOOL_ERROR_INVALID_STATE,
-    CUBOOL_ERROR_NOT_IMPLEMENTED
+/** Possible status codes that can be returned from cubool api */
+typedef enum CuBoolStatus {
+    CUBOOL_STATUS_SUCCESS,
+    CUBOOL_STATUS_ERROR,
+    CUBOOL_STATUS_DEVICE_NOT_PRESENT,
+    CUBOOL_STATUS_DEVICE_ERROR,
+    CUBOOL_STATUS_MEM_OP_FAILED,
+    CUBOOL_STATUS_INVALID_ARGUMENT,
+    CUBOOL_STATUS_INVALID_STATE,
+    CUBOOL_STATUS_NOT_IMPLEMENTED
 } CuBoolStatus;
 
+/** Type of the GPU memory used to allocated gpu resources */
 typedef enum CuBoolGpuMemoryType {
     CUBOOL_GPU_MEMORY_TYPE_MANAGED,
     CUBOOL_GPU_MEMORY_TYPE_GENERIC
@@ -54,15 +52,67 @@ typedef enum CuBoolMajorOrder {
     CUBOOL_MAJOR_ORDER_COLUMN,
 } CuBoolMajorOrder;
 
+/** Alias size type for memory and indexing types */
+typedef size_t CuBoolSize_t;
+
+/** Alias cpu (ram) memory pointer */
+typedef void* CuBoolCpuPtr_t;
+
+/** Alias cpu (ram) const memory pointer */
+typedef const void* CuBoolCpuConstPtr_t;
+
+/** Alias gpu (vram or managed) memory pointer */
+typedef void* CuBoolGpuPtr_t;
+
+/** Alias gpu (vram or managed) const memory pointer */
+typedef const void* CuBoolGpuConstPtr_t;
+
+/** Cubool library instance handler */
+typedef struct CuBoolInstance_t*    CuBoolInstance;
+
+/** Cubool dense boolean matrix handler */
+typedef struct CuBoolMatrixDense_t* CuBoolMatrixDense;
+
+/**
+ * @brief Memory allocate callback
+ * Signature for user-provided function pointer, used to allocate CPU memory for library resources
+ */
+typedef CuBoolCpuPtr_t (*CuBoolCpuMemAllocateFun)(CuBoolSize_t size, void* userData);
+
+/**
+ * @brief Memory deallocate callback
+ * Signature for user-provided function pointer, used to deallocate CPU memory, previously allocated with CuBoolCpuMemAllocateFun
+ */
+typedef void (*CuBoolCpuMemDeallocateFun)(CuBoolCpuPtr_t ptr, void* userData);
+
+/**
+ * @brief Message callback
+ * User provided message callback to observe library messages and errors
+ */
+typedef void (*CuBoolMsgFun)(CuBoolStatus status, const char* message, void* userData);
+
+/** Pair of the indices used to represent non-empty matrices values */
+typedef struct CuBoolPair {
+    CuBoolSize_t i;
+    CuBoolSize_t j;
+} CuBoolPair;
+
+typedef struct CuBoolDeviceCaps {
+    char name[256];
+    int major;
+    int minor;
+    int warp;
+    bool cudaSupported;
+    CuBoolSize_t globalMemoryKiBs;
+    CuBoolSize_t sharedMemoryPerMultiProcKiBs;
+    CuBoolSize_t sharedMemoryPerBlockKiBs;
+} CuBoolDeviceCaps;
+
 typedef struct CuBoolGpuAllocation {
     CuBoolGpuMemoryType memoryType;
     CuBoolGpuPtr_t memoryPtr;
     CuBoolSize_t size;
 } CuBoolGpuAllocation;
-
-typedef CuBoolCpuPtr_t  (*CuBoolCpuMemAllocateFun)(CuBoolSize_t size, void* userData);
-typedef void            (*CuBoolCpuMemDeallocateFun)(CuBoolCpuPtr_t ptr, void* userData);
-typedef void            (*CuBoolErrorMsgFun)(CuBoolError status, const char* message, void* userData);
 
 typedef struct CuBoolAllocationCallback {
     void* userData;
@@ -70,18 +120,15 @@ typedef struct CuBoolAllocationCallback {
     CuBoolCpuMemDeallocateFun deallocateFun;
 } CuAllocationCallback;
 
-typedef struct CuBoolErrorCallback {
+typedef struct CuBoolMessageCallback {
     void* userData;
-    CuBoolErrorMsgFun errorMsgFun;
-} CuBoolErrorCallback;
+    CuBoolMsgFun msgFun;
+} CuBoolMessageCallback;
 
 typedef struct CuBoolInstanceDesc {
     CuBoolGpuMemoryType memoryType;
-    CuBoolErrorCallback errorCallback;
+    CuBoolMessageCallback errorCallback;
     CuAllocationCallback allocationCallback;
 } CuBoolInstanceDesc;
-
-typedef struct CuBoolInstance_t*    CuBoolInstance;
-typedef struct CuBoolMatrixDense_t* CuBoolMatrixDense;
 
 #endif //CUBOOL_CUBOOL_TYPES_H

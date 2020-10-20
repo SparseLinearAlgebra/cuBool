@@ -28,7 +28,9 @@
 #include <cubool/version.hpp>
 #include <cubool/instance.hpp>
 
-CuBoolError CuBoolGetLibraryVersion(int* major, int* minor, int* version) {
+#include <cstdlib>
+
+CuBoolStatus CuBoolGetLibraryVersion(int* major, int* minor, int* version) {
     if (major) {
         *major = CUBOOL_VERSION_MAJOR;
     }
@@ -41,18 +43,39 @@ CuBoolError CuBoolGetLibraryVersion(int* major, int* minor, int* version) {
         *version = CUBOOL_VERSION;
     }
 
-    return CUBOOL_ERROR_SUCCESS;
+    return CUBOOL_STATUS_SUCCESS;
 }
 
-CuBoolError CuBoolCreateInstance(const CuBoolInstanceDesc* instanceDesc, CuBoolInstance* instance) {
+CuBoolStatus CuBoolGetDeviceCapabilities(CuBoolDeviceCaps* deviceCaps) {
+    if (!deviceCaps) {
+        // Null caps structure
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (!cubool::Instance::isCudaDeviceSupported()) {
+        // No cuda support
+        return CUBOOL_STATUS_DEVICE_NOT_PRESENT;
+    }
+
+    cubool::Instance::queryDeviceCapabilities(*deviceCaps);
+
+    return CUBOOL_STATUS_SUCCESS;
+}
+
+CuBoolStatus CuBoolCreateInstance(const CuBoolInstanceDesc* instanceDesc, CuBoolInstance* instance) {
     if (!instanceDesc) {
         // Instance descriptor could not be null
-        return CUBOOL_ERROR_INVALID_ARGUMENT;
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
     }
 
     if (!instance) {
         // Null to safe instance reference
-        return CUBOOL_ERROR_INVALID_ARGUMENT;
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (!cubool::Instance::isCudaDeviceSupported()) {
+        // No device for cuda computations
+        return CUBOOL_STATUS_DEVICE_ERROR;
     }
 
     auto& desc = *instanceDesc;
@@ -70,7 +93,7 @@ CuBoolError CuBoolCreateInstance(const CuBoolInstanceDesc* instanceDesc, CuBoolI
 
     if (!instanceMem) {
         // Failed to allocate instance
-        return CUBOOL_ERROR_MEM_OP_FAILED;
+        return CUBOOL_STATUS_MEM_OP_FAILED;
     }
 
     auto instanceImpl = new(instanceMem) cubool::Instance(desc);
@@ -78,13 +101,13 @@ CuBoolError CuBoolCreateInstance(const CuBoolInstanceDesc* instanceDesc, CuBoolI
     // Raw cast. We expose to the user non-existing language structure
     *instance = (CuBoolInstance) instanceImpl;
 
-    return CUBOOL_ERROR_SUCCESS;
+    return CUBOOL_STATUS_SUCCESS;
 }
 
-CuBoolError CuBoolDestroyInstance(CuBoolInstance instance) {
+CuBoolStatus CuBoolDestroyInstance(CuBoolInstance instance) {
     if (!instance) {
         // Null instance passed
-        return CUBOOL_ERROR_INVALID_ARGUMENT;
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
     }
 
     auto instanceImpl = (cubool::Instance*) instance;
@@ -99,17 +122,130 @@ CuBoolError CuBoolDestroyInstance(CuBoolInstance instance) {
         free(instanceImpl);
     }
 
-    return CUBOOL_ERROR_SUCCESS;
+    return CUBOOL_STATUS_SUCCESS;
 }
 
-CuBoolError CuBoolCreateMatrixDense(CuBoolInstance instance, CuBoolMatrixDense* matrix) {
-    return CUBOOL_ERROR_NOT_IMPLEMENTED;
+CuBoolStatus CuBoolCreateMatrixDense(CuBoolInstance instance, CuBoolMatrixDense* matrix) {
+    if (!instance) {
+        // Null instance passed
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    auto instanceImpl = (cubool::Instance*) instance;
+
+    if (!matrix) {
+        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to place to save dense matrix handle");
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    cubool::MatrixDense* matrixImpl = nullptr;
+    CuBoolStatus status = instanceImpl->createMatrixDense(matrixImpl);
+    *matrix = (CuBoolMatrixDense) matrixImpl;
+
+    return status;
 }
 
-CuBoolError CuBoolDestroyMatrixDense(CuBoolInstance instance, CuBoolMatrixDense matrix) {
-    return CUBOOL_ERROR_NOT_IMPLEMENTED;
+CuBoolStatus CuBoolDestroyMatrixDense(CuBoolInstance instance, CuBoolMatrixDense matrix) {
+    if (!instance) {
+        // Null instance passed
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto matrixImpl = (cubool::MatrixDense*) matrix;
+
+    return instanceImpl->destroyMatrixDense(matrixImpl);
 }
 
-CuBoolError CuBoolMultiplyAdd(CuBoolInstance instance, CuBoolMatrixDense result, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c) {
-    return CUBOOL_ERROR_NOT_IMPLEMENTED;
+CuBoolStatus CuBoolMatrixDenseResize(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t rows, CuBoolSize_t columns) {
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto matrixImpl = (cubool::MatrixDense*) matrix;
+
+    if (!instance) {
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (!matrix) {
+        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to place to save dense matrix handle");
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    CuBoolStatus status = instanceImpl->validateMatrixDense(matrixImpl);
+    if (status != CUBOOL_STATUS_SUCCESS) {
+        return status;
+    }
+
+    return matrixImpl->resize(rows, columns);
+}
+
+CuBoolStatus CuBoolDenseMatrixWriteData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values) {
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto matrixImpl = (cubool::MatrixDense*) matrix;
+
+    if (!instance) {
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (!matrix) {
+        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to place to save dense matrix handle");
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    CuBoolStatus status = instanceImpl->validateMatrixDense(matrixImpl);
+    if (status != CUBOOL_STATUS_SUCCESS) {
+        return status;
+    }
+
+    if (values == nullptr) {
+        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null values array to write");
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    return matrixImpl->writeValues(count, values);
+}
+
+CuBoolStatus CuBoolDenseMatrixReadData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t* count, CuBoolPair** values) {
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto matrixImpl = (cubool::MatrixDense*) matrix;
+
+    if (!instance) {
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (!matrix) {
+        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to place to save dense matrix handle");
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    CuBoolStatus status = instanceImpl->validateMatrixDense(matrixImpl);
+
+    if (status != CUBOOL_STATUS_SUCCESS) {
+        return status;
+    }
+
+    if (!count || !values) {
+        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to operation results");
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    return matrixImpl->readValues(count, values);
+}
+
+CuBoolStatus CuBoolReleaseValuesArray(CuBoolInstance instance, CuBoolPair* values) {
+    auto instanceImpl = (cubool::Instance*) instance;
+
+    if (!instance) {
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (!values) {
+        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to release values array");
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    return instanceImpl->deallocate(values);
+}
+
+CuBoolStatus CuBoolMultiplyAdd(CuBoolInstance instance, CuBoolMatrixDense result, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c) {
+    return CUBOOL_STATUS_NOT_IMPLEMENTED;
 }

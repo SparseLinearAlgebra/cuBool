@@ -54,13 +54,13 @@ namespace cubool {
         resizeNoContentKeep(0);
     }
 
-    CuBoolError CpuBuffer::resizeNoContentKeep(CuBoolSize_t size) {
+    CuBoolStatus CpuBuffer::resizeNoContentKeep(CuBoolSize_t size) {
         if (isNotEmpty()) {
-            CuBoolError error = mInstancePtr->deallocate(mMemory);
+            CuBoolStatus error = mInstancePtr->deallocate(mMemory);
             mMemory = nullptr;
             mSize = 0;
 
-            if (error != CUBOOL_ERROR_SUCCESS) {
+            if (error != CUBOOL_STATUS_SUCCESS) {
                 return error;
             }
         }
@@ -70,28 +70,28 @@ namespace cubool {
             return mInstancePtr->allocate(&mMemory, mSize);
         }
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
-    CuBoolError CpuBuffer::copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset) {
+    CuBoolStatus CpuBuffer::copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset) {
         if (size == 0) {
-            return CUBOOL_ERROR_SUCCESS;
+            return CUBOOL_STATUS_SUCCESS;
         }
 
         if (!source) {
-            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Null pointer to copy passed");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Null pointer to copy passed");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         if (size + writeOffset > mSize) {
-            mInstancePtr->errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Write region out of buffer bounds");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Write region out of buffer bounds");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         CuBoolCpuPtr_t destination = ((uint8_t*)mMemory) + writeOffset;
         memcpy(destination, source, size);
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
 }

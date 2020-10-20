@@ -24,62 +24,27 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_DENSE_HPP
-#define CUBOOL_MATRIX_DENSE_HPP
+#ifndef CUBOOL_MATRIX_DENSE_KERNELS_HPP
+#define CUBOOL_MATRIX_DENSE_KERNELS_HPP
 
-#include <cubool/cubool_types.h>
-#include <cubool/utils/gpu_buffer.hpp>
-
-#include <cinttypes>
-#include <vector>
+#include <cubool/matrix_dense.hpp>
 
 namespace cubool {
 
-    class MatrixDense {
+    class MatrixDenseKernels {
     public:
-        // How we actually pack this matrix inmemory
-        // This info approached by kernels code
-        using PackType_t = uint32_t;
-        static const CuBoolSize_t BYTE_SIZE_IN_BITS = 8; // 8 bits per byte?
-        static const CuBoolSize_t PACK_TYPE_SIZE_BITS = sizeof(PackType_t) * BYTE_SIZE_IN_BITS;
 
-        explicit MatrixDense(class Instance& instance);
-        MatrixDense(const MatrixDense& other) = delete;
-        MatrixDense(MatrixDense&& other) noexcept = delete;
-        ~MatrixDense() = default;
-
-        CuBoolStatus resize(CuBoolSize_t rows, CuBoolSize_t columns);
-
-        CuBoolStatus writeValues(const std::vector<CuBoolPair> &values);
-        CuBoolStatus readValues(std::vector<CuBoolPair> &values) const;
-
-        CuBoolStatus writeValues(CuBoolSize_t count, const CuBoolPair* values);
-        CuBoolStatus readValues(CuBoolSize_t* count, CuBoolPair** values) const;
-
-        CuBoolSize_t getRowsCount() const { return mRows; }
-        CuBoolSize_t getColumnsCount() const { return mColumns; }
-        CuBoolSize_t getRowsPackedCount() const { return mRowsPacked; }
-        CuBoolSize_t getColumnsPaddedCount() const { return mColumnsPadded; }
-        CuBoolSize_t getStride() const { return mStride; }
-        const GpuBuffer& getBuffer() const { return mBuffer; }
-
-        bool isZeroDim() const { return mRows * mColumns == 0; }
-
-
-        static void getRowPackedIndex(CuBoolSize_t rowIndex, CuBoolSize_t &rowPackIdxMajor, CuBoolSize_t &rowPackIdxMinor);
-        static CuBoolSize_t getRowsPackedFromRows(CuBoolSize_t rows);
-        static CuBoolSize_t getColumnsPaddedFromColumns(CuBoolSize_t columns);
-
-    private:
-        GpuBuffer mBuffer;
-        CuBoolSize_t mRows = 0;
-        CuBoolSize_t mColumns = 0;
-        CuBoolSize_t mRowsPacked = 0;
-        CuBoolSize_t mColumnsPadded = 0;
-        CuBoolSize_t mStride = 0;
-        class Instance* mInstancePtr = nullptr;
+        /**
+         *
+         * @param result
+         * @param a
+         * @param b
+         * @param c
+         * @return
+         */
+        static CuBoolStatus invoke_MatrixDenseMultiplyAdd(class Instance &instance, MatrixDense &result, const MatrixDense &a,
+                                                          const MatrixDense &b, const MatrixDense &c);
     };
-
 }
 
-#endif //CUBOOL_MATRIX_DENSE_HPP
+#endif //CUBOOL_MATRIX_DENSE_KERNELS_HPP

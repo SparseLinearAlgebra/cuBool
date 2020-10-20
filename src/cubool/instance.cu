@@ -26,13 +26,16 @@
 
 #include <cubool/instance.hpp>
 #include <cubool/cubool_build.h>
+
+#include <string>
 #include <cstdlib>
+#include <cstring>
 
 namespace cubool {
 
     Instance::Instance(const CuBoolInstanceDesc &desc) {
         mAllocCallback = desc.allocationCallback;
-        mErrorCallback = desc.errorCallback;
+        mMessageCallback = desc.errorCallback;
         mMemoryType = desc.memoryType;
 
         bool onlyOneFunctionProvided =
@@ -40,37 +43,78 @@ namespace cubool {
             mAllocCallback.allocateFun && !mAllocCallback.deallocateFun;
 
         if (onlyOneFunctionProvided) {
-            errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "User must provide both allocate and deallocate functions");
+            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "User must provide both allocate and deallocate functions");
             mAllocCallback.allocateFun = nullptr;
             mAllocCallback.deallocateFun = nullptr;
             mAllocCallback.userData = nullptr;
         }
 
 #ifdef CUBOOL_DEBUG
-        errorMessage(CUBOOL_ERROR_SUCCESS, "Initial library message");
+        sendMessage(CUBOOL_STATUS_SUCCESS, "Initialize CuBool instance");
+        printDeviceCapabilities();
 #endif // CUBOOL_DEBUG
     }
 
-    CuBoolError Instance::allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const {
+    CuBoolStatus Instance::createMatrixDense(MatrixDense *&matrixDense) {
+        CuBoolCpuPtr_t mem = nullptr;
+        CuBoolStatus status = allocate(&mem, sizeof(MatrixDense));
+
+        if (status != CUBOOL_STATUS_SUCCESS) {
+            return status;
+        }
+
+        auto matrix = new (mem) MatrixDense(*this);
+        matrixDense = matrix;
+
+        mMatrixDense.emplace(matrix);
+        return CUBOOL_STATUS_SUCCESS;
+    }
+
+    CuBoolStatus Instance::validateMatrixDense(MatrixDense* matrixDense) {
+        bool contains = mMatrixDense.find(matrixDense) != mMatrixDense.end();
+
+        if (!contains) {
+            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "No matrix dense for provided handler");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
+        }
+
+        return CUBOOL_STATUS_SUCCESS;
+    }
+
+    CuBoolStatus Instance::destroyMatrixDense(MatrixDense* matrixDense) {
+        auto itr = mMatrixDense.find(matrixDense);
+
+        if (itr == mMatrixDense.end()) {
+            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "No matrix dense to destroy for provided handler");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
+        }
+
+        mMatrixDense.erase(itr);
+
+        matrixDense->~MatrixDense();
+        return deallocate(matrixDense);
+    }
+
+    CuBoolStatus Instance::allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const {
         if (!ptr) {
-            errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Passed null pointer to store allocated memory ptr");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null pointer to store allocated memory ptr");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         *ptr = hasUserDefinedAllocator() ? mAllocCallback.allocateFun(size, mAllocCallback.userData) : malloc(size);
 
         if (!(*ptr)) {
-            errorMessage(CUBOOL_ERROR_MEM_OP_FAILED, "Failed to allocate memory on the CPU");
-            return CUBOOL_ERROR_SUCCESS;
+            sendMessage(CUBOOL_STATUS_MEM_OP_FAILED, "Failed to allocate memory on the CPU");
+            return CUBOOL_STATUS_SUCCESS;
         }
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
-    CuBoolError Instance::allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const {
+    CuBoolStatus Instance::allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const {
         if (!ptr) {
-            errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Passed null pointer to store allocated memory ptr");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null pointer to store allocated memory ptr");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         cudaError error;
@@ -83,25 +127,25 @@ namespace cubool {
                 error = cudaMallocManaged(ptr, size);
                 break;
             default:
-                errorMessage(CUBOOL_ERROR_INVALID_STATE, "Failed to fined suitable allocator");
-                return CUBOOL_ERROR_INVALID_STATE;
+                sendMessage(CUBOOL_STATUS_INVALID_STATE, "Failed to fined suitable allocator");
+                return CUBOOL_STATUS_INVALID_STATE;
         }
 
         if (error != cudaSuccess) {
             std::string message = "Failed to allocate Gpu memory: ";
             message += cudaGetErrorString(error);
 
-            errorMessage(CUBOOL_ERROR_MEM_OP_FAILED, message.c_str());
-            return CUBOOL_ERROR_MEM_OP_FAILED;
+            sendMessage(CUBOOL_STATUS_MEM_OP_FAILED, message.c_str());
+            return CUBOOL_STATUS_MEM_OP_FAILED;
         }
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
-    CuBoolError Instance::deallocate(CuBoolCpuPtr_t ptr) const {
+    CuBoolStatus Instance::deallocate(CuBoolCpuPtr_t ptr) const {
         if (!ptr) {
-            errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Passed null pointer to free");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null pointer to free");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         if (hasUserDefinedAllocator()) {
@@ -111,13 +155,13 @@ namespace cubool {
             free(ptr);
         }
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
-    CuBoolError Instance::deallocateOnGpu(CuBoolGpuPtr_t ptr) const {
+    CuBoolStatus Instance::deallocateOnGpu(CuBoolGpuPtr_t ptr) const {
         if (!ptr) {
-            errorMessage(CUBOOL_ERROR_INVALID_ARGUMENT, "Passed null pointer to free");
-            return CUBOOL_ERROR_INVALID_ARGUMENT;
+            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null pointer to free");
+            return CUBOOL_STATUS_INVALID_ARGUMENT;
         }
 
         cudaError error = cudaFree(ptr);
@@ -126,16 +170,43 @@ namespace cubool {
             std::string message = "Failed to deallocate Gpu memory: ";
             message += cudaGetErrorString(error);
 
-            errorMessage(CUBOOL_ERROR_MEM_OP_FAILED, message.c_str());
-            return CUBOOL_ERROR_MEM_OP_FAILED;
+            sendMessage(CUBOOL_STATUS_MEM_OP_FAILED, message.c_str());
+            return CUBOOL_STATUS_MEM_OP_FAILED;
         }
 
-        return CUBOOL_ERROR_SUCCESS;
+        return CUBOOL_STATUS_SUCCESS;
     }
 
-    void Instance::errorMessage(CuBoolError status, const char *message) const {
+    void Instance::sendMessage(CuBoolStatus status, const char *message) const {
         if (hasUserDefinedErrorCallback())
-            mErrorCallback.errorMsgFun(status, message, mErrorCallback.userData);
+            mMessageCallback.msgFun(status, message, mMessageCallback.userData);
+    }
+
+    void Instance::printDeviceCapabilities() const {
+        static const CuBoolSize_t BUFFER_SIZE = 1024;
+
+        CuBoolDeviceCaps deviceCaps;
+        queryDeviceCapabilities(deviceCaps);
+
+        char deviceInfo[BUFFER_SIZE];
+        snprintf(deviceInfo, BUFFER_SIZE, "Device name: %s version: %i.%i",
+                 deviceCaps.name, deviceCaps.major, deviceCaps.major);
+
+        char memoryInfo[BUFFER_SIZE];
+        snprintf(memoryInfo, BUFFER_SIZE, "Global memory: %llu KiB",
+                 (unsigned long long) deviceCaps.globalMemoryKiBs);
+
+        char sharedMemoryInfo[BUFFER_SIZE];
+        snprintf(sharedMemoryInfo, BUFFER_SIZE, "Shared memory: multi-proc %llu KiB block %llu KiB",
+                 (unsigned long long) deviceCaps.sharedMemoryPerMultiProcKiBs, (unsigned long long) deviceCaps.sharedMemoryPerBlockKiBs);
+
+        char structInfo[BUFFER_SIZE];
+        snprintf(structInfo, BUFFER_SIZE, "Kernel: warp %llu", (unsigned long long) deviceCaps.warp);
+
+        sendMessage(CUBOOL_STATUS_SUCCESS, deviceInfo);
+        sendMessage(CUBOOL_STATUS_SUCCESS, memoryInfo);
+        sendMessage(CUBOOL_STATUS_SUCCESS, sharedMemoryInfo);
+        sendMessage(CUBOOL_STATUS_SUCCESS, structInfo);
     }
 
     bool Instance::hasUserDefinedAllocator() const {
@@ -143,7 +214,36 @@ namespace cubool {
     }
 
     bool Instance::hasUserDefinedErrorCallback() const {
-        return mErrorCallback.errorMsgFun != nullptr;
+        return mMessageCallback.msgFun != nullptr;
+    }
+
+    bool Instance::isCudaDeviceSupported() {
+        int device;
+        cudaError error = cudaGetDevice(&device);
+        return error == cudaSuccess;
+    }
+
+    void Instance::queryDeviceCapabilities(CuBoolDeviceCaps &deviceCaps) {
+        static const CuBoolSize_t KiB = 1024;
+
+        int device;
+        cudaError error = cudaGetDevice(&device);
+
+        if (error == cudaSuccess) {
+            cudaDeviceProp deviceProp{};
+            error = cudaGetDeviceProperties(&deviceProp, device);
+
+            if (error == cudaSuccess) {
+                strcpy(deviceCaps.name, deviceProp.name);
+                deviceCaps.cudaSupported = true;
+                deviceCaps.minor = deviceProp.minor;
+                deviceCaps.major = deviceProp.major;
+                deviceCaps.warp = deviceProp.warpSize;
+                deviceCaps.globalMemoryKiBs = deviceProp.totalGlobalMem / KiB;
+                deviceCaps.sharedMemoryPerMultiProcKiBs = deviceProp.sharedMemPerMultiprocessor / KiB;
+                deviceCaps.sharedMemoryPerBlockKiBs = deviceProp.sharedMemPerBlock / KiB;
+            }
+        }
     }
 
 }

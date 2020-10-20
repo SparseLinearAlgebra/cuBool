@@ -14,7 +14,7 @@ set(CUBOOL_VERSION_MINOR 1)
 
 configure_file(
         ${CMAKE_CURRENT_LIST_DIR}/include/cubool/cubool_build.h.in
-        ${CMAKE_BINARY_DIR}/include/cubool/cubool_build.h)
+        ${CMAKE_BINARY_DIR}/src/cubool/cubool_build.h)
 
 # Library sources
 set(CUBOOL_SOURCES
@@ -32,14 +32,14 @@ set(CUBOOL_SOURCES
         src/cubool/utils/cpu_buffer.hpp
         src/cubool/matrix_dense.cpp
         src/cubool/matrix_dense.hpp
-        )
+        src/cubool/kernels/matrix_dense_multiply_add.cu src/cubool/kernels/matrix_dense_kernels.hpp)
 
 # Shared library object config
 add_library(cubool SHARED ${CUBOOL_SOURCES})
 
 target_include_directories(cubool PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(cubool PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
-target_include_directories(cubool PRIVATE ${CMAKE_BINARY_DIR}/include)
+target_include_directories(cubool PRIVATE ${CMAKE_BINARY_DIR}/src)
 
 target_compile_features(cubool PUBLIC cxx_std_11)
 
