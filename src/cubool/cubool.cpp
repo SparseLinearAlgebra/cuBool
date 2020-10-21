@@ -28,9 +28,33 @@
 #include <cubool/version.hpp>
 #include <cubool/instance.hpp>
 
-#include <cstdlib>
+#include <cubool/kernels/matrix_dense_kernels.hpp>
 
-CuBoolStatus CuBoolGetLibraryVersion(int* major, int* minor, int* version) {
+#include <cstdlib>
+#include <string>
+
+#define CUBOOL_CHECK_INSTANCE(instance)                                                                 \
+    if (!instance) {                                                                                    \
+        return CUBOOL_STATUS_INVALID_ARGUMENT;                                                          \
+    }
+
+#define CUBOOL_CHECK_ARG_NOT_NULL(arg)                                                                  \
+    if (!arg) {                                                                                         \
+        std::string message = "Passed null ptr to arg: ";                                               \
+        message += #arg ;                                                                               \
+        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, message.c_str());                     \
+        return CUBOOL_STATUS_INVALID_ARGUMENT;                                                          \
+    }
+
+#define CUBOOL_VALIDATE_MATRIX(matrix)                                                                  \
+    {                                                                                                   \
+        CuBoolStatus status = instanceImpl->validateMatrix(matrix);                                     \
+        if (status != CUBOOL_STATUS_SUCCESS) {                                                          \
+            return status;                                                                              \
+        }                                                                                               \
+    }
+
+CuBoolStatus CuBoolLibraryVersionGet(int* major, int* minor, int* version) {
     if (major) {
         *major = CUBOOL_VERSION_MAJOR;
     }
@@ -46,7 +70,7 @@ CuBoolStatus CuBoolGetLibraryVersion(int* major, int* minor, int* version) {
     return CUBOOL_STATUS_SUCCESS;
 }
 
-CuBoolStatus CuBoolGetDeviceCapabilities(CuBoolDeviceCaps* deviceCaps) {
+CuBoolStatus CuBoolDeviceCapsGet(CuBoolDeviceCaps* deviceCaps) {
     if (!deviceCaps) {
         // Null caps structure
         return CUBOOL_STATUS_INVALID_ARGUMENT;
@@ -62,7 +86,7 @@ CuBoolStatus CuBoolGetDeviceCapabilities(CuBoolDeviceCaps* deviceCaps) {
     return CUBOOL_STATUS_SUCCESS;
 }
 
-CuBoolStatus CuBoolCreateInstance(const CuBoolInstanceDesc* instanceDesc, CuBoolInstance* instance) {
+CuBoolStatus CuBoolInstanceCreate(const CuBoolInstanceDesc* instanceDesc, CuBoolInstance* instance) {
     if (!instanceDesc) {
         // Instance descriptor could not be null
         return CUBOOL_STATUS_INVALID_ARGUMENT;
@@ -104,13 +128,10 @@ CuBoolStatus CuBoolCreateInstance(const CuBoolInstanceDesc* instanceDesc, CuBool
     return CUBOOL_STATUS_SUCCESS;
 }
 
-CuBoolStatus CuBoolDestroyInstance(CuBoolInstance instance) {
-    if (!instance) {
-        // Null instance passed
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
-
+CuBoolStatus CuBoolInstanceDestroy(CuBoolInstance instance) {
     auto instanceImpl = (cubool::Instance*) instance;
+
+    CUBOOL_CHECK_INSTANCE(instance);
 
     if (instanceImpl->hasUserDefinedAllocator()) {
         auto allocator = instanceImpl->getUserDefinedAllocator();
@@ -125,18 +146,11 @@ CuBoolStatus CuBoolDestroyInstance(CuBoolInstance instance) {
     return CUBOOL_STATUS_SUCCESS;
 }
 
-CuBoolStatus CuBoolCreateMatrixDense(CuBoolInstance instance, CuBoolMatrixDense* matrix) {
-    if (!instance) {
-        // Null instance passed
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
-
+CuBoolStatus CuBoolMatrixDenseCreate(CuBoolInstance instance, CuBoolMatrixDense* matrix) {
     auto instanceImpl = (cubool::Instance*) instance;
 
-    if (!matrix) {
-        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to place to save dense matrix handle");
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
 
     cubool::MatrixDense* matrixImpl = nullptr;
     CuBoolStatus status = instanceImpl->createMatrixDense(matrixImpl);
@@ -145,14 +159,12 @@ CuBoolStatus CuBoolCreateMatrixDense(CuBoolInstance instance, CuBoolMatrixDense*
     return status;
 }
 
-CuBoolStatus CuBoolDestroyMatrixDense(CuBoolInstance instance, CuBoolMatrixDense matrix) {
-    if (!instance) {
-        // Null instance passed
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
-
+CuBoolStatus CuBoolMatrixDenseDestroy(CuBoolInstance instance, CuBoolMatrixDense matrix) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
 
     return instanceImpl->destroyMatrixDense(matrixImpl);
 }
@@ -161,91 +173,67 @@ CuBoolStatus CuBoolMatrixDenseResize(CuBoolInstance instance, CuBoolMatrixDense 
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 
-    if (!instance) {
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
 
-    if (!matrix) {
-        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to place to save dense matrix handle");
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
-
-    CuBoolStatus status = instanceImpl->validateMatrixDense(matrixImpl);
-    if (status != CUBOOL_STATUS_SUCCESS) {
-        return status;
-    }
+    CUBOOL_VALIDATE_MATRIX(matrixImpl);
 
     return matrixImpl->resize(rows, columns);
 }
 
-CuBoolStatus CuBoolDenseMatrixWriteData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values) {
+CuBoolStatus CuBoolMatrixDenseWriteData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 
-    if (!instance) {
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
+    CUBOOL_CHECK_ARG_NOT_NULL(values);
 
-    if (!matrix) {
-        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to place to save dense matrix handle");
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
-
-    CuBoolStatus status = instanceImpl->validateMatrixDense(matrixImpl);
-    if (status != CUBOOL_STATUS_SUCCESS) {
-        return status;
-    }
-
-    if (values == nullptr) {
-        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null values array to write");
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
+    CUBOOL_VALIDATE_MATRIX(matrixImpl);
 
     return matrixImpl->writeValues(count, values);
 }
 
-CuBoolStatus CuBoolDenseMatrixReadData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t* count, CuBoolPair** values) {
+CuBoolStatus CuBoolMatrixDenseReadData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t* count, CuBoolPair** values) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 
-    if (!instance) {
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
+    CUBOOL_CHECK_ARG_NOT_NULL(count);
+    CUBOOL_CHECK_ARG_NOT_NULL(values);
 
-    if (!matrix) {
-        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to place to save dense matrix handle");
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
-
-    CuBoolStatus status = instanceImpl->validateMatrixDense(matrixImpl);
-
-    if (status != CUBOOL_STATUS_SUCCESS) {
-        return status;
-    }
-
-    if (!count || !values) {
-        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to operation results");
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
+    CUBOOL_VALIDATE_MATRIX(matrixImpl);
 
     return matrixImpl->readValues(count, values);
 }
 
-CuBoolStatus CuBoolReleaseValuesArray(CuBoolInstance instance, CuBoolPair* values) {
+CuBoolStatus CuBoolValuesArrayFree(CuBoolInstance instance, CuBoolPair* values) {
     auto instanceImpl = (cubool::Instance*) instance;
 
-    if (!instance) {
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
-
-    if (!values) {
-        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null ptr to release values array");
-        return CUBOOL_STATUS_INVALID_ARGUMENT;
-    }
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(values);
 
     return instanceImpl->deallocate(values);
 }
 
-CuBoolStatus CuBoolMultiplyAdd(CuBoolInstance instance, CuBoolMatrixDense result, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c) {
-    return CUBOOL_STATUS_NOT_IMPLEMENTED;
+CuBoolStatus CuBoolMatrixDenseMultiplyAdd(CuBoolInstance instance, CuBoolMatrixDense result, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c) {
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto resultImpl = (cubool::MatrixDense*) result;
+    auto aImpl = (cubool::MatrixDense*) a;
+    auto bImpl = (cubool::MatrixDense*) b;
+    auto cImpl = (cubool::MatrixDense*) c;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(result);
+    CUBOOL_CHECK_ARG_NOT_NULL(a);
+    CUBOOL_CHECK_ARG_NOT_NULL(b);
+    CUBOOL_CHECK_ARG_NOT_NULL(c);
+
+    CUBOOL_VALIDATE_MATRIX(resultImpl);
+    CUBOOL_VALIDATE_MATRIX(aImpl);
+    CUBOOL_VALIDATE_MATRIX(bImpl);
+    CUBOOL_VALIDATE_MATRIX(cImpl);
+
+    return cubool::MatrixDenseKernels::invoke_MatrixDenseMultiplyAdd(*instanceImpl, *resultImpl, *aImpl, *bImpl, *cImpl);
 }

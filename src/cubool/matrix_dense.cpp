@@ -96,7 +96,7 @@ namespace cubool {
     }
 
     CuBoolStatus MatrixDense::writeValues(CuBoolSize_t count, const CuBoolPair *values) {
-        if (mBuffer.isEmpty() && count > 0) {
+        if (mBuffer.isEmpty()) {
             mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_STATE, "An attempt to write values to empty matrix");
             return CUBOOL_STATUS_INVALID_STATE;
         }

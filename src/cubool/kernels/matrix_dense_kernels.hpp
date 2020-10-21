@@ -35,15 +35,22 @@ namespace cubool {
     public:
 
         /**
+         * Run kernel r = a x b + c
+         * Validates arguments and matrices size compatibility
          *
-         * @param result
-         * @param a
-         * @param b
-         * @param c
-         * @return
+         * @param result Matrix to store result
+         * @param a Input a matrix
+         * @param b Input b matrix
+         * @param c Input c matrix
+         * @return Operation status
          */
-        static CuBoolStatus invoke_MatrixDenseMultiplyAdd(class Instance &instance, MatrixDense &result, const MatrixDense &a,
-                                                          const MatrixDense &b, const MatrixDense &c);
+        static CuBoolStatus invoke_MatrixDenseMultiplyAdd(
+            class Instance &instance,
+            MatrixDense &result,
+            const MatrixDense &a,
+            const MatrixDense &b,
+            const MatrixDense &c
+        );
     };
 }
 

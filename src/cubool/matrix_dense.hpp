@@ -37,7 +37,7 @@ namespace cubool {
 
     class MatrixDense {
     public:
-        // How we actually pack this matrix inmemory
+        // How we actually pack this matrix in memory
         // This info approached by kernels code
         using PackType_t = uint32_t;
         static const CuBoolSize_t BYTE_SIZE_IN_BITS = 8; // 8 bits per byte?

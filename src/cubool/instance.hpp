@@ -42,7 +42,7 @@ namespace cubool {
         ~Instance() = default;
 
         CuBoolStatus createMatrixDense(MatrixDense* &matrixDense);
-        CuBoolStatus validateMatrixDense(MatrixDense* matrixDense);
+        CuBoolStatus validateMatrix(MatrixDense* matrixDense);
         CuBoolStatus destroyMatrixDense(MatrixDense* matrixDense);
 
         CuBoolStatus allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const;

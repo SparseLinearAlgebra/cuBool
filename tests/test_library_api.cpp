@@ -29,17 +29,17 @@
 
 #include <iostream>
 
-static void TestMsgFun(CuBoolStatus error, const char* message, void* _) {
+static void testMsgFun(CuBoolStatus error, const char* message, void* _) {
     std::cout << "CuBool: " << message << std::endl;
 }
 
-static CuBoolCpuPtr_t TestAllocateFun(CuBoolSize_t size, void* _) {
+static CuBoolCpuPtr_t testAllocateFun(CuBoolSize_t size, void* _) {
     CuBoolCpuPtr_t ptr = malloc(size);
     std::cout << "Cubool: Allocate: " << size << " " << ptr << std::endl;
     return ptr;
 }
 
-static void TestDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
+static void testDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
     std::cout << "Cubool: Deallocate: " << ptr << std::endl;
     free(ptr);
 }
@@ -50,7 +50,7 @@ TEST(CuBoolVersion, Query) {
     int minor;
     int version;
 
-    CuBoolGetLibraryVersion(&major, &minor, &version);
+    CuBoolLibraryVersionGet(&major, &minor, &version);
 
     std::cout << "Major: " << major << std::endl;
     std::cout << "Minor: " << minor << std::endl;
@@ -67,16 +67,18 @@ TEST(CuBoolInstance, Setup) {
     CuBoolInstanceDesc instanceDesc{};
     instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
     instanceDesc.errorCallback.userData = nullptr;
-    instanceDesc.errorCallback.msgFun = TestMsgFun;
+    instanceDesc.errorCallback.msgFun = testMsgFun;
     instanceDesc.allocationCallback.userData = nullptr;
-    instanceDesc.allocationCallback.allocateFun = TestAllocateFun;
-    instanceDesc.allocationCallback.deallocateFun = TestDeallocateFun;
+    instanceDesc.allocationCallback.allocateFun = testAllocateFun;
+    instanceDesc.allocationCallback.deallocateFun = testDeallocateFun;
 
-    error = CuBoolCreateInstance(&instanceDesc, &instance);
+    error = CuBoolInstanceCreate(&instanceDesc, &instance);
+
     EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
     EXPECT_NE(instance, nullptr);
 
-    error = CuBoolDestroyInstance(instance);
+    error = CuBoolInstanceDestroy(instance);
+
     EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
 
     instance = nullptr;

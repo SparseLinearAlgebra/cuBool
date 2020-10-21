@@ -113,7 +113,7 @@ namespace cubool {
         Matrix r{};
         r.rows = m.getRowsPackedCount();
         r.columns = m.getColumnsPaddedCount();
-        r.stride = r.columns * sizeof(MatrixDense::PackType_t);
+        r.stride = r.columns;
         r.buffer = (PackType_t*) m.getBuffer().getMemory();
         return r;
     }

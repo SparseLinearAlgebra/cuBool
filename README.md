@@ -14,11 +14,11 @@ the programming language *COBOL*.
 
 ## Features
 
-- [ ] Library C interface
-- [ ] Library instance/context
-- [ ] Dense boolean matrix
-- [ ] Dense boolean matrix operations
-- [ ] Dense multiplication 
+- [X] Library C interface
+- [X] Library instance/context
+- [X] Dense boolean matrix
+- [X] Dense boolean matrix operations
+- [X] Dense multiplication 
 - [ ] Dense addition
 - [ ] Dense kronecker product 
 - [ ] Sparse CSR matrix
@@ -29,6 +29,7 @@ the programming language *COBOL*.
 - [ ] Wrapper for Python API 
 - [ ] User guide
 - [ ] Unit Tests collection
+- [ ] Publish built artifacts and shared lib
 
 ## Requirements
 
@@ -78,7 +79,8 @@ $ sudo ln -s /usr/bin/g++-8 /usr/bin/g++
 ```
 
 This step can be easily undone by removing old aliases and creating new one 
-for the desired gcc version on your machine.
+for the desired gcc version on your machine. Also you can safely omit this step
+if you want to build library from the command line only. 
 
 Useful links:
 - [NVIDIA Drivers installation Ubuntu](https://linuxconfig.org/how-to-install-the-nvidia-drivers-on-ubuntu-20-04-focal-fossa-linux)
@@ -98,7 +100,7 @@ $ mkdir build
 $ cd build
 $ cmake .. -DCUBOOL_BUILD_TESTS=YES
 $ cmake --build . --target all -j `nproc`
-$ sh ../scripts/test_run_all.sh
+$ sh ../scripts/tests_run_all.sh
 ```
 
 > Note: in order to provide correct GCC version for CUDA sources compiling,
@@ -116,7 +118,8 @@ $ sh ../scripts/test_run_all.sh
 ```
 cuBool
 ├── .github - GitHub Actions CI setup 
-├── src - library source-code
+├── include - library C API 
+├── src - source-code for library implementation
 ├── docs - documents, text files and various helpful stuff
 ├── tests - gtest-based unit-tests collection
 ├── scripts - short utility programs 

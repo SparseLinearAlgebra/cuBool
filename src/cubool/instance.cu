@@ -70,7 +70,7 @@ namespace cubool {
         return CUBOOL_STATUS_SUCCESS;
     }
 
-    CuBoolStatus Instance::validateMatrixDense(MatrixDense* matrixDense) {
+    CuBoolStatus Instance::validateMatrix(MatrixDense* matrixDense) {
         bool contains = mMatrixDense.find(matrixDense) != mMatrixDense.end();
 
         if (!contains) {

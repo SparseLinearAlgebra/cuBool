@@ -42,7 +42,7 @@ extern "C" {
      *
      * @return Error if failed to query version info
      */
-    CuBoolStatus CuBoolGetLibraryVersion(int* major, int* minor, int* version);
+    CuBoolStatus CuBoolLibraryVersionGet(int* major, int* minor, int* version);
 
     /**
      * Query device capabilities/properties if cuda compatible device is present
@@ -51,7 +51,7 @@ extern "C" {
      *
      * @return Error if cuda device not present or if failed to query capabilities
      */
-    CuBoolStatus CuBoolGetDeviceCapabilities(CuBoolDeviceCaps* deviceCaps);
+    CuBoolStatus CuBoolDeviceCapsGet(CuBoolDeviceCaps* deviceCaps);
 
     /**
      * Initialize library instance object, which provides context to all library operations and objects
@@ -61,7 +61,7 @@ extern "C" {
      *
      * @return Error code on this operations
      */
-    CuBoolStatus CuBoolCreateInstance(const CuBoolInstanceDesc* instanceDesc, CuBoolInstance* instance);
+    CuBoolStatus CuBoolInstanceCreate(const CuBoolInstanceDesc* instanceDesc, CuBoolInstance* instance);
 
     /**
      * Destroy library instance and all objects, which were created on this library context.
@@ -71,7 +71,7 @@ extern "C" {
      *
      * @return Error code on this operations
      */
-    CuBoolStatus CuBoolDestroyInstance(CuBoolInstance instance);
+    CuBoolStatus CuBoolInstanceDestroy(CuBoolInstance instance);
 
     /**
      *
@@ -79,7 +79,7 @@ extern "C" {
      * @param matrix
      * @return
      */
-    CuBoolStatus CuBoolCreateMatrixDense(CuBoolInstance instance, CuBoolMatrixDense* matrix);
+    CuBoolStatus CuBoolMatrixDenseCreate(CuBoolInstance instance, CuBoolMatrixDense* matrix);
 
     /**
      *
@@ -87,7 +87,7 @@ extern "C" {
      * @param matrix
      * @return
      */
-    CuBoolStatus CuBoolDestroyMatrixDense(CuBoolInstance instance, CuBoolMatrixDense matrix);
+    CuBoolStatus CuBoolMatrixDenseDestroy(CuBoolInstance instance, CuBoolMatrixDense matrix);
 
     /**
      *
@@ -107,36 +107,52 @@ extern "C" {
      * @param values
      * @return
      */
-    CuBoolStatus CuBoolDenseMatrixWriteData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values);
+    CuBoolStatus CuBoolMatrixDenseWriteData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values);
 
     /**
+     * Reads matrix data to the host visible CPU buffer as an array of values pair
      *
-     * @param instance
-     * @param matrix
-     * @param count
-     * @param values
-     * @return
+     * @note Returned pointer to the allocated values buffers must be explicitly freed by the user
+     *       via function call CuBoolValuesArrayFree
+     *
+     * @param instance An instance object reference to perform this operation
+     * @param matrix Matrix handler to perform operation on
+     * @param[out] count Number of pairs in the returned array
+     * @param[out] values Allocated buffer to the pairs indices. Buffer must be freed after usage
+     *
+     * @return Error code on this operations
      */
-    CuBoolStatus CuBoolDenseMatrixReadData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t* count, CuBoolPair** values);
+    CuBoolStatus CuBoolMatrixDenseReadData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t* count, CuBoolPair** values);
 
     /**
+     * Performs result = a x b + c evaluation, where '+' and 'x' are boolean semiring operations
      *
-     * @param instance
-     * @param result
-     * @param a
-     * @param b
-     * @param c
-     * @return
+     * @note to perform this operation matrices must be compatible
+     *       dim(a) = M x T
+     *       dim(b) = T x N
+     *       dim(c) = M x N
+     *
+     * @note result matrix will be automatically properly resized to store operation result
+     *
+     * @param instance An instance object reference to perform this operation
+     * @param result Matrix handler where to store operation result
+     * @param a Input a matrix
+     * @param b Input a matrix
+     * @param c Input a matrix
+     *
+     * @return Error code on this operations
      */
-    CuBoolStatus CuBoolMultiplyAdd(CuBoolInstance instance, CuBoolMatrixDense result, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c);
+    CuBoolStatus CuBoolMatrixDenseMultiplyAdd(CuBoolInstance instance, CuBoolMatrixDense result, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c);
 
     /**
+     * Release values array buffer, allocated by one of *ReadData operations
      *
-     * @param instance
-     * @param values
-     * @return
+     * @param instance An instance object reference to perform this operation
+     * @param values Valid pointer to returned arrays buffer from *ReadData method
+     *
+     * @return Error code on this operations
      */
-    CuBoolStatus CuBoolReleaseValuesArray(CuBoolInstance instance, CuBoolPair* values);
+    CuBoolStatus CuBoolValuesArrayFree(CuBoolInstance instance, CuBoolPair* values);
 
 #ifdef __cplusplus
 };
