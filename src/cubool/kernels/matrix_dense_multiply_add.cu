@@ -24,37 +24,12 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <cubool/kernels/matrix_dense_kernels.hpp>
+#include <cubool/kernels/matrix_dense_frontend.hpp>
+#include <cubool/kernels/matrix_dense_shared.cuh>
 #include <cubool/matrix_dense.hpp>
 #include <cubool/instance.hpp>
 
 namespace cubool {
-
-    using PackType_t = MatrixDense::PackType_t;
-
-    struct Matrix {
-        CuBoolSize_t rows;
-        CuBoolSize_t columns;
-        CuBoolSize_t stride;
-        PackType_t* buffer;
-    };
-
-    __device__ Matrix getMatrixBlock(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column) {
-        Matrix subMatrix{};
-        subMatrix.rows = 1;
-        subMatrix.columns = MatrixDense::PACK_TYPE_SIZE_BITS;
-        subMatrix.stride = m.stride;
-        subMatrix.buffer = &m.buffer[m.stride * row + MatrixDense::PACK_TYPE_SIZE_BITS * column];
-        return subMatrix;
-    }
-
-    __device__ PackType_t getMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column) {
-        return m.buffer[m.stride * row + column];
-    }
-
-    __device__ void setMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column, PackType_t value) {
-        m.buffer[m.stride * row + column] = value;
-    }
 
     __global__ void kernelMatrixDenseMultiplyAdd(Matrix result, Matrix a, Matrix b, Matrix c) {
         CuBoolSize_t blockRow = blockIdx.y;
@@ -86,6 +61,8 @@ namespace cubool {
 
             PackType_t aBlockRow = 0x0;
             CuBoolSize_t rowIdx = column;
+
+            #pragma unroll
             for (CuBoolSize_t l = 0; l < MatrixDense::PACK_TYPE_SIZE_BITS; l++) {
                 aBlockRow |= (aBlockShared[l] & (1u << rowIdx) ? (1u << l) : 0u);
             }
@@ -95,6 +72,7 @@ namespace cubool {
             // Wait to finish a-block transpose op
             __syncthreads();
 
+            #pragma unroll
             for (CuBoolSize_t l = 0; l < MatrixDense::PACK_TYPE_SIZE_BITS; l++) {
                 rBlockColumn |= (atBlockShared[l] & bBlockShared[column]) != 0x0 ? 1u << l : 0x0;
             }
@@ -107,15 +85,6 @@ namespace cubool {
         rBlockColumn |= cBlockColumn;
 
         setMatrixElementPacked(rBlock, 0, column, rBlockColumn);
-    }
-
-    Matrix getMatrixFromDenseMatrixClass(const MatrixDense& m) {
-        Matrix r{};
-        r.rows = m.getRowsPackedCount();
-        r.columns = m.getColumnsPaddedCount();
-        r.stride = r.columns;
-        r.buffer = (PackType_t*) m.getBuffer().getMemory();
-        return r;
     }
 
     CuBoolStatus MatrixDenseKernels::invoke_MatrixDenseMultiplyAdd(
@@ -144,8 +113,9 @@ namespace cubool {
         }
 
         // Will be automatically padded
-        if (result.resize(M, N) != CUBOOL_STATUS_SUCCESS) {
-            return CUBOOL_STATUS_SUCCESS;
+        CuBoolStatus status = result.resize(M, N);
+        if (status != CUBOOL_STATUS_SUCCESS) {
+            return status;
         }
 
         Matrix aGlobal = getMatrixFromDenseMatrixClass(a);

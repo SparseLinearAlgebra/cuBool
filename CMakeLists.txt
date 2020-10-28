@@ -33,8 +33,8 @@ set(CUBOOL_SOURCES
         src/cubool/matrix_dense.cpp
         src/cubool/matrix_dense.hpp
         src/cubool/kernels/matrix_dense_multiply_add.cu
-        src/cubool/kernels/matrix_dense_kernels.hpp
-        )
+        src/cubool/kernels/matrix_dense_frontend.hpp
+        src/cubool/kernels/matrix_dense_shared.cuh src/cubool/instance.cpp)
 
 # Shared library object config
 add_library(cubool SHARED ${CUBOOL_SOURCES})

@@ -35,6 +35,11 @@ namespace cubool {
     }
 
     CuBoolStatus MatrixDense::resize(CuBoolSize_t rows, CuBoolSize_t columns) {
+        if (rows == mRows && columns == mColumns) {
+            // nothing to do
+            return CUBOOL_STATUS_SUCCESS;
+        }
+
         mRows = rows;
         mColumns = columns;
         mRowsPacked = getRowsPackedFromRows(rows);

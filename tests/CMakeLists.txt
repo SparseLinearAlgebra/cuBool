@@ -12,3 +12,11 @@ target_link_libraries(test_library_api PUBLIC gtest)
 add_executable(test_matrix_dense test_matrix_dense.cpp)
 target_link_libraries(test_matrix_dense PUBLIC cubool)
 target_link_libraries(test_matrix_dense PUBLIC gtest)
+
+add_subdirectory(naive-gpu)
+add_executable(test_matrix_dense_vs_naive test_matrix_dense_vs_naive.cpp)
+target_link_libraries(test_matrix_dense_vs_naive PUBLIC cubool)
+target_link_libraries(test_matrix_dense_vs_naive PUBLIC gtest)
+target_link_libraries(test_matrix_dense_vs_naive PUBLIC naive_gpu)
+
+

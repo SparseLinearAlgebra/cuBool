@@ -24,54 +24,34 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_INSTANCE_HPP
-#define CUBOOL_INSTANCE_HPP
+#ifndef CUBOOL_MATRIX_DENSE_FRONTEND_HPP
+#define CUBOOL_MATRIX_DENSE_FRONTEND_HPP
 
-#include <cubool/cubool_types.h>
 #include <cubool/matrix_dense.hpp>
-
-#include <unordered_set>
 
 namespace cubool {
 
-    class Instance {
+    class MatrixDenseKernels {
     public:
-        explicit Instance(const CuBoolInstanceDesc& desc);
-        Instance(const Instance& other) = delete;
-        Instance(Instance&& other) noexcept = delete;
-        ~Instance() = default;
 
-        CuBoolStatus createMatrixDense(MatrixDense* &matrixDense);
-        CuBoolStatus validateMatrix(MatrixDense* matrixDense);
-        CuBoolStatus destroyMatrixDense(MatrixDense* matrixDense);
-
-        CuBoolStatus allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const;
-        CuBoolStatus allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const;
-
-        CuBoolStatus deallocate(CuBoolCpuPtr_t ptr) const;
-        CuBoolStatus deallocateOnGpu(CuBoolGpuPtr_t ptr) const;
-
-        CuBoolStatus syncHostDevice() const;
-
-        void sendMessage(CuBoolStatus status, const char* message) const;
-        void printDeviceCapabilities() const;
-
-        bool hasUserDefinedAllocator() const;
-        bool hasUserDefinedErrorCallback() const;
-
-        const CuBoolAllocationCallback& getUserDefinedAllocator() const { return mAllocCallback; }
-
-        static bool isCudaDeviceSupported();
-        static void queryDeviceCapabilities(CuBoolDeviceCaps& deviceCaps);
-
-    private:
-        std::unordered_set<MatrixDense*> mMatrixDense;
-
-        CuBoolAllocationCallback mAllocCallback{};
-        CuBoolMessageCallback mMessageCallback{};
-        CuBoolGpuMemoryType mMemoryType{};
+        /**
+         * Run kernel r = a x b + c
+         * Validates arguments and matrices size compatibility
+         *
+         * @param result Matrix to store result
+         * @param a Input a matrix
+         * @param b Input b matrix
+         * @param c Input c matrix
+         * @return Operation status
+         */
+        static CuBoolStatus invoke_MatrixDenseMultiplyAdd(
+            class Instance &instance,
+            MatrixDense &result,
+            const MatrixDense &a,
+            const MatrixDense &b,
+            const MatrixDense &c
+        );
     };
-
 }
 
-#endif //CUBOOL_INSTANCE_HPP
+#endif //CUBOOL_MATRIX_DENSE_FRONTEND_HPP

@@ -76,6 +76,13 @@ extern "C" {
     /**
      *
      * @param instance
+     * @return
+     */
+    CuBoolStatus CuBoolSyncHostDevice(CuBoolInstance instance);
+
+    /**
+     *
+     * @param instance
      * @param matrix
      * @return
      */

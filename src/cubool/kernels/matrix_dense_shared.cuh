@@ -24,34 +24,50 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_DENSE_KERNELS_HPP
-#define CUBOOL_MATRIX_DENSE_KERNELS_HPP
+#ifndef CUBOOL_MATRIX_DENSE_SHARED_CUH
+#define CUBOOL_MATRIX_DENSE_SHARED_CUH
 
 #include <cubool/matrix_dense.hpp>
 
 namespace cubool {
 
-    class MatrixDenseKernels {
-    public:
+    using PackType_t = MatrixDense::PackType_t;
 
-        /**
-         * Run kernel r = a x b + c
-         * Validates arguments and matrices size compatibility
-         *
-         * @param result Matrix to store result
-         * @param a Input a matrix
-         * @param b Input b matrix
-         * @param c Input c matrix
-         * @return Operation status
-         */
-        static CuBoolStatus invoke_MatrixDenseMultiplyAdd(
-            class Instance &instance,
-            MatrixDense &result,
-            const MatrixDense &a,
-            const MatrixDense &b,
-            const MatrixDense &c
-        );
+    struct Matrix {
+        CuBoolSize_t rows;
+        CuBoolSize_t columns;
+        CuBoolSize_t stride;
+        PackType_t* buffer;
     };
+
+    __host__ Matrix getMatrixFromDenseMatrixClass(const MatrixDense& m) {
+        Matrix r{};
+        r.rows = m.getRowsPackedCount();
+        r.columns = m.getColumnsPaddedCount();
+        r.stride = r.columns;
+        r.buffer = (PackType_t*) m.getBuffer().getMemory();
+        return r;
+    }
+
+    __device__ Matrix getMatrixBlock(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column) {
+        Matrix subMatrix{};
+        subMatrix.rows = 1;
+        subMatrix.columns = MatrixDense::PACK_TYPE_SIZE_BITS;
+        subMatrix.stride = m.stride;
+        subMatrix.buffer = &m.buffer[m.stride * row + MatrixDense::PACK_TYPE_SIZE_BITS * column];
+        return subMatrix;
+    }
+
+    __device__ PackType_t getMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column) {
+        return m.buffer[m.stride * row + column];
+    }
+
+    __device__ void setMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column, PackType_t value) {
+        if (value) {
+            m.buffer[m.stride * row + column] = value;
+        }
+    }
+
 }
 
-#endif //CUBOOL_MATRIX_DENSE_KERNELS_HPP
+#endif //CUBOOL_MATRIX_DENSE_SHARED_CUH

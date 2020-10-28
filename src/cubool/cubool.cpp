@@ -28,7 +28,7 @@
 #include <cubool/version.hpp>
 #include <cubool/instance.hpp>
 
-#include <cubool/kernels/matrix_dense_kernels.hpp>
+#include <cubool/kernels/matrix_dense_frontend.hpp>
 
 #include <cstdlib>
 #include <string>
@@ -144,6 +144,14 @@ CuBoolStatus CuBoolInstanceDestroy(CuBoolInstance instance) {
     }
 
     return CUBOOL_STATUS_SUCCESS;
+}
+
+CuBoolStatus CuBoolSyncHostDevice(CuBoolInstance instance) {
+    auto instanceImpl = (cubool::Instance*) instance;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+
+    return instanceImpl->syncHostDevice();
 }
 
 CuBoolStatus CuBoolMatrixDenseCreate(CuBoolInstance instance, CuBoolMatrixDense* matrix) {

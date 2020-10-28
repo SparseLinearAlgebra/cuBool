@@ -55,6 +55,11 @@ namespace cubool {
     }
 
     CuBoolStatus GpuBuffer::resizeNoContentKeep(CuBoolSize_t size) {
+        if (size == mSize) {
+            // nothing to do
+            return CUBOOL_STATUS_SUCCESS;
+        }
+
         if (isNotEmpty()) {
             CuBoolStatus error = mInstancePtr->deallocateOnGpu(mMemory);
             mSize = 0;
