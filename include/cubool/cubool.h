@@ -114,7 +114,7 @@ extern "C" {
      * @param values
      * @return
      */
-    CuBoolStatus CuBoolMatrixDenseWriteData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values);
+    CuBoolStatus CuBoolMatrixDenseSetPairs(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values);
 
     /**
      * Reads matrix data to the host visible CPU buffer as an array of values pair
@@ -129,7 +129,7 @@ extern "C" {
      *
      * @return Error code on this operations
      */
-    CuBoolStatus CuBoolMatrixDenseReadData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t* count, CuBoolPair** values);
+    CuBoolStatus CuBoolMatrixDenseGetPairs(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t* count, CuBoolPair** values);
 
     /**
      * Performs result = a x b + c evaluation, where '+' and 'x' are boolean semiring operations

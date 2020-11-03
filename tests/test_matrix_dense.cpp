@@ -66,7 +66,7 @@ struct Condition1 {
     }
 };
 
-struct Condition2 {
+struct Condition {
     bool operator()(CuBoolSize_t i, CuBoolSize_t j) {
         return !(i % 5) && !(j % 7);
     }
@@ -200,8 +200,8 @@ TEST(MatrixDense, Filling) {
 
     generateTestData(m, n, inputValues, Condition1{});
 
-    EXPECT_EQ(CuBoolMatrixDenseWriteData(instance, matrix, inputValues.size(), inputValues.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseReadData(instance, matrix, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBoolMatrixDenseSetPairs(instance, matrix, inputValues.size(), inputValues.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBoolMatrixDenseGetPairs(instance, matrix, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
 
     EXPECT_EQ(resultCount, inputValues.size());
 
@@ -250,20 +250,20 @@ TEST(MatrixDense, MultiplyAdd) {
     // Allocate result matrix. No resize needed, since the data will be placed automatically
     EXPECT_EQ(CuBoolMatrixDenseCreate(instance, &r), CUBOOL_STATUS_SUCCESS);
 
-    generateTestData(m, t, aval, Condition2{});
-    generateTestData(t, n, bval, Condition2{});
-    generateTestData(m, n, cval, Condition2{});
+    generateTestData(m, t, aval, Condition{});
+    generateTestData(t, n, bval, Condition{});
+    generateTestData(m, n, cval, Condition{});
 
     // Transfer input data into input matrices
-    EXPECT_EQ(CuBoolMatrixDenseWriteData(instance, a, aval.size(), aval.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseWriteData(instance, b, bval.size(), bval.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseWriteData(instance, c, cval.size(), cval.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBoolMatrixDenseSetPairs(instance, a, aval.size(), aval.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBoolMatrixDenseSetPairs(instance, b, bval.size(), bval.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBoolMatrixDenseSetPairs(instance, c, cval.size(), cval.data()), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a x b + c
     EXPECT_EQ(CuBoolMatrixDenseMultiplyAdd(instance, r, a, b, c), CUBOOL_STATUS_SUCCESS);
 
     // Transfer result values into host arrays
-    EXPECT_EQ(CuBoolMatrixDenseReadData(instance, r, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBoolMatrixDenseGetPairs(instance, r, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r = a x b + c on the cpu to compare results
     evaluateMultiplyAdd(m, t, n, aval, bval, cval, resultValuesSet);

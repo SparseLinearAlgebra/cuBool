@@ -44,7 +44,7 @@ namespace cubool {
          * @param c Input c matrix
          * @return Operation status
          */
-        static CuBoolStatus invoke_MatrixDenseMultiplyAdd(
+        static CuBoolStatus invokeMultiplyAdd(
             class Instance &instance,
             MatrixDense &result,
             const MatrixDense &a,

@@ -33,20 +33,6 @@
 #include <iostream>
 #include <unordered_set>
 
-struct CuBoolPairHash {
-public:
-    std::size_t operator()(const CuBoolPair &x) const {
-        return std::hash<CuBoolSize_t>()(x.i) ^ std::hash<CuBoolSize_t>()(x.j);
-    }
-};
-
-struct CuBoolPairEq {
-public:
-    bool operator()(const CuBoolPair &a, const CuBoolPair& b)  const {
-        return a.i == b.i && a.j == b.j;
-    }
-};
-
 static void testMsgFun(CuBoolStatus error, const char* message, void* _) {
     std::cout << "CuBool: " << message << std::endl;
 }
@@ -59,13 +45,7 @@ static void testDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
     free(ptr);
 }
 
-struct Condition1 {
-    bool operator()(CuBoolSize_t i, CuBoolSize_t j) {
-        return (((i - 1) & i) == 0 && ((j - 1) & j) == 0);
-    }
-};
-
-struct Condition2 {
+struct Condition {
     bool operator()(CuBoolSize_t i, CuBoolSize_t j) {
         return !(i % 5) && !(j % 7);
     }
@@ -116,18 +96,18 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
         std::vector<CuBoolPair> bval;
         std::vector<CuBoolPair> cval;
 
-        generateTestData(m, t, aval, Condition2());
-        generateTestData(t, n, bval, Condition2());
-        generateTestData(m, n, cval, Condition2());
+        generateTestData(m, t, aval, Condition());
+        generateTestData(t, n, bval, Condition());
+        generateTestData(m, n, cval, Condition());
 
         CuBoolMatrixDenseResize(instance, a, m, t);
         CuBoolMatrixDenseResize(instance, b, t, n);
         CuBoolMatrixDenseResize(instance, c, m, n);
         CuBoolMatrixDenseResize(instance, r, m, n); // resize, since we do not want to measure the speed of cuda allocator
 
-        CuBoolMatrixDenseWriteData(instance, a, aval.size(), aval.data());
-        CuBoolMatrixDenseWriteData(instance, b, bval.size(), bval.data());
-        CuBoolMatrixDenseWriteData(instance, c, cval.size(), cval.data());
+        CuBoolMatrixDenseSetPairs(instance, a, aval.size(), aval.data());
+        CuBoolMatrixDenseSetPairs(instance, b, bval.size(), bval.data());
+        CuBoolMatrixDenseSetPairs(instance, c, cval.size(), cval.data());
 
         {
             using namespace std::chrono;
@@ -164,9 +144,9 @@ TEST(Benchmark, NaiveGpuDenseMatrix) {
         std::vector<CuBoolPair> bval;
         std::vector<CuBoolPair> cval;
 
-        generateTestData(n, n, aval, Condition2());
-        generateTestData(n, n, bval, Condition2());
-        generateTestData(n, n, cval, Condition2());
+        generateTestData(n, n, aval, Condition());
+        generateTestData(n, n, bval, Condition());
+        generateTestData(n, n, cval, Condition());
 
         gpuMatrix::set_N(n);
 

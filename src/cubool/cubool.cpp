@@ -189,7 +189,7 @@ CuBoolStatus CuBoolMatrixDenseResize(CuBoolInstance instance, CuBoolMatrixDense 
     return matrixImpl->resize(rows, columns);
 }
 
-CuBoolStatus CuBoolMatrixDenseWriteData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values) {
+CuBoolStatus CuBoolMatrixDenseSetPairs(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 
@@ -202,7 +202,7 @@ CuBoolStatus CuBoolMatrixDenseWriteData(CuBoolInstance instance, CuBoolMatrixDen
     return matrixImpl->writeValues(count, values);
 }
 
-CuBoolStatus CuBoolMatrixDenseReadData(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t* count, CuBoolPair** values) {
+CuBoolStatus CuBoolMatrixDenseGetPairs(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t* count, CuBoolPair** values) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 
@@ -243,5 +243,5 @@ CuBoolStatus CuBoolMatrixDenseMultiplyAdd(CuBoolInstance instance, CuBoolMatrixD
     CUBOOL_VALIDATE_MATRIX(bImpl);
     CUBOOL_VALIDATE_MATRIX(cImpl);
 
-    return cubool::MatrixDenseKernels::invoke_MatrixDenseMultiplyAdd(*instanceImpl, *resultImpl, *aImpl, *bImpl, *cImpl);
+    return cubool::MatrixDenseKernels::invokeMultiplyAdd(*instanceImpl, *resultImpl, *aImpl, *bImpl, *cImpl);
 }
