@@ -20,7 +20,6 @@ configure_file(
 set(CUBOOL_SOURCES
         # Public sources
         include/cubool/cubool.h
-        include/cubool/cubool_types.h
         # Private sources
         src/cubool/cubool.cpp
         src/cubool/version.hpp

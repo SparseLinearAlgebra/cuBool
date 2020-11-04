@@ -27,7 +27,7 @@
 #ifndef CUBOOL_INSTANCE_HPP
 #define CUBOOL_INSTANCE_HPP
 
-#include <cubool/cubool_types.h>
+#include <cubool/cubool.h>
 #include <cubool/matrix_dense.hpp>
 
 #include <unordered_set>

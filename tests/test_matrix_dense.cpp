@@ -25,127 +25,7 @@
 /**********************************************************************************/
 
 #include <gtest/gtest.h>
-#include <cubool/cubool.h>
-
-#include <vector>
-#include <iostream>
-#include <unordered_set>
-
-struct CuBoolPairHash {
-public:
-    std::size_t operator()(const CuBoolPair &x) const {
-        return std::hash<CuBoolSize_t>()(x.i) ^ std::hash<CuBoolSize_t>()(x.j);
-    }
-};
-
-struct CuBoolPairEq {
-public:
-    bool operator()(const CuBoolPair &a, const CuBoolPair& b)  const {
-        return a.i == b.i && a.j == b.j;
-    }
-};
-
-static void testMsgFun(CuBoolStatus error, const char* message, void* _) {
-    std::cout << "CuBool: " << message << std::endl;
-}
-
-static CuBoolCpuPtr_t testAllocateFun(CuBoolSize_t size, void* _) {
-    CuBoolCpuPtr_t ptr = malloc(size);
-    std::cout << "Cubool: Allocate: " << size << " " << ptr << std::endl;
-    return ptr;
-}
-
-static void testDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
-    std::cout << "Cubool: Deallocate: " << ptr << std::endl;
-    free(ptr);
-}
-
-struct Condition1 {
-    bool operator()(CuBoolSize_t i, CuBoolSize_t j) {
-        return (((i - 1) & i) == 0 && ((j - 1) & j) == 0);
-    }
-};
-
-struct Condition {
-    bool operator()(CuBoolSize_t i, CuBoolSize_t j) {
-        return !(i % 5) && !(j % 7);
-    }
-};
-
-template<typename Condition>
-static void generateTestData(CuBoolSize_t rows, CuBoolSize_t columns, std::vector<CuBoolPair> &values, Condition&& condition) {
-    for (CuBoolSize_t i = 0; i < rows; i++) {
-        for (CuBoolSize_t j = 0; j < columns; j++) {
-            // is i and j power of two or 0
-            if (condition(i, j)) {
-                values.push_back(CuBoolPair{ i, j });
-            }
-        }
-    }
-}
-
-static void packCmpSet(const std::vector<CuBoolPair>& values, std::unordered_set<CuBoolPair,CuBoolPairHash,CuBoolPairEq>& set) {
-    for (auto p: values) {
-        set.emplace(p);
-    }
-}
-
-static void setupInstanceDesc(CuBoolInstanceDesc& instanceDesc) {
-    instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
-    instanceDesc.errorCallback.userData = nullptr;
-    instanceDesc.errorCallback.msgFun = testMsgFun;
-    instanceDesc.allocationCallback.userData = nullptr;
-    instanceDesc.allocationCallback.allocateFun = testAllocateFun;
-    instanceDesc.allocationCallback.deallocateFun = testDeallocateFun;
-}
-
-static void evaluateMultiplyAdd(
-        CuBoolSize_t m, CuBoolSize_t t, CuBoolSize_t n,
-        const std::vector<CuBoolPair> &aval,
-        const std::vector<CuBoolPair> &bval,
-        const std::vector<CuBoolPair> &cval,
-        std::unordered_set<CuBoolPair,CuBoolPairHash,CuBoolPairEq>& result) {
-
-    std::vector<std::vector<uint8_t>> a(m, std::vector<uint8_t>(t, 0));
-    std::vector<std::vector<uint8_t>> b(n, std::vector<uint8_t>(t, 0));
-    std::vector<std::vector<uint8_t>> r(m, std::vector<uint8_t>(n, 0));
-
-    for (auto& p: aval) {
-        a[p.i][p.j] = 1;
-    }
-
-    for (auto& p: bval) {
-        b[p.j][p.i] = 1;
-    }
-
-    for (CuBoolSize_t i = 0; i < m; i++) {
-        for (CuBoolSize_t j = 0; j < n; j++) {
-            uint8_t v = 0;
-
-            for (CuBoolSize_t k = 0; k < t; k++) {
-                v |= a[i][k] & b[j][k] ? 1u: 0u;
-            }
-
-            r[i][j] = v;
-        }
-    }
-
-    for (auto& p: cval) {
-        r[p.i][p.j] |= 1u;
-    }
-
-    for (CuBoolSize_t i = 0; i < m; i++) {
-        for (CuBoolSize_t j = 0; j < n; j++) {
-            if (r[i][j] != 0) {
-                result.emplace(CuBoolPair{i,j});
-            }
-        }
-    }
-}
-
-static void evaluateMultiplyAdd(CuBoolSize_t n, const std::vector<CuBoolPair> &values,  std::unordered_set<CuBoolPair,CuBoolPairHash,CuBoolPairEq>& result) {
-    evaluateMultiplyAdd(n, n, n, values, values, values, result);
-}
+#include <test_common.hpp>
 
 // Test dense matrix create/destroy functions
 TEST(MatrixDense, CreateDestroy) {
@@ -155,12 +35,12 @@ TEST(MatrixDense, CreateDestroy) {
 
     setupInstanceDesc(instanceDesc);
 
-    EXPECT_EQ(CuBoolInstanceCreate(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBoolMatrixDenseCreate(instance, &matrix), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseDestroy(instance, matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Delete(instance, matrix), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBoolInstanceDestroy(instance), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
 }
 
 TEST(MatrixDense, Resize) {
@@ -171,13 +51,13 @@ TEST(MatrixDense, Resize) {
 
     setupInstanceDesc(instanceDesc);
 
-    EXPECT_EQ(CuBoolInstanceCreate(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBoolMatrixDenseCreate(instance, &matrix), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseResize(instance, matrix, rows, columns), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseDestroy(instance, matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Resize(instance, matrix, rows, columns), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Delete(instance, matrix), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBoolInstanceDestroy(instance), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
 }
 
 TEST(MatrixDense, Filling) {
@@ -193,15 +73,15 @@ TEST(MatrixDense, Filling) {
 
     setupInstanceDesc(instanceDesc);
 
-    EXPECT_EQ(CuBoolInstanceCreate(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBoolMatrixDenseCreate(instance, &matrix), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseResize(instance, matrix, m, n), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Resize(instance, matrix, m, n), CUBOOL_STATUS_SUCCESS);
 
     generateTestData(m, n, inputValues, Condition1{});
 
-    EXPECT_EQ(CuBoolMatrixDenseSetPairs(instance, matrix, inputValues.size(), inputValues.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseGetPairs(instance, matrix, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build(instance, matrix, inputValues.size(), inputValues.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_ExtractPairs(instance, matrix, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
 
     EXPECT_EQ(resultCount, inputValues.size());
 
@@ -214,10 +94,10 @@ TEST(MatrixDense, Filling) {
     }
 
     // Remember to release exposed array buffer
-    EXPECT_EQ(CuBoolValuesArrayFree(instance, resultValues), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseDestroy(instance, matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Vals_Delete(instance, resultValues), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Delete(instance, matrix), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBoolInstanceDestroy(instance), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
 }
 
 TEST(MatrixDense, MultiplyAdd) {
@@ -237,33 +117,33 @@ TEST(MatrixDense, MultiplyAdd) {
     setupInstanceDesc(instanceDesc);
 
     // Setup instance
-    EXPECT_EQ(CuBoolInstanceCreate(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     // Allocate input matrices and resize to fill with input data
-    EXPECT_EQ(CuBoolMatrixDenseCreate(instance, &a), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseResize(instance, a, m, t), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseCreate(instance, &b), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseResize(instance, b, t, n), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseCreate(instance, &c), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseResize(instance, c, m, n), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &a), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Resize(instance, a, m, t), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &b), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Resize(instance, b, t, n), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &c), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Resize(instance, c, m, n), CUBOOL_STATUS_SUCCESS);
 
     // Allocate result matrix. No resize needed, since the data will be placed automatically
-    EXPECT_EQ(CuBoolMatrixDenseCreate(instance, &r), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &r), CUBOOL_STATUS_SUCCESS);
 
-    generateTestData(m, t, aval, Condition{});
-    generateTestData(t, n, bval, Condition{});
-    generateTestData(m, n, cval, Condition{});
+    generateTestData(m, t, aval, Condition2{});
+    generateTestData(t, n, bval, Condition2{});
+    generateTestData(m, n, cval, Condition2{});
 
     // Transfer input data into input matrices
-    EXPECT_EQ(CuBoolMatrixDenseSetPairs(instance, a, aval.size(), aval.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseSetPairs(instance, b, bval.size(), bval.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseSetPairs(instance, c, cval.size(), cval.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build(instance, a, aval.size(), aval.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build(instance, b, bval.size(), bval.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build(instance, c, cval.size(), cval.data()), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a x b + c
-    EXPECT_EQ(CuBoolMatrixDenseMultiplyAdd(instance, r, a, b, c), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_MultAdd(instance, r, a, b, c), CUBOOL_STATUS_SUCCESS);
 
     // Transfer result values into host arrays
-    EXPECT_EQ(CuBoolMatrixDenseGetPairs(instance, r, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_ExtractPairs(instance, r, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r = a x b + c on the cpu to compare results
     evaluateMultiplyAdd(m, t, n, aval, bval, cval, resultValuesSet);
@@ -278,16 +158,16 @@ TEST(MatrixDense, MultiplyAdd) {
     }
 
     // Manually deallocate array, returned by read* function
-    EXPECT_EQ(CuBoolValuesArrayFree(instance, resultValues), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Vals_Delete(instance, resultValues), CUBOOL_STATUS_SUCCESS);
 
     // Release matrices
-    EXPECT_EQ(CuBoolMatrixDenseDestroy(instance, a), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseDestroy(instance, b), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseDestroy(instance, c), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBoolMatrixDenseDestroy(instance, r), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Delete(instance, a), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Delete(instance, b), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Delete(instance, c), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Delete(instance, r), CUBOOL_STATUS_SUCCESS);
 
     // Destroy instance
-    EXPECT_EQ(CuBoolInstanceDestroy(instance), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
 }
 
 int main(int argc, char *argv[]) {

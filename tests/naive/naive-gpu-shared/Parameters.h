@@ -6,13 +6,13 @@
 // This source code files are used to compare the performance of the
 // boolean matrix multiplication between two dense matrix multiplications implementations.
 
-#ifndef CFPQ_CUDA_PARAMETERS_H
-#define CFPQ_CUDA_PARAMETERS_H
+#ifndef NAIVE_GPU_SHARED_PARAMETERS_H
+#define NAIVE_GPU_SHARED_PARAMETERS_H
 
-#include <cstdint>
+#include <stdint.h>
 
 #define TYPE uint32_t
 #define TYPE_SIZE (sizeof(TYPE) * 8)
 #define THREADS_PER_BLOCK 32
 
-#endif //CFPQ_CUDA_PARAMETERS_H
+#endif //NAIVE_GPU_SHARED_PARAMETERS_H

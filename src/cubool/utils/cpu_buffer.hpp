@@ -27,7 +27,7 @@
 #ifndef CUBOOL_CPU_BUFFER_HPP
 #define CUBOOL_CPU_BUFFER_HPP
 
-#include <cubool/cubool_types.h>
+#include <cubool/cubool.h>
 
 namespace cubool {
 

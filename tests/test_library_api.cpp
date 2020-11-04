@@ -25,24 +25,7 @@
 /**********************************************************************************/
 
 #include <gtest/gtest.h>
-#include <cubool/cubool.h>
-
-#include <iostream>
-
-static void testMsgFun(CuBoolStatus error, const char* message, void* _) {
-    std::cout << "CuBool: " << message << std::endl;
-}
-
-static CuBoolCpuPtr_t testAllocateFun(CuBoolSize_t size, void* _) {
-    CuBoolCpuPtr_t ptr = malloc(size);
-    std::cout << "Cubool: Allocate: " << size << " " << ptr << std::endl;
-    return ptr;
-}
-
-static void testDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
-    std::cout << "Cubool: Deallocate: " << ptr << std::endl;
-    free(ptr);
-}
+#include <test_common.hpp>
 
 // Query library version info
 TEST(CuBoolVersion, Query) {
@@ -50,7 +33,7 @@ TEST(CuBoolVersion, Query) {
     int minor;
     int version;
 
-    CuBoolLibraryVersionGet(&major, &minor, &version);
+    CuBool_Version_Get(&major, &minor, &version);
 
     std::cout << "Major: " << major << std::endl;
     std::cout << "Minor: " << minor << std::endl;
@@ -72,12 +55,12 @@ TEST(CuBoolInstance, Setup) {
     instanceDesc.allocationCallback.allocateFun = testAllocateFun;
     instanceDesc.allocationCallback.deallocateFun = testDeallocateFun;
 
-    error = CuBoolInstanceCreate(&instanceDesc, &instance);
+    error = CuBool_Instance_New(&instanceDesc, &instance);
 
     EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
     EXPECT_NE(instance, nullptr);
 
-    error = CuBoolInstanceDestroy(instance);
+    error = CuBool_Instance_Delete(instance);
 
     EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
 

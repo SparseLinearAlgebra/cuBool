@@ -81,6 +81,7 @@ TEST(Cuda, BasicExample) {
     cudaFree(device_a);
     cudaFree(device_b);
     cudaFree(device_c);
+
     free(a);
     free(b);
     free(c);

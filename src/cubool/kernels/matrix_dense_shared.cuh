@@ -79,7 +79,7 @@ namespace cubool {
         return r;
     }
 
-    __forceinline__ __device__ Matrix getMatrixBlock(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column) {
+    __device__ Matrix getMatrixBlock(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column) {
         Matrix subMatrix{};
         subMatrix.rows = BLOCK_SIZE_Y;
         subMatrix.columns = BLOCK_SIZE_X;
@@ -88,15 +88,15 @@ namespace cubool {
         return subMatrix;
     }
 
-    __forceinline__ __device__ bool isBlockValueWithinMatrix(const Matrix& parent, CuBoolSize_t blockRow, CuBoolSize_t blockColumn, CuBoolSize_t row, CuBoolSize_t column) {
+    __device__ bool isBlockValueWithinMatrix(const Matrix& parent, CuBoolSize_t blockRow, CuBoolSize_t blockColumn, CuBoolSize_t row, CuBoolSize_t column) {
         return (blockRow * BLOCK_SIZE_Y + row) < parent.rows && (blockColumn * BLOCK_SIZE_X + column) < parent.columns;
     }
 
-    __forceinline__ __device__ PackType_t getMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column) {
+    __device__ PackType_t getMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column) {
         return m.buffer[m.stride * row + column];
     }
 
-    __forceinline__ __device__ void setMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column, PackType_t value) {
+    __device__ void setMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column, PackType_t value) {
         m.buffer[m.stride * row + column] = value;
     }
 

@@ -27,7 +27,7 @@
 #ifndef CUBOOL_MATRIX_DENSE_HPP
 #define CUBOOL_MATRIX_DENSE_HPP
 
-#include <cubool/cubool_types.h>
+#include <cubool/cubool.h>
 #include <cubool/utils/gpu_buffer.hpp>
 
 #include <cinttypes>

@@ -5,18 +5,19 @@ set_target_properties(test_basic_cuda PROPERTIES CXX_STANDARD 11)
 set_target_properties(test_basic_cuda PROPERTIES CXX_STANDARD_REQUIRED YES)
 set_target_properties(test_basic_cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
+add_library(test_common INTERFACE)
+target_link_libraries(test_common INTERFACE cubool)
+target_link_libraries(test_common INTERFACE gtest)
+target_include_directories(test_common INTERFACE ${CMAKE_CURRENT_LIST_DIR}/utils)
+
 add_executable(test_library_api test_library_api.cpp)
-target_link_libraries(test_library_api PUBLIC cubool)
-target_link_libraries(test_library_api PUBLIC gtest)
+target_link_libraries(test_library_api PUBLIC test_common)
 
 add_executable(test_matrix_dense test_matrix_dense.cpp)
-target_link_libraries(test_matrix_dense PUBLIC cubool)
-target_link_libraries(test_matrix_dense PUBLIC gtest)
+target_link_libraries(test_matrix_dense PUBLIC test_common)
 
-add_subdirectory(naive-gpu)
+add_subdirectory(naive)
 add_executable(test_matrix_dense_vs_naive test_matrix_dense_vs_naive.cpp)
-target_link_libraries(test_matrix_dense_vs_naive PUBLIC cubool)
-target_link_libraries(test_matrix_dense_vs_naive PUBLIC gtest)
+target_link_libraries(test_matrix_dense_vs_naive PUBLIC test_common)
 target_link_libraries(test_matrix_dense_vs_naive PUBLIC naive_gpu)
-
-
+target_link_libraries(test_matrix_dense_vs_naive PUBLIC naive_gpu_shared)

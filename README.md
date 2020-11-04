@@ -1,5 +1,6 @@
 # CUBOOL
 
+[![JB Research](https://jb.gg/badges/research-flat-square.svg)](https://research.jetbrains.org/)
 [![Ubuntu](https://github.com/JetBrains-Research/cuBool/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/JetBrains-Research/cuBool/actions)
 
 CuBool is a linear boolean algebra library primitives and operations for 
@@ -82,7 +83,7 @@ This step can be easily undone by removing old aliases and creating new one
 for the desired gcc version on your machine. Also you can safely omit this step
 if you want to build library from the command line only. 
 
-Useful links:
+**Useful links:**
 - [NVIDIA Drivers installation Ubuntu](https://linuxconfig.org/how-to-install-the-nvidia-drivers-on-ubuntu-20-04-focal-fossa-linux)
 - [CUDA Linux installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
 - [CUDA Hello world program](https://developer.nvidia.com/blog/easy-introduction-cuda-c-and-c/)

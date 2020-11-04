@@ -25,69 +25,29 @@
 /**********************************************************************************/
 
 #include <gtest/gtest.h>
-#include <cubool/cubool.h>
-#include <GpuMatrix.h> // Naive gpu implementation for dense boolean matrix multiplication
-
 #include <chrono>
-#include <vector>
-#include <iostream>
-#include <unordered_set>
 
-static void testMsgFun(CuBoolStatus error, const char* message, void* _) {
-    std::cout << "CuBool: " << message << std::endl;
-}
+#include <test_common.hpp>
+#include <naive-gpu/GpuMatrix.h> // Naive gpu implementation for dense boolean matrix multiplication
+#include <naive-gpu-shared/GpuMatrix.h> // Naive gpu with small shared mem optimization
 
-static CuBoolCpuPtr_t testAllocateFun(CuBoolSize_t size, void* _) {
-    return malloc(size);
-}
-
-static void testDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
-    free(ptr);
-}
-
-struct Condition {
-    bool operator()(CuBoolSize_t i, CuBoolSize_t j) {
-        return !(i % 5) && !(j % 7);
-    }
-};
-
-template<typename Condition>
-static void generateTestData(CuBoolSize_t rows, CuBoolSize_t columns, std::vector<CuBoolPair> &values, Condition&& condition) {
-    for (CuBoolSize_t i = 0; i < rows; i++) {
-        for (CuBoolSize_t j = 0; j < columns; j++) {
-            // is i and j power of two or 0
-            if (condition(i, j)) {
-                values.push_back(CuBoolPair{ i, j });
-            }
-        }
-    }
-}
-
-static void setupInstanceDesc(CuBoolInstanceDesc& instanceDesc) {
-    instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
-    instanceDesc.errorCallback.userData = nullptr;
-    instanceDesc.errorCallback.msgFun = testMsgFun;
-    instanceDesc.allocationCallback.userData = nullptr;
-    instanceDesc.allocationCallback.allocateFun = testAllocateFun;
-    instanceDesc.allocationCallback.deallocateFun = testDeallocateFun;
-}
+static size_t iterations = 8;
+static size_t sizes[] = { 128, 256, 512, 1024, 2048, 4096, 8192, 8192 * 2, 8192 * 4, 8192 * 8 };
 
 TEST(Benchmanrk, CuboolDenseMatrix) {
     CuBoolInstance instance;
     CuBoolMatrixDense a, b, c, r;
     CuBoolSize_t m, t, n;
 
-    CuBoolSize_t sizes[] = { 128, 256, 512, 1024, 2048, 4096, 8192, 8192 * 2, 8192 * 4, 8192 * 8 };
-
     CuBoolInstanceDesc instanceDesc;
-    setupInstanceDesc(instanceDesc);
+    setupInstanceDescSilent(instanceDesc);
 
-    CuBoolInstanceCreate(&instanceDesc, &instance);
+    CuBool_Instance_New(&instanceDesc, &instance);
 
-    CuBoolMatrixDenseCreate(instance, &a);
-    CuBoolMatrixDenseCreate(instance, &b);
-    CuBoolMatrixDenseCreate(instance, &c);
-    CuBoolMatrixDenseCreate(instance, &r);
+    CuBool_MatrixDense_New(instance, &a);
+    CuBool_MatrixDense_New(instance, &b);
+    CuBool_MatrixDense_New(instance, &c);
+    CuBool_MatrixDense_New(instance, &r);
 
     for (auto s: sizes) {
         m = t = n = s;
@@ -96,57 +56,61 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
         std::vector<CuBoolPair> bval;
         std::vector<CuBoolPair> cval;
 
-        generateTestData(m, t, aval, Condition());
-        generateTestData(t, n, bval, Condition());
-        generateTestData(m, n, cval, Condition());
+        generateTestData(m, t, aval, Condition2());
+        generateTestData(t, n, bval, Condition2());
+        generateTestData(m, n, cval, Condition2());
 
-        CuBoolMatrixDenseResize(instance, a, m, t);
-        CuBoolMatrixDenseResize(instance, b, t, n);
-        CuBoolMatrixDenseResize(instance, c, m, n);
-        CuBoolMatrixDenseResize(instance, r, m, n); // resize, since we do not want to measure the speed of cuda allocator
+        CuBool_MatrixDense_Resize(instance, a, m, t);
+        CuBool_MatrixDense_Resize(instance, b, t, n);
+        CuBool_MatrixDense_Resize(instance, c, m, n);
+        CuBool_MatrixDense_Resize(instance, r, m, n); // resize, since we do not want to measure the speed of cuda allocator
 
-        CuBoolMatrixDenseSetPairs(instance, a, aval.size(), aval.data());
-        CuBoolMatrixDenseSetPairs(instance, b, bval.size(), bval.data());
-        CuBoolMatrixDenseSetPairs(instance, c, cval.size(), cval.data());
+        CuBool_MatrixDense_Build(instance, a, aval.size(), aval.data());
+        CuBool_MatrixDense_Build(instance, b, bval.size(), bval.data());
+        CuBool_MatrixDense_Build(instance, c, cval.size(), cval.data());
 
-        {
+        double executionTimeMs = 0;
+
+        for (size_t i = 0; i < iterations; i++) {
             using namespace std::chrono;
 
-            CuBoolSyncHostDevice(instance);
+            CuBool_SyncHostDevice(instance);
             auto start = high_resolution_clock::now();
 
-            CuBoolMatrixDenseMultiplyAdd(instance, r, a, b, c);
+            CuBool_MatrixDense_MultAdd(instance, r, a, b, c);
 
-            CuBoolSyncHostDevice(instance);
+            CuBool_SyncHostDevice(instance);
             auto end = high_resolution_clock::now();
 
-            std::cout << "Operation: Mult-Add [N=" << s << "]: " << (double)duration_cast<nanoseconds>(end - start).count() / 1.0e6 << "ms" << std::endl;
+            executionTimeMs += (double)duration_cast<nanoseconds>(end - start).count() / 1.0e6;
         }
+
+        std::cout << "Operation: Mult-Add [N=" << s << "]: " << executionTimeMs / (double)iterations << " ms" << std::endl;
     }
 
-    CuBoolMatrixDenseDestroy(instance, a);
-    CuBoolMatrixDenseDestroy(instance, b);
-    CuBoolMatrixDenseDestroy(instance, c);
-    CuBoolMatrixDenseDestroy(instance, r);
+    CuBool_MatrixDense_Delete(instance, a);
+    CuBool_MatrixDense_Delete(instance, b);
+    CuBool_MatrixDense_Delete(instance, c);
+    CuBool_MatrixDense_Delete(instance, r);
 
-    CuBoolInstanceDestroy(instance);
+    CuBool_Instance_Delete(instance);
 }
 
 TEST(Benchmark, NaiveGpuDenseMatrix) {
+    using namespace naive_gpu;
+
     gpuMatrix *a, *b, *c;
 
-    int sizes[] = { 128, 256, 512, 1024, 2048, 4096, 8192, 8192 * 2, 8192 * 4, 8192 * 8 };
-
     for (auto s: sizes) {
-        int n = s;
+        int n = (int) s;
 
         std::vector<CuBoolPair> aval;
         std::vector<CuBoolPair> bval;
         std::vector<CuBoolPair> cval;
 
-        generateTestData(n, n, aval, Condition());
-        generateTestData(n, n, bval, Condition());
-        generateTestData(n, n, cval, Condition());
+        generateTestData(n, n, aval, Condition2());
+        generateTestData(n, n, bval, Condition2());
+        generateTestData(n, n, cval, Condition2());
 
         gpuMatrix::set_N(n);
 
@@ -170,7 +134,9 @@ TEST(Benchmark, NaiveGpuDenseMatrix) {
         c->allocate_device_matrix();
         c->transfer_to_gpu();
 
-        {
+        double executionTimeMs = 0;
+
+        for (size_t i = 0; i < iterations; i++) {
             using namespace std::chrono;
 
             gpu_lib::synchronize();
@@ -181,8 +147,76 @@ TEST(Benchmark, NaiveGpuDenseMatrix) {
             gpu_lib::synchronize();
             auto end = high_resolution_clock::now();
 
-            std::cout << "Operation: Mult-Add [N=" << s << "]: " << (double)duration_cast<nanoseconds>(end - start).count() / 1.0e6 << "ms" << std::endl;
+            executionTimeMs += (double)duration_cast<nanoseconds>(end - start).count() / 1.0e6;
         }
+
+        std::cout << "Operation: Mult-Add [N=" << n << "]: " << executionTimeMs / (double)iterations << " ms" << std::endl;
+
+        a->deallocate_device_matrix();
+        b->deallocate_device_matrix();
+        c->deallocate_device_matrix();
+
+        delete a;
+        delete b;
+        delete c;
+    }
+}
+
+TEST(Benchmark, NaiveGpuSharedDenseMatrix) {
+    using namespace naive_gpu_shared;
+
+    gpuMatrix *a, *b, *c;
+
+    for (auto s: sizes) {
+        int n = (int) s;
+
+        std::vector<CuBoolPair> aval;
+        std::vector<CuBoolPair> bval;
+        std::vector<CuBoolPair> cval;
+
+        generateTestData(n, n, aval, Condition2());
+        generateTestData(n, n, bval, Condition2());
+        generateTestData(n, n, cval, Condition2());
+
+        gpuMatrix::set_N(n);
+
+        a = new gpuMatrix(n);
+        b = new gpuMatrix(n);
+        c = new gpuMatrix(n);
+
+        for (auto p: aval)
+            a->set_bit(p.i, p.j);
+        for (auto p: bval)
+            b->set_bit(p.i, p.j);
+        for (auto p: cval)
+            c->set_bit(p.i, p.j);
+
+        a->allocate_device_matrix();
+        a->transfer_to_gpu();
+
+        b->allocate_device_matrix();
+        b->transfer_to_gpu();
+
+        c->allocate_device_matrix();
+        c->transfer_to_gpu();
+
+        double executionTimeMs = 0;
+
+        for (size_t i = 0; i < iterations; i++) {
+            using namespace std::chrono;
+
+            gpu_lib::synchronize();
+            auto start = high_resolution_clock::now();
+
+            c->add_mul(a, b);
+
+            gpu_lib::synchronize();
+            auto end = high_resolution_clock::now();
+
+            executionTimeMs += (double)duration_cast<nanoseconds>(end - start).count() / 1.0e6;
+        }
+
+        std::cout << "Operation: Mult-Add [N=" << n << "]: " << executionTimeMs / (double)iterations << " ms" << std::endl;
 
         a->deallocate_device_matrix();
         b->deallocate_device_matrix();
