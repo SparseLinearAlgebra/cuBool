@@ -99,7 +99,7 @@ $ git clone --recurse-submodules https://github.com/JetBrains-Research/cuBool.gi
 $ cd cuBool
 $ mkdir build
 $ cd build
-$ cmake .. -DCUBOOL_BUILD_TESTS=YES
+$ cmake .. -DCUBOOL_BUILD_TESTS=ON
 $ cmake --build . --target all -j `nproc`
 $ sh ../scripts/tests_run_all.sh
 ```
@@ -130,8 +130,8 @@ cuBool
 
 ## License
 
-This project is licensed under MIT License. The full license text could be found in
-the [license file](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE).
+This project is licensed under MIT License. License text can be found in the 
+[license file](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE).
 
 ## Contributors
 

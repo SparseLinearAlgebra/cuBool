@@ -121,7 +121,7 @@ typedef struct CuBoolAllocationCallback {
     void* userData;
     CuBoolCpuMemAllocateFun allocateFun;
     CuBoolCpuMemDeallocateFun deallocateFun;
-} CuAllocationCallback;
+} CuBoolAllocationCallback;
 
 typedef struct CuBoolMessageCallback {
     void* userData;
@@ -131,7 +131,7 @@ typedef struct CuBoolMessageCallback {
 typedef struct CuBoolInstanceDesc {
     CuBoolGpuMemoryType memoryType;
     CuBoolMessageCallback errorCallback;
-    CuAllocationCallback allocationCallback;
+    CuBoolAllocationCallback allocationCallback;
 } CuBoolInstanceDesc;
 
 /**
@@ -156,9 +156,9 @@ CuBoolAPI const char* CuBool_LicenseInfo_Get();
  * @return Error if failed to query version info
  */
 CuBoolAPI CuBoolStatus CuBool_Version_Get(
-        int* major,
-        int* minor,
-        int* version
+    int*                        major,
+    int*                        minor,
+    int*                        version
 );
 
 /**
@@ -169,7 +169,7 @@ CuBoolAPI CuBoolStatus CuBool_Version_Get(
  * @return Error if cuda device not present or if failed to query capabilities
  */
 CuBoolAPI CuBoolStatus CuBool_DeviceCaps_Get(
-        CuBoolDeviceCaps* deviceCaps
+    CuBoolDeviceCaps*           deviceCaps
 );
 
 /**
@@ -181,8 +181,8 @@ CuBoolAPI CuBoolStatus CuBool_DeviceCaps_Get(
  * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_Instance_New(
-        const CuBoolInstanceDesc* instanceDesc,
-        CuBoolInstance* instance
+    const CuBoolInstanceDesc*   instanceDesc,
+    CuBoolInstance*             instance
 );
 
 /**
@@ -194,7 +194,7 @@ CuBoolAPI CuBoolStatus CuBool_Instance_New(
  * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_Instance_Delete(
-        CuBoolInstance instance
+    CuBoolInstance              instance
 );
 
 /**
@@ -203,7 +203,22 @@ CuBoolAPI CuBoolStatus CuBool_Instance_Delete(
  * @return
  */
 CuBoolAPI CuBoolStatus CuBool_SyncHostDevice(
-        CuBoolInstance instance
+    CuBoolInstance              instance
+);
+
+/**
+ *
+ * @param instance
+ * @param matrix
+ * @param nrows
+ * @param ncols
+ * @return
+ */
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_New(
+    CuBoolInstance              instance,
+    CuBoolMatrixDense*          matrix,
+    CuBoolSize_t                nrows,
+    CuBoolSize_t                ncols
 );
 
 /**
@@ -212,9 +227,9 @@ CuBoolAPI CuBoolStatus CuBool_SyncHostDevice(
  * @param matrix
  * @return
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_New(
-        CuBoolInstance instance,
-        CuBoolMatrixDense* matrix
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_New_(
+    CuBoolInstance              instance,
+    CuBoolMatrixDense*          matrix
 );
 
 /**
@@ -224,8 +239,23 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_New(
  * @return
  */
 CuBoolAPI CuBoolStatus CuBool_MatrixDense_Delete(
-        CuBoolInstance instance,
-        CuBoolMatrixDense matrix
+    CuBoolInstance              instance,
+    CuBoolMatrixDense           matrix
+);
+
+/**
+ *
+ * @param instance
+ * @param matrix
+ * @param nrows
+ * @param ncols
+ * @return
+ */
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_Resize (
+    CuBoolInstance              instance,
+    CuBoolMatrixDense           matrix,
+    CuBoolSize_t                nrows,
+    CuBoolSize_t                ncols
 );
 
 /**
@@ -233,14 +263,16 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Delete(
  * @param instance
  * @param matrix
  * @param rows
- * @param columns
+ * @param cols
+ * @param nvals
  * @return
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_Resize(
-        CuBoolInstance instance,
-        CuBoolMatrixDense matrix,
-        CuBoolSize_t rows,
-        CuBoolSize_t columns
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build (
+    CuBoolInstance              instance,
+    CuBoolMatrixDense           matrix,
+    const CuBoolSize_t*         rows,
+    const CuBoolSize_t*         cols,
+    CuBoolSize_t                nvals
 );
 
 /**
@@ -251,11 +283,11 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Resize(
  * @param values
  * @return
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build(
-        CuBoolInstance instance,
-        CuBoolMatrixDense matrix,
-        CuBoolSize_t count,
-        const CuBoolPair* values
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build_ (
+    CuBoolInstance              instance,
+    CuBoolMatrixDense           matrix,
+    CuBoolSize_t                count,
+    const CuBoolPair*           values
 );
 
 /**
@@ -271,11 +303,11 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs(
-        CuBoolInstance instance,
-        CuBoolMatrixDense matrix,
-        CuBoolSize_t* count,
-        CuBoolPair** values
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs (
+    CuBoolInstance              instance,
+    CuBoolMatrixDense           matrix,
+    CuBoolSize_t*               count,
+    CuBoolPair**                values
 );
 
 /**
@@ -296,12 +328,12 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultAdd(
-        CuBoolInstance instance,
-        CuBoolMatrixDense res,
-        CuBoolMatrixDense a,
-        CuBoolMatrixDense b,
-        CuBoolMatrixDense c
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultAdd (
+    CuBoolInstance              instance,
+    CuBoolMatrixDense           res,
+    CuBoolMatrixDense           a,
+    CuBoolMatrixDense           b,
+    CuBoolMatrixDense           c
 );
 
 /**
@@ -312,9 +344,9 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultAdd(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Vals_Delete(
-        CuBoolInstance instance,
-        CuBoolPair* values
+CuBoolAPI CuBoolStatus CuBool_Vals_Delete (
+    CuBoolInstance              instance,
+    CuBoolPair*                 values
 );
 
 #endif //CUBOOL_CUBOOL_H

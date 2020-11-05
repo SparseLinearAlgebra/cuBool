@@ -196,7 +196,7 @@ CuBoolStatus CuBool_SyncHostDevice(CuBoolInstance instance) {
     return instanceImpl->syncHostDevice();
 }
 
-CuBoolStatus CuBool_MatrixDense_New(CuBoolInstance instance, CuBoolMatrixDense* matrix) {
+CuBoolStatus CuBool_MatrixDense_New_(CuBoolInstance instance, CuBoolMatrixDense* matrix) {
     auto instanceImpl = (cubool::Instance*) instance;
 
     CUBOOL_CHECK_INSTANCE(instance);
@@ -219,7 +219,7 @@ CuBoolStatus CuBool_MatrixDense_Delete(CuBoolInstance instance, CuBoolMatrixDens
     return instanceImpl->destroyMatrixDense(matrixImpl);
 }
 
-CuBoolStatus CuBool_MatrixDense_Resize(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t rows, CuBoolSize_t columns) {
+CuBoolStatus CuBool_MatrixDense_Resize(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t nrows, CuBoolSize_t ncols) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 
@@ -228,10 +228,10 @@ CuBoolStatus CuBool_MatrixDense_Resize(CuBoolInstance instance, CuBoolMatrixDens
 
     CUBOOL_VALIDATE_MATRIX(matrixImpl);
 
-    return matrixImpl->resize(rows, columns);
+    return matrixImpl->resize(nrows, ncols);
 }
 
-CuBoolStatus CuBool_MatrixDense_Build(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values) {
+CuBoolStatus CuBool_MatrixDense_Build_(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 

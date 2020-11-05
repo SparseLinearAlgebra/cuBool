@@ -37,7 +37,7 @@ TEST(MatrixDense, CreateDestroy) {
 
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBool_MatrixDense_New(instance, &matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &matrix), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Delete(instance, matrix), CUBOOL_STATUS_SUCCESS);
 
     EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
@@ -53,7 +53,7 @@ TEST(MatrixDense, Resize) {
 
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBool_MatrixDense_New(instance, &matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &matrix), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Resize(instance, matrix, rows, columns), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Delete(instance, matrix), CUBOOL_STATUS_SUCCESS);
 
@@ -75,12 +75,12 @@ TEST(MatrixDense, Filling) {
 
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBool_MatrixDense_New(instance, &matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &matrix), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Resize(instance, matrix, m, n), CUBOOL_STATUS_SUCCESS);
 
     generateTestData(m, n, inputValues, Condition1{});
 
-    EXPECT_EQ(CuBool_MatrixDense_Build(instance, matrix, inputValues.size(), inputValues.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build_(instance, matrix, inputValues.size(), inputValues.data()), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_ExtractPairs(instance, matrix, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
 
     EXPECT_EQ(resultCount, inputValues.size());
@@ -120,24 +120,24 @@ TEST(MatrixDense, MultiplyAdd) {
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     // Allocate input matrices and resize to fill with input data
-    EXPECT_EQ(CuBool_MatrixDense_New(instance, &a), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &a), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Resize(instance, a, m, t), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_New(instance, &b), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &b), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Resize(instance, b, t, n), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_New(instance, &c), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &c), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Resize(instance, c, m, n), CUBOOL_STATUS_SUCCESS);
 
     // Allocate result matrix. No resize needed, since the data will be placed automatically
-    EXPECT_EQ(CuBool_MatrixDense_New(instance, &r), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &r), CUBOOL_STATUS_SUCCESS);
 
     generateTestData(m, t, aval, Condition2{});
     generateTestData(t, n, bval, Condition2{});
     generateTestData(m, n, cval, Condition2{});
 
     // Transfer input data into input matrices
-    EXPECT_EQ(CuBool_MatrixDense_Build(instance, a, aval.size(), aval.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_Build(instance, b, bval.size(), bval.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_Build(instance, c, cval.size(), cval.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build_(instance, a, aval.size(), aval.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build_(instance, b, bval.size(), bval.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build_(instance, c, cval.size(), cval.data()), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a x b + c
     EXPECT_EQ(CuBool_MatrixDense_MultAdd(instance, r, a, b, c), CUBOOL_STATUS_SUCCESS);

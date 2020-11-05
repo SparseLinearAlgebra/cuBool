@@ -4,9 +4,15 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(CUBOOL LANGUAGES CXX CUDA)
 
 # Exposed to the user build options
-option(CUBOOL_DEBUG "Build library in debug mode" TRUE)
-option(CUBOOL_RELEASE "Build library in release mode" FALSE)
-option(CUBOOL_BUILD_TESTS "Build project unit-tests with gtest" YES)
+option(CUBOOL_DEBUG "Build library in debug mode" ON)
+option(CUBOOL_RELEASE "Build library in release mode" OFF)
+option(CUBOOL_WITH_CUB "Build project with locally stored CUB library" ON)
+option(CUBOOL_WITH_NSPARSE "Build library with nsparse crs matrix multiplication backend" ON)
+option(CUBOOL_BUILD_TESTS "Build project unit-tests with gtest" ON)
+
+SET(CUBOOL_WITH_CUB ON CACHE BOOL "" FORCE)
+SET(CUBOOL_WITH_NSPARSE ON CACHE BOOL "" FORCE)
+SET(CUBOOL_BUILD_TESTS ON CACHE BOOL "" FORCE)
 
 # Library version setup
 set(CUBOOL_VERSION_MAJOR 0)
@@ -45,8 +51,23 @@ target_include_directories(cubool PRIVATE ${CMAKE_BINARY_DIR}/src)
 target_compile_features(cubool PUBLIC cxx_std_11)
 
 set_target_properties(cubool PROPERTIES CXX_STANDARD 11)
-set_target_properties(cubool PROPERTIES CXX_STANDARD_REQUIRED YES)
+set_target_properties(cubool PROPERTIES CXX_STANDARD_REQUIRED ON)
 set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+if (CUBOOL_WITH_CUB)
+    message(STATUS "Add cub as cuda utility")
+    set(CUB_ENABLE_HEADER_TESTING OFF CACHE BOOL "" FORCE)
+    set(CUB_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+    set(CUB_ENABLE_EXAMPLES OFF CACHE BOOL "" FORCE)
+    add_subdirectory(thirdparty/cub)
+    add_library(cub INTERFACE IMPORTED)
+    target_link_libraries(cub INTERFACE CUB::CUB)
+endif()
+
+if (CUBOOL_WITH_NSPARSE)
+    message(STATUS "Add nsparse library as crs matrix multiplication backend")
+    add_subdirectory(thirdparty/nsparse)
+endif()
 
 # If tests enabled, add tests sources to the build
 if (CUBOOL_BUILD_TESTS)

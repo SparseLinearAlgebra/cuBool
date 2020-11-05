@@ -44,10 +44,10 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
 
     CuBool_Instance_New(&instanceDesc, &instance);
 
-    CuBool_MatrixDense_New(instance, &a);
-    CuBool_MatrixDense_New(instance, &b);
-    CuBool_MatrixDense_New(instance, &c);
-    CuBool_MatrixDense_New(instance, &r);
+    CuBool_MatrixDense_New_(instance, &a);
+    CuBool_MatrixDense_New_(instance, &b);
+    CuBool_MatrixDense_New_(instance, &c);
+    CuBool_MatrixDense_New_(instance, &r);
 
     for (auto s: sizes) {
         m = t = n = s;
@@ -65,9 +65,9 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
         CuBool_MatrixDense_Resize(instance, c, m, n);
         CuBool_MatrixDense_Resize(instance, r, m, n); // resize, since we do not want to measure the speed of cuda allocator
 
-        CuBool_MatrixDense_Build(instance, a, aval.size(), aval.data());
-        CuBool_MatrixDense_Build(instance, b, bval.size(), bval.data());
-        CuBool_MatrixDense_Build(instance, c, cval.size(), cval.data());
+        CuBool_MatrixDense_Build_(instance, a, aval.size(), aval.data());
+        CuBool_MatrixDense_Build_(instance, b, bval.size(), bval.data());
+        CuBool_MatrixDense_Build_(instance, c, cval.size(), cval.data());
 
         double executionTimeMs = 0;
 
