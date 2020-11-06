@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.10)
+project(nsparse_um CXX CUDA)
+
+add_library(nsparse_um INTERFACE)
+target_include_directories(nsparse_um INTERFACE include/)
+target_compile_options(nsparse_um INTERFACE $<$<COMPILE_LANGUAGE:CUDA>: --expt-relaxed-constexpr --expt-extended-lambda -Xptxas -O3 >)
+
+add_subdirectory(test)

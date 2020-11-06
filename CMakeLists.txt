@@ -19,27 +19,27 @@ set(CUBOOL_VERSION_MAJOR 0)
 set(CUBOOL_VERSION_MINOR 1)
 
 configure_file(
-        ${CMAKE_CURRENT_LIST_DIR}/src/cubool/cubool_build.h.in
-        ${CMAKE_BINARY_DIR}/src/cubool/cubool_build.h)
+    ${CMAKE_CURRENT_LIST_DIR}/src/cubool/cubool_build.h.in
+    ${CMAKE_BINARY_DIR}/src/cubool/cubool_build.h)
 
 # Library sources
 set(CUBOOL_SOURCES
-        # Public sources
-        include/cubool/cubool.h
-        # Private sources
-        src/cubool/cubool.cpp
-        src/cubool/version.hpp
-        src/cubool/instance.cu
-        src/cubool/instance.hpp
-        src/cubool/utils/gpu_buffer.cu
-        src/cubool/utils/gpu_buffer.hpp
-        src/cubool/utils/cpu_buffer.cpp
-        src/cubool/utils/cpu_buffer.hpp
-        src/cubool/matrix_dense.cpp
-        src/cubool/matrix_dense.hpp
-        src/cubool/kernels/matrix_dense_multiply_add.cu
-        src/cubool/kernels/matrix_dense_frontend.hpp
-        src/cubool/kernels/matrix_dense_shared.cuh src/cubool/instance.cpp)
+    # Public sources
+    include/cubool/cubool.h
+    # Private sources
+    src/cubool/cubool.cpp
+    src/cubool/version.hpp
+    src/cubool/instance.cu
+    src/cubool/instance.hpp
+    src/cubool/utils/gpu_buffer.cu
+    src/cubool/utils/gpu_buffer.hpp
+    src/cubool/utils/cpu_buffer.cpp
+    src/cubool/utils/cpu_buffer.hpp
+    src/cubool/matrix_dense.cpp
+    src/cubool/matrix_dense.hpp
+    src/cubool/kernels/matrix_dense_multiply_add.cu
+    src/cubool/kernels/matrix_dense_frontend.hpp
+    src/cubool/kernels/matrix_dense_shared.cuh src/cubool/instance.cpp)
 
 # Shared library object config
 add_library(cubool SHARED ${CUBOOL_SOURCES})
@@ -67,6 +67,7 @@ endif()
 if (CUBOOL_WITH_NSPARSE)
     message(STATUS "Add nsparse library as crs matrix multiplication backend")
     add_subdirectory(thirdparty/nsparse)
+    add_subdirectory(thirdparty/nsparse-um)
 endif()
 
 # If tests enabled, add tests sources to the build

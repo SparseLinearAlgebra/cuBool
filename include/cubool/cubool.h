@@ -56,19 +56,19 @@ typedef enum CuBoolMajorOrder {
 } CuBoolMajorOrder;
 
 /** Alias size type for memory and indexing types */
-typedef size_t CuBoolSize_t;
+typedef size_t                      CuBoolSize_t;
 
 /** Alias cpu (ram) memory pointer */
-typedef void* CuBoolCpuPtr_t;
+typedef void*                       CuBoolCpuPtr_t;
 
 /** Alias cpu (ram) const memory pointer */
-typedef const void* CuBoolCpuConstPtr_t;
+typedef const void*                 CuBoolCpuConstPtr_t;
 
 /** Alias gpu (vram or managed) memory pointer */
-typedef void* CuBoolGpuPtr_t;
+typedef void*                       CuBoolGpuPtr_t;
 
 /** Alias gpu (vram or managed) const memory pointer */
-typedef const void* CuBoolGpuConstPtr_t;
+typedef const void*                 CuBoolGpuConstPtr_t;
 
 /** Cubool library instance handler */
 typedef struct CuBoolInstance_t*    CuBoolInstance;
@@ -80,58 +80,68 @@ typedef struct CuBoolMatrixDense_t* CuBoolMatrixDense;
  * @brief Memory allocate callback
  * Signature for user-provided function pointer, used to allocate CPU memory for library resources
  */
-typedef CuBoolCpuPtr_t (*CuBoolCpuMemAllocateFun)(CuBoolSize_t size, void* userData);
+typedef CuBoolCpuPtr_t (*CuBoolCpuMemAllocateFun)(
+    CuBoolSize_t                size,
+    void*                       userData
+);
 
 /**
  * @brief Memory deallocate callback
  * Signature for user-provided function pointer, used to deallocate CPU memory, previously allocated with CuBoolCpuMemAllocateFun
  */
-typedef void (*CuBoolCpuMemDeallocateFun)(CuBoolCpuPtr_t ptr, void* userData);
+typedef void (*CuBoolCpuMemDeallocateFun)(
+    CuBoolCpuPtr_t              ptr,
+    void*                       userData
+);
 
 /**
  * @brief Message callback
  * User provided message callback to observe library messages and errors
  */
-typedef void (*CuBoolMsgFun)(CuBoolStatus status, const char* message, void* userData);
+typedef void (*CuBoolMsgFun)(
+    CuBoolStatus                status,
+    const char*                 message,
+    void*                       userData
+);
 
 /** Pair of the indices used to represent non-empty matrices values */
 typedef struct CuBoolPair {
-    CuBoolSize_t i;
-    CuBoolSize_t j;
+    CuBoolSize_t                i;
+    CuBoolSize_t                j;
 } CuBoolPair;
 
 typedef struct CuBoolDeviceCaps {
-    char name[256];
-    int major;
-    int minor;
-    int warp;
-    bool cudaSupported;
-    CuBoolSize_t globalMemoryKiBs;
-    CuBoolSize_t sharedMemoryPerMultiProcKiBs;
-    CuBoolSize_t sharedMemoryPerBlockKiBs;
+    char                        name[256];
+    int                         major;
+    int                         minor;
+    int                         warp;
+    bool                        cudaSupported;
+    CuBoolSize_t                globalMemoryKiBs;
+    CuBoolSize_t                sharedMemoryPerMultiProcKiBs;
+    CuBoolSize_t                sharedMemoryPerBlockKiBs;
 } CuBoolDeviceCaps;
 
 typedef struct CuBoolGpuAllocation {
-    CuBoolGpuMemoryType memoryType;
-    CuBoolGpuPtr_t memoryPtr;
-    CuBoolSize_t size;
+    CuBoolGpuMemoryType         memoryType;
+    CuBoolGpuPtr_t              memoryPtr;
+    CuBoolSize_t                size;
 } CuBoolGpuAllocation;
 
 typedef struct CuBoolAllocationCallback {
-    void* userData;
-    CuBoolCpuMemAllocateFun allocateFun;
-    CuBoolCpuMemDeallocateFun deallocateFun;
+    void*                       userData;
+    CuBoolCpuMemAllocateFun     allocateFun;
+    CuBoolCpuMemDeallocateFun   deallocateFun;
 } CuBoolAllocationCallback;
 
 typedef struct CuBoolMessageCallback {
-    void* userData;
-    CuBoolMsgFun msgFun;
+    void*                       userData;
+    CuBoolMsgFun                msgFun;
 } CuBoolMessageCallback;
 
 typedef struct CuBoolInstanceDesc {
-    CuBoolGpuMemoryType memoryType;
-    CuBoolMessageCallback errorCallback;
-    CuBoolAllocationCallback allocationCallback;
+    CuBoolGpuMemoryType         memoryType;
+    CuBoolMessageCallback       errorCallback;
+    CuBoolAllocationCallback    allocationCallback;
 } CuBoolInstanceDesc;
 
 /**
