@@ -8,10 +8,6 @@ Original source code is hosted [here](https://github.com/YaccConstructor/RedisGr
 For more info view branches `CFPQ-gpu` and `CFPQ-gpu-um`, where the source code
 is stored at path `deps/cfpq/algorithms/cuda/nsparse`.
 
-## Also
-
-The author of the implementaio is Artyom Khoroshev (Github: [profile](https://github.com/akhoroshev)).
-
 ## Useful links
 
 - High-performance and Memory-saving
@@ -22,3 +18,8 @@ The author of the implementaio is Artyom Khoroshev (Github: [profile](https://gi
 - Context-Free Path Querying with Single-Path
   Semantics by Matrix Multiplication 
   [paper](https://www.researchgate.net/publication/342164347_Context-Free_Path_Querying_with_Single-Path_Semantics_by_Matrix_Multiplication)
+  
+## Also
+
+The author of the original implementation is Artyom Khoroshev 
+(Github: [profile](https://github.com/akhoroshev)).

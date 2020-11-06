@@ -1,6 +1,6 @@
 # CuBool library Cmake config file
 # Add this file as sub-directory to your project to use library functionality
-cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 project(CUBOOL LANGUAGES CXX CUDA)
 
 # Exposed to the user build options
@@ -48,11 +48,28 @@ target_include_directories(cubool PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(cubool PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
 target_include_directories(cubool PRIVATE ${CMAKE_BINARY_DIR}/src)
 
-target_compile_features(cubool PUBLIC cxx_std_11)
+target_compile_features(cubool PUBLIC cxx_std_14)
 
 set_target_properties(cubool PROPERTIES CXX_STANDARD 11)
 set_target_properties(cubool PROPERTIES CXX_STANDARD_REQUIRED ON)
+set_target_properties(cubool PROPERTIES CUDA_STANDARD 11)
+set_target_properties(cubool PROPERTIES CUDA_STANDARD_REQUIRED ON)
 set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+# Static library config
+add_library(cubool_static SHARED ${CUBOOL_SOURCES})
+
+target_include_directories(cubool_static PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(cubool_static PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
+target_include_directories(cubool_static PRIVATE ${CMAKE_BINARY_DIR}/src)
+
+target_compile_features(cubool_static PUBLIC cxx_std_11)
+
+set_target_properties(cubool_static PROPERTIES CXX_STANDARD 11)
+set_target_properties(cubool_static PROPERTIES CXX_STANDARD_REQUIRED ON)
+set_target_properties(cubool_static PROPERTIES CUDA_STANDARD 11)
+set_target_properties(cubool_static PROPERTIES CUDA_STANDARD_REQUIRED ON)
+set_target_properties(cubool_static PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 if (CUBOOL_WITH_CUB)
     message(STATUS "Add cub as cuda utility")

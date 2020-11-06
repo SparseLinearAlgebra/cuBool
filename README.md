@@ -125,6 +125,10 @@ cuBool
 ├── tests - gtest-based unit-tests collection
 ├── scripts - short utility programs 
 ├── thirdparty - project dependencies
+│   ├── gtest - google test framework for unit testing
+│   ├── cub - cuda utility, required for nsparse
+│   ├── nsparse - SpGEMM implementation for csr matrices
+│   └── nsparse-um - SpGEMM implementation for csr matrices with unified memory 
 └── CMakeLists.txt - library cmake config, add this as sub-directory to your project
 ```
 
