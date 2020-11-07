@@ -8,10 +8,12 @@ option(CUBOOL_DEBUG "Build library in debug mode" ON)
 option(CUBOOL_RELEASE "Build library in release mode" OFF)
 option(CUBOOL_WITH_CUB "Build project with locally stored CUB library" ON)
 option(CUBOOL_WITH_NSPARSE "Build library with nsparse crs matrix multiplication backend" ON)
+option(CUBOOL_WITH_NAIVE "Build library with naive and naive-shared dense matrix multiplication" ON)
 option(CUBOOL_BUILD_TESTS "Build project unit-tests with gtest" ON)
 
 SET(CUBOOL_WITH_CUB ON CACHE BOOL "" FORCE)
 SET(CUBOOL_WITH_NSPARSE ON CACHE BOOL "" FORCE)
+SET(CUBOOL_WITH_NAIVE ON CACHE BOOL "" FORCE)
 SET(CUBOOL_BUILD_TESTS ON CACHE BOOL "" FORCE)
 
 # Library version setup
@@ -85,6 +87,11 @@ if (CUBOOL_WITH_NSPARSE)
     message(STATUS "Add nsparse library as crs matrix multiplication backend")
     add_subdirectory(thirdparty/nsparse)
     add_subdirectory(thirdparty/nsparse-um)
+endif()
+
+if (CUBOOL_WITH_NAIVE)
+    message(STATUS "Add naive library as dense matrix multiplication implementation for benchmarks")
+    add_subdirectory(thirdparty/naive)
 endif()
 
 # If tests enabled, add tests sources to the build

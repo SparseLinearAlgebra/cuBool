@@ -5,6 +5,7 @@
 #cmakedefine CUBOOL_RELEASE
 #cmakedefine CUBOOL_WITH_CUB
 #cmakedefine CUBOOL_WITH_NSPARSE
+#cmakedefine CUBOOL_WITH_NAIVE
 #cmakedefine CUBOOL_BUILD_TESTS
 
 #define CUBOOL_VERSION_MAJOR @CUBOOL_VERSION_MAJOR@
