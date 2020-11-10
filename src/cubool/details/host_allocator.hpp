@@ -24,74 +24,53 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <cubool/utils/cpu_buffer.hpp>
-#include <cubool/instance.hpp>
+#ifndef CUBOOL_HOST_ALLOCATOR_HPP
+#define CUBOOL_HOST_ALLOCATOR_HPP
 
-#include <memory>
+#include <cubool/instance.hpp>
+#include <cubool/details/error.hpp>
 
 namespace cubool {
+    namespace details {
 
-    CpuBuffer::CpuBuffer(class Instance &instance) {
-        mInstancePtr = &instance;
-    }
+        template <class T>
+        class HostAllocator: public std::allocator<T> {
+        public:
 
-    CpuBuffer::CpuBuffer(const CpuBuffer &other) {
-        mInstancePtr = other.mInstancePtr;
-        resizeNoContentKeep(other.mSize);
-        copy(other.mMemory, other.mSize, 0);
-    }
+            typedef std::allocator<T> super;
+            typedef typename super::pointer pointer;
+            typedef typename super::size_type size_type;
 
-    CpuBuffer::CpuBuffer(CpuBuffer &&other) noexcept {
-        mInstancePtr = other.mInstancePtr;
-        mMemory = other.mMemory;
-        mSize = other.mSize;
+            template <class U>
+            struct rebind { typedef HostAllocator<U> other; };
 
-        other.mMemory = nullptr;
-        other.mSize = 0;
-    }
+            explicit HostAllocator(Instance& instance): super(), mInstanceRef(instance) { }
+            HostAllocator(const HostAllocator<T> &other): super(other), mInstanceRef(other.mInstanceRef) { }
+            HostAllocator(HostAllocator<T> &&other)noexcept: super(std::move(other)), mInstanceRef(other.mInstanceRef) { }
+            ~HostAllocator() = default;
 
-    CpuBuffer::~CpuBuffer() {
-        resizeNoContentKeep(0);
-    }
-
-    CuBoolStatus CpuBuffer::resizeNoContentKeep(CuBoolSize_t size) {
-        if (isNotEmpty()) {
-            CuBoolStatus error = mInstancePtr->deallocate(mMemory);
-            mMemory = nullptr;
-            mSize = 0;
-
-            if (error != CUBOOL_STATUS_SUCCESS) {
-                return error;
+            HostAllocator& operator=(const HostAllocator<T> &other) {
+                this->~HostAllocator();
+                new (this) HostAllocator<T>(other);
+                return *this;
             }
-        }
 
-        if (size > 0) {
-            mSize = size;
-            return mInstancePtr->allocate(&mMemory, mSize);
-        }
+            pointer allocate(size_type n) {
+                CuBoolCpuPtr_t ptr = nullptr;
+                mInstanceRef.allocate(&ptr, n * sizeof(T));
+                return (pointer) ptr;
+            }
 
-        return CUBOOL_STATUS_SUCCESS;
+            void deallocate(pointer p, size_type n) {
+                (void)n;
+                mInstanceRef.deallocate(p);
+            }
+
+        private:
+            Instance& mInstanceRef;
+        };
+
     }
-
-    CuBoolStatus CpuBuffer::copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset) {
-        if (size == 0) {
-            return CUBOOL_STATUS_SUCCESS;
-        }
-
-        if (!source) {
-            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Null pointer to copy passed");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
-        }
-
-        if (size + writeOffset > mSize) {
-            mInstancePtr->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Write region out of buffer bounds");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
-        }
-
-        CuBoolCpuPtr_t destination = ((uint8_t*)mMemory) + writeOffset;
-        memcpy(destination, source, size);
-
-        return CUBOOL_STATUS_SUCCESS;
-    }
-
 }
+
+#endif //CUBOOL_HOST_ALLOCATOR_HPP

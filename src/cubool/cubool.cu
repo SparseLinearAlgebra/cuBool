@@ -27,9 +27,8 @@
 #include <cubool/cubool.h>
 #include <cubool/version.hpp>
 #include <cubool/instance.hpp>
-
-#include <cubool/kernels/matrix_dense_frontend.hpp>
-
+#include <cubool/matrix_dense.cuh>
+#include <cubool/details/error.hpp>
 #include <cstdlib>
 #include <string>
 
@@ -46,52 +45,54 @@
         return CUBOOL_STATUS_INVALID_ARGUMENT;                                                          \
     }
 
-#define CUBOOL_VALIDATE_MATRIX(matrix)                                                                  \
-    {                                                                                                   \
-        CuBoolStatus status = instanceImpl->validateMatrix(matrix);                                     \
-        if (status != CUBOOL_STATUS_SUCCESS) {                                                          \
-            return status;                                                                              \
-        }                                                                                               \
-    }
+#define CUBOOL_BEGIN_BODY \
+        try {
+
+#define CUBOOL_END_BODY } \
+        catch (const cubool::details::Error& err) { \
+             instanceImpl->sendMessage(err.status(), err.what()); \
+             return err.status(); \
+        }                      \
+        return CuBoolStatus::CUBOOL_STATUS_SUCCESS; \
 
 const char* CuBool_About_Get() {
     static const char about[] =
-        "CuBool is a linear boolean algebra library primitives and operations for \n"
-        "work with dense and sparse matrices written on the NVIDIA CUDA platform. The primary \n"
-        "goal of the library is implementation, testing and profiling algorithms for\n"
-        "solving *formal-language-constrained problems*, such as *context-free* \n"
-        "and *recursive* path queries with various semantics for graph databases."
-        ""
-        "Contributors:"
-        "- Semyon Grigorev (Github: https://github.com/gsvgit)\n"
-        "- Egor Orachyov (Github: https://github.com/EgorOrachyov)";
+            "CuBool is a linear boolean algebra library primitives and operations for \n"
+            "work with dense and sparse matrices written on the NVIDIA CUDA platform. The primary \n"
+            "goal of the library is implementation, testing and profiling algorithms for\n"
+            "solving *formal-language-constrained problems*, such as *context-free* \n"
+            "and *recursive* path queries with various semantics for graph databases."
+            ""
+            "Contributors:"
+            "- Semyon Grigorev (Github: https://github.com/gsvgit)\n"
+            "- Egor Orachyov (Github: https://github.com/EgorOrachyov)";
 
     return about;
 }
 
 const char* CuBool_LicenseInfo_Get() {
     static const char license[] =
-        "MIT License\n"
-        "\n"
-        "Copyright (c) 2020 JetBrains-Research\n"
-        "\n"
-        "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
-        "of this software and associated documentation files (the \"Software\"), to deal\n"
-        "in the Software without restriction, including without limitation the rights\n"
-        "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
-        "copies of the Software, and to permit persons to whom the Software is\n"
-        "furnished to do so, subject to the following conditions:\n"
-        "\n"
-        "The above copyright notice and this permission notice shall be included in all\n"
-        "copies or substantial portions of the Software.\n"
-        "\n"
-        "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
-        "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
-        "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
-        "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
-        "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
-        "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
-        "SOFTWARE.";
+            "MIT License\n"
+            "\n"
+            "Copyright (c) 2020 JetBrains-Research\n"
+            "\n"
+            "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
+            "of this software and associated documentation files (the \"Software\"), to deal\n"
+            "in the Software without restriction, including without limitation the rights\n"
+            "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
+            "copies of the Software, and to permit persons to whom the Software is\n"
+            "furnished to do so, subject to the following conditions:\n"
+            "\n"
+            "The above copyright notice and this permission notice shall be included in all\n"
+            "copies or substantial portions of the Software.\n"
+            "\n"
+            "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
+            "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
+            "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
+            "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
+            "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
+            "SOFTWARE.";
 
     return license;
 }
@@ -193,20 +194,22 @@ CuBoolStatus CuBool_SyncHostDevice(CuBoolInstance instance) {
 
     CUBOOL_CHECK_INSTANCE(instance);
 
-    return instanceImpl->syncHostDevice();
+    CUBOOL_BEGIN_BODY
+        instanceImpl->syncHostDevice();
+    CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_MatrixDense_New_(CuBoolInstance instance, CuBoolMatrixDense* matrix) {
+CuBoolStatus CuBool_MatrixDense_New(CuBoolInstance instance, CuBoolMatrixDense *matrix, CuBoolSize_t nrows, CuBoolSize_t ncols) {
     auto instanceImpl = (cubool::Instance*) instance;
 
     CUBOOL_CHECK_INSTANCE(instance);
-    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
 
-    cubool::MatrixDense* matrixImpl = nullptr;
-    CuBoolStatus status = instanceImpl->createMatrixDense(matrixImpl);
-    *matrix = (CuBoolMatrixDense) matrixImpl;
-
-    return status;
+    CUBOOL_BEGIN_BODY
+        cubool::MatrixDense* matrixImpl = nullptr;
+        instanceImpl->createMatrixDense(matrixImpl);
+        matrixImpl->resize(nrows, ncols);
+        *matrix = (CuBoolMatrixDense) matrixImpl;
+    CUBOOL_END_BODY
 }
 
 CuBoolStatus CuBool_MatrixDense_Delete(CuBoolInstance instance, CuBoolMatrixDense matrix) {
@@ -216,7 +219,9 @@ CuBoolStatus CuBool_MatrixDense_Delete(CuBoolInstance instance, CuBoolMatrixDens
     CUBOOL_CHECK_INSTANCE(instance);
     CUBOOL_CHECK_ARG_NOT_NULL(matrix);
 
-    return instanceImpl->destroyMatrixDense(matrixImpl);
+    CUBOOL_BEGIN_BODY
+        instanceImpl->destroyMatrixDense(matrixImpl);
+    CUBOOL_END_BODY
 }
 
 CuBoolStatus CuBool_MatrixDense_Resize(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t nrows, CuBoolSize_t ncols) {
@@ -226,64 +231,71 @@ CuBoolStatus CuBool_MatrixDense_Resize(CuBoolInstance instance, CuBoolMatrixDens
     CUBOOL_CHECK_INSTANCE(instance);
     CUBOOL_CHECK_ARG_NOT_NULL(matrix);
 
-    CUBOOL_VALIDATE_MATRIX(matrixImpl);
-
-    return matrixImpl->resize(nrows, ncols);
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrix(matrixImpl);
+        matrixImpl->resize(nrows, ncols);
+    CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_MatrixDense_Build_(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t count, const CuBoolPair* values) {
+CuBoolStatus CuBool_MatrixDense_Build(CuBoolInstance instance, CuBoolMatrixDense matrix, const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 
     CUBOOL_CHECK_INSTANCE(instance);
-    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
-    CUBOOL_CHECK_ARG_NOT_NULL(values);
+    CUBOOL_CHECK_ARG_NOT_NULL(rows);
+    CUBOOL_CHECK_ARG_NOT_NULL(cols);
 
-    CUBOOL_VALIDATE_MATRIX(matrixImpl);
-
-    return matrixImpl->writeValues(count, values);
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrix(matrixImpl);
+        matrixImpl->build(rows, cols, nvals);
+    CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_MatrixDense_ExtractPairs(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolSize_t* count, CuBoolPair** values) {
+CuBoolStatus CuBool_MatrixDense_ExtractPairs(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 
     CUBOOL_CHECK_INSTANCE(instance);
-    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
-    CUBOOL_CHECK_ARG_NOT_NULL(count);
-    CUBOOL_CHECK_ARG_NOT_NULL(values);
+    CUBOOL_CHECK_ARG_NOT_NULL(rows);
+    CUBOOL_CHECK_ARG_NOT_NULL(cols);
+    CUBOOL_CHECK_ARG_NOT_NULL(nvals);
 
-    CUBOOL_VALIDATE_MATRIX(matrixImpl);
-
-    return matrixImpl->readValues(count, values);
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrix(matrixImpl);
+        matrixImpl->extract(rows, cols, nvals);
+    CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_Vals_Delete(CuBoolInstance instance, CuBoolPair* values) {
+
+CuBoolStatus CuBool_Vals_Delete(CuBoolInstance instance, CuBoolIndex_t* vals) {
     auto instanceImpl = (cubool::Instance*) instance;
 
     CUBOOL_CHECK_INSTANCE(instance);
-    CUBOOL_CHECK_ARG_NOT_NULL(values);
+    CUBOOL_CHECK_ARG_NOT_NULL(vals);
 
-    return instanceImpl->deallocate(values);
+    CUBOOL_BEGIN_BODY
+        instanceImpl->deallocate(vals);
+    CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_MatrixDense_MultAdd(CuBoolInstance instance, CuBoolMatrixDense res, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c) {
+CuBoolStatus CuBool_MatrixDense_MultAdd(CuBoolInstance instance, CuBoolMatrixDense r, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c) {
     auto instanceImpl = (cubool::Instance*) instance;
-    auto resImpl = (cubool::MatrixDense*) res;
+    auto rImpl = (cubool::MatrixDense*) r;
     auto aImpl = (cubool::MatrixDense*) a;
     auto bImpl = (cubool::MatrixDense*) b;
     auto cImpl = (cubool::MatrixDense*) c;
 
     CUBOOL_CHECK_INSTANCE(instance);
-    CUBOOL_CHECK_ARG_NOT_NULL(res);
+    CUBOOL_CHECK_ARG_NOT_NULL(r);
     CUBOOL_CHECK_ARG_NOT_NULL(a);
     CUBOOL_CHECK_ARG_NOT_NULL(b);
     CUBOOL_CHECK_ARG_NOT_NULL(c);
 
-    CUBOOL_VALIDATE_MATRIX(resImpl);
-    CUBOOL_VALIDATE_MATRIX(aImpl);
-    CUBOOL_VALIDATE_MATRIX(bImpl);
-    CUBOOL_VALIDATE_MATRIX(cImpl);
-
-    return cubool::MatrixDenseKernels::invokeMultiplyAdd(*instanceImpl, *resImpl, *aImpl, *bImpl, *cImpl);
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrix(aImpl);
+        instanceImpl->validateMatrix(bImpl);
+        instanceImpl->validateMatrix(cImpl);
+        instanceImpl->validateMatrix(rImpl);
+        rImpl->multiplySum(*aImpl, *bImpl, *cImpl);
+    CUBOOL_END_BODY
 }

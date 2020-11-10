@@ -25,17 +25,57 @@
 /**********************************************************************************/
 
 #include <cubool/instance.hpp>
-
+#include <cubool/matrix_dense.cuh>
+#include <cubool/details/error.hpp>
 #include <string>
 #include <cstring>
 
 namespace cubool {
 
-    CuBoolStatus Instance::allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const {
-        if (!ptr) {
-            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null pointer to store allocated memory ptr");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
+    Instance::~Instance() {
+#ifdef CUBOOL_DEBUG
+        if (!mMatrixDenseSet.empty()) {
+            char message[2000];
+            snprintf(message, 2000, "Some MatrixDense objects (%llu) were not properly deallocated by user", (unsigned long long) mMatrixDenseSet.size());
+            sendMessage(CUBOOL_STATUS_INVALID_STATE, message);
         }
+#endif //CUBOOL_DEBUG
+
+        for (auto matrix: mMatrixDenseSet) {
+            matrix->~MatrixDense();
+            deallocate(matrix);
+        }
+    }
+
+    void Instance::createMatrixDense(MatrixDense *&matrixDense) {
+        CuBoolCpuPtr_t mem = nullptr;
+        allocate(&mem, sizeof(MatrixDense));
+
+        matrixDense = new (mem) MatrixDense(*this);
+        mMatrixDenseSet.emplace(matrixDense);
+    }
+
+    void Instance::validateMatrix(MatrixDense* matrixDense) {
+        bool contains = mMatrixDenseSet.find(matrixDense) != mMatrixDenseSet.end();
+
+        if (!contains)
+            throw details::InvalidArgument("No such matrix for provided handler");
+    }
+
+    void Instance::destroyMatrixDense(MatrixDense* matrixDense) {
+        auto itr = mMatrixDenseSet.find(matrixDense);
+
+        if (itr == mMatrixDenseSet.end())
+            throw details::InvalidArgument("No such matrix for provided handler");
+
+        mMatrixDenseSet.erase(itr);
+        matrixDense->~MatrixDense();
+        deallocate(matrixDense);
+    }
+
+    void Instance::allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const {
+        if (!ptr)
+            throw details::InvalidArgument("Passed null pointer to store allocated memory ptr");
 
         cudaError error;
 
@@ -47,49 +87,28 @@ namespace cubool {
                 error = cudaMallocManaged(ptr, size);
                 break;
             default:
-                sendMessage(CUBOOL_STATUS_INVALID_STATE, "Failed to fined suitable allocator");
-                return CUBOOL_STATUS_INVALID_STATE;
+                throw details::MemOpFailed("Failed to fined suitable allocator");
         }
 
-        if (error != cudaSuccess) {
-            std::string message = "Failed to allocate Gpu memory: ";
-            message += cudaGetErrorString(error);
-
-            sendMessage(CUBOOL_STATUS_MEM_OP_FAILED, message.c_str());
-            return CUBOOL_STATUS_MEM_OP_FAILED;
-        }
-
-        return CUBOOL_STATUS_SUCCESS;
+        if (error != cudaSuccess)
+            throw details::MemOpFailed(std::string{"Failed to allocate Gpu memory: "} + cudaGetErrorString(error));
     }
 
-    CuBoolStatus Instance::deallocateOnGpu(CuBoolGpuPtr_t ptr) const {
-        if (!ptr) {
-            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null pointer to free");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
-        }
+    void Instance::deallocateOnGpu(CuBoolGpuPtr_t ptr) const {
+        if (!ptr)
+            throw details::InvalidArgument("Passed null pointer to free");
 
         cudaError error = cudaFree(ptr);
 
-        if (error != cudaSuccess) {
-            std::string message = "Failed to deallocate Gpu memory: ";
-            message += cudaGetErrorString(error);
-
-            sendMessage(CUBOOL_STATUS_MEM_OP_FAILED, message.c_str());
-            return CUBOOL_STATUS_MEM_OP_FAILED;
-        }
-
-        return CUBOOL_STATUS_SUCCESS;
+        if (error != cudaSuccess)
+            throw details::MemOpFailed(std::string{"Failed to deallocate Gpu memory: "} + cudaGetErrorString(error));
     }
 
-    CuBoolStatus Instance::syncHostDevice() const {
+    void Instance::syncHostDevice() const {
         cudaError error = cudaDeviceSynchronize();
 
-        if (error != cudaSuccess) {
-            sendMessage(CUBOOL_STATUS_DEVICE_ERROR, "Failed to synchronize host and device");
-            return CUBOOL_STATUS_DEVICE_ERROR;
-        }
-
-        return CUBOOL_STATUS_SUCCESS;
+        if (error != cudaSuccess)
+            throw details::MemOpFailed(std::string{"Failed to synchronize host and device: "} + cudaGetErrorString(error));
     }
 
     bool Instance::isCudaDeviceSupported() {

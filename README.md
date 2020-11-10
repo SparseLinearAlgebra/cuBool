@@ -2,6 +2,7 @@
 
 [![JB Research](https://jb.gg/badges/research-flat-square.svg)](https://research.jetbrains.org/)
 [![Ubuntu](https://github.com/JetBrains-Research/cuBool/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/JetBrains-Research/cuBool/actions)
+[![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE)
 
 CuBool is a linear boolean algebra library primitives and operations for 
 work with dense and sparse matrices written on the NVIDIA CUDA platform. The primary 
@@ -17,16 +18,19 @@ the programming language *COBOL*.
 
 - [X] Library C interface
 - [X] Library instance/context
-- [X] Dense boolean matrix
-- [X] Dense boolean matrix operations
+- [X] Dense matrix
 - [X] Dense multiplication 
 - [ ] Dense addition
 - [ ] Dense kronecker product 
-- [ ] Sparse CSR matrix
-- [ ] Sparse CSR matrix operations
-- [ ] Sparse CSR multiplication
-- [ ] Sparse CSR addition
-- [ ] Sparse CSR kronecker
+- [ ] CSR matrix
+- [ ] CSR multiplication
+- [ ] CSR addition
+- [ ] CSR kronecker
+- [ ] Block СSR matrix
+- [ ] Block CSR multiplication
+- [ ] Block CSR addition
+- [ ] Block CSR kronecker
+- [ ] Sparse matrix wrapper
 - [ ] Wrapper for Python API 
 - [ ] User guide
 - [ ] Unit Tests collection

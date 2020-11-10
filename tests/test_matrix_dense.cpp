@@ -37,7 +37,7 @@ TEST(MatrixDense, CreateDestroy) {
 
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &matrix, 0, 0), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Delete(instance, matrix), CUBOOL_STATUS_SUCCESS);
 
     EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
@@ -53,118 +53,206 @@ TEST(MatrixDense, Resize) {
 
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &matrix), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_Resize(instance, matrix, rows, columns), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &matrix, rows, columns), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Delete(instance, matrix), CUBOOL_STATUS_SUCCESS);
 
     EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(MatrixDense, Filling) {
-    CuBoolInstance instance = nullptr;
-    CuBoolInstanceDesc instanceDesc{};
+// Fills dense matrix with random data and tests whether the transfer works correctly
+void testMatrixFilling(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInstance instance) {
     CuBoolMatrixDense matrix = nullptr;
-    CuBoolSize_t m = 1024, n = 2048;
 
-    CuBoolSize_t resultCount;
-    CuBoolPair* resultValues;
-    std::vector<CuBoolPair> inputValues;
-    std::unordered_set<CuBoolPair, CuBoolPairHash, CuBoolPairEq> inputValuesSet;
+    std::vector<CuBoolIndex_t> rows;
+    std::vector<CuBoolIndex_t> cols;
+    CuBoolSize_t nvals;
 
-    setupInstanceDesc(instanceDesc);
+    generateTestData(m, n, rows, cols, nvals, Condition3{density});
 
-    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &matrix, m, n), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build(instance, matrix, rows.data(), cols.data(), nvals), CUBOOL_STATUS_SUCCESS);
 
-    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &matrix), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_Resize(instance, matrix, m, n), CUBOOL_STATUS_SUCCESS);
+    CuBoolIndex_t* extRows;
+    CuBoolIndex_t* extCols;
+    CuBoolSize_t extNvals;
 
-    generateTestData(m, n, inputValues, Condition1{});
+    EXPECT_EQ(CuBool_MatrixDense_ExtractPairs(instance, matrix, &extRows, &extCols, &extNvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(nvals, extNvals);
 
-    EXPECT_EQ(CuBool_MatrixDense_Build_(instance, matrix, inputValues.size(), inputValues.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_ExtractPairs(instance, matrix, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
+    if (nvals == extNvals) {
+        std::unordered_set<CuBoolPair,CuBoolPairHash,CuBoolPairEq> cmpSet;
+        packCmpSet(rows, cols, cmpSet);
 
-    EXPECT_EQ(resultCount, inputValues.size());
-
-    if (resultCount == inputValues.size()) {
-        packCmpSet(inputValues, inputValuesSet);
-
-        for (CuBoolSize_t k = 0; k < resultCount; k++) {
-            EXPECT_EQ(inputValuesSet.find(resultValues[k]) != inputValuesSet.end(), true);
+        for (CuBoolSize_t k = 0; k < extNvals; k++) {
+            EXPECT_EQ(cmpSet.find(CuBoolPair{extRows[k], extCols[k]}) != cmpSet.end(), true);
         }
     }
 
     // Remember to release exposed array buffer
-    EXPECT_EQ(CuBool_Vals_Delete(instance, resultValues), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Vals_Delete(instance, extRows), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Vals_Delete(instance, extCols), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Delete(instance, matrix), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixDense, FillingSmall) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+
+    CuBoolSize_t m = 60, n = 100;
+
+    setupInstanceDesc(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixFilling(m, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
 
     EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(MatrixDense, MultiplyAdd) {
+TEST(MatrixDense, FillingMedium) {
     CuBoolInstance instance = nullptr;
     CuBoolInstanceDesc instanceDesc{};
-    CuBoolSize_t m = 145, t = 2456, n = 1753;
 
-    CuBoolMatrixDense a, b, c, r;
-
-    CuBoolSize_t resultCount = 0;
-    CuBoolPair* resultValues = nullptr;
-    std::vector<CuBoolPair> aval;
-    std::vector<CuBoolPair> bval;
-    std::vector<CuBoolPair> cval;
-    std::unordered_set<CuBoolPair, CuBoolPairHash, CuBoolPairEq> resultValuesSet;
+    CuBoolSize_t m = 500, n = 1000;
 
     setupInstanceDesc(instanceDesc);
-
-    // Setup instance
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixFilling(m, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
+
+    EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixDense, FillingLarge) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+
+    CuBoolSize_t m = 1000, n = 2000;
+
+    setupInstanceDesc(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixFilling(m, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
+
+    EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
+}
+
+void testMatrixMultiplySum(CuBoolSize_t m, CuBoolSize_t t, CuBoolSize_t n, float density, CuBoolInstance instance) {
+    CuBoolMatrixDense a, b, c, r;
+
+    std::vector<CuBoolIndex_t> arows;
+    std::vector<CuBoolIndex_t> acols;
+    std::vector<CuBoolIndex_t> brows;
+    std::vector<CuBoolIndex_t> bcols;
+    std::vector<CuBoolIndex_t> crows;
+    std::vector<CuBoolIndex_t> ccols;
+
+    CuBoolSize_t anvals;
+    CuBoolSize_t bnvals;
+    CuBoolSize_t cnvals;
+
+    // Generate test data with specified density
+    generateTestData(m, t, arows, acols, anvals, Condition3{density});
+    generateTestData(t, n, brows, bcols, bnvals, Condition3{density});
+    generateTestData(m, n, crows, ccols, cnvals, Condition3{density});
+
     // Allocate input matrices and resize to fill with input data
-    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &a), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_Resize(instance, a, m, t), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &b), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_Resize(instance, b, t, n), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &c), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_Resize(instance, c, m, n), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &a, m, t), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &b, t, n), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &c, m, n), CUBOOL_STATUS_SUCCESS);
 
     // Allocate result matrix. No resize needed, since the data will be placed automatically
-    EXPECT_EQ(CuBool_MatrixDense_New_(instance, &r), CUBOOL_STATUS_SUCCESS);
-
-    generateTestData(m, t, aval, Condition2{});
-    generateTestData(t, n, bval, Condition2{});
-    generateTestData(m, n, cval, Condition2{});
+    EXPECT_EQ(CuBool_MatrixDense_New(instance, &r, 0, 0), CUBOOL_STATUS_SUCCESS);
 
     // Transfer input data into input matrices
-    EXPECT_EQ(CuBool_MatrixDense_Build_(instance, a, aval.size(), aval.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_Build_(instance, b, bval.size(), bval.data()), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_MatrixDense_Build_(instance, c, cval.size(), cval.data()), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build(instance, a, arows.data(), acols.data(), anvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build(instance, b, brows.data(), bcols.data(), bnvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_MatrixDense_Build(instance, c, crows.data(), ccols.data(), cnvals), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a x b + c
     EXPECT_EQ(CuBool_MatrixDense_MultAdd(instance, r, a, b, c), CUBOOL_STATUS_SUCCESS);
 
-    // Transfer result values into host arrays
-    EXPECT_EQ(CuBool_MatrixDense_ExtractPairs(instance, r, &resultCount, &resultValues), CUBOOL_STATUS_SUCCESS);
+    CuBoolIndex_t* extRows;
+    CuBoolIndex_t* extCols;
+    CuBoolSize_t extNvals;
+    std::unordered_set<CuBoolPair,CuBoolPairHash,CuBoolPairEq> resultSet;
+
+    // Extract result
+    EXPECT_EQ(CuBool_MatrixDense_ExtractPairs(instance, r, &extRows, &extCols, &extNvals), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r = a x b + c on the cpu to compare results
-    evaluateMultiplyAdd(m, t, n, aval, bval, cval, resultValuesSet);
+    evaluateMultiplyAdd(m, t, n, arows, acols, brows, bcols, crows, ccols, resultSet);
 
-    // Validate size and compare results
-    EXPECT_EQ(resultCount, resultValuesSet.size());
+    EXPECT_EQ(resultSet.size(), extNvals);
 
-    std::cout << "Got: " << resultCount << " Expected: " << resultValuesSet.size() << std::endl;
-
-    for (CuBoolSize_t k = 0; k < resultCount; k++) {
-        EXPECT_EQ(resultValuesSet.find(resultValues[k]) != resultValuesSet.end(), true);
+    if (resultSet.size() == extNvals) {
+        for (CuBoolSize_t k = 0; k < extNvals; k++) {
+            EXPECT_EQ(resultSet.find(CuBoolPair{extRows[k], extCols[k]}) != resultSet.end(), true);
+        }
     }
 
-    // Manually deallocate array, returned by read* function
-    EXPECT_EQ(CuBool_Vals_Delete(instance, resultValues), CUBOOL_STATUS_SUCCESS);
+    // Remember to release exposed array buffer
+    EXPECT_EQ(CuBool_Vals_Delete(instance, extRows), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Vals_Delete(instance, extCols), CUBOOL_STATUS_SUCCESS);
 
-    // Release matrices
+    // Deallocate matrices
     EXPECT_EQ(CuBool_MatrixDense_Delete(instance, a), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Delete(instance, b), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Delete(instance, c), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Delete(instance, r), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixDense, MultiplySumSmall) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+    CuBoolSize_t m = 60, t = 100, n = 80;
+
+    // Setup instance
+    setupInstanceDesc(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixMultiplySum(m, t, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
+
+    // Destroy instance
+    EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixDense, MultiplySumMedium) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+    CuBoolSize_t m = 500, t = 1000, n = 800;
+
+    // Setup instance
+    setupInstanceDesc(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixMultiplySum(m, t, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
+
+    // Destroy instance
+    EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixDense, MultiplySumLarge) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+    CuBoolSize_t m = 1000, t = 2000, n = 500;
+
+    // Setup instance
+    setupInstanceDesc(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixMultiplySum(m, t, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
 
     // Destroy instance
     EXPECT_EQ(CuBool_Instance_Delete(instance), CUBOOL_STATUS_SUCCESS);

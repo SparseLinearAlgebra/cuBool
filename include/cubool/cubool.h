@@ -34,19 +34,29 @@
 
 /** Possible status codes that can be returned from cubool api */
 typedef enum CuBoolStatus {
+    /** Successful execution of the function */
     CUBOOL_STATUS_SUCCESS,
+    /** Generic error code */
     CUBOOL_STATUS_ERROR,
+    /** No cuda compatible device in the system */
     CUBOOL_STATUS_DEVICE_NOT_PRESENT,
+    /** Device side error */
     CUBOOL_STATUS_DEVICE_ERROR,
+    /** Failed to allocate memory on cpy or gpu side */
     CUBOOL_STATUS_MEM_OP_FAILED,
+    /** Passed invalid argument to some function */
     CUBOOL_STATUS_INVALID_ARGUMENT,
+    /** Call of the function is not possible for some context */
     CUBOOL_STATUS_INVALID_STATE,
+    /** Some library feature is not implemented */
     CUBOOL_STATUS_NOT_IMPLEMENTED
 } CuBoolStatus;
 
 /** Type of the GPU memory used to allocated gpu resources */
 typedef enum CuBoolGpuMemoryType {
+    /** Unified memory space */
     CUBOOL_GPU_MEMORY_TYPE_MANAGED,
+    /** Device only allocations */
     CUBOOL_GPU_MEMORY_TYPE_GENERIC
 } CuBoolGpuMemoryType;
 
@@ -55,8 +65,11 @@ typedef enum CuBoolMajorOrder {
     CUBOOL_MAJOR_ORDER_COLUMN,
 } CuBoolMajorOrder;
 
-/** Alias size type for memory and indexing types */
+/** Alias size type for memory and size specification */
 typedef size_t                      CuBoolSize_t;
+
+/** Alias integer type for indexing operations */
+typedef size_t                      CuBoolIndex_t;
 
 /** Alias cpu (ram) memory pointer */
 typedef void*                       CuBoolCpuPtr_t;
@@ -106,8 +119,8 @@ typedef void (*CuBoolMsgFun)(
 
 /** Pair of the indices used to represent non-empty matrices values */
 typedef struct CuBoolPair {
-    CuBoolSize_t                i;
-    CuBoolSize_t                j;
+    CuBoolIndex_t               i;
+    CuBoolIndex_t               j;
 } CuBoolPair;
 
 typedef struct CuBoolDeviceCaps {
@@ -208,21 +221,25 @@ CuBoolAPI CuBoolStatus CuBool_Instance_Delete(
 );
 
 /**
+ * Synchronize host and associated to the instance device execution flows.
  *
- * @param instance
- * @return
+ * @param instance An instance object reference to perform this operation
+ *
+ * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_SyncHostDevice(
     CuBoolInstance              instance
 );
 
 /**
+ * Creates new dense matrix with specified size.
  *
- * @param instance
- * @param matrix
- * @param nrows
- * @param ncols
- * @return
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Pointer where to store created matrix handler
+ * @param nrows Matrix rows count
+ * @param ncols Matrix columns count
+ *
+ * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_MatrixDense_New(
     CuBoolInstance              instance,
@@ -232,21 +249,12 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_New(
 );
 
 /**
+ * Deletes dense matrix object.
  *
- * @param instance
- * @param matrix
- * @return
- */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_New_(
-    CuBoolInstance              instance,
-    CuBoolMatrixDense*          matrix
-);
-
-/**
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handler to delete the matrix
  *
- * @param instance
- * @param matrix
- * @return
+ * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_MatrixDense_Delete(
     CuBoolInstance              instance,
@@ -254,12 +262,14 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Delete(
 );
 
 /**
+ * Resize the dense matrix. All previous values will be lost.
  *
- * @param instance
- * @param matrix
- * @param nrows
- * @param ncols
- * @return
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handler to perform operation on
+ * @param nrows Matrix new rows count
+ * @param ncols Matrix new columns count
+ *
+ * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_MatrixDense_Resize (
     CuBoolInstance              instance,
@@ -269,69 +279,60 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Resize (
 );
 
 /**
+ * Build dense matrix from provided pairs array. Pairs are supposed to be stored
+ * as (rows[i],cols[i]) for pair with i-th index.
  *
- * @param instance
- * @param matrix
- * @param rows
- * @param cols
- * @param nvals
- * @return
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handler to perform operation on
+ * @param rows Array of pairs row indices
+ * @param cols Array of pairs column indices
+ * @param nvals Number of the pairs passed
+ *
+ * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build (
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
-    const CuBoolSize_t*         rows,
-    const CuBoolSize_t*         cols,
+    const CuBoolIndex_t*        rows,
+    const CuBoolIndex_t*        cols,
     CuBoolSize_t                nvals
 );
 
 /**
+ * Reads matrix data to the host visible CPU buffer as an array of values pair.
+ * The indices of the i-th pair can be evaluated as (r=rows[i],c=cols[i]).
  *
- * @param instance
- * @param matrix
- * @param count
- * @param values
- * @return
- */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build_ (
-    CuBoolInstance              instance,
-    CuBoolMatrixDense           matrix,
-    CuBoolSize_t                count,
-    const CuBoolPair*           values
-);
-
-/**
- * Reads matrix data to the host visible CPU buffer as an array of values pair
- *
- * @note Returned pointer to the allocated values buffers must be explicitly freed by the user
- *       via function call CuBool_Vals_Delete
+ * @note Returned pointer to the allocated rows and cols buffers must be explicitly
+ *       freed by the user via function call CuBool_Vals_Delete
  *
  * @param instance An instance object reference to perform this operation
  * @param matrix Matrix handler to perform operation on
- * @param[out] count Number of pairs in the returned array
- * @param[out] values Allocated buffer to the pairs indices. Buffer must be freed after usage
+ * @param[out] rows Allocated buffer with row indices
+ * @param[out] cols Allocated buffer with column indices
+ * @param[out] nvals Total number of the pairs
  *
  * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs (
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
-    CuBoolSize_t*               count,
-    CuBoolPair**                values
+    CuBoolIndex_t**             rows,
+    CuBoolIndex_t**             cols,
+    CuBoolSize_t*               nvals
 );
 
 /**
- * Performs result = a x b + c evaluation, where '+' and 'x' are boolean semiring operations
+ * Performs result = a x b + c evaluation, where '+' and 'x' are boolean semiring operations.
  *
  * @note to perform this operation matrices must be compatible
  *       dim(a) = M x T
  *       dim(b) = T x N
  *       dim(c) = M x N
  *
- * @note result matrix will be automatically properly resized to store operation result
+ * @note result matrix will be automatically properly resized to store operation result.
  *
  * @param instance An instance object reference to perform this operation
- * @param result Matrix handler where to store operation result
+ * @param r Matrix handler where to store operation result
  * @param a Input a matrix
  * @param b Input a matrix
  * @param c Input a matrix
@@ -340,23 +341,23 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs (
  */
 CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultAdd (
     CuBoolInstance              instance,
-    CuBoolMatrixDense           res,
+    CuBoolMatrixDense           r,
     CuBoolMatrixDense           a,
     CuBoolMatrixDense           b,
     CuBoolMatrixDense           c
 );
 
 /**
- * Release values array buffer, allocated by one of *ReadData operations
+ * Release values array buffer, allocated by one of *ReadData operations.
  *
  * @param instance An instance object reference to perform this operation
- * @param values Valid pointer to returned arrays buffer from *ReadData method
+ * @param vals Valid pointer to returned arrays buffer from *ReadData method
  *
  * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_Vals_Delete (
     CuBoolInstance              instance,
-    CuBoolPair*                 values
+    CuBoolIndex_t*              vals
 );
 
 #endif //CUBOOL_CUBOOL_H

@@ -24,39 +24,45 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_GPU_BUFFER_HPP
-#define CUBOOL_GPU_BUFFER_HPP
+#ifndef CUBOOL_MATRIX_BASE_HPP
+#define CUBOOL_MATRIX_BASE_HPP
 
 #include <cubool/cubool.h>
+#include <cubool/build.hpp>
+#include <string>
 
 namespace cubool {
 
-    class GpuBuffer {
+    /** Base class for boolean matrix representation */
+    class MatrixBase {
     public:
-        explicit GpuBuffer(class Instance& instance);
-        GpuBuffer(const GpuBuffer& other);
-        GpuBuffer(GpuBuffer&& other) noexcept;
-        ~GpuBuffer();
+        explicit MatrixBase(class Instance& instance) : mInstanceRef(instance) {}
+        virtual ~MatrixBase() = default;
 
-        /** Resize buffer. Previous buffer content will be lost */
-        CuBoolStatus resizeNoContentKeep(CuBoolSize_t size);
-        CuBoolStatus copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
-        CuBoolStatus transferFromCpu(CuBoolCpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
-        CuBoolStatus transferToCpu(CuBoolCpuPtr_t destination, CuBoolSize_t size, CuBoolSize_t readOffset) const;
+        virtual void resize(CuBoolSize_t nrows, CuBoolSize_t ncols) = 0;
+        virtual void build(const CuBoolIndex_t* rows, const CuBoolIndex_t* cols, CuBoolSize_t nvals) = 0;
+        virtual void extract(CuBoolIndex_t** rows, CuBoolIndex_t** cols, CuBoolSize_t* nvals) const = 0;
 
-        bool isEmpty() const { return mSize == 0; }
-        bool isNotEmpty() const { return mSize > 0; }
+        virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
+        // virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
+        // virtual void sum(const MatrixBase& a, const MatrixBase& b) = 0;
+        // virtual void kron(const MatrixBase& a, const MatrixBase& b) = 0;
 
-        CuBoolGpuConstPtr_t getMemory() const { return mMemory; }
-        CuBoolGpuPtr_t getMemory() { return mMemory; }
-        CuBoolSize_t getSize() const { return mSize; }
+        void setDebugMarker(std::string string) { mDebugMarker = std::move(string); }
 
-    private:
-        CuBoolSize_t mSize = 0;
-        CuBoolGpuPtr_t mMemory = nullptr;
-        class Instance* mInstancePtr = nullptr;
+        const std::string& getDebugMarker() const { return mDebugMarker; }
+        CuBoolSize_t getNumRows() const { return mNumRows; }
+        CuBoolSize_t getNumCols() const { return mNumCols; }
+        Instance& getInstance() const { return mInstanceRef; }
+        bool isZeroDim() const { return mNumRows * mNumCols == 0; }
+
+    protected:
+        std::string mDebugMarker;
+        CuBoolSize_t mNumRows = 0;
+        CuBoolSize_t mNumCols = 0;
+        class Instance& mInstanceRef;
     };
 
 }
 
-#endif //CUBOOL_GPU_BUFFER_HPP
+#endif //CUBOOL_MATRIX_BASE_HPP

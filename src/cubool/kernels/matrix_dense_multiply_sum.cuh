@@ -24,9 +24,8 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <cubool/kernels/matrix_dense_frontend.hpp>
 #include <cubool/kernels/matrix_dense_shared.cuh>
-#include <cubool/matrix_dense.hpp>
+#include <cubool/matrix_dense.cuh>
 #include <cubool/instance.hpp>
 
 namespace cubool {
@@ -101,51 +100,6 @@ namespace cubool {
             rBlockColumn |= getMatrixElementPacked(cBlock, row, column);
             setMatrixElementPacked(rBlock, row, column, rBlockColumn);
         }
-    }
-
-    CuBoolStatus MatrixDenseKernels::invokeMultiplyAdd(
-            Instance &instance,
-            MatrixDense &result,
-            const MatrixDense &a,
-            const MatrixDense &b,
-            const MatrixDense &c) {
-
-        if (a.isZeroDim() || b.isZeroDim() || c.isZeroDim()) {
-            instance.sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "An attempt to operate on 0-dim matrices");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
-        }
-
-        if (a.getColumnsCount() != b.getRowsCount()) {
-            instance.sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Incompatible matrix size to multiply");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
-        }
-
-        CuBoolSize_t M = a.getRowsCount();
-        CuBoolSize_t N = b.getColumnsCount();
-
-        if (c.getRowsCount() != M || c.getColumnsCount() != N) {
-            instance.sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Incompatible matrix size to add");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
-        }
-
-        // Will be automatically padded
-        CuBoolStatus status = result.resize(M, N);
-        if (status != CUBOOL_STATUS_SUCCESS) {
-            return status;
-        }
-
-        Matrix aGlobal = getMatrixFromDenseMatrixClass(a);
-        Matrix bGlobal = getMatrixFromDenseMatrixClass(b);
-        Matrix cGlobal = getMatrixFromDenseMatrixClass(c);
-        Matrix rGlobal = getMatrixFromDenseMatrixClass(result);
-
-        dim3 dimBLock;
-        dim3 dimGrid;
-        getGridConfig(aGlobal.rows, bGlobal.columns, dimBLock, dimGrid);
-
-        kernelMatrixDenseMultiplyAdd<<<dimGrid,dimBLock>>>(rGlobal, aGlobal, bGlobal, cGlobal);
-
-        return CUBOOL_STATUS_SUCCESS;
     }
 
 }

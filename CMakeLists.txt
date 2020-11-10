@@ -21,27 +21,27 @@ set(CUBOOL_VERSION_MAJOR 0)
 set(CUBOOL_VERSION_MINOR 1)
 
 configure_file(
-    ${CMAKE_CURRENT_LIST_DIR}/src/cubool/cubool_build.h.in
-    ${CMAKE_BINARY_DIR}/src/cubool/cubool_build.h)
+    ${CMAKE_CURRENT_LIST_DIR}/src/cubool/build.hpp.in
+    ${CMAKE_BINARY_DIR}/src/cubool/build.hpp)
 
 # Library sources
 set(CUBOOL_SOURCES
     # Public sources
     include/cubool/cubool.h
     # Private sources
-    src/cubool/cubool.cpp
+    src/cubool/cubool.cu
     src/cubool/version.hpp
     src/cubool/instance.cu
+    src/cubool/instance.cpp
     src/cubool/instance.hpp
-    src/cubool/utils/gpu_buffer.cu
-    src/cubool/utils/gpu_buffer.hpp
-    src/cubool/utils/cpu_buffer.cpp
-    src/cubool/utils/cpu_buffer.hpp
-    src/cubool/matrix_dense.cpp
-    src/cubool/matrix_dense.hpp
-    src/cubool/kernels/matrix_dense_multiply_add.cu
-    src/cubool/kernels/matrix_dense_frontend.hpp
-    src/cubool/kernels/matrix_dense_shared.cuh src/cubool/instance.cpp)
+    src/cubool/matrix_base.hpp
+    src/cubool/matrix_dense.cu
+    src/cubool/matrix_dense.cuh
+    src/cubool/kernels/matrix_dense_multiply_sum.cuh
+    src/cubool/kernels/matrix_dense_shared.cuh
+    src/cubool/details/error.hpp
+    src/cubool/details/device_allocator.cuh
+    src/cubool/details/host_allocator.hpp)
 
 # Shared library object config
 add_library(cubool SHARED ${CUBOOL_SOURCES})

@@ -24,37 +24,50 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CPU_BUFFER_HPP
-#define CUBOOL_CPU_BUFFER_HPP
+#ifndef CUBOOL_ERROR_HPP
+#define CUBOOL_ERROR_HPP
 
 #include <cubool/cubool.h>
+#include <exception>
+#include <string>
 
 namespace cubool {
+    namespace details {
 
-    /** Cpu buffer wrapper to provide safe destruction logic */
-    class CpuBuffer {
-    public:
-        explicit CpuBuffer(class Instance& instance);
-        CpuBuffer(const CpuBuffer& other);
-        CpuBuffer(CpuBuffer&& other) noexcept;
-        ~CpuBuffer();
+        /** Base class for any exception thrown in the cubool backend implementation */
+        class Error: public std::exception {
+        public:
+            Error(std::string &&message, CuBoolStatus status): std::exception(), mWhat(std::move(message)), mStatus(status) {}
+            Error(const Error& error) noexcept = default;
+            Error(Error&& error) noexcept = default;
+            ~Error() noexcept override = default;
 
-        CuBoolStatus resizeNoContentKeep(CuBoolSize_t size);
-        CuBoolStatus copy(CuBoolGpuConstPtr_t source, CuBoolSize_t size, CuBoolSize_t writeOffset);
+            /** @return Descriptive error message text */
+            const char *what() const noexcept override { return mWhat.c_str(); }
 
-        bool isEmpty() const { return mSize == 0; }
-        bool isNotEmpty() const { return mSize > 0; }
+            /** @return Status number which matches the C API error identification */
+            CuBoolStatus status() const noexcept { return mStatus; }
 
-        CuBoolCpuConstPtr_t getMemory() const { return mMemory; }
-        CuBoolCpuPtr_t getMemory() { return mMemory; }
-        CuBoolSize_t getSize() const { return mSize; }
+        private:
+            std::string mWhat;
+            CuBoolStatus mStatus;
+        };
 
-    private:
-        CuBoolSize_t mSize = 0;
-        CuBoolCpuPtr_t mMemory = nullptr;
-        class Instance* mInstancePtr = nullptr;
-    };
+        template <CuBoolStatus S>
+        class TStatusError: public Error {
+        public:
+            explicit TStatusError(std::string&& message) noexcept: Error(std::move(message), S) {}
+            TStatusError(const TStatusError<S>& error) noexcept = default;
+            TStatusError(TStatusError<S>&& error) noexcept = default;
+            ~TStatusError() noexcept override = default;
+        };
 
+        using DeviceError = TStatusError<CuBoolStatus::CUBOOL_STATUS_DEVICE_ERROR>;
+        using InvalidArgument = TStatusError<CuBoolStatus::CUBOOL_STATUS_INVALID_ARGUMENT>;
+        using InvalidState = TStatusError<CuBoolStatus::CUBOOL_STATUS_INVALID_STATE>;
+        using MemOpFailed = TStatusError<CuBoolStatus::CUBOOL_STATUS_MEM_OP_FAILED>;
+
+    }
 }
 
-#endif //CUBOOL_CPU_BUFFER_HPP
+#endif //CUBOOL_ERROR_HPP

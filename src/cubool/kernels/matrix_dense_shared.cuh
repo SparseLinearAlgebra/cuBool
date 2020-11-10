@@ -27,7 +27,7 @@
 #ifndef CUBOOL_MATRIX_DENSE_SHARED_CUH
 #define CUBOOL_MATRIX_DENSE_SHARED_CUH
 
-#include <cubool/matrix_dense.hpp>
+#include <cubool/matrix_dense.cuh>
 
 namespace cubool {
 
@@ -72,10 +72,19 @@ namespace cubool {
 
     __host__ Matrix getMatrixFromDenseMatrixClass(const MatrixDense& m) {
         Matrix r{};
-        r.rows = m.getRowsPackedCount();
-        r.columns = m.getColumnsPaddedCount();
+        r.rows = m.getNumRowsPacked();
+        r.columns = m.getNumColsPadded();
         r.stride = r.columns;
-        r.buffer = (PackType_t*) m.getBuffer().getMemory();
+        r.buffer = (PackType_t*) m.getBuffer().data().get();
+        return r;
+    }
+
+    __host__ Matrix getMatrixFromDenseMatrixClass(MatrixDense& m) {
+        Matrix r{};
+        r.rows = m.getNumRowsPacked();
+        r.columns = m.getNumColsPadded();
+        r.stride = r.columns;
+        r.buffer = (PackType_t*) m.getBuffer().data().get();
         return r;
     }
 

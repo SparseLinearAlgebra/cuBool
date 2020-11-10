@@ -24,62 +24,63 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_DENSE_HPP
-#define CUBOOL_MATRIX_DENSE_HPP
+#ifndef CUBOOL_MATRIX_DENSE_CUH
+#define CUBOOL_MATRIX_DENSE_CUH
 
 #include <cubool/cubool.h>
-#include <cubool/utils/gpu_buffer.hpp>
-
+#include <cubool/matrix_base.hpp>
+#include <cubool/details/host_allocator.hpp>
+#include <cubool/details/device_allocator.cuh>
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 #include <cinttypes>
 #include <vector>
 
 namespace cubool {
 
-    class MatrixDense {
+    class MatrixDense final: public MatrixBase {
     public:
         // How we actually pack this matrix in memory
         // This info approached by kernels code
         using PackType_t = uint32_t;
+        using Super = MatrixBase;
+        using Super::mNumRows;
+        using Super::mNumCols;
+        using GpuAllocator = details::DeviceAllocator<PackType_t>;
+        using CpuAllocator = details::HostAllocator<PackType_t>;
+        using GpuBuffer = thrust::device_vector<PackType_t, GpuAllocator>;
+        using CpuBuffer = thrust::host_vector<PackType_t, CpuAllocator>;
         static const CuBoolSize_t BYTE_SIZE_IN_BITS = 8; // 8 bits per byte?
         static const CuBoolSize_t PACK_TYPE_SIZE_BITS = sizeof(PackType_t) * BYTE_SIZE_IN_BITS;
 
         explicit MatrixDense(class Instance& instance);
         MatrixDense(const MatrixDense& other) = delete;
         MatrixDense(MatrixDense&& other) noexcept = delete;
-        ~MatrixDense() = default;
+        ~MatrixDense() override = default;
 
-        CuBoolStatus resize(CuBoolSize_t rows, CuBoolSize_t columns);
+        void resize(CuBoolSize_t nrows, CuBoolSize_t ncols) override;
+        void build(const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) override;
+        void extract(CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) const override;
 
-        CuBoolStatus writeValues(const std::vector<CuBoolPair> &values);
-        CuBoolStatus readValues(std::vector<CuBoolPair> &values) const;
+        void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
 
-        CuBoolStatus writeValues(CuBoolSize_t count, const CuBoolPair* values);
-        CuBoolStatus readValues(CuBoolSize_t* count, CuBoolPair** values) const;
-
-        CuBoolSize_t getRowsCount() const { return mRows; }
-        CuBoolSize_t getColumnsCount() const { return mColumns; }
-        CuBoolSize_t getRowsPackedCount() const { return mRowsPacked; }
-        CuBoolSize_t getColumnsPaddedCount() const { return mColumnsPadded; }
-        CuBoolSize_t getStride() const { return mStride; }
+        CuBoolSize_t getNumRowsPacked() const { return mNumRowsPacked; }
+        CuBoolSize_t getNumColsPadded() const { return mNumColsPadded; }
         const GpuBuffer& getBuffer() const { return mBuffer; }
-
-        bool isZeroDim() const { return mRows * mColumns == 0; }
-
+        GpuBuffer& getBuffer() { return mBuffer; }
 
         static void getRowPackedIndex(CuBoolSize_t rowIndex, CuBoolSize_t &rowPackIdxMajor, CuBoolSize_t &rowPackIdxMinor);
-        static CuBoolSize_t getRowsPackedFromRows(CuBoolSize_t rows);
-        static CuBoolSize_t getColumnsPaddedFromColumns(CuBoolSize_t columns);
+        static CuBoolSize_t getNumRowsPackedFromRows(CuBoolSize_t rows);
+        static CuBoolSize_t getNumColsPaddedFromCols(CuBoolSize_t cols);
 
     private:
+        void extractVector(std::vector<CuBoolPair> &vals) const;
+
         GpuBuffer mBuffer;
-        CuBoolSize_t mRows = 0;
-        CuBoolSize_t mColumns = 0;
-        CuBoolSize_t mRowsPacked = 0;
-        CuBoolSize_t mColumnsPadded = 0;
-        CuBoolSize_t mStride = 0;
-        class Instance* mInstancePtr = nullptr;
+        CuBoolSize_t mNumRowsPacked = 0;
+        CuBoolSize_t mNumColsPadded = 0;
     };
 
 }
 
-#endif //CUBOOL_MATRIX_DENSE_HPP
+#endif //CUBOOL_MATRIX_DENSE_CUH

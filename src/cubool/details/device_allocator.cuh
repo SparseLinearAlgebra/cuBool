@@ -24,34 +24,56 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_DENSE_FRONTEND_HPP
-#define CUBOOL_MATRIX_DENSE_FRONTEND_HPP
+#ifndef CUBOOL_DEVICE_ALLOCATOR_CUH
+#define CUBOOL_DEVICE_ALLOCATOR_CUH
 
-#include <cubool/matrix_dense.hpp>
+#include <cubool/instance.hpp>
+#include <cubool/details/error.hpp>
+#include <thrust/system/cuda/memory.h>
 
 namespace cubool {
+    namespace details {
 
-    class MatrixDenseKernels {
-    public:
+        template<typename T>
+        struct DeviceAllocator : thrust::cuda::allocator<T> {
+        public:
+            typedef thrust::cuda::allocator<T> super;
+            typedef typename super::pointer pointer;
+            typedef typename super::size_type size_type;
 
-        /**
-         * Run kernel r = a x b + c
-         * Validates arguments and matrices size compatibility
-         *
-         * @param result Matrix to store result
-         * @param a Input a matrix
-         * @param b Input b matrix
-         * @param c Input c matrix
-         * @return Operation status
-         */
-        static CuBoolStatus invokeMultiplyAdd(
-            class Instance &instance,
-            MatrixDense &result,
-            const MatrixDense &a,
-            const MatrixDense &b,
-            const MatrixDense &c
-        );
-    };
+            __host__
+            explicit DeviceAllocator(Instance &instance) : super(), mInstanceRef(instance) {}
+
+            __host__
+            DeviceAllocator(const DeviceAllocator<T> &other) : super(other), mInstanceRef(other.mInstanceRef) {}
+
+            template <typename U>
+            __host__
+            explicit DeviceAllocator(DeviceAllocator<U> &&other) noexcept: super(std::move(other)), mInstanceRef(other.mInstance) {}
+
+            DeviceAllocator& operator=(const DeviceAllocator<T> &other) {
+                this->~DeviceAllocator();
+                new (this) DeviceAllocator<T>(other);
+                return *this;
+            }
+
+            __host__
+            pointer allocate(size_type n) {
+                CuBoolGpuPtr_t ptr = nullptr;
+                mInstanceRef.allocateOnGpu(&ptr, n * sizeof(T));
+                return pointer((T*)ptr);
+            }
+
+            __host__
+            void deallocate(pointer p, size_type n) {
+                (void)n;
+                mInstanceRef.deallocateOnGpu(p.get());
+            }
+
+        private:
+            Instance &mInstanceRef;
+        };
+    }
 }
 
-#endif //CUBOOL_MATRIX_DENSE_FRONTEND_HPP
+#endif //CUBOOL_DEVICE_ALLOCATOR_CUH

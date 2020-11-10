@@ -28,8 +28,6 @@
 #define CUBOOL_INSTANCE_HPP
 
 #include <cubool/cubool.h>
-#include <cubool/matrix_dense.hpp>
-
 #include <unordered_set>
 
 namespace cubool {
@@ -39,19 +37,19 @@ namespace cubool {
         explicit Instance(const CuBoolInstanceDesc& desc);
         Instance(const Instance& other) = delete;
         Instance(Instance&& other) noexcept = delete;
-        ~Instance() = default;
+        ~Instance();
 
-        CuBoolStatus createMatrixDense(MatrixDense* &matrixDense);
-        CuBoolStatus validateMatrix(MatrixDense* matrixDense);
-        CuBoolStatus destroyMatrixDense(MatrixDense* matrixDense);
+        void createMatrixDense(class MatrixDense* &matrixDense);
+        void validateMatrix(class MatrixDense* matrixDense);
+        void destroyMatrixDense(class MatrixDense* matrixDense);
 
-        CuBoolStatus allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const;
-        CuBoolStatus allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const;
+        void allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const;
+        void allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const;
 
-        CuBoolStatus deallocate(CuBoolCpuPtr_t ptr) const;
-        CuBoolStatus deallocateOnGpu(CuBoolGpuPtr_t ptr) const;
+        void deallocate(CuBoolCpuPtr_t ptr) const;
+        void deallocateOnGpu(CuBoolGpuPtr_t ptr) const;
 
-        CuBoolStatus syncHostDevice() const;
+        void syncHostDevice() const;
 
         void sendMessage(CuBoolStatus status, const char* message) const;
         void printDeviceCapabilities() const;
@@ -65,7 +63,7 @@ namespace cubool {
         static void queryDeviceCapabilities(CuBoolDeviceCaps& deviceCaps);
 
     private:
-        std::unordered_set<MatrixDense*> mMatrixDense;
+        std::unordered_set<class MatrixDense*> mMatrixDenseSet;
 
         CuBoolAllocationCallback mAllocCallback{};
         CuBoolMessageCallback mMessageCallback{};

@@ -25,8 +25,8 @@
 /**********************************************************************************/
 
 #include <cubool/instance.hpp>
-#include <cubool/cubool_build.h>
-
+#include <cubool/build.hpp>
+#include <cubool/details/error.hpp>
 #include <string>
 #include <cstdlib>
 
@@ -54,76 +54,24 @@ namespace cubool {
 #endif // CUBOOL_DEBUG
     }
 
-    CuBoolStatus Instance::createMatrixDense(MatrixDense *&matrixDense) {
-        CuBoolCpuPtr_t mem = nullptr;
-        CuBoolStatus status = allocate(&mem, sizeof(MatrixDense));
-
-        if (status != CUBOOL_STATUS_SUCCESS) {
-            return status;
-        }
-
-        auto matrix = new (mem) MatrixDense(*this);
-        matrixDense = matrix;
-
-        mMatrixDense.emplace(matrix);
-        return CUBOOL_STATUS_SUCCESS;
-    }
-
-    CuBoolStatus Instance::validateMatrix(MatrixDense* matrixDense) {
-        bool contains = mMatrixDense.find(matrixDense) != mMatrixDense.end();
-
-        if (!contains) {
-            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "No matrix dense for provided handler");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
-        }
-
-        return CUBOOL_STATUS_SUCCESS;
-    }
-
-    CuBoolStatus Instance::destroyMatrixDense(MatrixDense* matrixDense) {
-        auto itr = mMatrixDense.find(matrixDense);
-
-        if (itr == mMatrixDense.end()) {
-            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "No matrix dense to destroy for provided handler");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
-        }
-
-        mMatrixDense.erase(itr);
-
-        matrixDense->~MatrixDense();
-        return deallocate(matrixDense);
-    }
-
-    CuBoolStatus Instance::allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const {
-        if (!ptr) {
-            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null pointer to store allocated memory ptr");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
-        }
+    void Instance::allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const {
+        if (!ptr)
+            throw details::InvalidArgument("Passed null ptr to store allocation result");
 
         *ptr = hasUserDefinedAllocator() ? mAllocCallback.allocateFun(size, mAllocCallback.userData) : malloc(size);
 
-        if (!(*ptr)) {
-            sendMessage(CUBOOL_STATUS_MEM_OP_FAILED, "Failed to allocate memory on the CPU");
-            return CUBOOL_STATUS_SUCCESS;
-        }
-
-        return CUBOOL_STATUS_SUCCESS;
+        if (!(*ptr))
+            throw details::MemOpFailed("Failed to allocate memory on the CPU");
     }
 
-    CuBoolStatus Instance::deallocate(CuBoolCpuPtr_t ptr) const {
-        if (!ptr) {
-            sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, "Passed null pointer to free");
-            return CUBOOL_STATUS_INVALID_ARGUMENT;
-        }
+    void Instance::deallocate(CuBoolCpuPtr_t ptr) const {
+        if (!ptr)
+            throw details::InvalidArgument("Passed null ptr to free");
 
-        if (hasUserDefinedAllocator()) {
+        if (hasUserDefinedAllocator())
             mAllocCallback.deallocateFun(ptr, mAllocCallback.userData);
-        }
-        else {
+        else
             free(ptr);
-        }
-
-        return CUBOOL_STATUS_SUCCESS;
     }
 
     void Instance::sendMessage(CuBoolStatus status, const char *message) const {

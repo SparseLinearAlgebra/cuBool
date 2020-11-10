@@ -31,12 +31,11 @@
 #include <naive-gpu/GpuMatrix.h> // Naive gpu implementation for dense boolean matrix multiplication
 #include <naive-gpu-shared/GpuMatrix.h> // Naive gpu with small shared mem optimization
 
-static size_t iterations = 8;
+static size_t iterations = 4;
 static size_t sizes[] = { 128, 256, 512, 1024, 2048, 4096, 8192, 8192 * 2, 8192 * 4, 8192 * 8 };
 
 TEST(Benchmanrk, CuboolDenseMatrix) {
     CuBoolInstance instance;
-    CuBoolMatrixDense a, b, c, r;
     CuBoolSize_t m, t, n;
 
     CuBoolInstanceDesc instanceDesc;
@@ -44,30 +43,34 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
 
     CuBool_Instance_New(&instanceDesc, &instance);
 
-    CuBool_MatrixDense_New_(instance, &a);
-    CuBool_MatrixDense_New_(instance, &b);
-    CuBool_MatrixDense_New_(instance, &c);
-    CuBool_MatrixDense_New_(instance, &r);
-
     for (auto s: sizes) {
         m = t = n = s;
 
-        std::vector<CuBoolPair> aval;
-        std::vector<CuBoolPair> bval;
-        std::vector<CuBoolPair> cval;
+        CuBoolMatrixDense a, b, c, r;
 
-        generateTestData(m, t, aval, Condition2());
-        generateTestData(t, n, bval, Condition2());
-        generateTestData(m, n, cval, Condition2());
+        std::vector<CuBoolIndex_t> arows;
+        std::vector<CuBoolIndex_t> acols;
+        std::vector<CuBoolIndex_t> brows;
+        std::vector<CuBoolIndex_t> bcols;
+        std::vector<CuBoolIndex_t> crows;
+        std::vector<CuBoolIndex_t> ccols;
 
-        CuBool_MatrixDense_Resize(instance, a, m, t);
-        CuBool_MatrixDense_Resize(instance, b, t, n);
-        CuBool_MatrixDense_Resize(instance, c, m, n);
-        CuBool_MatrixDense_Resize(instance, r, m, n); // resize, since we do not want to measure the speed of cuda allocator
+        CuBoolSize_t anvals;
+        CuBoolSize_t bnvals;
+        CuBoolSize_t cnvals;
 
-        CuBool_MatrixDense_Build_(instance, a, aval.size(), aval.data());
-        CuBool_MatrixDense_Build_(instance, b, bval.size(), bval.data());
-        CuBool_MatrixDense_Build_(instance, c, cval.size(), cval.data());
+        CuBool_MatrixDense_New(instance, &a, m, t);
+        CuBool_MatrixDense_New(instance, &b, t, n);
+        CuBool_MatrixDense_New(instance, &c, m, n);
+        CuBool_MatrixDense_New(instance, &r, m, n); // resize, since we do not want to measure the speed of cuda allocator
+
+        generateTestData(m, t, arows, acols, anvals, Condition2{});
+        generateTestData(t, n, brows, bcols, bnvals, Condition2{});
+        generateTestData(m, n, crows, ccols, cnvals, Condition2{});
+
+        CuBool_MatrixDense_Build(instance, a, arows.data(), acols.data(), anvals);
+        CuBool_MatrixDense_Build(instance, b, brows.data(), bcols.data(), bnvals);
+        CuBool_MatrixDense_Build(instance, c, crows.data(), ccols.data(), cnvals);
 
         double executionTimeMs = 0;
 
@@ -86,12 +89,12 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
         }
 
         std::cout << "Operation: Mult-Add [N=" << s << "]: " << executionTimeMs / (double)iterations << " ms" << std::endl;
-    }
 
-    CuBool_MatrixDense_Delete(instance, a);
-    CuBool_MatrixDense_Delete(instance, b);
-    CuBool_MatrixDense_Delete(instance, c);
-    CuBool_MatrixDense_Delete(instance, r);
+        CuBool_MatrixDense_Delete(instance, a);
+        CuBool_MatrixDense_Delete(instance, b);
+        CuBool_MatrixDense_Delete(instance, c);
+        CuBool_MatrixDense_Delete(instance, r);
+    }
 
     CuBool_Instance_Delete(instance);
 }
