@@ -61,8 +61,10 @@ namespace cubool {
         void resize(CuBoolSize_t nrows, CuBoolSize_t ncols) override;
         void build(const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) override;
         void extract(CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) const override;
+        void clone(const MatrixBase& other) override;
 
         void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
+        void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
 
         CuBoolSize_t getNumRowsPacked() const { return mNumRowsPacked; }
         CuBoolSize_t getNumColsPadded() const { return mNumColsPadded; }

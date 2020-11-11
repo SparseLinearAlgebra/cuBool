@@ -42,9 +42,10 @@ namespace cubool {
         virtual void resize(CuBoolSize_t nrows, CuBoolSize_t ncols) = 0;
         virtual void build(const CuBoolIndex_t* rows, const CuBoolIndex_t* cols, CuBoolSize_t nvals) = 0;
         virtual void extract(CuBoolIndex_t** rows, CuBoolIndex_t** cols, CuBoolSize_t* nvals) const = 0;
+        virtual void clone(const MatrixBase& other) = 0;
 
         virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
-        // virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
+        virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
         // virtual void sum(const MatrixBase& a, const MatrixBase& b) = 0;
         // virtual void kron(const MatrixBase& a, const MatrixBase& b) = 0;
 

@@ -46,7 +46,7 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
     for (auto s: sizes) {
         m = t = n = s;
 
-        CuBoolMatrixDense a, b, c, r;
+        CuBoolMatrixDense a, b, c;
 
         std::vector<CuBoolIndex_t> arows;
         std::vector<CuBoolIndex_t> acols;
@@ -62,7 +62,6 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
         CuBool_MatrixDense_New(instance, &a, m, t);
         CuBool_MatrixDense_New(instance, &b, t, n);
         CuBool_MatrixDense_New(instance, &c, m, n);
-        CuBool_MatrixDense_New(instance, &r, m, n); // resize, since we do not want to measure the speed of cuda allocator
 
         generateTestData(m, t, arows, acols, anvals, Condition2{});
         generateTestData(t, n, brows, bcols, bnvals, Condition2{});
@@ -80,7 +79,7 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
             CuBool_SyncHostDevice(instance);
             auto start = high_resolution_clock::now();
 
-            CuBool_MatrixDense_MultAdd(instance, r, a, b, c);
+            CuBool_MatrixDense_MultAdd(instance, c, a, b);
 
             CuBool_SyncHostDevice(instance);
             auto end = high_resolution_clock::now();
@@ -90,13 +89,12 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
 
         std::cout << "Operation: Mult-Add [N=" << s << "]: " << executionTimeMs / (double)iterations << " ms" << std::endl;
 
-        CuBool_MatrixDense_Delete(instance, a);
-        CuBool_MatrixDense_Delete(instance, b);
-        CuBool_MatrixDense_Delete(instance, c);
-        CuBool_MatrixDense_Delete(instance, r);
+        CuBool_MatrixDense_Free(instance, a);
+        CuBool_MatrixDense_Free(instance, b);
+        CuBool_MatrixDense_Free(instance, c);
     }
 
-    CuBool_Instance_Delete(instance);
+    CuBool_Instance_Free(instance);
 }
 
 TEST(Benchmark, NaiveGpuDenseMatrix) {

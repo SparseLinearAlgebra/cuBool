@@ -60,7 +60,7 @@ TEST(CuBoolInstance, Setup) {
     EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
     EXPECT_NE(instance, nullptr);
 
-    error = CuBool_Instance_Delete(instance);
+    error = CuBool_Instance_Free(instance);
 
     EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
 

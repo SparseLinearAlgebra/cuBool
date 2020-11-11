@@ -26,7 +26,7 @@
 
 #include <cubool/matrix_dense.cuh>
 #include <cubool/instance.hpp>
-#include <cubool/kernels/matrix_dense_multiply_sum.cuh>
+#include <cubool/kernels/matrix_dense_multiply_add.cuh>
 
 namespace cubool {
 
@@ -42,8 +42,7 @@ namespace cubool {
         mNumCols = ncols;
         mNumRowsPacked = getNumRowsPackedFromRows(mNumRows);
         mNumColsPadded = getNumColsPaddedFromCols(mNumCols);
-
-        return mBuffer.resize(mNumColsPadded * mNumRowsPacked, 0x0);
+        mBuffer.resize(mNumColsPadded * mNumRowsPacked, 0x0);
     }
 
     void MatrixDense::build(const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) {
@@ -92,6 +91,19 @@ namespace cubool {
         }
     }
 
+    void MatrixDense::clone(const MatrixBase &otherBase) {
+        auto other = dynamic_cast<const MatrixDense*>(&otherBase);
+
+        if (!other)
+            throw details::InvalidArgument("Passed to be cloned matrix does not belong to dense matrix class");
+
+        CuBoolSize_t M = other->getNumRows();
+        CuBoolSize_t N = other->getNumCols();
+
+        this->resize(M, N);
+        this->mBuffer = other->getBuffer();
+    }
+
     void MatrixDense::multiplySum(const MatrixBase &aBase, const MatrixBase &bBase, const MatrixBase &cBase) {
         auto a = dynamic_cast<const MatrixDense*>(&aBase);
         auto b = dynamic_cast<const MatrixDense*>(&bBase);
@@ -112,18 +124,47 @@ namespace cubool {
         if (c->getNumRows() != M || c->getNumCols() != N)
             throw details::InvalidArgument("Incompatible matrix size to add");
 
-        this->resize(M, N);
+        this->clone(cBase);
 
-        Matrix aGlobal = getMatrixFromDenseMatrixClass(*a);
-        Matrix bGlobal = getMatrixFromDenseMatrixClass(*b);
-        Matrix cGlobal = getMatrixFromDenseMatrixClass(*c);
-        Matrix rGlobal = getMatrixFromDenseMatrixClass(*this);
+        kernels::Matrix aGlobal = kernels::getMatrixFromDenseMatrixClass(*a);
+        kernels::Matrix bGlobal = kernels::getMatrixFromDenseMatrixClass(*b);
+        kernels::Matrix rGlobal = kernels::getMatrixFromDenseMatrixClass(*this);
 
         dim3 dimBLock;
         dim3 dimGrid;
-        getGridConfig(aGlobal.rows, bGlobal.columns, dimBLock, dimGrid);
+        kernels::getGridConfig(aGlobal.rows, bGlobal.columns, dimBLock, dimGrid);
 
-        kernelMatrixDenseMultiplyAdd<<<dimGrid,dimBLock>>>(rGlobal, aGlobal, bGlobal, cGlobal);
+        kernels::matrixDenseMultiplyAdd<<<dimGrid,dimBLock>>>(rGlobal, aGlobal, bGlobal);
+    }
+
+    void MatrixDense::multiplyAdd(const MatrixBase &aBase, const MatrixBase &bBase) {
+        auto a = dynamic_cast<const MatrixDense*>(&aBase);
+        auto b = dynamic_cast<const MatrixDense*>(&bBase);
+
+        if (!a || !b)
+            throw details::InvalidArgument("Passed matrices do not belong to dense matrix class");
+
+        if (a->isZeroDim() || b->isZeroDim())
+            throw details::InvalidArgument("An attempt to operate on 0-dim matrices");
+
+        if (a->getNumCols() != b->getNumRows())
+            throw details::InvalidArgument("Incompatible matrix size to multiply");
+
+        CuBoolSize_t M = a->getNumRows();
+        CuBoolSize_t N = b->getNumCols();
+
+        if (this->getNumRows() != M || this->getNumCols() != N)
+            throw details::InvalidArgument("Incompatible matrix size to add");
+
+        kernels::Matrix aGlobal = kernels::getMatrixFromDenseMatrixClass(*a);
+        kernels::Matrix bGlobal = kernels::getMatrixFromDenseMatrixClass(*b);
+        kernels::Matrix rGlobal = kernels::getMatrixFromDenseMatrixClass(*this);
+
+        dim3 dimBLock;
+        dim3 dimGrid;
+        kernels::getGridConfig(aGlobal.rows, bGlobal.columns, dimBLock, dimGrid);
+
+        kernels::matrixDenseMultiplyAdd<<<dimGrid,dimBLock>>>(rGlobal, aGlobal, bGlobal);
     }
 
     void MatrixDense::getRowPackedIndex(CuBoolSize_t rowIndex, CuBoolSize_t &rowPackIdxMajor, CuBoolSize_t &rowPackIdxMinor) {

@@ -171,7 +171,7 @@ CuBoolStatus CuBool_Instance_New(const CuBoolInstanceDesc* instanceDesc, CuBoolI
     return CUBOOL_STATUS_SUCCESS;
 }
 
-CuBoolStatus CuBool_Instance_Delete(CuBoolInstance instance) {
+CuBoolStatus CuBool_Instance_Free(CuBoolInstance instance) {
     auto instanceImpl = (cubool::Instance*) instance;
 
     CUBOOL_CHECK_INSTANCE(instance);
@@ -212,7 +212,7 @@ CuBoolStatus CuBool_MatrixDense_New(CuBoolInstance instance, CuBoolMatrixDense *
     CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_MatrixDense_Delete(CuBoolInstance instance, CuBoolMatrixDense matrix) {
+CuBoolStatus CuBool_MatrixDense_Free(CuBoolInstance instance, CuBoolMatrixDense matrix) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 
@@ -267,7 +267,7 @@ CuBoolStatus CuBool_MatrixDense_ExtractPairs(CuBoolInstance instance, CuBoolMatr
 }
 
 
-CuBoolStatus CuBool_Vals_Delete(CuBoolInstance instance, CuBoolIndex_t* vals) {
+CuBoolStatus CuBool_Vals_Free(CuBoolInstance instance, CuBoolIndex_t* vals) {
     auto instanceImpl = (cubool::Instance*) instance;
 
     CUBOOL_CHECK_INSTANCE(instance);
@@ -278,7 +278,26 @@ CuBoolStatus CuBool_Vals_Delete(CuBoolInstance instance, CuBoolIndex_t* vals) {
     CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_MatrixDense_MultAdd(CuBoolInstance instance, CuBoolMatrixDense r, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c) {
+CuBoolStatus CuBool_MatrixDense_MultAdd(CuBoolInstance instance, CuBoolMatrixDense r, CuBoolMatrixDense a, CuBoolMatrixDense b) {
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto rImpl = (cubool::MatrixDense*) r;
+    auto aImpl = (cubool::MatrixDense*) a;
+    auto bImpl = (cubool::MatrixDense*) b;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(r);
+    CUBOOL_CHECK_ARG_NOT_NULL(a);
+    CUBOOL_CHECK_ARG_NOT_NULL(b);
+
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrix(aImpl);
+        instanceImpl->validateMatrix(bImpl);
+        instanceImpl->validateMatrix(rImpl);
+        rImpl->multiplyAdd(*aImpl, *bImpl);
+    CUBOOL_END_BODY
+}
+
+CuBoolStatus CuBool_MatrixDense_MultSum(CuBoolInstance instance, CuBoolMatrixDense r, CuBoolMatrixDense a, CuBoolMatrixDense b, CuBoolMatrixDense c) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto rImpl = (cubool::MatrixDense*) r;
     auto aImpl = (cubool::MatrixDense*) a;

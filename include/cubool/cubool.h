@@ -216,7 +216,7 @@ CuBoolAPI CuBoolStatus CuBool_Instance_New(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Instance_Delete(
+CuBoolAPI CuBoolStatus CuBool_Instance_Free(
     CuBoolInstance              instance
 );
 
@@ -256,7 +256,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_New(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_Delete(
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_Free(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix
 );
@@ -271,7 +271,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Delete(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_Resize (
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_Resize(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
     CuBoolSize_t                nrows,
@@ -290,7 +290,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Resize (
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build (
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
     const CuBoolIndex_t*        rows,
@@ -303,7 +303,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build (
  * The indices of the i-th pair can be evaluated as (r=rows[i],c=cols[i]).
  *
  * @note Returned pointer to the allocated rows and cols buffers must be explicitly
- *       freed by the user via function call CuBool_Vals_Delete
+ *       freed by the user via function call CuBool_Vals_Free
  *
  * @param instance An instance object reference to perform this operation
  * @param matrix Matrix handler to perform operation on
@@ -313,7 +313,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build (
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs (
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
     CuBoolIndex_t**             rows,
@@ -322,7 +322,29 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs (
 );
 
 /**
- * Performs result = a x b + c evaluation, where '+' and 'x' are boolean semiring operations.
+ * Performs r += a x b evaluation, where '+' and 'x' are boolean semiring operations.
+ *
+ * @note to perform this operation matrices must be compatible
+ *       dim(a) = M x T
+ *       dim(b) = T x N
+ *       dim(c) = M x N
+ *
+ * @param instance
+ * @param r
+ * @param a
+ * @param b
+ *
+ * @return
+ */
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultAdd(
+    CuBoolInstance              instance,
+    CuBoolMatrixDense           r,
+    CuBoolMatrixDense           a,
+    CuBoolMatrixDense           b
+);
+
+/**
+ * Performs r = a x b + c evaluation, where '+' and 'x' are boolean semiring operations.
  *
  * @note to perform this operation matrices must be compatible
  *       dim(a) = M x T
@@ -339,7 +361,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs (
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultAdd (
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultSum(
     CuBoolInstance              instance,
     CuBoolMatrixDense           r,
     CuBoolMatrixDense           a,
@@ -355,7 +377,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultAdd (
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Vals_Delete (
+CuBoolAPI CuBoolStatus CuBool_Vals_Free(
     CuBoolInstance              instance,
     CuBoolIndex_t*              vals
 );
