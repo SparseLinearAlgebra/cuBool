@@ -40,12 +40,9 @@ namespace cubool {
         ~Instance();
 
         void createMatrixDense(class MatrixDense* &matrix);
-        void validateMatrixDense(class MatrixDense* matrix);
-        void destroyMatrixDense(class MatrixDense* matrix);
-
         void createMatrixCsr(class MatrixCsr* &matrix);
-        void validateMatrixCsr(class MatrixCsr* matrix);
-        void destroyMatrixCsr(class MatrixCsr* matrix);
+        void validateMatrix(class MatrixBase* matrix);
+        void destroyMatrix(class MatrixBase* matrix);
 
         void allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const;
         void allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const;
@@ -67,8 +64,7 @@ namespace cubool {
         static void queryDeviceCapabilities(CuBoolDeviceCaps& deviceCaps);
 
     private:
-        std::unordered_set<class MatrixDense*> mMatrixDenseSet;
-        std::unordered_set<class MatrixCsr*> mMatrixCsrSet;
+        std::unordered_set<class MatrixBase*> mMatrixSet;
 
         CuBoolAllocationCallback mAllocCallback{};
         CuBoolMessageCallback mMessageCallback{};

@@ -37,33 +37,18 @@ namespace cubool {
 #ifdef CUBOOL_DEBUG
         // Notify user if he lost or forgot to release some library objects
 
-        if (!mMatrixDenseSet.empty()) {
+        if (!mMatrixSet.empty()) {
             char message[2000];
 
-            snprintf(message, 2000, "Some MatrixDense objects (%llu) were not properly deallocated by user",
-                     (unsigned long long) mMatrixDenseSet.size());
-
-            sendMessage(CUBOOL_STATUS_INVALID_STATE, message);
-        }
-
-        if (!mMatrixCsrSet.empty()) {
-            char message[2000];
-
-            snprintf(message, 2000, "Some MatrixCsr objects (%llu) were not properly deallocated by user",
-                     (unsigned long long) mMatrixCsrSet.size());
+            snprintf(message, 2000, "Some Matrix objects (%llu) were not properly deallocated by user",
+                     (unsigned long long) mMatrixSet.size());
 
             sendMessage(CUBOOL_STATUS_INVALID_STATE, message);
         }
 
 #endif //CUBOOL_DEBUG
-
-        for (auto matrix: mMatrixDenseSet) {
-            matrix->~MatrixDense();
-            deallocate(matrix);
-        }
-
-        for (auto matrix: mMatrixCsrSet) {
-            matrix->~MatrixCsr();
+        for (auto matrix: mMatrixSet) {
+            matrix->~MatrixBase();
             deallocate(matrix);
         }
     }
@@ -73,25 +58,7 @@ namespace cubool {
         allocate(&mem, sizeof(MatrixDense));
 
         matrix = new (mem) MatrixDense(*this);
-        mMatrixDenseSet.emplace(matrix);
-    }
-
-    void Instance::validateMatrixDense(MatrixDense* matrix) {
-        bool contains = mMatrixDenseSet.find(matrix) != mMatrixDenseSet.end();
-
-        if (!contains)
-            throw details::InvalidArgument("No such matrix for provided handler");
-    }
-
-    void Instance::destroyMatrixDense(MatrixDense* matrix) {
-        auto itr = mMatrixDenseSet.find(matrix);
-
-        if (itr == mMatrixDenseSet.end())
-            throw details::InvalidArgument("No such matrix for provided handler");
-
-        mMatrixDenseSet.erase(itr);
-        matrix->~MatrixDense();
-        deallocate(matrix);
+        mMatrixSet.emplace(matrix);
     }
 
     void Instance::createMatrixCsr(MatrixCsr *&matrix) {
@@ -99,24 +66,24 @@ namespace cubool {
         allocate(&mem, sizeof(MatrixCsr));
 
         matrix = new (mem) MatrixCsr(*this);
-        mMatrixCsrSet.emplace(matrix);
+        mMatrixSet.emplace(matrix);
     }
 
-    void Instance::validateMatrixCsr(MatrixCsr* matrix) {
-        bool contains = mMatrixCsrSet.find(matrix) != mMatrixCsrSet.end();
+    void Instance::validateMatrix(MatrixBase *matrix) {
+        bool contains = mMatrixSet.find(matrix) != mMatrixSet.end();
 
         if (!contains)
             throw details::InvalidArgument("No such matrix for provided handler");
     }
 
-    void Instance::destroyMatrixCsr(MatrixCsr* matrix) {
-        auto itr = mMatrixCsrSet.find(matrix);
+    void Instance::destroyMatrix(MatrixBase* matrix) {
+        auto itr = mMatrixSet.find(matrix);
 
-        if (itr == mMatrixCsrSet.end())
+        if (itr == mMatrixSet.end())
             throw details::InvalidArgument("No such matrix for provided handler");
 
-        mMatrixCsrSet.erase(itr);
-        matrix->~MatrixCsr();
+        mMatrixSet.erase(itr);
+        matrix->~MatrixBase();
         deallocate(matrix);
     }
 
