@@ -34,31 +34,56 @@
 namespace cubool {
     namespace details {
 
+        /**
+         * Device allocator, which uses instance reference for unified memory
+         * resources access. The instance reference is required to modify in the
+         * runtime the type of the used memory: device or managed.
+         *
+         * @tparam T Type of the elements allocated by this allocator
+         */
         template<typename T>
-        struct DeviceAllocator : thrust::cuda::allocator<T> {
+        struct DeviceAllocator {
         public:
+            // Inheritance-like mechanics to use common typedefs
             typedef thrust::cuda::allocator<T> super;
             typedef typename super::pointer pointer;
+            typedef typename super::const_pointer const_pointer;
             typedef typename super::size_type size_type;
+            typedef typename super::value_type value_type;
+            typedef typename super::reference reference;
+            typedef typename super::const_reference const_reference;
 
-            __host__
-            explicit DeviceAllocator(Instance &instance) : super(), mInstanceRef(instance) {}
+            template <class U>
+            struct rebind {
+                typedef DeviceAllocator<U> other;
+            };
 
-            __host__
-            DeviceAllocator(const DeviceAllocator<T> &other) : super(other), mInstanceRef(other.mInstanceRef) {}
+            __host__ explicit DeviceAllocator(Instance &instance) : mInstanceRef(instance) {
+
+            }
+
+            __host__ DeviceAllocator(const DeviceAllocator<T> &other) : mInstanceRef(other.mInstanceRef) {
+
+            }
 
             template <typename U>
-            __host__
-            explicit DeviceAllocator(DeviceAllocator<U> &&other) noexcept: super(std::move(other)), mInstanceRef(other.mInstance) {}
+            __host__ explicit DeviceAllocator(const DeviceAllocator<U> &other) noexcept: mInstanceRef(other.mInstance) {
 
-            DeviceAllocator& operator=(const DeviceAllocator<T> &other) {
+            }
+
+            __host__ ~DeviceAllocator() = default;
+
+            __host__ bool operator!=(const DeviceAllocator<T> &other) const {
+                return &mInstanceRef != &other.mInstanceRef;
+            }
+
+            __host__ DeviceAllocator& operator=(const DeviceAllocator<T> &other) {
                 this->~DeviceAllocator();
                 new (this) DeviceAllocator<T>(other);
                 return *this;
             }
 
-            __host__
-            pointer allocate(size_type n) {
+            __host__ pointer allocate(size_type n) {
                 CuBoolGpuPtr_t ptr = nullptr;
                 mInstanceRef.allocateOnGpu(&ptr, n * sizeof(T));
                 return pointer((T*)ptr);

@@ -24,51 +24,42 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_ERROR_HPP
-#define CUBOOL_ERROR_HPP
+#ifndef CUBOOL_MATRIX_CSR_CUH
+#define CUBOOL_MATRIX_CSR_CUH
 
-#include <cubool/cubool.h>
-#include <exception>
-#include <string>
+#include <cubool/matrix_base.hpp>
+#include <cubool/details/host_allocator.hpp>
+#include <cubool/details/device_allocator.cuh>
+#include <matrix.h>
 
 namespace cubool {
-    namespace details {
 
-        /** Base class for any exception thrown in the cubool backend implementation */
-        class Error: public std::exception {
-        public:
-            Error(std::string &&message, CuBoolStatus status): std::exception(), mWhat(std::move(message)), mStatus(status) {}
-            Error(const Error& error) noexcept = default;
-            Error(Error&& error) noexcept = default;
-            ~Error() noexcept override = default;
+    class MatrixCsr: public MatrixBase {
+    public:
+        using Super = MatrixBase;
+        using Super::mNumRows;
+        using Super::mNumCols;
+        using IndexType = CuBoolIndex_t;
+        using DeviceAlloc = details::DeviceAllocator<IndexType>;
+        using HostAlloc = details::HostAllocator<IndexType>;
+        using MatrixImplType = nsparse::matrix<bool, IndexType, DeviceAlloc>;
 
-            /** @return Descriptive error message text */
-            const char *what() const noexcept override { return mWhat.c_str(); }
+        explicit MatrixCsr(Instance& instance);
+        ~MatrixCsr() override = default;
 
-            /** @return Status number which matches the C API error identification */
-            CuBoolStatus status() const noexcept { return mStatus; }
+        void resize(CuBoolSize_t nrows, CuBoolSize_t ncols) override;
+        void build(const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) override;
+        void extract(CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) const override;
+        void clone(const MatrixBase &other) override;
 
-        private:
-            std::string mWhat;
-            CuBoolStatus mStatus;
-        };
+        void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
+        void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
 
-        template <CuBoolStatus S>
-        class TStatusError: public Error {
-        public:
-            explicit TStatusError(std::string&& message) noexcept: Error(std::move(message), S) {}
-            TStatusError(const TStatusError<S>& error) noexcept = default;
-            TStatusError(TStatusError<S>&& error) noexcept = default;
-            ~TStatusError() noexcept override = default;
-        };
+    private:
+        // Uses nsparse csr matrix implementation as a backend
+        MatrixImplType mMatrixImpl;
+    };
 
-        using DeviceError = TStatusError<CuBoolStatus::CUBOOL_STATUS_DEVICE_ERROR>;
-        using InvalidArgument = TStatusError<CuBoolStatus::CUBOOL_STATUS_INVALID_ARGUMENT>;
-        using InvalidState = TStatusError<CuBoolStatus::CUBOOL_STATUS_INVALID_STATE>;
-        using MemOpFailed = TStatusError<CuBoolStatus::CUBOOL_STATUS_MEM_OP_FAILED>;
-        using NotImplemented = TStatusError<CuBoolStatus::CUBOOL_STATUS_NOT_IMPLEMENTED>;
-
-    }
 }
 
-#endif //CUBOOL_ERROR_HPP
+#endif //CUBOOL_MATRIX_CSR_CUH

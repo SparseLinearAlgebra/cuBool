@@ -28,6 +28,7 @@
 #include <cubool/version.hpp>
 #include <cubool/instance.hpp>
 #include <cubool/matrix_dense.cuh>
+#include <cubool/matrix_csr.cuh>
 #include <cubool/details/error.hpp>
 #include <cstdlib>
 #include <string>
@@ -232,7 +233,7 @@ CuBoolStatus CuBool_MatrixDense_Resize(CuBoolInstance instance, CuBoolMatrixDens
     CUBOOL_CHECK_ARG_NOT_NULL(matrix);
 
     CUBOOL_BEGIN_BODY
-        instanceImpl->validateMatrix(matrixImpl);
+        instanceImpl->validateMatrixDense(matrixImpl);
         matrixImpl->resize(nrows, ncols);
     CUBOOL_END_BODY
 }
@@ -246,7 +247,7 @@ CuBoolStatus CuBool_MatrixDense_Build(CuBoolInstance instance, CuBoolMatrixDense
     CUBOOL_CHECK_ARG_NOT_NULL(cols);
 
     CUBOOL_BEGIN_BODY
-        instanceImpl->validateMatrix(matrixImpl);
+        instanceImpl->validateMatrixDense(matrixImpl);
         matrixImpl->build(rows, cols, nvals);
     CUBOOL_END_BODY
 }
@@ -261,7 +262,7 @@ CuBoolStatus CuBool_MatrixDense_ExtractPairs(CuBoolInstance instance, CuBoolMatr
     CUBOOL_CHECK_ARG_NOT_NULL(nvals);
 
     CUBOOL_BEGIN_BODY
-        instanceImpl->validateMatrix(matrixImpl);
+        instanceImpl->validateMatrixDense(matrixImpl);
         matrixImpl->extract(rows, cols, nvals);
     CUBOOL_END_BODY
 }
@@ -290,9 +291,9 @@ CuBoolStatus CuBool_MatrixDense_MultAdd(CuBoolInstance instance, CuBoolMatrixDen
     CUBOOL_CHECK_ARG_NOT_NULL(b);
 
     CUBOOL_BEGIN_BODY
-        instanceImpl->validateMatrix(aImpl);
-        instanceImpl->validateMatrix(bImpl);
-        instanceImpl->validateMatrix(rImpl);
+        instanceImpl->validateMatrixDense(aImpl);
+        instanceImpl->validateMatrixDense(bImpl);
+        instanceImpl->validateMatrixDense(rImpl);
         rImpl->multiplyAdd(*aImpl, *bImpl);
     CUBOOL_END_BODY
 }
@@ -311,10 +312,77 @@ CuBoolStatus CuBool_MatrixDense_MultSum(CuBoolInstance instance, CuBoolMatrixDen
     CUBOOL_CHECK_ARG_NOT_NULL(c);
 
     CUBOOL_BEGIN_BODY
-        instanceImpl->validateMatrix(aImpl);
-        instanceImpl->validateMatrix(bImpl);
-        instanceImpl->validateMatrix(cImpl);
-        instanceImpl->validateMatrix(rImpl);
+        instanceImpl->validateMatrixDense(aImpl);
+        instanceImpl->validateMatrixDense(bImpl);
+        instanceImpl->validateMatrixDense(cImpl);
+        instanceImpl->validateMatrixDense(rImpl);
         rImpl->multiplySum(*aImpl, *bImpl, *cImpl);
+    CUBOOL_END_BODY
+}
+
+CuBoolStatus CuBool_Matrix_New(CuBoolInstance instance, CuBoolMatrix *matrix, CuBoolSize_t nrows, CuBoolSize_t ncols) {
+    auto instanceImpl = (cubool::Instance*) instance;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+
+    CUBOOL_BEGIN_BODY
+        cubool::MatrixCsr* matrixImpl = nullptr;
+        instanceImpl->createMatrixCsr(matrixImpl);
+        matrixImpl->resize(nrows, ncols);
+        *matrix = (CuBoolMatrix) matrixImpl;
+    CUBOOL_END_BODY
+}
+
+CuBoolAPI CuBoolStatus CuBool_Matrix_Free(CuBoolInstance instance, CuBoolMatrix matrix) {
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto matrixImpl = (cubool::MatrixCsr*) matrix;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
+
+    CUBOOL_BEGIN_BODY
+        instanceImpl->destroyMatrixCsr(matrixImpl);
+    CUBOOL_END_BODY
+}
+
+CuBoolAPI CuBoolStatus CuBool_Matrix_Resize(CuBoolInstance instance, CuBoolMatrix matrix, CuBoolSize_t nrows, CuBoolSize_t ncols) {
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto matrixImpl = (cubool::MatrixCsr*) matrix;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
+
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrixCsr(matrixImpl);
+        matrixImpl->resize(nrows, ncols);
+    CUBOOL_END_BODY
+}
+
+CuBoolAPI CuBoolStatus CuBool_Matrix_Build(CuBoolInstance instance, CuBoolMatrix matrix, const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) {
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto matrixImpl = (cubool::MatrixCsr*) matrix;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(rows);
+    CUBOOL_CHECK_ARG_NOT_NULL(cols);
+
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrixCsr(matrixImpl);
+        matrixImpl->build(rows, cols, nvals);
+    CUBOOL_END_BODY
+}
+
+CuBoolAPI CuBoolStatus CuBool_Matrix_ExtractPairs(CuBoolInstance instance, CuBoolMatrix matrix, CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) {
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto matrixImpl = (cubool::MatrixCsr*) matrix;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(rows);
+    CUBOOL_CHECK_ARG_NOT_NULL(cols);
+    CUBOOL_CHECK_ARG_NOT_NULL(nvals);
+
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrixCsr(matrixImpl);
+        matrixImpl->extract(rows, cols, nvals);
     CUBOOL_END_BODY
 }

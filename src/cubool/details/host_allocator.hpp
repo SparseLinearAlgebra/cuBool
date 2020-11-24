@@ -34,20 +34,36 @@ namespace cubool {
     namespace details {
 
         template <class T>
-        class HostAllocator: public std::allocator<T> {
+        class HostAllocator {
         public:
-
             typedef std::allocator<T> super;
             typedef typename super::pointer pointer;
+            typedef typename super::const_pointer const_pointer;
             typedef typename super::size_type size_type;
+            typedef typename super::value_type value_type;
+            typedef typename super::reference reference;
+            typedef typename super::const_reference const_reference;
 
             template <class U>
             struct rebind { typedef HostAllocator<U> other; };
 
-            explicit HostAllocator(Instance& instance): super(), mInstanceRef(instance) { }
-            HostAllocator(const HostAllocator<T> &other): super(other), mInstanceRef(other.mInstanceRef) { }
-            HostAllocator(HostAllocator<T> &&other)noexcept: super(std::move(other)), mInstanceRef(other.mInstanceRef) { }
+            explicit HostAllocator(Instance& instance): mInstanceRef(instance) {
+
+            }
+
+            HostAllocator(const HostAllocator<T> &other): mInstanceRef(other.mInstanceRef) {
+
+            }
+
+            HostAllocator(HostAllocator<T> &&other) noexcept: mInstanceRef(other.mInstanceRef) {
+
+            }
+
             ~HostAllocator() = default;
+
+            bool operator!=(const HostAllocator<T> &other) const {
+                return &mInstanceRef != &other.mInstanceRef;
+            }
 
             HostAllocator& operator=(const HostAllocator<T> &other) {
                 this->~HostAllocator();

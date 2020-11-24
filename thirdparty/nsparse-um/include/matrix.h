@@ -20,6 +20,10 @@ class matrix<bool, IndexType, AllocType> {
   typedef bool value_type;
   typedef AllocType alloc_type;
 
+  matrix(alloc_type alloc) : m_col_index(alloc), m_row_index(alloc), m_rows{0}, m_cols{0}, m_vals{0} {
+
+  }
+
   matrix() : m_col_index{}, m_row_index{}, m_rows{0}, m_cols{0}, m_vals{0} {
   }
 
@@ -28,10 +32,12 @@ class matrix<bool, IndexType, AllocType> {
   }
 
   static matrix identity(index_type n) {
-    thrust::device_vector<index_type, nsparse::managed<index_type>> col_index(
-        thrust::counting_iterator<index_type>(0), thrust::counting_iterator<index_type>(n));
-    thrust::device_vector<index_type, nsparse::managed<index_type>> row_index(
-        thrust::counting_iterator<index_type>(0), thrust::counting_iterator<index_type>(n + 1));
+    thrust::device_vector<index_type, nsparse::managed<index_type>>
+        col_index(thrust::counting_iterator<index_type>(0), thrust::counting_iterator<index_type>(n));
+
+    thrust::device_vector<index_type, nsparse::managed<index_type>>
+        row_index(thrust::counting_iterator<index_type>(0), thrust::counting_iterator<index_type>(n + 1));
+
     return matrix(std::move(col_index), std::move(row_index), n, n, n);
   }
 
@@ -47,6 +53,15 @@ class matrix<bool, IndexType, AllocType> {
     assert(m_row_index.size() == rows + 1);
   }
 
+  void empty() {
+      m_col_index.clear();
+      m_row_index.clear();
+      m_rows = 0;
+      m_cols = 0;
+      m_vals = 0;
+  }
+
+public:
   thrust::device_vector<index_type, alloc_type> m_col_index;
   thrust::device_vector<index_type, alloc_type> m_row_index;
   index_type m_rows;

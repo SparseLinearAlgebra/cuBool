@@ -75,7 +75,7 @@ namespace cubool {
     }
 
     void MatrixDense::extract(CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) const {
-        std::vector<CuBoolPair> vals((CpuAllocator(mInstanceRef)));
+        std::vector<CuBoolPair, details::HostAllocator<CuBoolPair>> vals((details::HostAllocator<CuBoolPair>(mInstanceRef)));
         extractVector(vals);
 
         *nvals = vals.size();
@@ -180,7 +180,7 @@ namespace cubool {
         return cols + (cols % PACK_TYPE_SIZE_BITS ? PACK_TYPE_SIZE_BITS - cols % PACK_TYPE_SIZE_BITS : 0);
     }
 
-    void MatrixDense::extractVector(std::vector<CuBoolPair> &vals) const {
+    void MatrixDense::extractVector(std::vector<CuBoolPair, details::HostAllocator<CuBoolPair>> &vals) const {
         if (mBuffer.empty())
             return;
 

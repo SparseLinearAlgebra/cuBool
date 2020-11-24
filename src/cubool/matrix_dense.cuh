@@ -76,7 +76,7 @@ namespace cubool {
         static CuBoolSize_t getNumColsPaddedFromCols(CuBoolSize_t cols);
 
     private:
-        void extractVector(std::vector<CuBoolPair> &vals) const;
+        void extractVector(std::vector<CuBoolPair, details::HostAllocator<CuBoolPair>> &vals) const;
 
         GpuBuffer mBuffer;
         CuBoolSize_t mNumRowsPacked = 0;

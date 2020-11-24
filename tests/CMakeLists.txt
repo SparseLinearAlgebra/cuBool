@@ -16,6 +16,9 @@ target_link_libraries(test_library_api PUBLIC test_common)
 add_executable(test_matrix_dense test_matrix_dense.cpp)
 target_link_libraries(test_matrix_dense PUBLIC test_common)
 
+add_executable(test_matrix_csr test_matrix_csr.cpp)
+target_link_libraries(test_matrix_csr PUBLIC test_common)
+
 if (CUBOOL_WITH_NAIVE)
     add_executable(test_matrix_dense_vs_naive test_matrix_dense_vs_naive.cpp)
     target_link_libraries(test_matrix_dense_vs_naive PUBLIC test_common)
