@@ -14,17 +14,17 @@
 
 namespace nsparse {
 
-template <typename ValueType, typename IndexType>
+template <typename ValueType, typename IndexType, typename AllocType>
 struct spgemm_functor_t;
 
-template <typename index_type>
-struct spgemm_functor_t<bool, index_type> {
+template <typename index_type, typename alloc_type>
+struct spgemm_functor_t<bool, index_type, alloc_type> {
   /*
    * returns c + a * b
    */
-  matrix<bool, index_type> operator()(const matrix<bool, index_type>& c,
-                                      const matrix<bool, index_type>& a,
-                                      const matrix<bool, index_type>& b) {
+  matrix<bool, index_type, alloc_type> operator()(const matrix<bool, index_type, alloc_type>& c,
+                                                  const matrix<bool, index_type, alloc_type>& a,
+                                                  const matrix<bool, index_type, alloc_type>& b) {
     assert(a.m_cols == b.m_rows);
     assert(c.m_rows == a.m_rows);
     assert(c.m_cols == b.m_cols);
@@ -68,11 +68,14 @@ struct spgemm_functor_t<bool, index_type> {
     //    validate_order<index_type><<<rows, 128>>>(c.m_row_index.data(), c.m_col_index.data());
 
     constexpr auto config_merge =
-        make_bin_seq<bin_info_t<merge_conf_t<128>, 64, max>, bin_info_t<merge_conf_t<64>, 32, 64>,
-                     bin_info_t<merge_conf_t<32>, 0, 32>>;
+        make_bin_seq<
+            bin_info_t<merge_conf_t<128>, 64, max>,
+            bin_info_t<merge_conf_t<64>, 32, 64>,
+            bin_info_t<merge_conf_t<32>, 0, 32>
+        >;
 
-    auto merge_res =
-        unique_merge_functor(res.row_index, col_index, c.m_row_index, c.m_col_index, config_merge);
+    auto merge_res = unique_merge_functor(res.row_index, col_index, c.m_row_index, c.m_col_index, config_merge);
+
     auto& rpt_result = merge_res.first;
     auto& col_result = merge_res.second;
 

@@ -6,6 +6,7 @@
 #include <random>
 
 using index_type = unsigned int;
+using alloc_type = nsparse::managed<index_type>;
 
 using b_mat = std::vector<std::vector<bool>>;
 
@@ -55,10 +56,10 @@ std::ostream& operator<<(std::ostream& os, const thrust::device_vector<T> vec) {
   return os;
 }
 
-nsparse::matrix<bool, index_type> dense_to_gpu_csr(const b_mat& matrix) {
+nsparse::matrix<bool, index_type, alloc_type> dense_to_gpu_csr(const b_mat& matrix) {
   auto m = dense_to_csr(matrix);
-  return nsparse::matrix<bool, index_type>(m.first, m.second, matrix.size(), matrix[0].size(),
-                                           m.second.back());
+  return nsparse::matrix<bool, index_type, alloc_type>(
+          m.first, m.second, matrix.size(), matrix[0].size(), m.second.back());
 }
 
 class NsparseCountNonZeroTest : public testing::Test {
@@ -71,14 +72,16 @@ class NsparseCountNonZeroTest : public testing::Test {
     auto sprsC = dense_to_csr(c);
     auto sprsR = dense_to_csr(r);
 
-    nsparse::matrix<bool, index_type> A(sprsA.first, sprsA.second, a.size(), a[0].size(),
-                                        sprsA.second.back());
-    nsparse::matrix<bool, index_type> B(sprsB.first, sprsB.second, b.size(), b[0].size(),
-                                        sprsB.second.back());
-    nsparse::matrix<bool, index_type> C(sprsC.first, sprsC.second, c.size(), c[0].size(),
-                                        sprsC.second.back());
+    nsparse::matrix<bool, index_type, alloc_type>
+        A(sprsA.first, sprsA.second, a.size(), a[0].size(), sprsA.second.back());
 
-    nsparse::spgemm_functor_t<bool, index_type> spgemm_functor;
+    nsparse::matrix<bool, index_type, alloc_type>
+        B(sprsB.first, sprsB.second, b.size(), b[0].size(), sprsB.second.back());
+
+    nsparse::matrix<bool, index_type, alloc_type>
+        C(sprsC.first, sprsC.second, c.size(), c[0].size(), sprsC.second.back());
+
+    nsparse::spgemm_functor_t<bool, index_type, nsparse::managed<index_type>> spgemm_functor;
     auto res = spgemm_functor(C, A, B);
 
     ASSERT_EQ(sprsR.second, res.m_row_index);
@@ -178,8 +181,7 @@ void test_masked(const b_mat& a, const b_mat& b) {
   nsparse::masked_matrix<value_type, index_type> masked_b(gpu_b, b_values);
   nsparse::masked_matrix<value_type, index_type> masked_c(gpu_c, -1);
 
-  nsparse::masked_spgemm_functor_t<value_type, index_type, zero, decltype(mul), decltype(add)>
-      masked_spgemm(mul, add);
+  nsparse::masked_spgemm_functor_t<value_type, index_type, zero, decltype(mul), decltype(add)> masked_spgemm(mul, add);
 
   masked_spgemm(masked_c, masked_a, masked_b);
   ASSERT_EQ(expected_c_values, masked_c.m_values);

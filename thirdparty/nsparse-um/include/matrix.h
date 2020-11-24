@@ -6,14 +6,19 @@
 
 namespace nsparse {
 
-template <typename ValueType, typename IndexType>
+// Add template argument for the allocator, since we want to
+// allow runtime specific changes (not only compile time) in the type of
+// allocated memory: device only or managed
+
+template <typename ValueType, typename IndexType, typename AllocType>
 class matrix;
 
-template <typename IndexType>
-class matrix<bool, IndexType> {
+template <typename IndexType, typename AllocType>
+class matrix<bool, IndexType, AllocType> {
  public:
   typedef IndexType index_type;
   typedef bool value_type;
+  typedef AllocType alloc_type;
 
   matrix() : m_col_index{}, m_row_index{}, m_rows{0}, m_cols{0}, m_vals{0} {
   }
@@ -30,8 +35,8 @@ class matrix<bool, IndexType> {
     return matrix(std::move(col_index), std::move(row_index), n, n, n);
   }
 
-  matrix(thrust::device_vector<index_type, nsparse::managed<index_type>> col_index,
-         thrust::device_vector<index_type, nsparse::managed<index_type>> row_index, index_type rows,
+  matrix(thrust::device_vector<index_type, alloc_type> col_index,
+         thrust::device_vector<index_type, alloc_type> row_index, index_type rows,
          index_type cols, index_type vals)
       : m_col_index{std::move(col_index)},
         m_row_index{std::move(row_index)},
@@ -42,8 +47,8 @@ class matrix<bool, IndexType> {
     assert(m_row_index.size() == rows + 1);
   }
 
-  thrust::device_vector<index_type, nsparse::managed<index_type>> m_col_index;
-  thrust::device_vector<index_type, nsparse::managed<index_type>> m_row_index;
+  thrust::device_vector<index_type, alloc_type> m_col_index;
+  thrust::device_vector<index_type, alloc_type> m_row_index;
   index_type m_rows;
   index_type m_cols;
   index_type m_vals;
