@@ -40,9 +40,11 @@ namespace cubool {
         using Super::mNumRows;
         using Super::mNumCols;
         using IndexType = CuBoolIndex_t;
-        using DeviceAlloc = details::DeviceAllocator<IndexType>;
-        using HostAlloc = details::HostAllocator<IndexType>;
-        using MatrixImplType = nsparse::matrix<bool, IndexType, DeviceAlloc>;
+        template<typename T>
+        using DeviceAlloc = details::DeviceAllocator<T>;
+        template<typename T>
+        using HostAlloc = details::HostAllocator<T>;
+        using MatrixImplType = nsparse::matrix<bool, IndexType, DeviceAlloc<IndexType>>;
 
         explicit MatrixCsr(Instance& instance);
         ~MatrixCsr() override = default;
@@ -56,6 +58,10 @@ namespace cubool {
         void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
 
     private:
+        void resizeStorageToDim();
+        bool isStorageEmpty() const;
+        bool isMatrixEmpty() const;
+
         // Uses nsparse csr matrix implementation as a backend
         MatrixImplType mMatrixImpl;
     };

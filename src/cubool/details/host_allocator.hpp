@@ -36,18 +36,17 @@ namespace cubool {
         template <class T>
         class HostAllocator {
         public:
-            typedef std::allocator<T> super;
-            typedef typename super::pointer pointer;
-            typedef typename super::const_pointer const_pointer;
-            typedef typename super::size_type size_type;
-            typedef typename super::value_type value_type;
-            typedef typename super::reference reference;
-            typedef typename super::const_reference const_reference;
+            typedef size_t size_type;
+            typedef T value_type;
+            typedef T* pointer;
+            typedef const T* const_pointer;
+            typedef T& reference;
+            typedef const T& const_reference;
 
             template <class U>
             struct rebind { typedef HostAllocator<U> other; };
 
-            explicit HostAllocator(Instance& instance): mInstanceRef(instance) {
+            explicit HostAllocator(): mInstanceRef(Instance::getInstanceRef()) {
 
             }
 

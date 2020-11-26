@@ -26,11 +26,12 @@
 
 #include <cubool/matrix_csr.cuh>
 #include <cubool/details/error.hpp>
+#include <spgemm.h>
 #include <algorithm>
 
 namespace cubool {
 
-    MatrixCsr::MatrixCsr(Instance &instance): Super(instance), mMatrixImpl(DeviceAlloc(instance)) {
+    MatrixCsr::MatrixCsr(Instance &instance): Super(instance) {
 
     }
 
@@ -40,13 +41,13 @@ namespace cubool {
 
         mNumRows = nrows;
         mNumCols = ncols;
-        mMatrixImpl.empty();  // no content, empty matrix
+        mMatrixImpl.zero_dim();  // no content, empty matrix
     }
 
     void MatrixCsr::build(const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) {
         // Create tmp buffer and pack indices into pairs
         using CuBoolPairAlloc = details::HostAllocator<CuBoolPair>;
-        std::vector<CuBoolPair, CuBoolPairAlloc> values((CuBoolPairAlloc(getInstance())));
+        std::vector<CuBoolPair, CuBoolPairAlloc> values;
         values.reserve(nvals);
 
         for (CuBoolSize_t idx = 0; idx < nvals; idx++) {
@@ -59,15 +60,15 @@ namespace cubool {
             values.push_back({i, j});
         }
 
-        // Sort pairs to ensure that the data in the proper format
+        // Sort pairs to ensure that data are in the proper format
         std::sort(values.begin(), values.end(), [](const CuBoolPair& a, const CuBoolPair& b) {
             return a.i < b.i || (a.i == b.i && a.j < b.j);
         });
 
-        std::vector<IndexType, HostAlloc> rowsVec((HostAlloc(getInstance())));
+        thrust::host_vector<IndexType, HostAlloc<IndexType>> rowsVec;
         rowsVec.resize(getNumRows() + 1);
 
-        std::vector<IndexType, HostAlloc> colsVec((HostAlloc(getInstance())));
+        thrust::host_vector<IndexType, HostAlloc<IndexType>> colsVec;
         colsVec.reserve(nvals);
 
         {
@@ -100,11 +101,8 @@ namespace cubool {
         }
 
         // Create device buffers and copy data from the cpu side
-        thrust::device_vector<IndexType, DeviceAlloc> rowsDeviceVec((DeviceAlloc(getInstance())));
-        rowsDeviceVec = rowsVec;
-
-        thrust::device_vector<IndexType, DeviceAlloc> colsDeviceVec((DeviceAlloc(getInstance())));
-        colsDeviceVec = colsVec;
+        thrust::device_vector<IndexType, DeviceAlloc<IndexType>> rowsDeviceVec = rowsVec;
+        thrust::device_vector<IndexType, DeviceAlloc<IndexType>> colsDeviceVec = colsVec;
 
         // Move actual data to the matrix implementation
         mMatrixImpl = std::move(MatrixImplType(std::move(colsDeviceVec), std::move(rowsDeviceVec), getNumRows(), getNumCols(), nvals));
@@ -116,14 +114,8 @@ namespace cubool {
         auto& colsDeviceVec = mMatrixImpl.m_col_index;
 
         // Ensure that we allocated area for the copy operations
-        std::vector<IndexType, HostAlloc> rowsVec((HostAlloc(getInstance())));
-        rowsVec.resize(rowsDeviceVec.size());
-
-        std::vector<IndexType, HostAlloc> colsVec((HostAlloc(getInstance())));
-        colsVec.resize(colsDeviceVec.size());
-
-        thrust::copy(rowsDeviceVec.begin(), rowsDeviceVec.end(), rowsVec.begin());
-        thrust::copy(colsDeviceVec.begin(), colsDeviceVec.end(), colsVec.begin());
+        thrust::host_vector<IndexType, HostAlloc<IndexType>> rowsVec = rowsDeviceVec;
+        thrust::host_vector<IndexType, HostAlloc<IndexType>> colsVec = colsDeviceVec;
 
         auto valuesCount = mMatrixImpl.m_vals;
 
@@ -147,16 +139,106 @@ namespace cubool {
         }
     }
 
-    void MatrixCsr::clone(const MatrixBase &other) {
-        throw details::NotImplemented("This function is not implemented");
+    void MatrixCsr::clone(const MatrixBase &otherBase) {
+        auto other = dynamic_cast<const MatrixCsr*>(&otherBase);
+
+        if (!other)
+            throw details::InvalidArgument("Passed to be cloned matrix does not belong to csr matrix class");
+
+        CuBoolSize_t M = other->getNumRows();
+        CuBoolSize_t N = other->getNumCols();
+
+        this->resize(M, N);
+        this->mMatrixImpl = other->mMatrixImpl;
     }
 
-    void MatrixCsr::multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) {
-        throw details::NotImplemented("This function is not implemented");
+    void MatrixCsr::multiplySum(const MatrixBase &aBase, const MatrixBase &bBase, const MatrixBase &cBase) {
+        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
+        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
+        auto c = dynamic_cast<const MatrixCsr*>(&cBase);
+
+        if (!a || !b || !c)
+            throw details::InvalidArgument("Passed matrices do not belong to dense matrix class");
+
+        if (a->isZeroDim() || b->isZeroDim() || c->isZeroDim())
+            throw details::InvalidArgument("An attempt to operate on 0-dim matrices");
+
+        if (a->getNumCols() != b->getNumRows())
+            throw details::InvalidArgument("Incompatible matrix size to multiply");
+
+        CuBoolSize_t M = a->getNumRows();
+        CuBoolSize_t N = b->getNumCols();
+
+        if (c->getNumRows() != M || c->getNumCols() != N)
+            throw details::InvalidArgument("Incompatible matrix size to add");
+
+        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
+            // A or B emtpy, therefore result equals C matrix data
+            this->resize(M, N);
+            this->mMatrixImpl = c->mMatrixImpl;
+            return;
+        }
+
+        // Call backend r = c + a * b implementation
+        nsparse::spgemm_functor_t<bool, IndexType, DeviceAlloc<IndexType>> spgemmFunctor;
+        auto result = spgemmFunctor(c->mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
+
+        // Assign result r to this matrix
+        this->resize(M, N);
+        this->mMatrixImpl = std::move(result);
     }
 
-    void MatrixCsr::multiplyAdd(const MatrixBase &a, const MatrixBase &b) {
-        throw details::NotImplemented("This function is not implemented");
+    void MatrixCsr::multiplyAdd(const MatrixBase &aBase, const MatrixBase &bBase) {
+        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
+        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
+
+        if (!a || !b)
+            throw details::InvalidArgument("Passed matrices do not belong to csr matrix class");
+
+        if (a->isZeroDim() || b->isZeroDim())
+            throw details::InvalidArgument("An attempt to operate on 0-dim matrices");
+
+        if (a->getNumCols() != b->getNumRows())
+            throw details::InvalidArgument("Incompatible matrix size to multiply");
+
+        CuBoolSize_t M = a->getNumRows();
+        CuBoolSize_t N = b->getNumCols();
+
+        if (this->getNumRows() != M || this->getNumCols() != N)
+            throw details::InvalidArgument("Incompatible matrix size to add");
+
+        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
+            // A or B has no values
+            return;
+        }
+
+        if (this->isStorageEmpty()) {
+            // If this was resized but actual data was not allocated
+            this->resizeStorageToDim();
+        }
+
+        // Call backend r = c + a * b implementation, as C this is passed
+        nsparse::spgemm_functor_t<bool, IndexType, DeviceAlloc<IndexType>> spgemmFunctor;
+        auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
+
+        // Assign result to this
+        this->resize(M, N);
+        this->mMatrixImpl = std::move(result);
+    }
+
+    void MatrixCsr::resizeStorageToDim() {
+        if (mMatrixImpl.is_zero_dim()) {
+            // If actual storage was not allocated, allocate one for an empty matrix
+            mMatrixImpl = std::move(MatrixImplType(mNumRows, mNumCols));
+        }
+    }
+
+    bool MatrixCsr::isStorageEmpty() const {
+        return mMatrixImpl.is_zero_dim();
+    }
+
+    bool MatrixCsr::isMatrixEmpty() const {
+        return mMatrixImpl.m_vals == 0;
     }
 
 }

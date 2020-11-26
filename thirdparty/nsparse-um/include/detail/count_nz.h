@@ -16,10 +16,10 @@
 
 namespace nsparse {
 
-template <typename index_type>
+template <typename index_type, typename alloc_type>
 struct count_nz_functor_t {
   template <typename T>
-  using container_t = thrust::device_vector<T, nsparse::managed<T>>;
+  using container_t = thrust::device_vector<T, typename alloc_type::template rebind<T>::other>;
 
   cudaStream_t streams[9];
 

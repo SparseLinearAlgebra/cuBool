@@ -64,11 +64,14 @@ set(CUBOOL_SOURCES
     src/cubool/matrix_base.hpp
     src/cubool/matrix_dense.cu
     src/cubool/matrix_dense.cuh
+    src/cubool/matrix_csr.cu
+    src/cubool/matrix_csr.cuh
     src/cubool/kernels/matrix_dense_multiply_add.cuh
     src/cubool/kernels/matrix_dense_common.cuh
     src/cubool/details/error.hpp
     src/cubool/details/device_allocator.cuh
-    src/cubool/details/host_allocator.hpp src/cubool/matrix_csr.cu src/cubool/matrix_csr.cuh)
+    src/cubool/details/host_allocator.hpp
+        )
 
 # Shared library object config
 add_library(cubool SHARED ${CUBOOL_SOURCES})
@@ -76,13 +79,13 @@ add_library(cubool SHARED ${CUBOOL_SOURCES})
 target_include_directories(cubool PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(cubool PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
 target_include_directories(cubool PRIVATE ${CMAKE_BINARY_DIR}/src)
-target_link_libraries(cubool PRIVATE nsparse_um)
 
+target_link_libraries(cubool PRIVATE nsparse_um)
 target_compile_features(cubool PUBLIC cxx_std_14)
 
-set_target_properties(cubool PROPERTIES CXX_STANDARD 11)
+set_target_properties(cubool PROPERTIES CXX_STANDARD 17)
 set_target_properties(cubool PROPERTIES CXX_STANDARD_REQUIRED ON)
-set_target_properties(cubool PROPERTIES CUDA_STANDARD 11)
+set_target_properties(cubool PROPERTIES CUDA_STANDARD 14)
 set_target_properties(cubool PROPERTIES CUDA_STANDARD_REQUIRED ON)
 set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 

@@ -81,7 +81,7 @@ class NsparseCountNonZeroTest : public testing::Test {
     nsparse::matrix<bool, index_type, alloc_type>
         C(sprsC.first, sprsC.second, c.size(), c[0].size(), sprsC.second.back());
 
-    nsparse::spgemm_functor_t<bool, index_type, nsparse::managed<index_type>> spgemm_functor;
+    nsparse::spgemm_functor_t<bool, index_type, alloc_type> spgemm_functor;
     auto res = spgemm_functor(C, A, B);
 
     ASSERT_EQ(sprsR.second, res.m_row_index);

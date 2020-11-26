@@ -196,8 +196,8 @@ static void evaluateMultiplyAdd(
         r[crows[i]][ccols[i]] |= 1u;
     }
 
-    for (CuBoolSize_t i = 0; i < m; i++) {
-        for (CuBoolSize_t j = 0; j < n; j++) {
+    for (CuBoolIndex_t i = 0; i < m; i++) {
+        for (CuBoolIndex_t j = 0; j < n; j++) {
             if (r[i][j] != 0) {
                 result.emplace(CuBoolPair{i,j});
             }

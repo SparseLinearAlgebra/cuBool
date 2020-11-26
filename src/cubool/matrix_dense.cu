@@ -30,7 +30,7 @@
 
 namespace cubool {
 
-    MatrixDense::MatrixDense(class Instance &instance) : Super(instance), mBuffer(GpuAllocator(mInstanceRef)) {
+    MatrixDense::MatrixDense(class Instance &instance) : Super(instance) {
 
     }
 
@@ -42,18 +42,18 @@ namespace cubool {
         mNumCols = ncols;
         mNumRowsPacked = getNumRowsPackedFromRows(mNumRows);
         mNumColsPadded = getNumColsPaddedFromCols(mNumCols);
-        mBuffer.resize(mNumColsPadded * mNumRowsPacked, 0x0);
+        mBuffer.clear(); // clear all the data, since resize does not preserve the content
     }
 
     void MatrixDense::build(const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) {
         if (nvals == 0)
             return;
 
-        if (mBuffer.empty())
+        if (isZeroDim())
             throw details::InvalidState("An attempt to write to empty matrix");
 
-        CpuBuffer cpuBuffer((CpuAllocator(mInstanceRef)));
-        cpuBuffer.resize(mBuffer.size(), 0x0);
+        // Allocate host memory buffer and resize with 0 to the proper packed size
+        thrust::host_vector<PackType_t, HostAlloc<PackType_t>> cpuBuffer(mNumRowsPacked * mNumColsPadded, 0x0);
 
         for (CuBoolSize_t idx = 0; idx < nvals; idx++) {
             CuBoolSize_t rowIdx = rows[idx];
@@ -68,6 +68,7 @@ namespace cubool {
 
             getRowPackedIndex(rowIdx, i, k);
 
+            // Pack row index into int32 column
             cpuBuffer[i * mNumColsPadded + j] |= (1u << k);
         }
 
@@ -75,7 +76,7 @@ namespace cubool {
     }
 
     void MatrixDense::extract(CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) const {
-        std::vector<CuBoolPair, details::HostAllocator<CuBoolPair>> vals((details::HostAllocator<CuBoolPair>(mInstanceRef)));
+        std::vector<CuBoolPair, HostAlloc<CuBoolPair>> vals;
         extractVector(vals);
 
         *nvals = vals.size();
@@ -184,16 +185,15 @@ namespace cubool {
         if (mBuffer.empty())
             return;
 
-        CpuBuffer cpuBuffer((CpuAllocator(mInstanceRef)));
-        cpuBuffer = mBuffer;
+        thrust::host_vector<PackType_t, HostAlloc<PackType_t>> cpuBuffer = mBuffer;
 
-        for (CuBoolSize_t i = 0; i < mNumRowsPacked; i++) {
-            for (CuBoolSize_t j = 0; j < getNumCols(); j++) {
+        for (CuBoolIndex_t i = 0; i < mNumRowsPacked; i++) {
+            for (CuBoolIndex_t j = 0; j < getNumCols(); j++) {
                 PackType_t pack = cpuBuffer[i * mNumColsPadded + j];
 
-                for (CuBoolSize_t k = 0; k < PACK_TYPE_SIZE_BITS; k++) {
-                    CuBoolSize_t rowIdx = i * PACK_TYPE_SIZE_BITS + k;
-                    CuBoolSize_t columnIdx = j;
+                for (CuBoolIndex_t k = 0; k < PACK_TYPE_SIZE_BITS; k++) {
+                    CuBoolIndex_t rowIdx = i * PACK_TYPE_SIZE_BITS + k;
+                    CuBoolIndex_t columnIdx = j;
 
                     if (rowIdx < getNumRows() && ((pack & 0x1u) != 0x0u)) {
                         vals.push_back(CuBoolPair{ rowIdx, columnIdx });

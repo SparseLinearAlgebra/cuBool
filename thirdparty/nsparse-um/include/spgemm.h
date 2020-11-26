@@ -45,7 +45,7 @@ struct spgemm_functor_t<bool, index_type, alloc_type> {
                                                  bin_info_t<nz_conf_t<block_row, 32>, 32, 64>,
                                                  bin_info_t<nz_conf_t<pwarp_row, 256>, 0, 32>>;
 
-    typename count_nz_functor_t<index_type>::row_index_res_t res =
+    typename count_nz_functor_t<index_type, alloc_type>::row_index_res_t res =
         count_nz_functor(rows, cols, c.m_col_index, c.m_row_index, a.m_col_index, a.m_row_index,
                          b.m_col_index, b.m_row_index, config_find_nz);
 
@@ -58,7 +58,7 @@ struct spgemm_functor_t<bool, index_type, alloc_type> {
                                                  bin_info_t<nz_conf_t<block_row, 32>, 32, 64>,
                                                  bin_info_t<nz_conf_t<pwarp_row, 256>, 0, 32>>;
 
-    thrust::device_vector<index_type, nsparse::managed<index_type>> col_index =
+    thrust::device_vector<index_type, alloc_type> col_index =
         fill_nz_functor(rows, c.m_col_index, c.m_row_index, a.m_col_index, a.m_row_index,
                         b.m_col_index, b.m_row_index, res.row_index, config_fill_nz);
 
@@ -87,9 +87,9 @@ struct spgemm_functor_t<bool, index_type, alloc_type> {
   }
 
  private:
-  count_nz_functor_t<index_type> count_nz_functor{};
-  fill_nz_functor_t<index_type> fill_nz_functor{};
-  unique_merge_functor_t<index_type> unique_merge_functor{};
+  count_nz_functor_t<index_type, alloc_type> count_nz_functor{};
+  fill_nz_functor_t<index_type, alloc_type> fill_nz_functor{};
+  unique_merge_functor_t<index_type, alloc_type> unique_merge_functor{};
 };
 
 }  // namespace nsparse

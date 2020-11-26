@@ -10,10 +10,10 @@
 
 namespace nsparse {
 
-template <typename index_type>
+template <typename index_type, typename alloc_type>
 struct unique_merge_functor_t {
   template <typename T>
-  using container_t = thrust::device_vector<T, nsparse::managed<T>>;
+  using container_t = thrust::device_vector<T, typename alloc_type::template rebind<T>::other>;
 
   template <typename... Borders>
   void exec_merge_count(const container_t<index_type>& rpt_a, const container_t<index_type>& col_a,

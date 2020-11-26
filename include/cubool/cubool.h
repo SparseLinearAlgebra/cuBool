@@ -60,16 +60,11 @@ typedef enum CuBoolGpuMemoryType {
     CUBOOL_GPU_MEMORY_TYPE_GENERIC
 } CuBoolGpuMemoryType;
 
-typedef enum CuBoolMajorOrder {
-    CUBOOL_MAJOR_ORDER_ROW,
-    CUBOOL_MAJOR_ORDER_COLUMN,
-} CuBoolMajorOrder;
-
 /** Alias size type for memory and size specification */
 typedef size_t                      CuBoolSize_t;
 
 /** Alias integer type for indexing operations */
-typedef size_t                      CuBoolIndex_t;
+typedef unsigned int                CuBoolIndex_t;
 
 /** Alias cpu (ram) memory pointer */
 typedef void*                       CuBoolCpuPtr_t;
@@ -136,12 +131,6 @@ typedef struct CuBoolDeviceCaps {
     CuBoolSize_t                sharedMemoryPerMultiProcKiBs;
     CuBoolSize_t                sharedMemoryPerBlockKiBs;
 } CuBoolDeviceCaps;
-
-typedef struct CuBoolGpuAllocation {
-    CuBoolGpuMemoryType         memoryType;
-    CuBoolGpuPtr_t              memoryPtr;
-    CuBoolSize_t                size;
-} CuBoolGpuAllocation;
 
 typedef struct CuBoolAllocationCallback {
     void*                       userData;
@@ -230,7 +219,7 @@ CuBoolAPI CuBoolStatus CuBool_Instance_Free(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_SyncHostDevice(
+CuBoolAPI CuBoolStatus CuBool_HostDevice_Sync(
     CuBoolInstance              instance
 );
 
@@ -330,16 +319,16 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs(
  * @note to perform this operation matrices must be compatible
  *       dim(a) = M x T
  *       dim(b) = T x N
- *       dim(c) = M x N
+ *       dim(r) = M x N
  *
- * @param instance
- * @param r
- * @param a
- * @param b
+ * @param instance An instance object reference to perform this operation
+ * @param r Matrix handle where to store operation result
+ * @param a Input a matrix
+ * @param b Input a matrix
  *
  * @return
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultAdd(
+CuBoolAPI CuBoolStatus CuBool_MatrixDense_MxM(
     CuBoolInstance              instance,
     CuBoolMatrixDense           r,
     CuBoolMatrixDense           a,
@@ -383,10 +372,10 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultSum(
  * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_Matrix_New(
-        CuBoolInstance              instance,
-        CuBoolMatrix*               matrix,
-        CuBoolSize_t                nrows,
-        CuBoolSize_t                ncols
+    CuBoolInstance              instance,
+    CuBoolMatrix*               matrix,
+    CuBoolSize_t                nrows,
+    CuBoolSize_t                ncols
 );
 
 /**
@@ -398,8 +387,8 @@ CuBoolAPI CuBoolStatus CuBool_Matrix_New(
  * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_Matrix_Free(
-        CuBoolInstance              instance,
-        CuBoolMatrix                matrix
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix
 );
 
 /**
@@ -413,10 +402,10 @@ CuBoolAPI CuBoolStatus CuBool_Matrix_Free(
  * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_Matrix_Resize(
-        CuBoolInstance              instance,
-        CuBoolMatrix                matrix,
-        CuBoolSize_t                nrows,
-        CuBoolSize_t                ncols
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
+    CuBoolSize_t                nrows,
+    CuBoolSize_t                ncols
 );
 
 /**
@@ -432,11 +421,11 @@ CuBoolAPI CuBoolStatus CuBool_Matrix_Resize(
  * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_Matrix_Build(
-        CuBoolInstance              instance,
-        CuBoolMatrix                matrix,
-        const CuBoolIndex_t*        rows,
-        const CuBoolIndex_t*        cols,
-        CuBoolSize_t                nvals
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
+    const CuBoolIndex_t*        rows,
+    const CuBoolIndex_t*        cols,
+    CuBoolSize_t                nvals
 );
 
 /**
@@ -455,11 +444,33 @@ CuBoolAPI CuBoolStatus CuBool_Matrix_Build(
  * @return Error code on this operations
  */
 CuBoolAPI CuBoolStatus CuBool_Matrix_ExtractPairs(
-        CuBoolInstance              instance,
-        CuBoolMatrix                matrix,
-        CuBoolIndex_t**             rows,
-        CuBoolIndex_t**             cols,
-        CuBoolSize_t*               nvals
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
+    CuBoolIndex_t**             rows,
+    CuBoolIndex_t**             cols,
+    CuBoolSize_t*               nvals
+);
+
+/**
+ * Performs r += a x b evaluation, where '+' and 'x' are boolean semiring operations.
+ *
+ * @note to perform this operation matrices must be compatible
+ *       dim(a) = M x T
+ *       dim(b) = T x N
+ *       dim(r) = M x N
+ *
+ * @param instance An instance object reference to perform this operation
+ * @param r Matrix handle where to store operation result
+ * @param a Input a matrix
+ * @param b Input a matrix
+ *
+ * @return
+ */
+CuBoolAPI CuBoolStatus CuBool_MxM(
+    CuBoolInstance              instance,
+    CuBoolMatrix                r,
+    CuBoolMatrix                a,
+    CuBoolMatrix                b
 );
 
 /**

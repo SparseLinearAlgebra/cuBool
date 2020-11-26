@@ -32,7 +32,11 @@
 
 namespace cubool {
 
+    Instance* Instance::gInstance = nullptr;
+
     Instance::Instance(const CuBoolInstanceDesc &desc) {
+        gInstance = this;
+
         mAllocCallback = desc.allocationCallback;
         mMessageCallback = desc.errorCallback;
         mMemoryType = desc.memoryType;
@@ -112,6 +116,13 @@ namespace cubool {
 
     bool Instance::hasUserDefinedErrorCallback() const {
         return mMessageCallback.msgFun != nullptr;
+    }
+
+    Instance& Instance::getInstanceRef() {
+        if (!gInstance)
+            throw details::InvalidState("No instance in the system");
+
+        return *gInstance;
     }
 
 }

@@ -77,7 +77,7 @@ namespace nsparse {
 template <typename T>
 using managed = thrust::device_unified_allocator<T>;
 
-template <typename T>
-using managed_vector = thrust::device_vector<T, managed<T>>;
+//template <typename T>
+//using managed_vector = thrust::device_vector<T, managed<T>>;
 
 }  // namespace nsparse

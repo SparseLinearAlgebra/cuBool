@@ -30,6 +30,7 @@
 #include <cubool/instance.hpp>
 #include <cubool/details/error.hpp>
 #include <thrust/system/cuda/memory.h>
+#include <thrust/device_malloc_allocator.h>
 
 namespace cubool {
     namespace details {
@@ -44,32 +45,23 @@ namespace cubool {
         template<typename T>
         struct DeviceAllocator {
         public:
-            // Inheritance-like mechanics to use common typedefs
-            typedef thrust::cuda::allocator<T> super;
+            typedef thrust::device_malloc_allocator<T> super;
+            typedef typename super::value_type value_type;
+            typedef typename super::size_type size_type;
             typedef typename super::pointer pointer;
             typedef typename super::const_pointer const_pointer;
-            typedef typename super::size_type size_type;
-            typedef typename super::value_type value_type;
             typedef typename super::reference reference;
             typedef typename super::const_reference const_reference;
 
             template <class U>
-            struct rebind {
-                typedef DeviceAllocator<U> other;
-            };
+            struct rebind { typedef DeviceAllocator<U> other; };
 
-            __host__ explicit DeviceAllocator(Instance &instance) : mInstanceRef(instance) {
+            __host__ explicit DeviceAllocator() : mInstanceRef(Instance::getInstanceRef()) { }
 
-            }
-
-            __host__ DeviceAllocator(const DeviceAllocator<T> &other) : mInstanceRef(other.mInstanceRef) {
-
-            }
+            __host__ DeviceAllocator(const DeviceAllocator<T> &other) : mInstanceRef(other.mInstanceRef) { }
 
             template <typename U>
-            __host__ explicit DeviceAllocator(const DeviceAllocator<U> &other) noexcept: mInstanceRef(other.mInstance) {
-
-            }
+            __host__ explicit DeviceAllocator(const DeviceAllocator<U> &other) : mInstanceRef(other.mInstance) { }
 
             __host__ ~DeviceAllocator() = default;
 
@@ -89,8 +81,7 @@ namespace cubool {
                 return pointer((T*)ptr);
             }
 
-            __host__
-            void deallocate(pointer p, size_type n) {
+            __host__ void deallocate(pointer p, size_type n) {
                 (void)n;
                 mInstanceRef.deallocateOnGpu(p.get());
             }

@@ -76,12 +76,12 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
         for (size_t i = 0; i < iterations; i++) {
             using namespace std::chrono;
 
-            CuBool_SyncHostDevice(instance);
+            CuBool_HostDevice_Sync(instance);
             auto start = high_resolution_clock::now();
 
-            CuBool_MatrixDense_MultAdd(instance, c, a, b);
+            CuBool_MatrixDense_MxM(instance, c, a, b);
 
-            CuBool_SyncHostDevice(instance);
+            CuBool_HostDevice_Sync(instance);
             auto end = high_resolution_clock::now();
 
             executionTimeMs += (double)duration_cast<nanoseconds>(end - start).count() / 1.0e6;

@@ -20,17 +20,15 @@ the programming language *COBOL*.
 - [X] Library instance/context
 - [X] Dense matrix
 - [X] Dense multiplication 
-- [ ] Dense addition
 - [ ] Dense kronecker product 
 - [X] CSR matrix
-- [ ] CSR multiplication
-- [ ] CSR addition
+- [X] CSR multiplication
 - [ ] CSR kronecker
 - [ ] Block СSR matrix
 - [ ] Block CSR multiplication
 - [ ] Block CSR addition
 - [ ] Block CSR kronecker
-- [ ] Sparse matrix wrapper
+- [ ] Sparse matrix wrapper ?
 - [ ] Wrapper for Python API 
 - [ ] User guide
 - [ ] Unit Tests collection

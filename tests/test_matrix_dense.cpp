@@ -287,8 +287,8 @@ void testMatrixMultiplyAdd(CuBoolSize_t m, CuBoolSize_t t, CuBoolSize_t n, float
     EXPECT_EQ(CuBool_MatrixDense_Build(instance, b, brows.data(), bcols.data(), bnvals), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_MatrixDense_Build(instance, r, rrows.data(), rcols.data(), rnvals), CUBOOL_STATUS_SUCCESS);
 
-    // Evaluate r = a x b + c
-    EXPECT_EQ(CuBool_MatrixDense_MultAdd(instance, r, a, b), CUBOOL_STATUS_SUCCESS);
+    // Evaluate r += a x b
+    EXPECT_EQ(CuBool_MatrixDense_MxM(instance, r, a, b), CUBOOL_STATUS_SUCCESS);
 
     CuBoolIndex_t* extRows;
     CuBoolIndex_t* extCols;

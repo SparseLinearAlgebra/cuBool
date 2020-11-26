@@ -6,7 +6,9 @@
 
 namespace nsparse {
 
-// Add template argument for the allocator, since we want to
+// Edited by Egor Orachyov
+//
+// Add template argument <AllocType> for the allocator, since we want to
 // allow runtime specific changes (not only compile time) in the type of
 // allocated memory: device only or managed
 
@@ -32,10 +34,10 @@ class matrix<bool, IndexType, AllocType> {
   }
 
   static matrix identity(index_type n) {
-    thrust::device_vector<index_type, nsparse::managed<index_type>>
+    thrust::device_vector<index_type, alloc_type>
         col_index(thrust::counting_iterator<index_type>(0), thrust::counting_iterator<index_type>(n));
 
-    thrust::device_vector<index_type, nsparse::managed<index_type>>
+    thrust::device_vector<index_type, alloc_type>
         row_index(thrust::counting_iterator<index_type>(0), thrust::counting_iterator<index_type>(n + 1));
 
     return matrix(std::move(col_index), std::move(row_index), n, n, n);
@@ -53,12 +55,16 @@ class matrix<bool, IndexType, AllocType> {
     assert(m_row_index.size() == rows + 1);
   }
 
-  void empty() {
+  void zero_dim() {
       m_col_index.clear();
       m_row_index.clear();
       m_rows = 0;
       m_cols = 0;
       m_vals = 0;
+  }
+
+  bool is_zero_dim() const {
+      return m_rows == 0;
   }
 
 public:

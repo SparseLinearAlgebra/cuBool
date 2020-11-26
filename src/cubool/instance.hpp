@@ -62,6 +62,7 @@ namespace cubool {
 
         static bool isCudaDeviceSupported();
         static void queryDeviceCapabilities(CuBoolDeviceCaps& deviceCaps);
+        static Instance& getInstanceRef();
 
     private:
         std::unordered_set<class MatrixBase*> mMatrixSet;
@@ -69,6 +70,8 @@ namespace cubool {
         CuBoolAllocationCallback mAllocCallback{};
         CuBoolMessageCallback mMessageCallback{};
         CuBoolGpuMemoryType mMemoryType{};
+
+        static Instance* gInstance;
     };
 
 }

@@ -51,6 +51,8 @@ namespace cubool {
             matrix->~MatrixBase();
             deallocate(matrix);
         }
+
+        gInstance = nullptr;
     }
 
     void Instance::createMatrixDense(MatrixDense *&matrix) {

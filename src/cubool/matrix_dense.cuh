@@ -46,10 +46,10 @@ namespace cubool {
         using Super = MatrixBase;
         using Super::mNumRows;
         using Super::mNumCols;
-        using GpuAllocator = details::DeviceAllocator<PackType_t>;
-        using CpuAllocator = details::HostAllocator<PackType_t>;
-        using GpuBuffer = thrust::device_vector<PackType_t, GpuAllocator>;
-        using CpuBuffer = thrust::host_vector<PackType_t, CpuAllocator>;
+        template<typename T>
+        using DeviceAlloc = details::DeviceAllocator<T>;
+        template<typename T>
+        using HostAlloc = details::HostAllocator<T>;
         static const CuBoolSize_t BYTE_SIZE_IN_BITS = 8; // 8 bits per byte?
         static const CuBoolSize_t PACK_TYPE_SIZE_BITS = sizeof(PackType_t) * BYTE_SIZE_IN_BITS;
 
@@ -68,8 +68,8 @@ namespace cubool {
 
         CuBoolSize_t getNumRowsPacked() const { return mNumRowsPacked; }
         CuBoolSize_t getNumColsPadded() const { return mNumColsPadded; }
-        const GpuBuffer& getBuffer() const { return mBuffer; }
-        GpuBuffer& getBuffer() { return mBuffer; }
+        thrust::device_vector<PackType_t, DeviceAlloc<PackType_t>>& getBuffer() { return mBuffer; }
+        const thrust::device_vector<PackType_t, DeviceAlloc<PackType_t>>& getBuffer() const { return mBuffer; }
 
         static void getRowPackedIndex(CuBoolSize_t rowIndex, CuBoolSize_t &rowPackIdxMajor, CuBoolSize_t &rowPackIdxMinor);
         static CuBoolSize_t getNumRowsPackedFromRows(CuBoolSize_t rows);
@@ -78,7 +78,7 @@ namespace cubool {
     private:
         void extractVector(std::vector<CuBoolPair, details::HostAllocator<CuBoolPair>> &vals) const;
 
-        GpuBuffer mBuffer;
+        thrust::device_vector<PackType_t, DeviceAlloc<PackType_t>> mBuffer;
         CuBoolSize_t mNumRowsPacked = 0;
         CuBoolSize_t mNumColsPadded = 0;
     };

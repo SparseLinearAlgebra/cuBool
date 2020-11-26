@@ -12,10 +12,10 @@
 
 namespace nsparse {
 
-template <typename index_type>
+template <typename index_type, typename alloc_type>
 struct fill_nz_functor_t {
   template <typename T>
-  using container_t = thrust::device_vector<T, nsparse::managed<T>>;
+  using container_t = thrust::device_vector<T, typename alloc_type::template rebind<T>::other>;
 
   template <typename... Borders>
   void exec_pwarp_row(
@@ -151,11 +151,11 @@ struct fill_nz_functor_t {
   container_t<index_type> permutation_buffer;
 };
 
-template <typename index_type>
+template <typename index_type, typename alloc_type>
 void reuse_global_hash_table(
-    const thrust::device_vector<index_type, nsparse::managed<index_type>>& row_idx,
-    thrust::device_vector<index_type, nsparse::managed<index_type>>& col_idx,
-    const typename count_nz_functor_t<index_type>::global_hash_table_state_t& state) {
+    const thrust::device_vector<index_type, alloc_type>& row_idx,
+    thrust::device_vector<index_type, alloc_type>& col_idx,
+    const typename count_nz_functor_t<index_type, alloc_type>::global_hash_table_state_t& state) {
   constexpr index_type block_sz = 1024;
   auto hashed_row_count = state.hashed_row_indices.size();
 
