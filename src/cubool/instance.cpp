@@ -58,13 +58,10 @@ namespace cubool {
 #endif // CUBOOL_DEBUG
     }
 
-    void Instance::allocate(CuBoolCpuPtr_t* ptr, CuBoolSize_t size) const {
+    void Instance::allocate(void* &ptr, size size) const {
+        ptr = hasUserDefinedAllocator() ? mAllocCallback.allocateFun(size, mAllocCallback.userData) : malloc(size);
+
         if (!ptr)
-            throw details::InvalidArgument("Passed null ptr to store allocation result");
-
-        *ptr = hasUserDefinedAllocator() ? mAllocCallback.allocateFun(size, mAllocCallback.userData) : malloc(size);
-
-        if (!(*ptr))
             throw details::MemOpFailed("Failed to allocate memory on the CPU");
     }
 
@@ -84,7 +81,7 @@ namespace cubool {
     }
 
     void Instance::printDeviceCapabilities() const {
-        static const CuBoolSize_t BUFFER_SIZE = 1024;
+        static const size BUFFER_SIZE = 1024;
 
         CuBoolDeviceCaps deviceCaps;
         queryDeviceCapabilities(deviceCaps);

@@ -71,8 +71,8 @@ namespace cubool {
             }
 
             pointer allocate(size_type n) {
-                CuBoolCpuPtr_t ptr = nullptr;
-                mInstanceRef.allocate(&ptr, n * sizeof(T));
+                void* ptr = nullptr;
+                mInstanceRef.allocate(ptr, n * sizeof(T));
                 return (pointer) ptr;
             }
 

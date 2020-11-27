@@ -36,7 +36,7 @@ namespace cubool {
 
     }
 
-    void MatrixCsr::resize(CuBoolSize_t nrows, CuBoolSize_t ncols) {
+    void MatrixCsr::resize(index nrows, index ncols) {
         if ((mNumRows == nrows) && (mNumCols == ncols))
             return;
 
@@ -45,15 +45,15 @@ namespace cubool {
         mMatrixImpl.zero_dim();  // no content, empty matrix
     }
 
-    void MatrixCsr::build(const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) {
+    void MatrixCsr::build(const index *rows, const index *cols, size nvals) {
         // Create tmp buffer and pack indices into pairs
-        using CuBoolPairAlloc = details::HostAllocator<CuBoolPair>;
-        std::vector<CuBoolPair, CuBoolPairAlloc> values;
+        using CuBoolPairAlloc = details::HostAllocator<Pair>;
+        std::vector<Pair, CuBoolPairAlloc> values;
         values.reserve(nvals);
 
-        for (CuBoolSize_t idx = 0; idx < nvals; idx++) {
-            CuBoolIndex_t i = rows[idx];
-            CuBoolIndex_t j = cols[idx];
+        for (size idx = 0; idx < nvals; idx++) {
+            index i = rows[idx];
+            index j = cols[idx];
 
             if ((i >= getNumRows()) || (j >= getNumCols()))
                 throw details::InvalidArgument(std::string{"Out of matrix bounds value"});
@@ -62,24 +62,24 @@ namespace cubool {
         }
 
         // Sort pairs to ensure that data are in the proper format
-        std::sort(values.begin(), values.end(), [](const CuBoolPair& a, const CuBoolPair& b) {
+        std::sort(values.begin(), values.end(), [](const Pair& a, const Pair& b) {
             return a.i < b.i || (a.i == b.i && a.j < b.j);
         });
 
-        thrust::host_vector<IndexType, HostAlloc<IndexType>> rowsVec;
+        thrust::host_vector<index, HostAlloc<index>> rowsVec;
         rowsVec.resize(getNumRows() + 1);
 
-        thrust::host_vector<IndexType, HostAlloc<IndexType>> colsVec;
+        thrust::host_vector<index, HostAlloc<index>> colsVec;
         colsVec.reserve(nvals);
 
         {
             // Start from the first (indexed as 0) row
-            CuBoolSize_t currentRow = 0;
+            index currentRow = 0;
             rowsVec[currentRow] = 0;
 
-            for (CuBoolSize_t idx = 0; idx < nvals; idx++) {
-                CuBoolIndex_t i = values[idx].i;
-                CuBoolIndex_t j = values[idx].j;
+            for (size idx = 0; idx < nvals; idx++) {
+                index i = values[idx].i;
+                index j = values[idx].j;
 
                 // When go to the new line commit previous offsets
                 if (currentRow < i) {
@@ -102,38 +102,35 @@ namespace cubool {
         }
 
         // Create device buffers and copy data from the cpu side
-        thrust::device_vector<IndexType, DeviceAlloc<IndexType>> rowsDeviceVec = rowsVec;
-        thrust::device_vector<IndexType, DeviceAlloc<IndexType>> colsDeviceVec = colsVec;
+        thrust::device_vector<index, DeviceAlloc<index>> rowsDeviceVec = rowsVec;
+        thrust::device_vector<index, DeviceAlloc<index>> colsDeviceVec = colsVec;
 
         // Move actual data to the matrix implementation
         mMatrixImpl = std::move(MatrixImplType(std::move(colsDeviceVec), std::move(rowsDeviceVec), getNumRows(), getNumCols(), nvals));
     }
 
-    void MatrixCsr::extract(CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) const {
+    void MatrixCsr::extract(index* &rows, index* &cols, size_t &nvals) const {
         // Allocate host memory vectors and copy data from the device side
         auto& rowsDeviceVec = mMatrixImpl.m_row_index;
         auto& colsDeviceVec = mMatrixImpl.m_col_index;
 
         // Ensure that we allocated area for the copy operations
-        thrust::host_vector<IndexType, HostAlloc<IndexType>> rowsVec = rowsDeviceVec;
-        thrust::host_vector<IndexType, HostAlloc<IndexType>> colsVec = colsDeviceVec;
+        thrust::host_vector<index, HostAlloc<index>> rowsVec = rowsDeviceVec;
+        thrust::host_vector<index, HostAlloc<index>> colsVec = colsDeviceVec;
 
         auto valuesCount = mMatrixImpl.m_vals;
 
         // Set values count and allocate buffers for rows/cols indices, returned to the caller
-        *nvals = valuesCount;
-        mInstanceRef.allocate((CuBoolCpuPtr_t*)rows, sizeof(CuBoolIndex_t) * valuesCount);
-        mInstanceRef.allocate((CuBoolCpuPtr_t*)cols, sizeof(CuBoolIndex_t) * valuesCount);
-
-        CuBoolIndex_t* rowsp = *rows;
-        CuBoolIndex_t* colsp = *cols;
+        nvals = valuesCount;
+        mInstanceRef.allocate((void* &) rows, sizeof(index) * valuesCount);
+        mInstanceRef.allocate((void* &) cols, sizeof(index) * valuesCount);
 
         // Iterate over csr formatted data
-        CuBoolSize_t idx = 0;
-        for (CuBoolSize_t i = 0; i < getNumRows(); i++) {
-            for (CuBoolSize_t j = rowsVec[i]; j < rowsVec[i + 1]; j++) {
-                rowsp[idx] = i;
-                colsp[idx] = colsVec[j];
+        size idx = 0;
+        for (index i = 0; i < getNumRows(); i++) {
+            for (index j = rowsVec[i]; j < rowsVec[i + 1]; j++) {
+                rows[idx] = i;
+                cols[idx] = colsVec[j];
 
                 idx += 1;
             }
@@ -146,8 +143,8 @@ namespace cubool {
         if (!other)
             throw details::InvalidArgument("Passed to be cloned matrix does not belong to csr matrix class");
 
-        CuBoolSize_t M = other->getNumRows();
-        CuBoolSize_t N = other->getNumCols();
+        size M = other->getNumRows();
+        size N = other->getNumCols();
 
         this->resize(M, N);
         this->mMatrixImpl = other->mMatrixImpl;
@@ -167,8 +164,8 @@ namespace cubool {
         if (a->getNumCols() != b->getNumRows())
             throw details::InvalidArgument("Incompatible matrix size to multiply");
 
-        CuBoolSize_t M = a->getNumRows();
-        CuBoolSize_t N = b->getNumCols();
+        index M = a->getNumRows();
+        index N = b->getNumCols();
 
         if (c->getNumRows() != M || c->getNumCols() != N)
             throw details::InvalidArgument("Incompatible matrix size to add");
@@ -181,7 +178,7 @@ namespace cubool {
         }
 
         // Call backend r = c + a * b implementation
-        nsparse::spgemm_functor_t<bool, IndexType, DeviceAlloc<IndexType>> spgemmFunctor;
+        nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
         auto result = std::move(spgemmFunctor(c->mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl));
 
         // Assign result r to this matrix
@@ -202,8 +199,8 @@ namespace cubool {
         if (a->getNumCols() != b->getNumRows())
             throw details::InvalidArgument("Incompatible matrix size to multiply");
 
-        CuBoolSize_t M = a->getNumRows();
-        CuBoolSize_t N = b->getNumCols();
+        index M = a->getNumRows();
+        index N = b->getNumCols();
 
         if (this->getNumRows() != M || this->getNumCols() != N)
             throw details::InvalidArgument("Incompatible matrix size to add");
@@ -219,7 +216,7 @@ namespace cubool {
         }
 
         // Call backend r = c + a * b implementation, as C this is passed
-        nsparse::spgemm_functor_t<bool, IndexType, DeviceAlloc<IndexType>> spgemmFunctor;
+        nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
         auto result = std::move(spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl));
 
         // Assign result to this
@@ -234,7 +231,7 @@ namespace cubool {
         if (!a || !b)
             throw details::InvalidArgument("Passed matrices do not belong to csr matrix class");
 
-        kernels::SpKronFunctor<IndexType, DeviceAlloc<IndexType>> spKronFunctor;
+        kernels::SpKronFunctor<index, DeviceAlloc<index>> spKronFunctor;
         auto result = std::move(spKronFunctor(a->mMatrixImpl, b->mMatrixImpl));
     }
 

@@ -24,56 +24,15 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_INSTANCE_HPP
-#define CUBOOL_INSTANCE_HPP
+#ifndef CUBOOL_CONFIG_HPP
+#define CUBOOL_CONFIG_HPP
 
-#include <cubool/config.hpp>
-#include <unordered_set>
+#include <cubool/cubool.h>
 
 namespace cubool {
-
-    class Instance {
-    public:
-        explicit Instance(const CuBoolInstanceDesc& desc);
-        Instance(const Instance& other) = delete;
-        Instance(Instance&& other) noexcept = delete;
-        ~Instance();
-
-        void createMatrixDense(class MatrixDense* &matrix);
-        void createMatrixCsr(class MatrixCsr* &matrix);
-        void validateMatrix(class MatrixBase* matrix);
-        void destroyMatrix(class MatrixBase* matrix);
-
-        void allocate(void* &ptr, size s) const;
-        void allocateOnGpu(void* &ptr, size s) const;
-
-        void deallocate(void* ptr) const;
-        void deallocateOnGpu(void* ptr) const;
-
-        void syncHostDevice() const;
-
-        void sendMessage(CuBoolStatus status, const char* message) const;
-        void printDeviceCapabilities() const;
-
-        bool hasUserDefinedAllocator() const;
-        bool hasUserDefinedErrorCallback() const;
-
-        const CuBoolAllocationCallback& getUserDefinedAllocator() const { return mAllocCallback; }
-
-        static bool isCudaDeviceSupported();
-        static void queryDeviceCapabilities(CuBoolDeviceCaps& deviceCaps);
-        static Instance& getInstanceRef();
-
-    private:
-        std::unordered_set<class MatrixBase*> mMatrixSet;
-
-        CuBoolAllocationCallback mAllocCallback{};
-        CuBoolMessageCallback mMessageCallback{};
-        CuBoolGpuMemoryType mMemoryType{};
-
-        static Instance* gInstance;
-    };
-
+    using index = CuBoolIndex_t;
+    using size = CuBoolSize_t;
+    struct Pair { CuBoolIndex_t i; CuBoolIndex_t j; };
 }
 
-#endif //CUBOOL_INSTANCE_HPP
+#endif //CUBOOL_CONFIG_HPP

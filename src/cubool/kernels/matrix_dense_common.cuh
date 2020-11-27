@@ -27,6 +27,7 @@
 #ifndef CUBOOL_MATRIX_DENSE_COMMON_CUH
 #define CUBOOL_MATRIX_DENSE_COMMON_CUH
 
+#include <cubool/config.hpp>
 #include <cubool/matrix_dense.hpp>
 
 namespace cubool {
@@ -36,16 +37,16 @@ namespace cubool {
         using PackType_t = MatrixDense::PackType_t;
 
         // Pack type size in bits
-        static const CuBoolSize_t PACT_TYPE_SIZE = MatrixDense::PACK_TYPE_SIZE_BITS;
+        static const size PACT_TYPE_SIZE = MatrixDense::PACK_TYPE_SIZE_BITS;
 
         // Factor, used to scale the base shared block (depends on device capabilities)
-        static const CuBoolSize_t BLOCK_FACTOR = 4;
+        static const size BLOCK_FACTOR = 4;
 
         // Shared packed block size in x dimension (columns)
-        static const CuBoolSize_t BLOCK_SIZE_X = PACT_TYPE_SIZE * BLOCK_FACTOR;
+        static const size BLOCK_SIZE_X = PACT_TYPE_SIZE * BLOCK_FACTOR;
 
         // Shared packed block size in y dimension (rows)
-        static const CuBoolSize_t BLOCK_SIZE_Y = 1 * BLOCK_FACTOR;
+        static const size BLOCK_SIZE_Y = 1 * BLOCK_FACTOR;
 
         // Base block schema
         //               columns
@@ -60,9 +61,9 @@ namespace cubool {
         // value  a_i,j = (block[j] & 1u << i) != 0
 
         struct Matrix {
-            CuBoolSize_t rows;
-            CuBoolSize_t columns;
-            CuBoolSize_t stride;
+            size rows;
+            size columns;
+            size stride;
             PackType_t* buffer;
         };
 
@@ -89,7 +90,7 @@ namespace cubool {
             return r;
         }
 
-        __device__ Matrix getMatrixBlock(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column) {
+        __device__ Matrix getMatrixBlock(const Matrix& m, size row, size column) {
             Matrix subMatrix{};
             subMatrix.rows = BLOCK_SIZE_Y;
             subMatrix.columns = BLOCK_SIZE_X;
@@ -98,19 +99,19 @@ namespace cubool {
             return subMatrix;
         }
 
-        __device__ bool isBlockValueWithinMatrix(const Matrix& parent, CuBoolSize_t blockRow, CuBoolSize_t blockColumn, CuBoolSize_t row, CuBoolSize_t column) {
+        __device__ bool isBlockValueWithinMatrix(const Matrix& parent, size blockRow, size blockColumn, size row, size column) {
             return (blockRow * BLOCK_SIZE_Y + row) < parent.rows && (blockColumn * BLOCK_SIZE_X + column) < parent.columns;
         }
 
-        __device__ PackType_t getMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column) {
+        __device__ PackType_t getMatrixElementPacked(const Matrix& m, size row, size column) {
             return m.buffer[m.stride * row + column];
         }
 
-        __device__ void setMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column, PackType_t value) {
+        __device__ void setMatrixElementPacked(const Matrix& m, size row, size column, PackType_t value) {
             m.buffer[m.stride * row + column] = value;
         }
 
-        __device__ void addMatrixElementPacked(const Matrix& m, CuBoolSize_t row, CuBoolSize_t column, PackType_t value) {
+        __device__ void addMatrixElementPacked(const Matrix& m, size row, size column, PackType_t value) {
             m.buffer[m.stride * row + column] |= value;
         }
 

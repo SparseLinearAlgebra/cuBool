@@ -50,38 +50,38 @@ namespace cubool {
         using DeviceAlloc = details::DeviceAllocator<T>;
         template<typename T>
         using HostAlloc = details::HostAllocator<T>;
-        static const CuBoolSize_t BYTE_SIZE_IN_BITS = 8; // 8 bits per byte?
-        static const CuBoolSize_t PACK_TYPE_SIZE_BITS = sizeof(PackType_t) * BYTE_SIZE_IN_BITS;
+        static const size_t BYTE_SIZE_IN_BITS = 8; // 8 bits per byte?
+        static const size_t PACK_TYPE_SIZE_BITS = sizeof(PackType_t) * BYTE_SIZE_IN_BITS;
 
         explicit MatrixDense(class Instance& instance);
         MatrixDense(const MatrixDense& other) = delete;
         MatrixDense(MatrixDense&& other) noexcept = delete;
         ~MatrixDense() override = default;
 
-        void resize(CuBoolSize_t nrows, CuBoolSize_t ncols) override;
-        void build(const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) override;
-        void extract(CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) const override;
+        void resize(index nrows, index ncols) override;
+        void build(const index *rows, const index *cols, size_t nvals) override;
+        void extract(index* &rows, index* &cols, size_t &nvals) const override;
         void clone(const MatrixBase& other) override;
 
         void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
         void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
         void kron(const MatrixBase& a, const MatrixBase& b) override;
 
-        CuBoolSize_t getNumRowsPacked() const { return mNumRowsPacked; }
-        CuBoolSize_t getNumColsPadded() const { return mNumColsPadded; }
+        index getNumRowsPacked() const { return mNumRowsPacked; }
+        index getNumColsPadded() const { return mNumColsPadded; }
         thrust::device_vector<PackType_t, DeviceAlloc<PackType_t>>& getBuffer() { return mBuffer; }
         const thrust::device_vector<PackType_t, DeviceAlloc<PackType_t>>& getBuffer() const { return mBuffer; }
 
-        static void getRowPackedIndex(CuBoolSize_t rowIndex, CuBoolSize_t &rowPackIdxMajor, CuBoolSize_t &rowPackIdxMinor);
-        static CuBoolSize_t getNumRowsPackedFromRows(CuBoolSize_t rows);
-        static CuBoolSize_t getNumColsPaddedFromCols(CuBoolSize_t cols);
+        static void getRowPackedIndex(index rowIndex, index &rowPackIdxMajor, index &rowPackIdxMinor);
+        static index getNumRowsPackedFromRows(index rows);
+        static index getNumColsPaddedFromCols(index cols);
 
     private:
-        void extractVector(std::vector<CuBoolPair, details::HostAllocator<CuBoolPair>> &vals) const;
+        void extractVector(std::vector<Pair, details::HostAllocator<Pair>> &vals) const;
 
         thrust::device_vector<PackType_t, DeviceAlloc<PackType_t>> mBuffer;
-        CuBoolSize_t mNumRowsPacked = 0;
-        CuBoolSize_t mNumColsPadded = 0;
+        index mNumRowsPacked = 0;
+        index mNumColsPadded = 0;
     };
 
 }

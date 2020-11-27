@@ -35,11 +35,11 @@ namespace cubool {
     namespace kernels {
 
         __global__ void matrixDenseMultiplyAdd(Matrix r, Matrix a, Matrix b) {
-            CuBoolSize_t blockRow = blockIdx.y;
-            CuBoolSize_t blockColumn = blockIdx.x;
+            size blockRow = blockIdx.y;
+            size blockColumn = blockIdx.x;
 
-            CuBoolSize_t row = threadIdx.y;
-            CuBoolSize_t column = threadIdx.x;
+            size row = threadIdx.y;
+            size column = threadIdx.x;
 
             Matrix rBlock = getMatrixBlock(r, blockRow, blockColumn);
 
@@ -47,9 +47,9 @@ namespace cubool {
             PackType_t rBlockColumn = 0x0;
 
             // Assumed to be aligned by the invoker of this kernel
-            CuBoolSize_t blocks = a.columns / BLOCK_SIZE_X + (a.columns % BLOCK_SIZE_X? 1: 0);
+            size blocks = a.columns / BLOCK_SIZE_X + (a.columns % BLOCK_SIZE_X? 1: 0);
 
-            for (CuBoolSize_t k = 0; k < blocks; k++) {
+            for (size k = 0; k < blocks; k++) {
                 Matrix aBlock = getMatrixBlock(a, blockRow, k);
                 Matrix bBlock = getMatrixBlock(b, k, blockColumn);
 
@@ -64,12 +64,12 @@ namespace cubool {
                 __syncthreads();
 
                 PackType_t atPackedRow = 0;
-                CuBoolSize_t rowPart = row * PACT_TYPE_SIZE;
-                CuBoolSize_t rowMajor = column / PACT_TYPE_SIZE;
-                CuBoolSize_t rowMinor = column % PACT_TYPE_SIZE;
+                size rowPart = row * PACT_TYPE_SIZE;
+                size rowMajor = column / PACT_TYPE_SIZE;
+                size rowMinor = column % PACT_TYPE_SIZE;
 
                 #pragma unroll
-                for (CuBoolSize_t l = 0; l < PACT_TYPE_SIZE; l++) {
+                for (size l = 0; l < PACT_TYPE_SIZE; l++) {
                     atPackedRow |= (aBlockShared[rowMajor][rowPart + l] & (1u << rowMinor) ? (1u << l) : 0u);
                 }
 
@@ -78,16 +78,16 @@ namespace cubool {
                 // Wait to finish a-block transpose op
                 __syncthreads();
 
-                CuBoolSize_t offset = row * PACT_TYPE_SIZE;
+                size offset = row * PACT_TYPE_SIZE;
 
                 #pragma unroll
-                for (CuBoolSize_t l = 0; l < PACT_TYPE_SIZE; l++) {
+                for (size l = 0; l < PACT_TYPE_SIZE; l++) {
                     PackType_t accum = 0;
 
-                    CuBoolSize_t rowNum = offset + l;
+                    size rowNum = offset + l;
 
                     #pragma unroll
-                    for (CuBoolSize_t part = 0; part < BLOCK_SIZE_Y; part++) {
+                    for (size part = 0; part < BLOCK_SIZE_Y; part++) {
                         accum |= atBlockShared[rowNum][part] & bBlockShared[part][column];
                     }
 

@@ -27,7 +27,7 @@
 #ifndef CUBOOL_MATRIX_BASE_HPP
 #define CUBOOL_MATRIX_BASE_HPP
 
-#include <cubool/cubool.h>
+#include <cubool/config.hpp>
 #include <cubool/build.hpp>
 #include <string>
 
@@ -39,9 +39,9 @@ namespace cubool {
         explicit MatrixBase(class Instance& instance) : mInstanceRef(instance) {}
         virtual ~MatrixBase() = default;
 
-        virtual void resize(CuBoolSize_t nrows, CuBoolSize_t ncols) = 0;
-        virtual void build(const CuBoolIndex_t* rows, const CuBoolIndex_t* cols, CuBoolSize_t nvals) = 0;
-        virtual void extract(CuBoolIndex_t** rows, CuBoolIndex_t** cols, CuBoolSize_t* nvals) const = 0;
+        virtual void resize(index nrows, index ncols) = 0;
+        virtual void build(const index* rows, const index* cols, size nvals) = 0;
+        virtual void extract(index* &rows, index* &cols, size_t &nvals) const = 0;
         virtual void clone(const MatrixBase& other) = 0;
 
         virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
@@ -51,15 +51,15 @@ namespace cubool {
         void setDebugMarker(std::string string) { mDebugMarker = std::move(string); }
 
         const std::string& getDebugMarker() const { return mDebugMarker; }
-        CuBoolSize_t getNumRows() const { return mNumRows; }
-        CuBoolSize_t getNumCols() const { return mNumCols; }
+        index getNumRows() const { return mNumRows; }
+        index getNumCols() const { return mNumCols; }
         Instance& getInstance() const { return mInstanceRef; }
         bool isZeroDim() const { return mNumRows * mNumCols == 0; }
 
     protected:
         std::string mDebugMarker;
-        CuBoolSize_t mNumRows = 0;
-        CuBoolSize_t mNumCols = 0;
+        index mNumRows = 0;
+        index mNumCols = 0;
         class Instance& mInstanceRef;
     };
 

@@ -31,178 +31,270 @@
 #include <chrono>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include <random>
 #include <unordered_set>
 
-struct CuBoolPairHash {
-public:
-    std::size_t operator()(const CuBoolPair &x) const {
-        return std::hash<CuBoolSize_t>()(x.i) ^ std::hash<CuBoolSize_t>()(x.j);
-    }
-};
+namespace testing {
+    namespace details {
 
-struct CuBoolPairEq {
-public:
-    bool operator()(const CuBoolPair &a, const CuBoolPair& b)  const {
-        return a.i == b.i && a.j == b.j;
-    }
-};
+        struct Pair {
+            CuBoolIndex_t i;
+            CuBoolIndex_t j;
+        };
 
-static void testMsgFun(CuBoolStatus error, const char* message, void* _) {
-    std::cout << "CuBool: " << message << std::endl;
-}
+        struct PairHash {
+        public:
+            std::size_t operator()(const Pair &x) const {
+                return std::hash<size_t>()(x.i) ^ std::hash<size_t>()(x.j);
+            }
+        };
 
-static CuBoolCpuPtr_t testAllocateFun(CuBoolSize_t size, void* _) {
-    CuBoolCpuPtr_t ptr = malloc(size);
-    std::cout << "Cubool: Allocate: " << size << " " << ptr << std::endl;
-    return ptr;
-}
+        struct PairCmp {
+        public:
+            bool operator()(const Pair &a, const Pair& b) const {
+                return a.i < b.i || (a.i == b.i && a.j < b.j);
+            }
+        };
 
-static void testDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
-    std::cout << "Cubool: Deallocate: " << ptr << std::endl;
-    free(ptr);
-}
+        struct PairEq {
+        public:
+            bool operator()(const Pair &a, const Pair& b)  const {
+                return a.i == b.i && a.j == b.j;
+            }
+        };
 
-static CuBoolCpuPtr_t testAllocateFunSilent(CuBoolSize_t size, void* _) {
-    return malloc(size);
-}
+        bool operator ==(const Pair& a, const Pair& b) {
+            PairEq pairEq;
+            return pairEq(a, b);
+        }
 
-static void testDeallocateFunSilent(CuBoolCpuPtr_t ptr, void* _) {
-    free(ptr);
-}
+        static void testMsgFun(CuBoolStatus error, const char* message, void* _) {
+            std::cout << "CuBool: " << message << std::endl;
+        }
 
-struct Condition1 {
-    bool operator()(CuBoolSize_t i, CuBoolSize_t j) {
-        return (((i - 1) & i) == 0 && ((j - 1) & j) == 0);
-    }
-};
+        static CuBoolCpuPtr_t testAllocateFun(size_t size, void* _) {
+            CuBoolCpuPtr_t ptr = malloc(size);
+            std::cout << "Cubool: Allocate: " << size << " " << ptr << std::endl;
+            return ptr;
+        }
 
-struct Condition2 {
-    bool operator()(CuBoolSize_t i, CuBoolSize_t j) {
-        return !(i % 5) && !(j % 7);
-    }
-};
+        static void testDeallocateFun(CuBoolCpuPtr_t ptr, void* _) {
+            std::cout << "Cubool: Deallocate: " << ptr << std::endl;
+            free(ptr);
+        }
 
-struct Condition3 {
-public:
-    explicit Condition3(float density): mDensity(density) {}
-    bool operator()(CuBoolSize_t i, CuBoolSize_t j) {
-        return std::uniform_real_distribution<float>(0.0f, 1.0f)(mRandomEngine) <= mDensity;
-    }
-private:
-    std::default_random_engine mRandomEngine;
-    float mDensity = 1.0f;
-};
+        static CuBoolCpuPtr_t testAllocateFunSilent(size_t size, void* _) {
+            return malloc(size);
+        }
 
-template<typename Condition>
-static void generateTestData(CuBoolSize_t rows, CuBoolSize_t columns, std::vector<CuBoolPair> &values, Condition&& condition) {
-    for (CuBoolSize_t i = 0; i < rows; i++) {
-        for (CuBoolSize_t j = 0; j < columns; j++) {
-            // is i and j power of two or 0
-            if (condition(i, j)) {
-                values.push_back(CuBoolPair{ i, j });
+        static void testDeallocateFunSilent(CuBoolCpuPtr_t ptr, void* _) {
+            free(ptr);
+        }
+
+        struct Condition1 {
+            bool operator()(size_t i, size_t j) {
+                return (((i - 1) & i) == 0 && ((j - 1) & j) == 0);
+            }
+        };
+
+        struct Condition2 {
+            bool operator()(size_t i, size_t j) {
+                return !(i % 5) && !(j % 7);
+            }
+        };
+
+        struct Condition3 {
+        public:
+            explicit Condition3(float density): mDensity(density) {}
+            bool operator()(size_t i, size_t j) {
+                return std::uniform_real_distribution<float>(0.0f, 1.0f)(mRandomEngine) <= mDensity;
+            }
+        private:
+            std::default_random_engine mRandomEngine;
+            float mDensity = 1.0f;
+        };
+
+        template<typename Condition>
+        static void generateTestData(size_t rows, size_t columns, std::vector<Pair> &values, Condition&& condition) {
+            for (size_t i = 0; i < rows; i++) {
+                for (size_t j = 0; j < columns; j++) {
+                    // is i and j power of two or 0
+                    if (condition(i, j)) {
+                        values.push_back(Pair{i, j });
+                    }
+                }
             }
         }
-    }
-}
 
-template<typename Condition>
-static void generateTestData(CuBoolSize_t nrows, CuBoolSize_t ncols, std::vector<CuBoolIndex_t> &rows, std::vector<CuBoolIndex_t> &cols, CuBoolSize_t& nvals, Condition&& condition) {
-    nvals = 0;
-    for (CuBoolSize_t i = 0; i < nrows; i++) {
-        for (CuBoolSize_t j = 0; j < ncols; j++) {
-            // is i and j power of two or 0
-            if (condition(i, j)) {
-                rows.push_back(i);
-                cols.push_back(j);
-                nvals += 1;
+        template<typename Condition>
+        static void generateTestData(size_t nrows, size_t ncols, std::vector<CuBoolIndex_t> &rows, std::vector<CuBoolIndex_t> &cols, size_t& nvals, Condition&& condition) {
+            nvals = 0;
+            for (size_t i = 0; i < nrows; i++) {
+                for (size_t j = 0; j < ncols; j++) {
+                    // is i and j power of two or 0
+                    if (condition(i, j)) {
+                        rows.push_back(i);
+                        cols.push_back(j);
+                        nvals += 1;
+                    }
+                }
             }
         }
-    }
-}
 
-static void packCmpSet(const std::vector<CuBoolPair>& values, std::unordered_set<CuBoolPair,CuBoolPairHash,CuBoolPairEq>& set) {
-    for (auto p: values) {
-        set.emplace(p);
-    }
-}
+        static void setupInstanceDesc(CuBoolInstanceDesc& instanceDesc) {
+            instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
+            instanceDesc.errorCallback.userData = nullptr;
+            instanceDesc.errorCallback.msgFun = testMsgFun;
+            instanceDesc.allocationCallback.userData = nullptr;
+            instanceDesc.allocationCallback.allocateFun = testAllocateFun;
+            instanceDesc.allocationCallback.deallocateFun = testDeallocateFun;
+        }
 
-static void packCmpSet(std::vector<CuBoolIndex_t> &rows, std::vector<CuBoolIndex_t> &cols, std::unordered_set<CuBoolPair,CuBoolPairHash,CuBoolPairEq>& set) {
-    assert(rows.size() == cols.size());
-    for (size_t i = 0; i < rows.size(); i++) {
-        set.emplace(CuBoolPair{rows[i], cols[i]});
-    }
-}
+        static void setupInstanceDescSilent(CuBoolInstanceDesc& instanceDesc) {
+            instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
+            instanceDesc.errorCallback.userData = nullptr;
+            instanceDesc.errorCallback.msgFun = testMsgFun;
+            instanceDesc.allocationCallback.userData = nullptr;
+            instanceDesc.allocationCallback.allocateFun = testAllocateFunSilent;
+            instanceDesc.allocationCallback.deallocateFun = testDeallocateFunSilent;
+        }
 
-static void setupInstanceDesc(CuBoolInstanceDesc& instanceDesc) {
-    instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
-    instanceDesc.errorCallback.userData = nullptr;
-    instanceDesc.errorCallback.msgFun = testMsgFun;
-    instanceDesc.allocationCallback.userData = nullptr;
-    instanceDesc.allocationCallback.allocateFun = testAllocateFun;
-    instanceDesc.allocationCallback.deallocateFun = testDeallocateFun;
-}
-
-static void setupInstanceDescSilent(CuBoolInstanceDesc& instanceDesc) {
-    instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
-    instanceDesc.errorCallback.userData = nullptr;
-    instanceDesc.errorCallback.msgFun = testMsgFun;
-    instanceDesc.allocationCallback.userData = nullptr;
-    instanceDesc.allocationCallback.allocateFun = testAllocateFunSilent;
-    instanceDesc.allocationCallback.deallocateFun = testDeallocateFunSilent;
-}
-
-static void evaluateMultiplyAdd(
-        CuBoolSize_t m,
-        CuBoolSize_t t,
-        CuBoolSize_t n,
-        const std::vector<CuBoolIndex_t> &arows,
-        const std::vector<CuBoolIndex_t> &acols,
-        const std::vector<CuBoolIndex_t> &brows,
-        const std::vector<CuBoolIndex_t> &bcols,
-        const std::vector<CuBoolIndex_t> &crows,
-        const std::vector<CuBoolIndex_t> &ccols,
-        std::unordered_set<CuBoolPair,CuBoolPairHash,CuBoolPairEq>& result) {
-
-    assert(arows.size() == acols.size());
-    assert(brows.size() == bcols.size());
-    assert(crows.size() == ccols.size());
-
-    std::vector<std::vector<uint8_t>> a(m, std::vector<uint8_t>(t, 0));
-    std::vector<std::vector<uint8_t>> b(n, std::vector<uint8_t>(t, 0));
-    std::vector<std::vector<uint8_t>> r(m, std::vector<uint8_t>(n, 0));
-
-    for (size_t i = 0; i < arows.size(); i++) {
-        a[arows[i]][acols[i]] = 1;
     }
 
-    for (size_t i = 0; i < brows.size(); i++) {
-        b[bcols[i]][brows[i]] = 1;
-    }
+    struct Matrix {
+        std::vector<CuBoolIndex_t> mRowsIndex;
+        std::vector<CuBoolIndex_t> mColsIndex;
+        size_t mNvals = 0;
+        size_t mNrows = 0;
+        size_t mNcols = 0;
 
-    for (CuBoolSize_t i = 0; i < m; i++) {
-        for (CuBoolSize_t j = 0; j < n; j++) {
-            uint8_t v = 0;
+        bool areEqual(CuBoolMatrixDense matrix, CuBoolInstance instance) const {
+            using namespace details;
 
-            for (CuBoolSize_t k = 0; k < t; k++) {
-                v |= a[i][k] & b[j][k] ? 1u: 0u;
+            CuBoolIndex_t* extRows;
+            CuBoolIndex_t* extCols;
+            size_t extNvals;
+
+            EXPECT_EQ(CuBool_MatrixDense_ExtractPairs(instance, matrix, &extRows, &extCols, &extNvals), CUBOOL_STATUS_SUCCESS);
+
+            if (extNvals != mNvals)
+                return false;
+
+            std::vector<Pair> extracted(mNvals);
+            std::vector<Pair> reference(mNvals);
+
+            for (CuBoolIndex_t idx = 0; idx < mNvals; idx++) {
+                extracted[idx] = Pair{extRows[idx], extCols[idx]};
+                reference[idx] = Pair{mRowsIndex[idx], mColsIndex[idx]};
             }
 
-            r[i][j] = v;
+            EXPECT_EQ(CuBool_Vals_Free(instance, extRows), CUBOOL_STATUS_SUCCESS);
+            EXPECT_EQ(CuBool_Vals_Free(instance, extCols), CUBOOL_STATUS_SUCCESS);
+
+            std::sort(extracted.begin(), extracted.end(), details::PairCmp());
+            std::sort(reference.begin(), reference.end(), details::PairCmp());
+
+            return extracted == reference;
         }
-    }
 
-    for (size_t i = 0; i < crows.size(); i++) {
-        r[crows[i]][ccols[i]] |= 1u;
-    }
+        bool areEqual(CuBoolMatrix matrix, CuBoolInstance instance) const {
+            using namespace details;
 
-    for (CuBoolIndex_t i = 0; i < m; i++) {
-        for (CuBoolIndex_t j = 0; j < n; j++) {
-            if (r[i][j] != 0) {
-                result.emplace(CuBoolPair{i,j});
+            CuBoolIndex_t* extRows;
+            CuBoolIndex_t* extCols;
+            size_t extNvals;
+
+            EXPECT_EQ(CuBool_Matrix_ExtractPairs(instance, matrix, &extRows, &extCols, &extNvals), CUBOOL_STATUS_SUCCESS);
+
+            if (extNvals != mNvals)
+                return false;
+
+            std::vector<Pair> extracted(mNvals);
+            std::vector<Pair> reference(mNvals);
+
+            for (CuBoolIndex_t idx = 0; idx < mNvals; idx++) {
+                extracted[idx] = Pair{extRows[idx], extCols[idx]};
+                reference[idx] = Pair{mRowsIndex[idx], mColsIndex[idx]};
             }
+
+            EXPECT_EQ(CuBool_Vals_Free(instance, extRows), CUBOOL_STATUS_SUCCESS);
+            EXPECT_EQ(CuBool_Vals_Free(instance, extCols), CUBOOL_STATUS_SUCCESS);
+
+            std::sort(extracted.begin(), extracted.end(), details::PairCmp());
+            std::sort(reference.begin(), reference.end(), details::PairCmp());
+
+            return extracted == reference;
         }
-    }
+
+        template<typename Condition>
+        static Matrix generate(size_t nrows, size_t ncols, Condition&& condition) {
+            using namespace details;
+
+            Matrix matrix;
+            matrix.mNrows = nrows;
+            matrix.mNcols = ncols;
+            generateTestData(nrows, ncols, matrix.mRowsIndex, matrix.mColsIndex, matrix.mNvals, std::forward<Condition>(condition));
+            return matrix;
+        }
+    };
+
+    struct MatrixMultiplyAdd {
+        Matrix operator()(const Matrix& ma, const Matrix& mb, const Matrix& mc) {
+            auto m = ma.mNrows;
+            auto t = ma.mNcols;
+            auto n = mb.mNcols;
+
+            assert(ma.mNcols == mb.mNrows);
+            assert(ma.mNrows == mc.mNrows);
+            assert(mb.mNcols == mc.mNcols);
+
+            std::vector<std::vector<uint8_t>> a(m, std::vector<uint8_t>(t, 0));
+            std::vector<std::vector<uint8_t>> b(n, std::vector<uint8_t>(t, 0));
+            std::vector<std::vector<uint8_t>> r(m, std::vector<uint8_t>(n, 0));
+
+            for (size_t i = 0; i < ma.mNvals; i++) {
+                a[ma.mRowsIndex[i]][ma.mColsIndex[i]] = 1;
+            }
+
+            for (size_t i = 0; i < mb.mNvals; i++) {
+                b[mb.mColsIndex[i]][mb.mRowsIndex[i]] = 1;
+            }
+
+            for (size_t i = 0; i < m; i++) {
+                for (size_t j = 0; j < n; j++) {
+                    uint8_t v = 0;
+
+                    for (size_t k = 0; k < t; k++) {
+                        v |= a[i][k] & b[j][k] ? 1u: 0u;
+                    }
+
+                    r[i][j] = v;
+                }
+            }
+
+            for (size_t i = 0; i < mc.mNvals; i++) {
+                r[mc.mRowsIndex[i]][mc.mColsIndex[i]] |= 1u;
+            }
+
+            Matrix result;
+            result.mNrows = m;
+            result.mNcols = n;
+
+            for (size_t i = 0; i < m; i++) {
+                for (size_t j = 0; j < n; j++) {
+                    if (r[i][j] != 0) {
+                        result.mRowsIndex.push_back(i);
+                        result.mColsIndex.push_back(j);
+                        result.mNvals += 1;
+                    }
+                }
+            }
+
+            return std::move(result);
+        }
+    };
+
 }
 
 #endif //CUBOOL_TEST_SHARED_HPP

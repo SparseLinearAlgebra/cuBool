@@ -32,6 +32,9 @@
 /** Export library function (does not handles msvc or intel compilers) */
 #define CUBOOL_API extern "C"
 
+/** Library functions for some experiments */
+#define CUBOOL_EXPERIMENTAL
+
 /** Possible status codes that can be returned from cubool api */
 typedef enum CuBoolStatus {
     /** Successful execution of the function */
@@ -69,15 +72,6 @@ typedef unsigned int                CuBoolIndex_t;
 /** Alias cpu (ram) memory pointer */
 typedef void*                       CuBoolCpuPtr_t;
 
-/** Alias cpu (ram) const memory pointer */
-typedef const void*                 CuBoolCpuConstPtr_t;
-
-/** Alias gpu (vram or managed) memory pointer */
-typedef void*                       CuBoolGpuPtr_t;
-
-/** Alias gpu (vram or managed) const memory pointer */
-typedef const void*                 CuBoolGpuConstPtr_t;
-
 /** Cubool library instance handle */
 typedef struct CuBoolInstance_t*    CuBoolInstance;
 
@@ -114,12 +108,6 @@ typedef void (*CuBoolMsgFun)(
     const char*                 message,
     void*                       userData
 );
-
-/** Pair of the indices used to represent non-empty matrices values */
-typedef struct CuBoolPair {
-    CuBoolIndex_t               i;
-    CuBoolIndex_t               j;
-} CuBoolPair;
 
 typedef struct CuBoolDeviceCaps {
     char                        name[256];
@@ -193,7 +181,7 @@ CUBOOL_API CuBoolStatus CuBool_DeviceCaps_Get(
  * @param instanceDesc User provided instance configuration for memory operations and error handling
  * @param instance Pointer to the place where to store instance handle
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Instance_New(
     const CuBoolInstanceDesc*   instanceDesc,
@@ -206,7 +194,7 @@ CUBOOL_API CuBoolStatus CuBool_Instance_New(
  * @note Invalidates all handle to the resources, created within this library instance
  * @param instance An instance object reference to perform this operation
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Instance_Free(
     CuBoolInstance              instance
@@ -217,7 +205,7 @@ CUBOOL_API CuBoolStatus CuBool_Instance_Free(
  *
  * @param instance An instance object reference to perform this operation
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_HostDevice_Sync(
     CuBoolInstance              instance
@@ -231,13 +219,13 @@ CUBOOL_API CuBoolStatus CuBool_HostDevice_Sync(
  * @param nrows Matrix rows count
  * @param ncols Matrix columns count
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
-CUBOOL_API CuBoolStatus CuBool_MatrixDense_New(
+CUBOOL_EXPERIMENTAL CUBOOL_API CuBoolStatus CuBool_MatrixDense_New(
     CuBoolInstance              instance,
     CuBoolMatrixDense*          matrix,
-    CuBoolSize_t                nrows,
-    CuBoolSize_t                ncols
+    CuBoolIndex_t               nrows,
+    CuBoolIndex_t               ncols
 );
 
 /**
@@ -246,9 +234,9 @@ CUBOOL_API CuBoolStatus CuBool_MatrixDense_New(
  * @param instance An instance object reference to perform this operation
  * @param matrix Matrix handle to delete the matrix
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
-CUBOOL_API CuBoolStatus CuBool_MatrixDense_Free(
+CUBOOL_EXPERIMENTAL CUBOOL_API CuBoolStatus CuBool_MatrixDense_Free(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix
 );
@@ -261,13 +249,13 @@ CUBOOL_API CuBoolStatus CuBool_MatrixDense_Free(
  * @param nrows Matrix new rows count
  * @param ncols Matrix new columns count
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
-CUBOOL_API CuBoolStatus CuBool_MatrixDense_Resize(
+CUBOOL_EXPERIMENTAL CUBOOL_API CuBoolStatus CuBool_MatrixDense_Resize(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
-    CuBoolSize_t                nrows,
-    CuBoolSize_t                ncols
+    CuBoolIndex_t               nrows,
+    CuBoolIndex_t               ncols
 );
 
 /**
@@ -280,9 +268,9 @@ CUBOOL_API CuBoolStatus CuBool_MatrixDense_Resize(
  * @param cols Array of pairs column indices
  * @param nvals Number of the pairs passed
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
-CUBOOL_API CuBoolStatus CuBool_MatrixDense_Build(
+CUBOOL_EXPERIMENTAL CUBOOL_API CuBoolStatus CuBool_MatrixDense_Build(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
     const CuBoolIndex_t*        rows,
@@ -303,9 +291,9 @@ CUBOOL_API CuBoolStatus CuBool_MatrixDense_Build(
  * @param[out] cols Allocated buffer with column indices
  * @param[out] nvals Total number of the pairs
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
-CUBOOL_API CuBoolStatus CuBool_MatrixDense_ExtractPairs(
+CUBOOL_EXPERIMENTAL CUBOOL_API CuBoolStatus CuBool_MatrixDense_ExtractPairs(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
     CuBoolIndex_t**             rows,
@@ -328,7 +316,7 @@ CUBOOL_API CuBoolStatus CuBool_MatrixDense_ExtractPairs(
  *
  * @return
  */
-CUBOOL_API CuBoolStatus CuBool_MatrixDense_MxM(
+CUBOOL_EXPERIMENTAL CUBOOL_API CuBoolStatus CuBool_MatrixDense_MxM(
     CuBoolInstance              instance,
     CuBoolMatrixDense           r,
     CuBoolMatrixDense           a,
@@ -351,9 +339,9 @@ CUBOOL_API CuBoolStatus CuBool_MatrixDense_MxM(
  * @param b Input a matrix
  * @param c Input a matrix
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
-CUBOOL_API CuBoolStatus CuBool_MatrixDense_MultSum(
+CUBOOL_EXPERIMENTAL CUBOOL_API CuBoolStatus CuBool_MatrixDense_MultSum(
     CuBoolInstance              instance,
     CuBoolMatrixDense           r,
     CuBoolMatrixDense           a,
@@ -369,26 +357,13 @@ CUBOOL_API CuBoolStatus CuBool_MatrixDense_MultSum(
  * @param nrows Matrix rows count
  * @param ncols Matrix columns count
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Matrix_New(
     CuBoolInstance              instance,
     CuBoolMatrix*               matrix,
-    CuBoolSize_t                nrows,
-    CuBoolSize_t                ncols
-);
-
-/**
- * Deletes sparse matrix object.
- *
- * @param instance An instance object reference to perform this operation
- * @param matrix Matrix handle to delete the matrix
- *
- * @return Error code on this operations
- */
-CUBOOL_API CuBoolStatus CuBool_Matrix_Free(
-    CuBoolInstance              instance,
-    CuBoolMatrix                matrix
+    CuBoolIndex_t               nrows,
+    CuBoolIndex_t               ncols
 );
 
 /**
@@ -399,13 +374,13 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Free(
  * @param nrows Matrix new rows count
  * @param ncols Matrix new columns count
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Matrix_Resize(
-    CuBoolInstance              instance,
-    CuBoolMatrix                matrix,
-    CuBoolSize_t                nrows,
-    CuBoolSize_t                ncols
+        CuBoolInstance              instance,
+        CuBoolMatrix                matrix,
+        CuBoolIndex_t               nrows,
+        CuBoolIndex_t               ncols
 );
 
 /**
@@ -418,14 +393,14 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Resize(
  * @param cols Array of pairs column indices
  * @param nvals Number of the pairs passed
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
-    CuBoolInstance              instance,
-    CuBoolMatrix                matrix,
-    const CuBoolIndex_t*        rows,
-    const CuBoolIndex_t*        cols,
-    CuBoolSize_t                nvals
+        CuBoolInstance              instance,
+        CuBoolMatrix                matrix,
+        const CuBoolIndex_t*        rows,
+        const CuBoolIndex_t*        cols,
+        CuBoolSize_t                nvals
 );
 
 /**
@@ -441,14 +416,84 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
  * @param[out] cols Allocated buffer with column indices
  * @param[out] nvals Total number of the pairs
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Matrix_ExtractPairs(
+        CuBoolInstance              instance,
+        CuBoolMatrix                matrix,
+        CuBoolIndex_t**             rows,
+        CuBoolIndex_t**             cols,
+        CuBoolSize_t*               nvals
+);
+
+/**
+ * Creates new sparse matrix, duplicates content and stores handle in the provided pointer.
+ * 
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handle to perform operation on
+ * @param duplicated[out] Pointer to the matrix handle where to store created matrix
+ * 
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_Duplicate(
     CuBoolInstance              instance,
     CuBoolMatrix                matrix,
-    CuBoolIndex_t**             rows,
-    CuBoolIndex_t**             cols,
+    CuBoolMatrix*               duplicated
+);
+
+/**
+ * 
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handle to perform operation on
+ * @param nvals[out] Pointer to  the place where to store number of the non-zero elements of the matrix
+ * 
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_Nvals(
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
     CuBoolSize_t*               nvals
+);
+
+/**
+ * 
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handle to perform operation on
+ * @param nrows[out] Pointer to the place where to store number of matrix rows
+ * 
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_Nrows(
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
+    CuBoolIndex_t*              nrows
+);
+
+/**
+ * 
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handle to perform operation on
+ * @param ncols[out] Pointer to the place where to store number of matrix columns
+ * 
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_Ncols(
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
+    CuBoolIndex_t*              ncols
+);
+
+/**
+ * Deletes sparse matrix object.
+ *
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handle to delete the matrix
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_Free(
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix
 );
 
 /**
@@ -464,7 +509,7 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_ExtractPairs(
  * @param a Input a matrix
  * @param b Input a matrix
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_MxM(
     CuBoolInstance              instance,
@@ -486,7 +531,7 @@ CUBOOL_API CuBoolStatus CuBool_MxM(
  * @param a Input a matrix
  * @param b Input a matrix
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Kron(
     CuBoolInstance              instance,
@@ -501,7 +546,7 @@ CUBOOL_API CuBoolStatus CuBool_Kron(
  * @param instance An instance object reference to perform this operation
  * @param vals Valid pointer to returned arrays buffer from *ReadData method
  *
- * @return Error code on this operations
+ * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Vals_Free(
     CuBoolInstance              instance,

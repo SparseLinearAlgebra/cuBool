@@ -76,8 +76,8 @@ namespace cubool {
             }
 
             __host__ pointer allocate(size_type n) {
-                CuBoolGpuPtr_t ptr = nullptr;
-                mInstanceRef.allocateOnGpu(&ptr, n * sizeof(T));
+                void* ptr = nullptr;
+                mInstanceRef.allocateOnGpu(ptr, n * sizeof(T));
                 return pointer((T*)ptr);
             }
 

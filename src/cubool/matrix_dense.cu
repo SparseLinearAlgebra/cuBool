@@ -34,7 +34,7 @@ namespace cubool {
 
     }
 
-    void MatrixDense::resize(CuBoolSize_t nrows, CuBoolSize_t ncols) {
+    void MatrixDense::resize(index nrows, index ncols) {
         if (nrows == mNumRows && ncols == mNumCols)
             return;
 
@@ -45,7 +45,7 @@ namespace cubool {
         mBuffer.clear(); // clear all the data, since resize does not preserve the content
     }
 
-    void MatrixDense::build(const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) {
+    void MatrixDense::build(const index *rows, const index *cols, size_t nvals) {
         if (nvals == 0)
             return;
 
@@ -55,16 +55,16 @@ namespace cubool {
         // Allocate host memory buffer and resize with 0 to the proper packed size
         thrust::host_vector<PackType_t, HostAlloc<PackType_t>> cpuBuffer(mNumRowsPacked * mNumColsPadded, 0x0);
 
-        for (CuBoolSize_t idx = 0; idx < nvals; idx++) {
-            CuBoolSize_t rowIdx = rows[idx];
-            CuBoolSize_t columnIdx = cols[idx];
+        for (size_t idx = 0; idx < nvals; idx++) {
+            index rowIdx = rows[idx];
+            index columnIdx = cols[idx];
 
             if (rowIdx >= getNumRows() || columnIdx >= getNumCols())
                 throw details::InvalidArgument(std::string{"Out of matrix bounds value"});
 
-            CuBoolSize_t i;
-            CuBoolSize_t k;
-            CuBoolSize_t j = columnIdx;
+            index i;
+            index k;
+            index j = columnIdx;
 
             getRowPackedIndex(rowIdx, i, k);
 
@@ -75,20 +75,17 @@ namespace cubool {
         mBuffer = cpuBuffer;
     }
 
-    void MatrixDense::extract(CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) const {
-        std::vector<CuBoolPair, HostAlloc<CuBoolPair>> vals;
+    void MatrixDense::extract(index* &rows, index* &cols, size_t &nvals) const {
+        std::vector<Pair, HostAlloc<Pair>> vals;
         extractVector(vals);
 
-        *nvals = vals.size();
-        mInstanceRef.allocate((CuBoolCpuPtr_t*)rows, sizeof(CuBoolIndex_t) * vals.size());
-        mInstanceRef.allocate((CuBoolCpuPtr_t*)cols, sizeof(CuBoolIndex_t) * vals.size());
+        nvals = vals.size();
+        mInstanceRef.allocate((void* &) rows, sizeof(index) * vals.size());
+        mInstanceRef.allocate((void* &) cols, sizeof(index) * vals.size());
 
-        CuBoolIndex_t* rowsp = *rows;
-        CuBoolIndex_t* colsp = *cols;
-
-        for (CuBoolSize_t idx = 0; idx < vals.size(); idx++) {
-            rowsp[idx] = vals[idx].i;
-            colsp[idx] = vals[idx].j;
+        for (size_t idx = 0; idx < vals.size(); idx++) {
+            rows[idx] = vals[idx].i;
+            cols[idx] = vals[idx].j;
         }
     }
 
@@ -98,8 +95,8 @@ namespace cubool {
         if (!other)
             throw details::InvalidArgument("Passed to be cloned matrix does not belong to dense matrix class");
 
-        CuBoolSize_t M = other->getNumRows();
-        CuBoolSize_t N = other->getNumCols();
+        size_t M = other->getNumRows();
+        size_t N = other->getNumCols();
 
         this->resize(M, N);
         this->mBuffer = other->getBuffer();
@@ -119,8 +116,8 @@ namespace cubool {
         if (a->getNumCols() != b->getNumRows())
             throw details::InvalidArgument("Incompatible matrix size to multiply");
 
-        CuBoolSize_t M = a->getNumRows();
-        CuBoolSize_t N = b->getNumCols();
+        size_t M = a->getNumRows();
+        size_t N = b->getNumCols();
 
         if (c->getNumRows() != M || c->getNumCols() != N)
             throw details::InvalidArgument("Incompatible matrix size to add");
@@ -151,8 +148,8 @@ namespace cubool {
         if (a->getNumCols() != b->getNumRows())
             throw details::InvalidArgument("Incompatible matrix size to multiply");
 
-        CuBoolSize_t M = a->getNumRows();
-        CuBoolSize_t N = b->getNumCols();
+        size_t M = a->getNumRows();
+        size_t N = b->getNumCols();
 
         if (this->getNumRows() != M || this->getNumCols() != N)
             throw details::InvalidArgument("Incompatible matrix size to add");
@@ -172,35 +169,35 @@ namespace cubool {
         throw details::NotImplemented("This function is not implemented");
     }
 
-    void MatrixDense::getRowPackedIndex(CuBoolSize_t rowIndex, CuBoolSize_t &rowPackIdxMajor, CuBoolSize_t &rowPackIdxMinor) {
+    void MatrixDense::getRowPackedIndex(index rowIndex, index &rowPackIdxMajor, index &rowPackIdxMinor) {
         rowPackIdxMajor = rowIndex / PACK_TYPE_SIZE_BITS;
         rowPackIdxMinor = rowIndex % PACK_TYPE_SIZE_BITS;
     }
 
-    CuBoolSize_t MatrixDense::getNumRowsPackedFromRows(CuBoolSize_t rows) {
+    index MatrixDense::getNumRowsPackedFromRows(index rows) {
         return rows / PACK_TYPE_SIZE_BITS + (rows % PACK_TYPE_SIZE_BITS? 1: 0);
     }
 
-    CuBoolSize_t MatrixDense::getNumColsPaddedFromCols(CuBoolSize_t cols) {
+    index MatrixDense::getNumColsPaddedFromCols(index cols) {
         return cols + (cols % PACK_TYPE_SIZE_BITS ? PACK_TYPE_SIZE_BITS - cols % PACK_TYPE_SIZE_BITS : 0);
     }
 
-    void MatrixDense::extractVector(std::vector<CuBoolPair, details::HostAllocator<CuBoolPair>> &vals) const {
+    void MatrixDense::extractVector(std::vector<Pair, details::HostAllocator<Pair>> &vals) const {
         if (mBuffer.empty())
             return;
 
         thrust::host_vector<PackType_t, HostAlloc<PackType_t>> cpuBuffer = mBuffer;
 
-        for (CuBoolIndex_t i = 0; i < mNumRowsPacked; i++) {
-            for (CuBoolIndex_t j = 0; j < getNumCols(); j++) {
+        for (index i = 0; i < mNumRowsPacked; i++) {
+            for (index j = 0; j < getNumCols(); j++) {
                 PackType_t pack = cpuBuffer[i * mNumColsPadded + j];
 
-                for (CuBoolIndex_t k = 0; k < PACK_TYPE_SIZE_BITS; k++) {
-                    CuBoolIndex_t rowIdx = i * PACK_TYPE_SIZE_BITS + k;
-                    CuBoolIndex_t columnIdx = j;
+                for (index k = 0; k < PACK_TYPE_SIZE_BITS; k++) {
+                    index rowIdx = i * PACK_TYPE_SIZE_BITS + k;
+                    index columnIdx = j;
 
                     if (rowIdx < getNumRows() && ((pack & 0x1u) != 0x0u)) {
-                        vals.push_back(CuBoolPair{ rowIdx, columnIdx });
+                        vals.push_back(Pair{rowIdx, columnIdx });
                     }
 
                     pack = pack >> 1u;

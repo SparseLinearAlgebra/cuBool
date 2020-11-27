@@ -56,16 +56,16 @@ namespace cubool {
     }
 
     void Instance::createMatrixDense(MatrixDense *&matrix) {
-        CuBoolCpuPtr_t mem = nullptr;
-        allocate(&mem, sizeof(MatrixDense));
+        void* mem = nullptr;
+        allocate(mem, sizeof(MatrixDense));
 
         matrix = new (mem) MatrixDense(*this);
         mMatrixSet.emplace(matrix);
     }
 
     void Instance::createMatrixCsr(MatrixCsr *&matrix) {
-        CuBoolCpuPtr_t mem = nullptr;
-        allocate(&mem, sizeof(MatrixCsr));
+        void* mem = nullptr;
+        allocate(mem, sizeof(MatrixCsr));
 
         matrix = new (mem) MatrixCsr(*this);
         mMatrixSet.emplace(matrix);
@@ -89,18 +89,15 @@ namespace cubool {
         deallocate(matrix);
     }
 
-    void Instance::allocateOnGpu(CuBoolGpuPtr_t* ptr, CuBoolSize_t size) const {
-        if (!ptr)
-            throw details::InvalidArgument("Passed null pointer to store allocated memory ptr");
-
+    void Instance::allocateOnGpu(void* &ptr, size size) const {
         cudaError error;
 
         switch (mMemoryType) {
             case CUBOOL_GPU_MEMORY_TYPE_GENERIC:
-                error = cudaMalloc(ptr, size);
+                error = cudaMalloc(&ptr, size);
                 break;
             case CUBOOL_GPU_MEMORY_TYPE_MANAGED:
-                error = cudaMallocManaged(ptr, size);
+                error = cudaMallocManaged(&ptr, size);
                 break;
             default:
                 throw details::MemOpFailed("Failed to fined suitable allocator");
@@ -110,10 +107,7 @@ namespace cubool {
             throw details::MemOpFailed(std::string{"Failed to allocate Gpu memory: "} + cudaGetErrorString(error));
     }
 
-    void Instance::deallocateOnGpu(CuBoolGpuPtr_t ptr) const {
-        if (!ptr)
-            throw details::InvalidArgument("Passed null pointer to free");
-
+    void Instance::deallocateOnGpu(void* ptr) const {
         cudaError error = cudaFree(ptr);
 
         if (error != cudaSuccess)
@@ -134,7 +128,7 @@ namespace cubool {
     }
 
     void Instance::queryDeviceCapabilities(CuBoolDeviceCaps &deviceCaps) {
-        static const CuBoolSize_t KiB = 1024;
+        static const size KiB = 1024;
 
         int device;
         cudaError error = cudaGetDevice(&device);

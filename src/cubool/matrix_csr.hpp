@@ -39,24 +39,25 @@ namespace cubool {
         using Super = MatrixBase;
         using Super::mNumRows;
         using Super::mNumCols;
-        using IndexType = CuBoolIndex_t;
         template<typename T>
         using DeviceAlloc = details::DeviceAllocator<T>;
         template<typename T>
         using HostAlloc = details::HostAllocator<T>;
-        using MatrixImplType = nsparse::matrix<bool, IndexType, DeviceAlloc<IndexType>>;
+        using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
 
         explicit MatrixCsr(Instance& instance);
         ~MatrixCsr() override = default;
 
-        void resize(CuBoolSize_t nrows, CuBoolSize_t ncols) override;
-        void build(const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) override;
-        void extract(CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) const override;
+        void resize(index nrows, index ncols) override;
+        void build(const index *rows, const index *cols, size nvals) override;
+        void extract(index* &rows, index* &cols, size_t &nvals) const override;
         void clone(const MatrixBase &other) override;
 
         void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
         void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
         void kron(const MatrixBase& a, const MatrixBase& b) override;
+
+        size_t getNumVals() const { return mMatrixImpl.m_vals; }
 
     private:
         void resizeStorageToDim();
