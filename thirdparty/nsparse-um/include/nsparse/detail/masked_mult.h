@@ -1,10 +1,10 @@
 #pragma once
 
-#include <detail/masked_mult.cuh>
+#include <nsparse/detail/masked_mult.cuh>
 #include <thrust/device_vector.h>
-#include <detail/util.h>
-#include <detail/meta.h>
-#include <unified_allocator.h>
+#include <nsparse/detail/util.h>
+#include <nsparse/detail/meta.h>
+#include <nsparse/unified_allocator.h>
 
 namespace nsparse {
 

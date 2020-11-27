@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <cub/cub.cuh>
-#include <detail/masked_mult.cuh>
-#include <masked_spgemm.h>
-#include <spgemm.h>
+#include <nsparse/detail/masked_mult.cuh>
+#include <nsparse/masked_spgemm.h>
+#include <nsparse/spgemm.h>
 #include <random>
 
 using index_type = unsigned int;

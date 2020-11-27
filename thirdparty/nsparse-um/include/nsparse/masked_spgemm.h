@@ -1,7 +1,7 @@
 #pragma once
-#include <masked_matrix.h>
-#include <detail/meta.h>
-#include <detail/masked_mult.h>
+#include <nsparse/masked_matrix.h>
+#include <nsparse/detail/meta.h>
+#include <nsparse/detail/masked_mult.h>
 
 namespace nsparse {
 

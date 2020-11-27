@@ -1,7 +1,7 @@
 #pragma once
 
-#include <detail/util.h>
-#include <detail/bitonic.cuh>
+#include <nsparse/detail/util.h>
+#include <nsparse/detail/bitonic.cuh>
 
 #include <thrust/device_ptr.h>
 

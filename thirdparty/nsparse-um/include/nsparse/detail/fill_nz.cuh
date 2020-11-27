@@ -2,7 +2,7 @@
 
 #include <thrust/device_ptr.h>
 
-#include <detail/bitonic.cuh>
+#include <nsparse/detail/bitonic.cuh>
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>

@@ -25,8 +25,8 @@
 /**********************************************************************************/
 
 #include <cubool/instance.hpp>
-#include <cubool/matrix_dense.cuh>
-#include <cubool/matrix_csr.cuh>
+#include <cubool/matrix_dense.hpp>
+#include <cubool/matrix_csr.hpp>
 #include <cubool/details/error.hpp>
 #include <string>
 #include <cstring>

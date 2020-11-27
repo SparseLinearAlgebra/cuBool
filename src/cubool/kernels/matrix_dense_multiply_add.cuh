@@ -28,7 +28,7 @@
 #define CUBOOL_MATRIX_DENSE_MULTIPLY_ADD_CUH
 
 #include <cubool/kernels/matrix_dense_common.cuh>
-#include <cubool/matrix_dense.cuh>
+#include <cubool/matrix_dense.hpp>
 #include <cubool/instance.hpp>
 
 namespace cubool {

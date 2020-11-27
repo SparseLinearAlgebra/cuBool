@@ -1,16 +1,16 @@
 #pragma once
 #include <cassert>
-#include <matrix.h>
+#include <nsparse/matrix.h>
 
-#include <detail/merge.h>
+#include <nsparse/detail/merge.h>
 
-#include <detail/merge_path.cuh>
+#include <nsparse/detail/merge_path.cuh>
 
 #include <thrust/iterator/counting_iterator.h>
 
-#include <detail/count_nz.h>
-#include <detail/fill_nz.h>
-#include <unified_allocator.h>
+#include <nsparse/detail/count_nz.h>
+#include <nsparse/detail/fill_nz.h>
+#include <nsparse/unified_allocator.h>
 
 namespace nsparse {
 

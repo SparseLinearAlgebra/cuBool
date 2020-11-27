@@ -24,7 +24,7 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <cubool/matrix_dense.cuh>
+#include <cubool/matrix_dense.hpp>
 #include <cubool/instance.hpp>
 #include <cubool/kernels/matrix_dense_multiply_add.cuh>
 
@@ -166,6 +166,10 @@ namespace cubool {
         kernels::getGridConfig(aGlobal.rows, bGlobal.columns, dimBLock, dimGrid);
 
         kernels::matrixDenseMultiplyAdd<<<dimGrid,dimBLock>>>(rGlobal, aGlobal, bGlobal);
+    }
+
+    void MatrixDense::kron(const MatrixBase &a, const MatrixBase &b) {
+        throw details::NotImplemented("This function is not implemented");
     }
 
     void MatrixDense::getRowPackedIndex(CuBoolSize_t rowIndex, CuBoolSize_t &rowPackIdxMajor, CuBoolSize_t &rowPackIdxMinor) {

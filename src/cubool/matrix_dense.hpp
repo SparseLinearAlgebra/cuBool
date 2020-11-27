@@ -24,8 +24,8 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_DENSE_CUH
-#define CUBOOL_MATRIX_DENSE_CUH
+#ifndef CUBOOL_MATRIX_DENSE_HPP
+#define CUBOOL_MATRIX_DENSE_HPP
 
 #include <cubool/cubool.h>
 #include <cubool/matrix_base.hpp>
@@ -65,6 +65,7 @@ namespace cubool {
 
         void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
         void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
+        void kron(const MatrixBase& a, const MatrixBase& b) override;
 
         CuBoolSize_t getNumRowsPacked() const { return mNumRowsPacked; }
         CuBoolSize_t getNumColsPadded() const { return mNumColsPadded; }
@@ -85,4 +86,4 @@ namespace cubool {
 
 }
 
-#endif //CUBOOL_MATRIX_DENSE_CUH
+#endif //CUBOOL_MATRIX_DENSE_HPP

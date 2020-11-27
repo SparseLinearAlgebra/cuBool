@@ -24,13 +24,13 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_CUH
-#define CUBOOL_MATRIX_CSR_CUH
+#ifndef CUBOOL_MATRIX_CSR_HPP
+#define CUBOOL_MATRIX_CSR_HPP
 
 #include <cubool/matrix_base.hpp>
 #include <cubool/details/host_allocator.hpp>
 #include <cubool/details/device_allocator.cuh>
-#include <matrix.h>
+#include <nsparse/matrix.h>
 
 namespace cubool {
 
@@ -56,6 +56,7 @@ namespace cubool {
 
         void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
         void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
+        void kron(const MatrixBase& a, const MatrixBase& b) override;
 
     private:
         void resizeStorageToDim();
@@ -68,4 +69,4 @@ namespace cubool {
 
 }
 
-#endif //CUBOOL_MATRIX_CSR_CUH
+#endif //CUBOOL_MATRIX_CSR_HPP

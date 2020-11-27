@@ -27,7 +27,7 @@
 #ifndef CUBOOL_MATRIX_DENSE_COMMON_CUH
 #define CUBOOL_MATRIX_DENSE_COMMON_CUH
 
-#include <cubool/matrix_dense.cuh>
+#include <cubool/matrix_dense.hpp>
 
 namespace cubool {
     namespace kernels {

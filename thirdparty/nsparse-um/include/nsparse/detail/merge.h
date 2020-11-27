@@ -1,12 +1,12 @@
 #pragma once
 
-#include <detail/merge_path.cuh>
-#include <detail/meta.h>
-#include <detail/util.h>
+#include <nsparse/detail/merge_path.cuh>
+#include <nsparse/detail/meta.h>
+#include <nsparse/detail/util.h>
 
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
-#include <unified_allocator.h>
+#include <nsparse/unified_allocator.h>
 
 namespace nsparse {
 

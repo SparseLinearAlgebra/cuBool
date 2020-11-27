@@ -1,7 +1,7 @@
 #pragma once
-#include <matrix.h>
-#include <detail/add_values.h>
-#include <unified_allocator.h>
+#include <nsparse/matrix.h>
+#include <nsparse/detail/add_values.h>
+#include <nsparse/unified_allocator.h>
 
 namespace nsparse {
 

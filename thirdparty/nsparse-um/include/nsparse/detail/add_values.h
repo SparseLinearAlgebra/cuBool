@@ -3,9 +3,9 @@
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
 
-#include <detail/util.h>
+#include <nsparse/detail/util.h>
 
-#include <detail/add_values.cuh>
+#include <nsparse/detail/add_values.cuh>
 
 namespace nsparse {
 

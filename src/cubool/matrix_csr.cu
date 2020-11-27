@@ -24,9 +24,10 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <cubool/matrix_csr.cuh>
+#include <cubool/matrix_csr.hpp>
 #include <cubool/details/error.hpp>
-#include <spgemm.h>
+#include <cubool/kernels/matrix_csr_spkron.cuh>
+#include <nsparse/spgemm.h>
 #include <algorithm>
 
 namespace cubool {
@@ -181,7 +182,7 @@ namespace cubool {
 
         // Call backend r = c + a * b implementation
         nsparse::spgemm_functor_t<bool, IndexType, DeviceAlloc<IndexType>> spgemmFunctor;
-        auto result = spgemmFunctor(c->mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
+        auto result = std::move(spgemmFunctor(c->mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl));
 
         // Assign result r to this matrix
         this->resize(M, N);
@@ -219,11 +220,22 @@ namespace cubool {
 
         // Call backend r = c + a * b implementation, as C this is passed
         nsparse::spgemm_functor_t<bool, IndexType, DeviceAlloc<IndexType>> spgemmFunctor;
-        auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
+        auto result = std::move(spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl));
 
         // Assign result to this
         this->resize(M, N);
         this->mMatrixImpl = std::move(result);
+    }
+
+    void MatrixCsr::kron(const MatrixBase &aBase, const MatrixBase &bBase) {
+        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
+        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
+
+        if (!a || !b)
+            throw details::InvalidArgument("Passed matrices do not belong to csr matrix class");
+
+        kernels::SpKronFunctor<IndexType, DeviceAlloc<IndexType>> spKronFunctor;
+        auto result = std::move(spKronFunctor(a->mMatrixImpl, b->mMatrixImpl));
     }
 
     void MatrixCsr::resizeStorageToDim() {

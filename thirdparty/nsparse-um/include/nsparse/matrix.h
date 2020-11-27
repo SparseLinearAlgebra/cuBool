@@ -1,7 +1,7 @@
 #pragma once
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
-#include <unified_allocator.h>
+#include <nsparse/unified_allocator.h>
 #include <cassert>
 
 namespace nsparse {

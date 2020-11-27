@@ -1,14 +1,13 @@
 #pragma once
-#include <detail/fill_nz.cuh>
-#include <detail/util.h>
-#include <detail/meta.h>
-#include <detail/count_nz.h>
+#include <nsparse/detail/fill_nz.cuh>
+#include <nsparse/detail/util.h>
+#include <nsparse/detail/meta.h>
+#include <nsparse/detail/count_nz.h>
 
 #include <iostream>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
 #include <utility>
-#include <unified_allocator.h>
 
 namespace nsparse {
 

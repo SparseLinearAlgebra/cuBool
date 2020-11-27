@@ -26,7 +26,6 @@ the programming language *COBOL*.
 - [ ] CSR kronecker
 - [ ] Block СSR matrix
 - [ ] Block CSR multiplication
-- [ ] Block CSR addition
 - [ ] Block CSR kronecker
 - [ ] Sparse matrix wrapper ?
 - [ ] Wrapper for Python API 

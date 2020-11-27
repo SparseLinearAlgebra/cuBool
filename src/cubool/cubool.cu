@@ -27,8 +27,8 @@
 #include <cubool/cubool.h>
 #include <cubool/version.hpp>
 #include <cubool/instance.hpp>
-#include <cubool/matrix_dense.cuh>
-#include <cubool/matrix_csr.cuh>
+#include <cubool/matrix_dense.hpp>
+#include <cubool/matrix_csr.hpp>
 #include <cubool/details/error.hpp>
 #include <cstdlib>
 #include <string>

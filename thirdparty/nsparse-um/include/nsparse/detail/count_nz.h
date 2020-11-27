@@ -1,7 +1,7 @@
 #pragma once
-#include <detail/meta.h>
-#include <detail/util.h>
-#include <detail/count_nz.cuh>
+#include <nsparse/detail/meta.h>
+#include <nsparse/detail/util.h>
+#include <nsparse/detail/count_nz.cuh>
 
 #include <cub/cub.cuh>
 
@@ -12,7 +12,6 @@
 #include <thrust/device_vector.h>
 #include <utility>
 #include <vector>
-#include <unified_allocator.h>
 
 namespace nsparse {
 

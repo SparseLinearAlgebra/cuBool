@@ -63,11 +63,12 @@ set(CUBOOL_SOURCES
     src/cubool/instance.hpp
     src/cubool/matrix_base.hpp
     src/cubool/matrix_dense.cu
-    src/cubool/matrix_dense.cuh
+    src/cubool/matrix_dense.hpp
     src/cubool/matrix_csr.cu
-    src/cubool/matrix_csr.cuh
+    src/cubool/matrix_csr.hpp
     src/cubool/kernels/matrix_dense_multiply_add.cuh
     src/cubool/kernels/matrix_dense_common.cuh
+    src/cubool/kernels/matrix_csr_spkron.cuh
     src/cubool/details/error.hpp
     src/cubool/details/device_allocator.cuh
     src/cubool/details/host_allocator.hpp

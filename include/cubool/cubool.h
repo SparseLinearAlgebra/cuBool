@@ -30,7 +30,7 @@
 #include <memory.h>
 
 /** Export library function (does not handles msvc or intel compilers) */
-#define CuBoolAPI extern "C"
+#define CUBOOL_API extern "C"
 
 /** Possible status codes that can be returned from cubool api */
 typedef enum CuBoolStatus {
@@ -153,13 +153,13 @@ typedef struct CuBoolInstanceDesc {
  * Query human-readable text info about the project implementation
  * @return Read-only library about info
  */
-CuBoolAPI const char* CuBool_About_Get();
+CUBOOL_API const char* CuBool_About_Get();
 
 /**
  * Query human-readable text info about the project implementation
  * @return Read-only library license info
  */
-CuBoolAPI const char* CuBool_LicenseInfo_Get();
+CUBOOL_API const char* CuBool_LicenseInfo_Get();
 
 /**
  * Query library version number in form MAJOR.MINOR
@@ -170,7 +170,7 @@ CuBoolAPI const char* CuBool_LicenseInfo_Get();
  *
  * @return Error if failed to query version info
  */
-CuBoolAPI CuBoolStatus CuBool_Version_Get(
+CUBOOL_API CuBoolStatus CuBool_Version_Get(
     int*                        major,
     int*                        minor,
     int*                        version
@@ -183,7 +183,7 @@ CuBoolAPI CuBoolStatus CuBool_Version_Get(
  *
  * @return Error if cuda device not present or if failed to query capabilities
  */
-CuBoolAPI CuBoolStatus CuBool_DeviceCaps_Get(
+CUBOOL_API CuBoolStatus CuBool_DeviceCaps_Get(
     CuBoolDeviceCaps*           deviceCaps
 );
 
@@ -195,7 +195,7 @@ CuBoolAPI CuBoolStatus CuBool_DeviceCaps_Get(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Instance_New(
+CUBOOL_API CuBoolStatus CuBool_Instance_New(
     const CuBoolInstanceDesc*   instanceDesc,
     CuBoolInstance*             instance
 );
@@ -208,7 +208,7 @@ CuBoolAPI CuBoolStatus CuBool_Instance_New(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Instance_Free(
+CUBOOL_API CuBoolStatus CuBool_Instance_Free(
     CuBoolInstance              instance
 );
 
@@ -219,7 +219,7 @@ CuBoolAPI CuBoolStatus CuBool_Instance_Free(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_HostDevice_Sync(
+CUBOOL_API CuBoolStatus CuBool_HostDevice_Sync(
     CuBoolInstance              instance
 );
 
@@ -233,7 +233,7 @@ CuBoolAPI CuBoolStatus CuBool_HostDevice_Sync(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_New(
+CUBOOL_API CuBoolStatus CuBool_MatrixDense_New(
     CuBoolInstance              instance,
     CuBoolMatrixDense*          matrix,
     CuBoolSize_t                nrows,
@@ -248,7 +248,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_New(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_Free(
+CUBOOL_API CuBoolStatus CuBool_MatrixDense_Free(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix
 );
@@ -263,7 +263,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Free(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_Resize(
+CUBOOL_API CuBoolStatus CuBool_MatrixDense_Resize(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
     CuBoolSize_t                nrows,
@@ -282,7 +282,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Resize(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build(
+CUBOOL_API CuBoolStatus CuBool_MatrixDense_Build(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
     const CuBoolIndex_t*        rows,
@@ -305,7 +305,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_Build(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs(
+CUBOOL_API CuBoolStatus CuBool_MatrixDense_ExtractPairs(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
     CuBoolIndex_t**             rows,
@@ -328,7 +328,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_ExtractPairs(
  *
  * @return
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_MxM(
+CUBOOL_API CuBoolStatus CuBool_MatrixDense_MxM(
     CuBoolInstance              instance,
     CuBoolMatrixDense           r,
     CuBoolMatrixDense           a,
@@ -353,7 +353,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_MxM(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultSum(
+CUBOOL_API CuBoolStatus CuBool_MatrixDense_MultSum(
     CuBoolInstance              instance,
     CuBoolMatrixDense           r,
     CuBoolMatrixDense           a,
@@ -371,7 +371,7 @@ CuBoolAPI CuBoolStatus CuBool_MatrixDense_MultSum(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Matrix_New(
+CUBOOL_API CuBoolStatus CuBool_Matrix_New(
     CuBoolInstance              instance,
     CuBoolMatrix*               matrix,
     CuBoolSize_t                nrows,
@@ -386,7 +386,7 @@ CuBoolAPI CuBoolStatus CuBool_Matrix_New(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Matrix_Free(
+CUBOOL_API CuBoolStatus CuBool_Matrix_Free(
     CuBoolInstance              instance,
     CuBoolMatrix                matrix
 );
@@ -401,7 +401,7 @@ CuBoolAPI CuBoolStatus CuBool_Matrix_Free(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Matrix_Resize(
+CUBOOL_API CuBoolStatus CuBool_Matrix_Resize(
     CuBoolInstance              instance,
     CuBoolMatrix                matrix,
     CuBoolSize_t                nrows,
@@ -420,7 +420,7 @@ CuBoolAPI CuBoolStatus CuBool_Matrix_Resize(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Matrix_Build(
+CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
     CuBoolInstance              instance,
     CuBoolMatrix                matrix,
     const CuBoolIndex_t*        rows,
@@ -443,7 +443,7 @@ CuBoolAPI CuBoolStatus CuBool_Matrix_Build(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Matrix_ExtractPairs(
+CUBOOL_API CuBoolStatus CuBool_Matrix_ExtractPairs(
     CuBoolInstance              instance,
     CuBoolMatrix                matrix,
     CuBoolIndex_t**             rows,
@@ -464,9 +464,31 @@ CuBoolAPI CuBoolStatus CuBool_Matrix_ExtractPairs(
  * @param a Input a matrix
  * @param b Input a matrix
  *
- * @return
+ * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_MxM(
+CUBOOL_API CuBoolStatus CuBool_MxM(
+    CuBoolInstance              instance,
+    CuBoolMatrix                r,
+    CuBoolMatrix                a,
+    CuBoolMatrix                b
+);
+
+/**
+ * Performs r = a `kron` b, where `kron` is a Kronecker product for boolean semiring.
+ *
+ * @note when the operation is performed, the result matrix has the following dimension
+ *      dim(a) = M x N
+ *      dim(b) = K x T
+ *      dim(r) = MK x NT
+ *
+ * @param instance An instance object reference to perform this operation
+ * @param r Matrix handle where to store operation result
+ * @param a Input a matrix
+ * @param b Input a matrix
+ *
+ * @return Error code on this operations
+ */
+CUBOOL_API CuBoolStatus CuBool_Kron(
     CuBoolInstance              instance,
     CuBoolMatrix                r,
     CuBoolMatrix                a,
@@ -481,7 +503,7 @@ CuBoolAPI CuBoolStatus CuBool_MxM(
  *
  * @return Error code on this operations
  */
-CuBoolAPI CuBoolStatus CuBool_Vals_Free(
+CUBOOL_API CuBoolStatus CuBool_Vals_Free(
     CuBoolInstance              instance,
     CuBoolIndex_t*              vals
 );
