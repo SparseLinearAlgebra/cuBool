@@ -46,9 +46,6 @@ namespace cubool {
     }
 
     void MatrixDense::build(const index *rows, const index *cols, size_t nvals) {
-        if (nvals == 0)
-            return;
-
         if (isZeroDim())
             throw details::InvalidState("An attempt to write to empty matrix");
 

@@ -31,7 +31,7 @@
 #include <naive-gpu/GpuMatrix.h> // Naive gpu implementation for dense boolean matrix multiplication
 #include <naive-gpu-shared/GpuMatrix.h> // Naive gpu with small shared mem optimization
 
-static size_t iterations = 4;
+static size_t iterations = 1;
 static size_t sizes[] = { 128, 256, 512, 1024, 2048, 4096, 8192, 8192 * 2, 8192 * 4, 8192 * 8 };
 
 TEST(Benchmanrk, CuboolDenseMatrix) {
@@ -39,7 +39,7 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
     CuBoolSize_t m, t, n;
 
     CuBoolInstanceDesc instanceDesc;
-    setupInstanceDescSilent(instanceDesc);
+    testing::details::setupInstanceDescSilent(instanceDesc);
 
     CuBool_Instance_New(&instanceDesc, &instance);
 
@@ -48,28 +48,18 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
 
         CuBoolMatrixDense a, b, c;
 
-        std::vector<CuBoolIndex_t> arows;
-        std::vector<CuBoolIndex_t> acols;
-        std::vector<CuBoolIndex_t> brows;
-        std::vector<CuBoolIndex_t> bcols;
-        std::vector<CuBoolIndex_t> crows;
-        std::vector<CuBoolIndex_t> ccols;
+        testing::Matrix ta = std::move(testing::Matrix::generate(m, t, testing::details::Condition2{}));
+        testing::Matrix tb = std::move(testing::Matrix::generate(m, t, testing::details::Condition2{}));
+        testing::Matrix tc = std::move(testing::Matrix::generate(m, t, testing::details::Condition2{}));
 
-        CuBoolSize_t anvals;
-        CuBoolSize_t bnvals;
-        CuBoolSize_t cnvals;
 
         CuBool_MatrixDense_New(instance, &a, m, t);
         CuBool_MatrixDense_New(instance, &b, t, n);
         CuBool_MatrixDense_New(instance, &c, m, n);
 
-        generateTestData(m, t, arows, acols, anvals, Condition2{});
-        generateTestData(t, n, brows, bcols, bnvals, Condition2{});
-        generateTestData(m, n, crows, ccols, cnvals, Condition2{});
-
-        CuBool_MatrixDense_Build(instance, a, arows.data(), acols.data(), anvals);
-        CuBool_MatrixDense_Build(instance, b, brows.data(), bcols.data(), bnvals);
-        CuBool_MatrixDense_Build(instance, c, crows.data(), ccols.data(), cnvals);
+        CuBool_MatrixDense_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals);
+        CuBool_MatrixDense_Build(instance, b, tb.mRowsIndex.data(), tb.mColsIndex.data(), ta.mNvals);
+        CuBool_MatrixDense_Build(instance, c, tc.mRowsIndex.data(), tc.mColsIndex.data(), ta.mNvals);
 
         double executionTimeMs = 0;
 
@@ -105,13 +95,13 @@ TEST(Benchmark, NaiveGpuDenseMatrix) {
     for (auto s: sizes) {
         int n = (int) s;
 
-        std::vector<CuBoolPair> aval;
-        std::vector<CuBoolPair> bval;
-        std::vector<CuBoolPair> cval;
+        std::vector<testing::details::Pair> aval;
+        std::vector<testing::details::Pair> bval;
+        std::vector<testing::details::Pair> cval;
 
-        generateTestData(n, n, aval, Condition2());
-        generateTestData(n, n, bval, Condition2());
-        generateTestData(n, n, cval, Condition2());
+        testing::details::generateTestData(n, n, aval, testing::details::Condition2{});
+        testing::details::generateTestData(n, n, bval, testing::details::Condition2{});
+        testing::details::generateTestData(n, n, cval, testing::details::Condition2{});
 
         gpuMatrix::set_N(n);
 
@@ -171,13 +161,13 @@ TEST(Benchmark, NaiveGpuSharedDenseMatrix) {
     for (auto s: sizes) {
         int n = (int) s;
 
-        std::vector<CuBoolPair> aval;
-        std::vector<CuBoolPair> bval;
-        std::vector<CuBoolPair> cval;
+        std::vector<testing::details::Pair> aval;
+        std::vector<testing::details::Pair> bval;
+        std::vector<testing::details::Pair> cval;
 
-        generateTestData(n, n, aval, Condition2());
-        generateTestData(n, n, bval, Condition2());
-        generateTestData(n, n, cval, Condition2());
+        testing::details::generateTestData(n, n, aval, testing::details::Condition2{});
+        testing::details::generateTestData(n, n, bval, testing::details::Condition2{});
+        testing::details::generateTestData(n, n, cval, testing::details::Condition2{});
 
         gpuMatrix::set_N(n);
 

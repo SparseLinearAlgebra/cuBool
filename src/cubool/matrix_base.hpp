@@ -54,7 +54,7 @@ namespace cubool {
         index getNumRows() const { return mNumRows; }
         index getNumCols() const { return mNumCols; }
         Instance& getInstance() const { return mInstanceRef; }
-        bool isZeroDim() const { return mNumRows * mNumCols == 0; }
+        bool isZeroDim() const { return (size)mNumRows * (size)mNumCols == 0; }
 
     protected:
         std::string mDebugMarker;

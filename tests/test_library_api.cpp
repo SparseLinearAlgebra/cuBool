@@ -50,10 +50,10 @@ TEST(CuBoolInstance, Setup) {
     CuBoolInstanceDesc instanceDesc{};
     instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
     instanceDesc.errorCallback.userData = nullptr;
-    instanceDesc.errorCallback.msgFun = testMsgFun;
+    instanceDesc.errorCallback.msgFun = testing::details::testMsgFun;
     instanceDesc.allocationCallback.userData = nullptr;
-    instanceDesc.allocationCallback.allocateFun = testAllocateFun;
-    instanceDesc.allocationCallback.deallocateFun = testDeallocateFun;
+    instanceDesc.allocationCallback.allocateFun = testing::details::testAllocateFun;
+    instanceDesc.allocationCallback.deallocateFun = testing::details::testDeallocateFun;
 
     error = CuBool_Instance_New(&instanceDesc, &instance);
 

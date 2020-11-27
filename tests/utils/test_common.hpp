@@ -93,13 +93,13 @@ namespace testing {
         }
 
         struct Condition1 {
-            bool operator()(size_t i, size_t j) {
+            bool operator()(CuBoolIndex_t i, CuBoolIndex_t j) {
                 return (((i - 1) & i) == 0 && ((j - 1) & j) == 0);
             }
         };
 
         struct Condition2 {
-            bool operator()(size_t i, size_t j) {
+            bool operator()(CuBoolIndex_t i, CuBoolIndex_t j) {
                 return !(i % 5) && !(j % 7);
             }
         };
@@ -107,7 +107,7 @@ namespace testing {
         struct Condition3 {
         public:
             explicit Condition3(float density): mDensity(density) {}
-            bool operator()(size_t i, size_t j) {
+            bool operator()(CuBoolIndex_t i, CuBoolIndex_t j) {
                 return std::uniform_real_distribution<float>(0.0f, 1.0f)(mRandomEngine) <= mDensity;
             }
         private:
@@ -117,11 +117,11 @@ namespace testing {
 
         template<typename Condition>
         static void generateTestData(size_t rows, size_t columns, std::vector<Pair> &values, Condition&& condition) {
-            for (size_t i = 0; i < rows; i++) {
-                for (size_t j = 0; j < columns; j++) {
+            for (CuBoolIndex_t i = 0; i < rows; i++) {
+                for (CuBoolIndex_t j = 0; j < columns; j++) {
                     // is i and j power of two or 0
                     if (condition(i, j)) {
-                        values.push_back(Pair{i, j });
+                        values.push_back(Pair{i, j});
                     }
                 }
             }
@@ -130,8 +130,8 @@ namespace testing {
         template<typename Condition>
         static void generateTestData(size_t nrows, size_t ncols, std::vector<CuBoolIndex_t> &rows, std::vector<CuBoolIndex_t> &cols, size_t& nvals, Condition&& condition) {
             nvals = 0;
-            for (size_t i = 0; i < nrows; i++) {
-                for (size_t j = 0; j < ncols; j++) {
+            for (CuBoolIndex_t i = 0; i < nrows; i++) {
+                for (CuBoolIndex_t j = 0; j < ncols; j++) {
                     // is i and j power of two or 0
                     if (condition(i, j)) {
                         rows.push_back(i);
