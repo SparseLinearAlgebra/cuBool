@@ -66,6 +66,7 @@ namespace cubool {
         void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
         void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
         void kron(const MatrixBase& a, const MatrixBase& b) override;
+        void add(const MatrixBase& a) override;
 
         index getNumRowsPacked() const { return mNumRowsPacked; }
         index getNumColsPadded() const { return mNumColsPadded; }

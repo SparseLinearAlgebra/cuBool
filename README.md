@@ -23,6 +23,7 @@ the programming language *COBOL*.
 - [ ] Dense kronecker product 
 - [X] CSR matrix
 - [X] CSR multiplication
+- [X] CSR addition
 - [ ] CSR kronecker
 - [ ] Block СSR matrix
 - [ ] Block CSR multiplication

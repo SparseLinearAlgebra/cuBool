@@ -47,6 +47,7 @@ namespace cubool {
         virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
         virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
         virtual void kron(const MatrixBase& a, const MatrixBase& b) = 0;
+        virtual void add(const MatrixBase& a) = 0;
 
         void setDebugMarker(std::string string) { mDebugMarker = std::move(string); }
 

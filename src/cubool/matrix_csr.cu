@@ -27,6 +27,7 @@
 #include <cubool/matrix_csr.hpp>
 #include <cubool/details/error.hpp>
 #include <cubool/kernels/matrix_csr_spkron.cuh>
+#include <cubool/kernels/matrix_csr_merge.cuh>
 #include <nsparse/spgemm.h>
 #include <algorithm>
 
@@ -179,7 +180,7 @@ namespace cubool {
 
         // Call backend r = c + a * b implementation
         nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
-        auto result = std::move(spgemmFunctor(c->mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl));
+        auto result = spgemmFunctor(c->mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
 
         // Assign result r to this matrix
         this->resize(M, N);
@@ -217,7 +218,7 @@ namespace cubool {
 
         // Call backend r = c + a * b implementation, as C this is passed
         nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
-        auto result = std::move(spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl));
+        auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
 
         // Assign result to this
         this->resize(M, N);
@@ -232,7 +233,39 @@ namespace cubool {
             throw details::InvalidArgument("Passed matrices do not belong to csr matrix class");
 
         kernels::SpKronFunctor<index, DeviceAlloc<index>> spKronFunctor;
-        auto result = std::move(spKronFunctor(a->mMatrixImpl, b->mMatrixImpl));
+        auto result = spKronFunctor(a->mMatrixImpl, b->mMatrixImpl);
+
+        // todo
+    }
+
+    void MatrixCsr::add(const MatrixBase &aBase) {
+        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
+
+        if (!a)
+            throw details::InvalidArgument("Passed matrix does not belong to csr matrix class");
+
+        index M = a->getNumRows();
+        index N = a->getNumCols();
+
+        if (this->getNumRows() != M || this->getNumCols() != N)
+            throw details::InvalidArgument("Incompatible matrix size to add");
+
+        if (a->isMatrixEmpty()) {
+            // A or B has no values
+            return;
+        }
+
+        if (this->isMatrixEmpty()) {
+            // So the result is the exact copy of the a
+            this->clone(*a);
+            return;
+        }
+
+        kernels::SpMergeFunctor<index, DeviceAlloc<index>> spMergeFunctor;
+        auto result = spMergeFunctor(this->mMatrixImpl, a->mMatrixImpl);
+
+        // Assign the actual impl result to this storage
+        this->mMatrixImpl = std::move(result);
     }
 
     void MatrixCsr::resizeStorageToDim() {

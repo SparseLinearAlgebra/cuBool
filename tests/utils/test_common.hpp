@@ -106,7 +106,9 @@ namespace testing {
 
         struct Condition3 {
         public:
-            explicit Condition3(float density): mDensity(density) {}
+            explicit Condition3(float density): mDensity(density) {
+                mRandomEngine.seed(std::time(0));
+            }
             bool operator()(CuBoolIndex_t i, CuBoolIndex_t j) {
                 return std::uniform_real_distribution<float>(0.0f, 1.0f)(mRandomEngine) <= mDensity;
             }
@@ -275,6 +277,42 @@ namespace testing {
 
             for (size_t i = 0; i < mc.mNvals; i++) {
                 r[mc.mRowsIndex[i]][mc.mColsIndex[i]] |= 1u;
+            }
+
+            Matrix result;
+            result.mNrows = m;
+            result.mNcols = n;
+
+            for (size_t i = 0; i < m; i++) {
+                for (size_t j = 0; j < n; j++) {
+                    if (r[i][j] != 0) {
+                        result.mRowsIndex.push_back(i);
+                        result.mColsIndex.push_back(j);
+                        result.mNvals += 1;
+                    }
+                }
+            }
+
+            return std::move(result);
+        }
+    };
+
+    struct MatrixAdd {
+        Matrix operator()(const Matrix& ma, const Matrix& mb) {
+            auto m = ma.mNrows;
+            auto n = ma.mNcols;
+
+            assert(ma.mNrows == mb.mNrows);
+            assert(ma.mNcols == mb.mNcols);
+
+            std::vector<std::vector<uint8_t>> r(m, std::vector<uint8_t>(n, 0));
+
+            for (size_t i = 0; i < ma.mNvals; i++) {
+                r[ma.mRowsIndex[i]][ma.mColsIndex[i]] = 1;
+            }
+
+            for (size_t i = 0; i < mb.mNvals; i++) {
+                r[mb.mRowsIndex[i]][mb.mColsIndex[i]] = 1;
             }
 
             Matrix result;

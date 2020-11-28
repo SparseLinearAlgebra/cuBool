@@ -64,16 +64,16 @@ namespace cubool {
                 thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(resRows),
                     [aRows, rTmpRowIndex = tmpBuffer.data(), aRowIndex = a.m_row_index.data(), bRowIndex = b.m_row_index.data()]
                     __device__  (IndexType idx) {
-                    // Get block row index and row index within block (note: see kronecker product)
-                    size_t blockIdRow = idx / aRows;
-                    size_t blockRow = idx % aRows;
+                        // Get block row index and row index within block (note: see kronecker product)
+                        IndexType blockIdRow = idx / aRows;
+                        IndexType blockRow = idx % aRows;
 
-                    // Gen values count for a and b row (note: format is csr)
-                    size_t valsCountInRowA = aRowIndex[blockIdRow + 1] - aRowIndex[blockIdRow];
-                    size_t valsCountInRowB = bRowIndex[blockRow + 1] - bRowIndex[blockRow];
+                        // Gen values count for a and b row (note: format is csr)
+                        IndexType valsCountInRowA = aRowIndex[blockIdRow + 1] - aRowIndex[blockIdRow];
+                        IndexType valsCountInRowB = bRowIndex[blockRow + 1] - bRowIndex[blockRow];
 
-                    // Store number of values in the column of the row idx of the result matrix
-                    rTmpRowIndex[idx] = valsCountInRowA * valsCountInRowB;
+                        // Store number of values in the column of the row idx of the result matrix
+                        rTmpRowIndex[idx] = valsCountInRowA * valsCountInRowB;
                 });
 
                 // Create row index and column index to store res matrix

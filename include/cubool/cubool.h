@@ -484,6 +484,25 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Ncols(
 );
 
 /**
+ * Performs r += a, where '+' is boolean semiring operation.
+ *
+ * @note Matrices must be compatible
+ *      dim(r) = M x N
+ *      dim(a) = M x N
+ *
+ * @param instance An instance object reference to perform this operation
+ * @param r Destination matrix for add-and-assign operation
+ * @param a Source matrix to be added
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_Add(
+    CuBoolInstance              instance,
+    CuBoolMatrix                r,
+    CuBoolMatrix                a
+);
+
+/**
  * Deletes sparse matrix object.
  *
  * @param instance An instance object reference to perform this operation

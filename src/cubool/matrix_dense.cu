@@ -166,6 +166,10 @@ namespace cubool {
         throw details::NotImplemented("This function is not implemented");
     }
 
+    void MatrixDense::add(const MatrixBase &a) {
+        throw details::NotImplemented("This function is not implemented");
+    }
+
     void MatrixDense::getRowPackedIndex(index rowIndex, index &rowPackIdxMajor, index &rowPackIdxMinor) {
         rowPackIdxMajor = rowIndex / PACK_TYPE_SIZE_BITS;
         rowPackIdxMinor = rowIndex % PACK_TYPE_SIZE_BITS;

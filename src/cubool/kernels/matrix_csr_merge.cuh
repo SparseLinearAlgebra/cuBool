@@ -24,51 +24,58 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_HPP
-#define CUBOOL_MATRIX_CSR_HPP
+#ifndef CUBOOL_MATRIX_CSR_MERGE_CUH
+#define CUBOOL_MATRIX_CSR_MERGE_CUH
 
-#include <cubool/matrix_base.hpp>
-#include <cubool/details/host_allocator.hpp>
-#include <cubool/details/device_allocator.cuh>
+#include <cubool/config.hpp>
 #include <nsparse/matrix.h>
+#include <nsparse/detail/merge.h>
 
 namespace cubool {
+    namespace kernels {
 
-    class MatrixCsr: public MatrixBase {
-    public:
-        using Super = MatrixBase;
-        using Super::mNumRows;
-        using Super::mNumCols;
-        template<typename T>
-        using DeviceAlloc = details::DeviceAllocator<T>;
-        template<typename T>
-        using HostAlloc = details::HostAllocator<T>;
-        using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
+        template <typename IndexType, typename AllocType>
+        class SpMergeFunctor {
+        public:
+            using MatrixType = nsparse::matrix<bool, IndexType, typename AllocType::template rebind<IndexType>::other>;
 
-        explicit MatrixCsr(Instance& instance);
-        ~MatrixCsr() override = default;
+            MatrixType operator()(const MatrixType& a, const MatrixType& b) {
+                using namespace nsparse::meta;
+                constexpr size max = std::numeric_limits<size>::max();
 
-        void resize(index nrows, index ncols) override;
-        void build(const index *rows, const index *cols, size nvals) override;
-        void extract(index* &rows, index* &cols, size_t &nvals) const override;
-        void clone(const MatrixBase &other) override;
+                assert(a.m_rows == b.m_rows);
+                assert(a.m_cols == b.m_cols);
 
-        void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
-        void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
-        void kron(const MatrixBase& a, const MatrixBase& b) override;
-        void add(const MatrixBase& a) override;
+                IndexType rows = a.m_rows;
+                IndexType cols = a.m_rows;
 
-        size_t getNumVals() const { return mMatrixImpl.m_vals; }
+                constexpr auto config_merge =
+                    make_bin_seq<
+                        bin_info_t<merge_conf_t<128>, 64, max>,
+                        bin_info_t<merge_conf_t<64>, 32, 64>,
+                        bin_info_t<merge_conf_t<32>, 0, 32>
+                    >;
 
-    private:
-        void resizeStorageToDim();
-        bool isStorageEmpty() const;
-        bool isMatrixEmpty() const;
+                auto merge_res = uniqueMergeFunctor(a.m_row_index, a.m_col_index, b.m_row_index, b.m_col_index, config_merge);
 
-        // Uses nsparse csr matrix implementation as a backend
-        MatrixImplType mMatrixImpl;
-    };
+                auto& rpt_result = merge_res.first;
+                auto& col_result = merge_res.second;
+                IndexType vals = col_result.size();
 
+                assert(rpt_result.size() == rows + 1);
+                assert(col_result.size() == rpt_result.back());
+
+                return MatrixType(std::move(col_result), std::move(rpt_result), rows, cols, vals);
+            }
+
+        private:
+            nsparse::unique_merge_functor_t<IndexType, AllocType> uniqueMergeFunctor;
+        };
+
+    }
 }
 
-#endif //CUBOOL_MATRIX_CSR_HPP
+
+
+
+#endif //CUBOOL_MATRIX_CSR_MERGE_CUH

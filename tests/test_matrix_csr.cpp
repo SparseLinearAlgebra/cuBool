@@ -140,7 +140,7 @@ TEST(MatrixCsr, FillingSmall) {
 
     CuBoolSize_t m = 60, n = 100;
 
-    testing::details::setupInstanceDesc(instanceDesc);
+    testing::details::setupInstanceDescSilent(instanceDesc);
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 10; i++) {
@@ -156,7 +156,7 @@ TEST(MatrixCsr, FillingMedium) {
 
     CuBoolSize_t m = 500, n = 1000;
 
-    testing::details::setupInstanceDesc(instanceDesc);
+    testing::details::setupInstanceDescSilent(instanceDesc);
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 10; i++) {
@@ -172,7 +172,7 @@ TEST(MatrixCsr, FillingLarge) {
 
     CuBoolSize_t m = 1000, n = 2000;
 
-    testing::details::setupInstanceDesc(instanceDesc);
+    testing::details::setupInstanceDescSilent(instanceDesc);
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 10; i++) {
@@ -222,7 +222,7 @@ TEST(MatrixCsr, MultiplyAddSmall) {
     CuBoolSize_t m = 60, t = 100, n = 80;
 
     // Setup instance
-    testing::details::setupInstanceDesc(instanceDesc);
+    testing::details::setupInstanceDescSilent(instanceDesc);
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 5; i++) {
@@ -239,7 +239,7 @@ TEST(MatrixCsr, MultiplyAddMedium) {
     CuBoolSize_t m = 500, t = 1000, n = 800;
 
     // Setup instance
-    testing::details::setupInstanceDesc(instanceDesc);
+    testing::details::setupInstanceDescSilent(instanceDesc);
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 5; i++) {
@@ -256,7 +256,7 @@ TEST(MatrixCsr, MultiplyAddLarge) {
     CuBoolSize_t m = 1000, t = 2000, n = 500;
 
     // Setup instance
-    testing::details::setupInstanceDesc(instanceDesc);
+    testing::details::setupInstanceDescSilent(instanceDesc);
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 5; i++) {
@@ -266,6 +266,87 @@ TEST(MatrixCsr, MultiplyAddLarge) {
     // Destroy instance
     EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);
 }
+
+void testMatrixAdd(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInstance instance) {
+    CuBoolMatrix r, a;
+
+    testing::Matrix tr = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
+    testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
+
+    // Allocate input matrices and resize to fill with input data
+    EXPECT_EQ(CuBool_Matrix_New(instance, &a, m, n), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_New(instance, &r, m, n), CUBOOL_STATUS_SUCCESS);
+
+    // Transfer input data into input matrices
+    EXPECT_EQ(CuBool_Matrix_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, r, tr.mRowsIndex.data(), tr.mColsIndex.data(), tr.mNvals), CUBOOL_STATUS_SUCCESS);
+
+    // Evaluate r += a
+    EXPECT_EQ(CuBool_Matrix_Add(instance, r, a), CUBOOL_STATUS_SUCCESS);
+
+    // Evaluate naive r += a on the cpu to compare results
+    testing::MatrixAdd functor;
+    tr = std::move(functor(ta, tr));
+
+    // Compare results
+    EXPECT_EQ(tr.areEqual(r, instance), true);
+
+    // Deallocate matrices
+    EXPECT_EQ(CuBool_Matrix_Free(instance, a), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Free(instance, r), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, AddSmall) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+    CuBoolSize_t m = 60, n = 80;
+
+    // Setup instance
+    testing::details::setupInstanceDescSilent(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixAdd(m, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
+
+    // Destroy instance
+    EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, AddMedium) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+    CuBoolSize_t m = 500, n = 800;
+
+    // Setup instance
+    testing::details::setupInstanceDescSilent(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixAdd(m, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
+
+    // Destroy instance
+    EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, AddLarge) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+    CuBoolSize_t m = 2500, n = 1500;
+
+    // Setup instance
+    testing::details::setupInstanceDescSilent(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixAdd(m, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
+
+    // Destroy instance
+    EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);
+}
+
 
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

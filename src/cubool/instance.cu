@@ -105,6 +105,14 @@ namespace cubool {
 
         if (error != cudaSuccess)
             throw details::MemOpFailed(std::string{"Failed to allocate Gpu memory: "} + cudaGetErrorString(error));
+
+#if 0
+        {
+            char buffer[2000];
+            snprintf(buffer, 2000, "============> allocate on gpu %llu", (long long unsigned) size);
+            this->sendMessage(CUBOOL_STATUS_SUCCESS, buffer);
+        }
+#endif
     }
 
     void Instance::deallocateOnGpu(void* ptr) const {
