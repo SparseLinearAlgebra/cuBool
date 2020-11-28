@@ -24,8 +24,8 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_MERGE_CUH
-#define CUBOOL_MATRIX_CSR_MERGE_CUH
+#ifndef CUBOOL_MATRIX_CSR_SPMERGE_CUH
+#define CUBOOL_MATRIX_CSR_SPMERGE_CUH
 
 #include <cubool/config.hpp>
 #include <nsparse/matrix.h>
@@ -39,6 +39,14 @@ namespace cubool {
         public:
             using MatrixType = nsparse::matrix<bool, IndexType, typename AllocType::template rebind<IndexType>::other>;
 
+            /**
+             * evaluates r = a + b, where '+' is boolean semiring plus operation
+             *
+             * @param a Csr matrix
+             * @param b Csr matrix
+             *
+             * @return a + b
+             */
             MatrixType operator()(const MatrixType& a, const MatrixType& b) {
                 using namespace nsparse::meta;
                 constexpr size max = std::numeric_limits<size>::max();
@@ -78,4 +86,4 @@ namespace cubool {
 
 
 
-#endif //CUBOOL_MATRIX_CSR_MERGE_CUH
+#endif //CUBOOL_MATRIX_CSR_SPMERGE_CUH

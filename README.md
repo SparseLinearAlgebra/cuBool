@@ -24,7 +24,7 @@ the programming language *COBOL*.
 - [X] CSR matrix
 - [X] CSR multiplication
 - [X] CSR addition
-- [ ] CSR kronecker
+- [X] CSR kronecker
 - [ ] Block СSR matrix
 - [ ] Block CSR multiplication
 - [ ] Block CSR kronecker

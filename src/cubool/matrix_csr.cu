@@ -27,7 +27,7 @@
 #include <cubool/matrix_csr.hpp>
 #include <cubool/details/error.hpp>
 #include <cubool/kernels/matrix_csr_spkron.cuh>
-#include <cubool/kernels/matrix_csr_merge.cuh>
+#include <cubool/kernels/matrix_csr_spmerge.cuh>
 #include <nsparse/spgemm.h>
 #include <algorithm>
 
@@ -47,6 +47,11 @@ namespace cubool {
     }
 
     void MatrixCsr::build(const index *rows, const index *cols, size nvals) {
+        if (nvals == 0) {
+            mMatrixImpl.zero_dim();  // no content, empty matrix
+            return;
+        }
+
         // Create tmp buffer and pack indices into pairs
         using CuBoolPairAlloc = details::HostAllocator<Pair>;
         std::vector<Pair, CuBoolPairAlloc> values;
@@ -126,14 +131,16 @@ namespace cubool {
         mInstanceRef.allocate((void* &) rows, sizeof(index) * valuesCount);
         mInstanceRef.allocate((void* &) cols, sizeof(index) * valuesCount);
 
-        // Iterate over csr formatted data
-        size idx = 0;
-        for (index i = 0; i < getNumRows(); i++) {
-            for (index j = rowsVec[i]; j < rowsVec[i + 1]; j++) {
-                rows[idx] = i;
-                cols[idx] = colsVec[j];
+        if (nvals > 0) {
+            // Iterate over csr formatted data
+            size idx = 0;
+            for (index i = 0; i < getNumRows(); i++) {
+                for (index j = rowsVec[i]; j < rowsVec[i + 1]; j++) {
+                    rows[idx] = i;
+                    cols[idx] = colsVec[j];
 
-                idx += 1;
+                    idx += 1;
+                }
             }
         }
     }
@@ -232,10 +239,23 @@ namespace cubool {
         if (!a || !b)
             throw details::InvalidArgument("Passed matrices do not belong to csr matrix class");
 
+        index M = a->getNumRows();
+        index N = a->getNumCols();
+        index K = b->getNumRows();
+        index T = b->getNumCols();
+
+        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
+            // Result will be empty
+            this->resize(M * K, N * T);
+            return;
+        }
+
         kernels::SpKronFunctor<index, DeviceAlloc<index>> spKronFunctor;
         auto result = spKronFunctor(a->mMatrixImpl, b->mMatrixImpl);
 
-        // todo
+        // Assign result to this
+        this->resize(M * K, N * T);
+        this->mMatrixImpl = std::move(result);
     }
 
     void MatrixCsr::add(const MatrixBase &aBase) {

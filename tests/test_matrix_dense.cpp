@@ -148,7 +148,7 @@ void testMatrixMultiplySum(CuBoolSize_t m, CuBoolSize_t t, CuBoolSize_t n, float
     EXPECT_EQ(CuBool_MatrixDense_MultSum(instance, r, a, b, c), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r = a x b + c on the cpu to compare results
-    testing::MatrixMultiplyAdd functor;
+    testing::MatrixMultiplyAddFunctor functor;
     testing::Matrix tr = std::move(functor(ta, tb, tc));
 
     // Compare results
@@ -234,7 +234,7 @@ void testMatrixMultiplyAdd(CuBoolSize_t m, CuBoolSize_t t, CuBoolSize_t n, float
     EXPECT_EQ(CuBool_MatrixDense_MxM(instance, r, a, b), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r += a x b on the cpu to compare results
-    testing::MatrixMultiplyAdd functor;
+    testing::MatrixMultiplyAddFunctor functor;
     tr = std::move(functor(ta, tb, tr));
 
     // Compare results

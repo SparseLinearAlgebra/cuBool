@@ -40,6 +40,29 @@ namespace cubool {
             using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
             using MatrixType = nsparse::matrix<bool, IndexType, AllocType>;
 
+            static __device__ IndexType findNearestRowIdx(IndexType value, IndexType range, thrust::device_ptr<const IndexType> rowIndex) {
+                IndexType left = 0;
+                IndexType right = range - 1;
+
+                while (left <= right) {
+                    IndexType i = (left + right) / 2;
+
+                    if (value < rowIndex[i]) {
+                        // value is not in =>row i range
+                        right = i - 1;
+                    } else if (value < rowIndex[i + 1]) {
+                        // value is in =>row i range and value actually in row i
+                        return i;
+                    } else {
+                        // value is in =>row i+1 range
+                        left = i + 1;
+                    }
+                }
+
+                // never goes here since kron row index always has value index
+                return range;
+            }
+
             /**
              * evaluates r = a `kron` b, where `kron` is the Kronecker product of csr matrices.
              *
@@ -49,44 +72,79 @@ namespace cubool {
              * @return a `kron` b
              */
             MatrixType operator()(const MatrixType& a, const MatrixType& b) {
-                auto aRows = a.m_rows;
-                auto aCols = a.m_cols;
-                auto bRows = b.m_rows;
-                auto bCols = b.m_cols;
+                auto aNrows = a.m_rows;
+                auto aNcols = a.m_cols;
+                auto bNrows = b.m_rows;
+                auto bNcols = b.m_cols;
 
-                auto resVals = a.m_vals * b.m_vals;
-                auto resRows = aRows * bRows;
-                auto resCols = aCols * bCols;
+                auto rNvals = a.m_vals * b.m_vals;
+                auto rNrows = aNrows * bNrows;
+                auto rNcols = aNcols * bNcols;
 
-                ContainerType<IndexType> tmpBuffer(resRows + 1, 0);
+                ContainerType<IndexType> tmpBuffer(rNrows + 1, 0);
 
                 // Evaluate number of values for each row of the result matrix
-                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(resRows),
-                    [aRows, rTmpRowIndex = tmpBuffer.data(), aRowIndex = a.m_row_index.data(), bRowIndex = b.m_row_index.data()]
-                    __device__  (IndexType idx) {
+                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(rNrows),
+                    [bNrows, rTmpRowIndex = tmpBuffer.data(), aRowIndex = a.m_row_index.data(), bRowIndex = b.m_row_index.data()]
+                    __device__  (IndexType rRowId) {
                         // Get block row index and row index within block (note: see kronecker product)
-                        IndexType blockIdRow = idx / aRows;
-                        IndexType blockRow = idx % aRows;
+                        IndexType blockId = rRowId / bNrows;
+                        IndexType bRowId = rRowId % bNrows;
 
                         // Gen values count for a and b row (note: format is csr)
-                        IndexType valsCountInRowA = aRowIndex[blockIdRow + 1] - aRowIndex[blockIdRow];
-                        IndexType valsCountInRowB = bRowIndex[blockRow + 1] - bRowIndex[blockRow];
+                        IndexType valsCountInRowA = aRowIndex[blockId + 1] - aRowIndex[blockId];
+                        IndexType valsCountInRowB = bRowIndex[bRowId + 1] - bRowIndex[bRowId];
 
                         // Store number of values in the column of the row idx of the result matrix
-                        rTmpRowIndex[idx] = valsCountInRowA * valsCountInRowB;
-                });
+                        rTmpRowIndex[rRowId] = valsCountInRowA * valsCountInRowB;
+                    }
+                );
 
                 // Create row index and column index to store res matrix
-                ContainerType<IndexType> rowIndex(resRows + 1);
-                ContainerType<IndexType> colIndex(resVals);
+                ContainerType<IndexType> rowIndex(rNrows + 1);
+                ContainerType<IndexType> colIndex(rNvals);
 
                 // Use prefix sum to evaluate row index offsets
                 thrust::exclusive_scan(tmpBuffer.begin(), tmpBuffer.end(), rowIndex.begin(), 0, thrust::plus<IndexType>());
 
-                // Copy values of the b matrix to the proper places with evaluated offsets into col index of the result matrix
-                // todo
+                // Explicitly release resources
+                tmpBuffer.clear();
 
-                return MatrixType(resRows, resCols);
+                // Copy values of the b matrix to the proper places with evaluated offsets into col index of the result matrix
+                // Evaluate number of values for each row of the result matrix
+                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(rNvals),
+                    [bNrows, bNcols, rNrows, rRowIndex = rowIndex.data(), rColIndex = colIndex.data(),
+                     aRowIndex = a.m_row_index.data(), aColIndex = a.m_col_index.data(),
+                     bRowIndex = b.m_row_index.data(), bColIndex = b.m_col_index.data()]
+                    __device__  (IndexType valueId) {
+                        // Find the index of the r row where to write this value
+                        IndexType rRowId = findNearestRowIdx(valueId, rNrows, rRowIndex);
+
+                        // Get row index within block (note: see kronecker product)
+                        IndexType blockId = rRowId / bNrows;
+                        IndexType bRowId = rRowId % bNrows;
+
+                        IndexType valsCountInRowB = bRowIndex[bRowId + 1] - bRowIndex[bRowId];
+
+                        // Get value relative index within the r matrix row
+                        IndexType valueIdInRowR = valueId - rRowIndex[rRowId];
+
+                        // Get value index within the a matrix row
+                        IndexType valueIdInRowA = valueIdInRowR / valsCountInRowB;
+
+                        // Get value index within the b matrix row
+                        IndexType valueIdInRowB = valueIdInRowR % valsCountInRowB;
+
+                        // Store value in the proper place
+                        rColIndex[valueId] = bNcols * aColIndex[aRowIndex[blockId] + valueIdInRowA] + bColIndex[bRowIndex[bRowId] + valueIdInRowB];
+                    }
+                );
+
+                assert(colIndex.size() == rNvals);
+                assert(rowIndex.size() == rNrows + 1);
+                assert(rowIndex.back() == colIndex.size());
+
+                return MatrixType(std::move(colIndex), std::move(rowIndex), rNrows, rNcols, rNvals);
             }
         };
 

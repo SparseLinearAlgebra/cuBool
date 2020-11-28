@@ -29,7 +29,7 @@
 
 #include <memory.h>
 
-/** Export library function (does not handles msvc or intel compilers) */
+/** Export library function (does not handle msvc or intel compilers) */
 #define CUBOOL_API extern "C"
 
 /** Library functions for some experiments */

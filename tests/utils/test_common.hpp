@@ -241,7 +241,7 @@ namespace testing {
         }
     };
 
-    struct MatrixMultiplyAdd {
+    struct MatrixMultiplyAddFunctor {
         Matrix operator()(const Matrix& ma, const Matrix& mb, const Matrix& mc) {
             auto m = ma.mNrows;
             auto t = ma.mNcols;
@@ -297,7 +297,7 @@ namespace testing {
         }
     };
 
-    struct MatrixAdd {
+    struct MatrixAddFunctor {
         Matrix operator()(const Matrix& ma, const Matrix& mb) {
             auto m = ma.mNrows;
             auto n = ma.mNcols;
@@ -332,6 +332,130 @@ namespace testing {
             return std::move(result);
         }
     };
+
+    struct MatrixKronFunctor {
+        Matrix operator()(const Matrix& ma, const Matrix& mb) {
+            auto m = ma.mNrows;
+            auto n = ma.mNcols;
+            auto k = mb.mNrows;
+            auto t = mb.mNcols;
+
+            Matrix result;
+            result.mNrows = m * k;
+            result.mNcols = n * t;
+            result.mNvals = ma.mNvals * mb.mNvals;
+            result.mRowsIndex.reserve(result.mNvals);
+            result.mColsIndex.reserve(result.mNvals);
+
+            std::vector<details::Pair> vals;
+            vals.reserve(result.mNvals);
+
+            for (CuBoolIndex_t i = 0; i < ma.mNvals; i++) {
+                auto blockI = ma.mRowsIndex[i];
+                auto blockJ = ma.mColsIndex[i];
+
+                for (CuBoolIndex_t j = 0; j < mb.mNvals; j++) {
+                    auto valueI = mb.mRowsIndex[j];
+                    auto valueJ = mb.mColsIndex[j];
+
+                    CuBoolIndex_t idI = k * blockI + valueI;
+                    CuBoolIndex_t idJ = t * blockJ + valueJ;
+
+                    vals.push_back(details::Pair{idI, idJ});
+                }
+            }
+
+            std::sort(vals.begin(), vals.end(), details::PairCmp{});
+
+            for (auto& p: vals) {
+                result.mRowsIndex.push_back(p.i);
+                result.mColsIndex.push_back(p.j);
+            }
+
+            return std::move(result);
+        }
+    };
+
+    namespace details {
+        template <typename Stream>
+        void printMatrix(Stream& stream, const CuBoolIndex_t* rowsIndex, const CuBoolIndex_t* colsIndex, CuBoolIndex_t nrows, CuBoolIndex_t ncols, CuBoolSize_t nvals) {
+            CuBoolIndex_t currentRow = 0;
+            CuBoolIndex_t currentCol = 0;
+            CuBoolIndex_t currentId = 0;
+
+            while (currentId < nvals) {
+                auto i = rowsIndex[currentId];
+                auto j = colsIndex[currentId];
+
+                while (currentRow < i) {
+                    while (currentCol < ncols) {
+                        stream << "." << " ";
+                        currentCol += 1;
+                    }
+
+                    stream << "\n";
+                    currentRow += 1;
+                    currentCol = 0;
+                }
+
+                while (currentCol < j) {
+                    stream << "." << " ";
+                    currentCol += 1;
+                }
+
+                stream << "1" << " ";
+                currentId += 1;
+                currentCol += 1;
+            }
+
+            while (currentRow < nrows) {
+                while (currentCol < ncols) {
+                    stream << "." << " ";
+                    currentCol += 1;
+                }
+
+                stream << "\n";
+                currentRow += 1;
+                currentCol = 0;
+            }
+        }
+    }
+
+    struct Printing { CuBoolMatrix matrix; CuBoolInstance instance; };
+
+    template <typename Stream>
+    Stream& operator <<(Stream& stream, const Printing& printing) {
+        assert(printing.matrix);
+        assert(printing.instance);
+
+        CuBoolMatrix matrix = printing.matrix;
+        CuBoolInstance instance = printing.instance;
+
+        CuBoolIndex_t* rowIndex;
+        CuBoolIndex_t* colIndex;
+        CuBoolIndex_t nrows;
+        CuBoolIndex_t ncols;
+        CuBoolSize_t nvals;
+
+        // Query matrix data
+        CuBool_Matrix_Nrows(instance, matrix, &nrows);
+        CuBool_Matrix_Ncols(instance, matrix, &ncols);
+        CuBool_Matrix_ExtractPairs(instance, matrix, &rowIndex, &colIndex, &nvals);
+
+        details::printMatrix(stream, rowIndex, colIndex, nrows, ncols, nvals);
+
+        // Release resources
+        CuBool_Vals_Free(instance, rowIndex);
+        CuBool_Vals_Free(instance, colIndex);
+
+        return stream;
+    }
+
+    template <typename Stream>
+    Stream& operator <<(Stream& stream, const Matrix& a) {
+        details::printMatrix(stream, a.mRowsIndex.data(), a.mColsIndex.data(), a.mNrows, a.mNcols, a.mNvals);
+        return stream;
+    }
 
 }
 

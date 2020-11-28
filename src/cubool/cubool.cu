@@ -351,8 +351,6 @@ CuBoolStatus CuBool_Matrix_Build(CuBoolInstance instance, CuBoolMatrix matrix, c
     auto matrixImpl = (cubool::MatrixCsr*) matrix;
 
     CUBOOL_CHECK_INSTANCE(instance);
-    CUBOOL_CHECK_ARG_NOT_NULL(rows);
-    CUBOOL_CHECK_ARG_NOT_NULL(cols);
 
     CUBOOL_BEGIN_BODY
         instanceImpl->validateMatrix(matrixImpl);
@@ -478,5 +476,24 @@ CuBoolStatus CuBool_MxM(CuBoolInstance instance, CuBoolMatrix r, CuBoolMatrix a,
         instanceImpl->validateMatrix(bImpl);
         instanceImpl->validateMatrix(rImpl);
         rImpl->multiplyAdd(*aImpl, *bImpl);
+    CUBOOL_END_BODY
+}
+
+CuBoolStatus CuBool_Kron(CuBoolInstance instance, CuBoolMatrix r, CuBoolMatrix a, CuBoolMatrix b) {
+    auto instanceImpl = (cubool::Instance*) instance;
+    auto rImpl = (cubool::MatrixCsr*) r;
+    auto aImpl = (cubool::MatrixCsr*) a;
+    auto bImpl = (cubool::MatrixCsr*) b;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(r);
+    CUBOOL_CHECK_ARG_NOT_NULL(a);
+    CUBOOL_CHECK_ARG_NOT_NULL(b);
+
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrix(aImpl);
+        instanceImpl->validateMatrix(bImpl);
+        instanceImpl->validateMatrix(rImpl);
+        rImpl->kron(*aImpl, *bImpl);
     CUBOOL_END_BODY
 }
