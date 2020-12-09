@@ -377,10 +377,10 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_New(
  * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Matrix_Resize(
-        CuBoolInstance              instance,
-        CuBoolMatrix                matrix,
-        CuBoolIndex_t               nrows,
-        CuBoolIndex_t               ncols
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
+    CuBoolIndex_t               nrows,
+    CuBoolIndex_t               ncols
 );
 
 /**
@@ -396,11 +396,11 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Resize(
  * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
-        CuBoolInstance              instance,
-        CuBoolMatrix                matrix,
-        const CuBoolIndex_t*        rows,
-        const CuBoolIndex_t*        cols,
-        CuBoolSize_t                nvals
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
+    const CuBoolIndex_t*        rows,
+    const CuBoolIndex_t*        cols,
+    CuBoolSize_t                nvals
 );
 
 /**
@@ -419,11 +419,11 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
  * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Matrix_ExtractPairs(
-        CuBoolInstance              instance,
-        CuBoolMatrix                matrix,
-        CuBoolIndex_t**             rows,
-        CuBoolIndex_t**             cols,
-        CuBoolSize_t*               nvals
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
+    CuBoolIndex_t**             rows,
+    CuBoolIndex_t**             cols,
+    CuBoolSize_t*               nvals
 );
 
 /**

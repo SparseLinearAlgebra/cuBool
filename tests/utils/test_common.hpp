@@ -153,8 +153,8 @@ namespace testing {
             instanceDesc.allocationCallback.deallocateFun = testDeallocateFun;
         }
 
-        static void setupInstanceDescSilent(CuBoolInstanceDesc& instanceDesc) {
-            instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
+        static void setupInstanceDescSilent(CuBoolInstanceDesc& instanceDesc, bool useUnifiedMemory = false) {
+            instanceDesc.memoryType = useUnifiedMemory ? CUBOOL_GPU_MEMORY_TYPE_MANAGED : CUBOOL_GPU_MEMORY_TYPE_GENERIC;
             instanceDesc.errorCallback.userData = nullptr;
             instanceDesc.errorCallback.msgFun = testMsgFun;
             instanceDesc.allocationCallback.userData = nullptr;
@@ -162,7 +162,103 @@ namespace testing {
             instanceDesc.allocationCallback.deallocateFun = testDeallocateFunSilent;
         }
 
+        template <typename Stream>
+        void printMatrix(Stream& stream, const CuBoolIndex_t* rowsIndex, const CuBoolIndex_t* colsIndex, CuBoolIndex_t nrows, CuBoolIndex_t ncols, CuBoolSize_t nvals) {
+            CuBoolIndex_t currentRow = 0;
+            CuBoolIndex_t currentCol = 0;
+            CuBoolIndex_t currentId = 0;
+
+            while (currentId < nvals) {
+                auto i = rowsIndex[currentId];
+                auto j = colsIndex[currentId];
+
+                while (currentRow < i) {
+                    while (currentCol < ncols) {
+                        stream << "." << " ";
+                        currentCol += 1;
+                    }
+
+                    stream << "\n";
+                    currentRow += 1;
+                    currentCol = 0;
+                }
+
+                while (currentCol < j) {
+                    stream << "." << " ";
+                    currentCol += 1;
+                }
+
+                stream << "1" << " ";
+                currentId += 1;
+                currentCol += 1;
+            }
+
+            while (currentRow < nrows) {
+                while (currentCol < ncols) {
+                    stream << "." << " ";
+                    currentCol += 1;
+                }
+
+                stream << "\n";
+                currentRow += 1;
+                currentCol = 0;
+            }
+        }
+
+        struct Timer {
+        public:
+            void start() {
+                mStart = mEnd = clock::now();
+            }
+
+            void end() {
+                mEnd = clock::now();
+            }
+
+            double getElapsedTimeMs() const {
+                using namespace std::chrono;
+                return (double)duration_cast<nanoseconds>(mEnd - mStart).count() / 1.0e6;
+            }
+
+        private:
+            using clock = std::chrono::high_resolution_clock;
+            using timepoint = clock::time_point;
+            timepoint mStart;
+            timepoint mEnd;
+        };
     }
+    struct TimeQuery {
+    public:
+        void addTimeSample(double ms) {
+            mSamplesCount += 1;
+            mTimeSumMS += ms;
+        }
+
+        double getAverageTimeMs() const {
+            return mTimeSumMS / (double)mSamplesCount;
+        }
+
+    private:
+        double mTimeSumMS = 0.0f;
+        int mSamplesCount = 0;
+    };
+
+    struct TimeScope {
+    public:
+        explicit TimeScope(TimeQuery& query) : mTimeQuery(query) {
+            mTimer.start();
+        }
+
+        ~TimeScope() {
+            mTimer.end();
+            mTimeQuery.addTimeSample(mTimer.getElapsedTimeMs());
+        }
+
+    private:
+        details::Timer mTimer;
+        TimeQuery& mTimeQuery;
+    };
+
 
     struct Matrix {
         std::vector<CuBoolIndex_t> mRowsIndex;
@@ -238,6 +334,45 @@ namespace testing {
             matrix.mNcols = ncols;
             generateTestData(nrows, ncols, matrix.mRowsIndex, matrix.mColsIndex, matrix.mNvals, std::forward<Condition>(condition));
             return matrix;
+        }
+
+        static Matrix generateSparse(size_t nrows, size_t ncols, double density) {
+            Matrix matrix;
+            matrix.mNrows = nrows;
+            matrix.mNcols = ncols;
+
+            std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
+
+            size_t totalVals = nrows * ncols;
+            size_t valsToGen = totalVals * density;
+
+            auto dist = std::uniform_real_distribution<float>(0.0, 1.0);
+
+            std::unordered_set<details::Pair,details::PairHash,details::PairEq> indices;
+
+            for (size_t id = 0; id < valsToGen; id++) {
+                auto pr = dist(engine);
+                auto pc = dist(engine);
+
+                auto r = (CuBoolIndex_t) (pr * (float) nrows);
+                auto c = (CuBoolIndex_t) (pc * (float) ncols);
+
+                r = std::min(r, (CuBoolIndex_t)nrows - 1);
+                c = std::min(c, (CuBoolIndex_t)ncols - 1);
+
+                indices.emplace(details::Pair{r, c});
+            }
+
+            matrix.mNvals = indices.size();
+            matrix.mRowsIndex.reserve(matrix.mNvals);
+            matrix.mColsIndex.reserve(matrix.mNvals);
+
+            for (auto& p: indices) {
+                matrix.mRowsIndex.push_back(p.i);
+                matrix.mColsIndex.push_back(p.j);
+            }
+
+            return std::move(matrix);
         }
     };
 
@@ -376,52 +511,10 @@ namespace testing {
         }
     };
 
-    namespace details {
-        template <typename Stream>
-        void printMatrix(Stream& stream, const CuBoolIndex_t* rowsIndex, const CuBoolIndex_t* colsIndex, CuBoolIndex_t nrows, CuBoolIndex_t ncols, CuBoolSize_t nvals) {
-            CuBoolIndex_t currentRow = 0;
-            CuBoolIndex_t currentCol = 0;
-            CuBoolIndex_t currentId = 0;
-
-            while (currentId < nvals) {
-                auto i = rowsIndex[currentId];
-                auto j = colsIndex[currentId];
-
-                while (currentRow < i) {
-                    while (currentCol < ncols) {
-                        stream << "." << " ";
-                        currentCol += 1;
-                    }
-
-                    stream << "\n";
-                    currentRow += 1;
-                    currentCol = 0;
-                }
-
-                while (currentCol < j) {
-                    stream << "." << " ";
-                    currentCol += 1;
-                }
-
-                stream << "1" << " ";
-                currentId += 1;
-                currentCol += 1;
-            }
-
-            while (currentRow < nrows) {
-                while (currentCol < ncols) {
-                    stream << "." << " ";
-                    currentCol += 1;
-                }
-
-                stream << "\n";
-                currentRow += 1;
-                currentCol = 0;
-            }
-        }
-    }
-
-    struct Printing { CuBoolMatrix matrix; CuBoolInstance instance; };
+    struct Printing {
+        CuBoolMatrix matrix;
+        CuBoolInstance instance;
+    };
 
     template <typename Stream>
     Stream& operator <<(Stream& stream, const Printing& printing) {

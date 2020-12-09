@@ -1,7 +1,7 @@
 # Fast boolean semiring matrix multiplication for CFPQ
 
 This `naive-gpu` dense boolean matrix multiplication implementation is part of 
-the JetBrains-Research CFPQ-on-GPGPU project, which can found at 
+the JetBrains-Research CFPQ-on-GPGPU project, which can be found at 
 [link](https://github.com/JetBrains-Research/CFPQ-on-GPGPU).
 
 This project is licensed under MIT license. Original license text can be found at

@@ -70,7 +70,7 @@ set(CUBOOL_SOURCES
     src/cubool/kernels/matrix_dense_multiply_add.cuh
     src/cubool/kernels/matrix_dense_common.cuh
     src/cubool/kernels/matrix_csr_spkron.cuh
-        src/cubool/kernels/matrix_csr_spmerge.cuh
+    src/cubool/kernels/matrix_csr_spmerge.cuh
     src/cubool/details/error.hpp
     src/cubool/details/device_allocator.cuh
     src/cubool/details/host_allocator.hpp
