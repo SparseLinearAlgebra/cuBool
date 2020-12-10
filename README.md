@@ -32,6 +32,7 @@ the programming language *COBOL*.
 - [ ] Wrapper for Python API 
 - [ ] User guide
 - [ ] Unit Tests collection
+- [X] Dummy library implementation for testing
 - [ ] Publish built artifacts and shared lib
 
 ## Requirements

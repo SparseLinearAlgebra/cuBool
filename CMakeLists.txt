@@ -92,6 +92,27 @@ set_target_properties(cubool PROPERTIES CUDA_STANDARD 14)
 set_target_properties(cubool PROPERTIES CUDA_STANDARD_REQUIRED ON)
 set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
+
+set(CUBOOL_DUMMY_SOURCES
+    include/cubool/cubool.h
+    src/cubool-dummy/cubool.cpp
+    src/cubool-dummy/version.hpp
+    src/cubool-dummy/instance.hpp
+    src/cubool-dummy/matrix.hpp
+        )
+
+# Create dummy library instance for testing purposes
+add_library(cubool_dummy SHARED ${CUBOOL_DUMMY_SOURCES})
+
+target_include_directories(cubool_dummy PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(cubool_dummy PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
+target_include_directories(cubool_dummy PRIVATE ${CMAKE_BINARY_DIR}/src)
+
+target_compile_features(cubool_dummy PUBLIC cxx_std_11)
+
+set_target_properties(cubool_dummy PROPERTIES CXX_STANDARD 11)
+set_target_properties(cubool_dummy PROPERTIES CXX_STANDARD_REQUIRED ON)
+
 # If tests enabled, add tests sources to the build
 if (CUBOOL_BUILD_TESTS)
     add_subdirectory(tests)
