@@ -1,0 +1,15 @@
+_return_codes = {
+    0: "CUBOOL_STATUS_SUCCESS",
+    1: "CUBOOL_STATUS_ERROR",
+    2: "CUBOOL_STATUS_DEVICE_NOT_PRESENT",
+    3: "CUBOOL_STATUS_DEVICE_ERROR",
+    4: "CUBOOL_STATUS_MEM_OP_FAILED",
+    5: "CUBOOL_STATUS_INVALID_ARGUMENT",
+    6: "CUBOOL_STATUS_INVALID_STATE",
+    7: "CUBOOL_STATUS_NOT_IMPLEMENTED"
+}
+
+
+def check(res):
+    if res != 0:
+        raise _return_codes[res]

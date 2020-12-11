@@ -1,12 +1,15 @@
-import cubool
-import ctypes
+import CuBoolWrapper
+from CuBoolWrapper.add import Add
+from CuBoolWrapper.matrix import Matrix
 
-print("Enter path to lib")
-path_to_lib = input()
+print("Enter num of rows and cols (a, b)")
+a, b = map(int, input().split())
+matr = Matrix.sparse(a, b)
 
-cubool.CuBoolLibLoad(path_to_lib)
-cubool.CuBool_Instance_New()
+print("Enter num of values, rows and cols ")
+n = int(input())
+rows = list(map(int, input().split()))
+cols = list(map(int, input().split()))
+matr.build(rows, cols, n)
 
-test_matrix = cubool.CuBool_Matrix_New(ctypes.c_int(100), ctypes.c_int(100))
-
-cubool.CuBool_Instance_Free()
+matr = Add(matr, matr)
