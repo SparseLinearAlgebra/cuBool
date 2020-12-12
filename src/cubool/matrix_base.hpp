@@ -41,7 +41,8 @@ namespace cubool {
 
         virtual void resize(index nrows, index ncols) = 0;
         virtual void build(const index* rows, const index* cols, size nvals) = 0;
-        virtual void extract(index* &rows, index* &cols, size_t &nvals) const = 0;
+        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
+        virtual void extractExt(index* &rows, index* &cols, size_t &nvals) const = 0;
         virtual void clone(const MatrixBase& other) = 0;
 
         virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;

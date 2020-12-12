@@ -72,7 +72,11 @@ namespace cubool {
         mBuffer = cpuBuffer;
     }
 
-    void MatrixDense::extract(index* &rows, index* &cols, size_t &nvals) const {
+    void MatrixDense::extract(index *rows, index *cols, size_t &nvals) {
+        throw details::NotImplemented("This function is not implemented");
+    }
+
+    void MatrixDense::extractExt(index* &rows, index* &cols, size_t &nvals) const {
         std::vector<Pair, HostAlloc<Pair>> vals;
         extractVector(vals);
 

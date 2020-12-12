@@ -4,3 +4,6 @@
 # Build files
 /cmake-build-debug
 /build
+
+# Python cache
+/python/pycubool/__pycache__/

@@ -196,7 +196,7 @@ CuBoolStatus CuBool_MatrixDense_Build(CuBoolInstance instance, CuBoolMatrixDense
     CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_MatrixDense_ExtractPairs(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) {
+CuBoolStatus CuBool_MatrixDense_ExtractPairsExt(CuBoolInstance instance, CuBoolMatrixDense matrix, CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) {
     auto instanceImpl = (cubool_dummy::Instance*) instance;
     auto matrixImpl = (cubool_dummy::Matrix*) matrix;
 
@@ -297,7 +297,7 @@ CuBoolStatus CuBool_Matrix_Build(CuBoolInstance instance, CuBoolMatrix matrix, c
     CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_Matrix_ExtractPairs(CuBoolInstance instance, CuBoolMatrix matrix, CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) {
+CuBoolStatus CuBool_Matrix_ExtractPairsExt(CuBoolInstance instance, CuBoolMatrix matrix, CuBoolIndex_t **rows, CuBoolIndex_t **cols, CuBoolSize_t *nvals) {
     auto instanceImpl = (cubool_dummy::Instance*) instance;
     auto matrixImpl = (cubool_dummy::Matrix*) matrix;
 
