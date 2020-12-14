@@ -1,6 +1,5 @@
 import ctypes
 
-
 __all__ = [
     "CuBoolInstanceDesc",
     "load_and_configure",
@@ -63,6 +62,11 @@ def load_and_configure(cubool_lib_path: str):
                                                ctypes.POINTER(ctypes.c_uint),
                                                ctypes.POINTER(ctypes.c_size_t)]
 
+    lib.CuBool_Matrix_Duplicate.restype = ctypes.c_uint
+    lib.CuBool_Matrix_Duplicate.argtypes = [instance_p,
+                                            matrix_p,
+                                            p_to_matrix_p]
+
     lib.CuBool_Matrix_Nrows.restype = ctypes.c_uint
     lib.CuBool_Matrix_Nrows.argtype = [instance_p,
                                        matrix_p,
@@ -82,6 +86,18 @@ def load_and_configure(cubool_lib_path: str):
     lib.CuBool_Matrix_Add.argtypes = [instance_p,
                                       matrix_p,
                                       matrix_p]
+
+    lib.CuBool_MxM.restype = ctypes.c_uint
+    lib.CuBool_MxM.argtypes = [instance_p,
+                               matrix_p,
+                               matrix_p,
+                               matrix_p]
+
+    lib.CuBool_Kron.restype = ctypes.c_uint
+    lib.CuBool_Kron.argtypes = [instance_p,
+                                matrix_p,
+                                matrix_p,
+                                matrix_p]
 
     return lib
 

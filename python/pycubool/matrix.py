@@ -3,7 +3,6 @@ import ctypes
 from . import wrapper
 from . import dll
 
-
 __all__ = [
     "Matrix"
 ]
@@ -63,7 +62,7 @@ class Matrix:
         return int(result.value)
 
     @property
-    def nclos(self):
+    def nclos(self) -> int:
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.CuBool_Matrix_Ncols(wrapper.instance,
@@ -103,3 +102,12 @@ class Matrix:
         dll.check(status)
 
         return rows, cols
+
+    def duplicate(self):
+        result_matrix = Matrix(self.nrows, self.nclos)
+        status = wrapper.loaded_dll.CuBool_Matrix_Duplicate(wrapper.instance,
+                                                            self.hnd,
+                                                            result_matrix.hnd)
+
+        dll.check(status)
+        return result_matrix
