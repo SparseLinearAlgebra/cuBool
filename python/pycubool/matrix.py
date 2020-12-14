@@ -13,9 +13,12 @@ class Matrix:
     Wrapper for CuBool Sparse boolean matrix type
     """
 
-    def __init__(self, nrows: int, ncols: int):
+    def __init__(self, shape):
         self.hnd = ctypes.c_void_p(0)
         self.wrapper = wrapper.singleton
+
+        nrows = shape[0]
+        ncols = shape[1]
 
         status = wrapper.loaded_dll.CuBool_Matrix_New(wrapper.instance,
                                                       ctypes.byref(self.hnd),
@@ -62,7 +65,7 @@ class Matrix:
         return int(result.value)
 
     @property
-    def nclos(self) -> int:
+    def ncols(self) -> int:
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.CuBool_Matrix_Ncols(wrapper.instance,
@@ -85,7 +88,7 @@ class Matrix:
 
     @property
     def shape(self) -> (int, int):
-        return self.nrows, self.nclos
+        return self.nrows, self.ncols
 
     def to_lists(self):
         values_count = self.nvals
@@ -104,7 +107,7 @@ class Matrix:
         return rows, cols
 
     def duplicate(self):
-        result_matrix = Matrix(self.nrows, self.nclos)
+        result_matrix = Matrix(self.nrows, self.ncols)
         status = wrapper.loaded_dll.CuBool_Matrix_Duplicate(wrapper.instance,
                                                             self.hnd,
                                                             result_matrix.hnd)

@@ -67,6 +67,26 @@ TEST(CuBoolInstance, Setup) {
     instance = nullptr;
 }
 
+// Test cubool library instance creation and destruction
+TEST(CuBoolInstance, SetupExt) {
+    CuBoolStatus error;
+    CuBoolInstance instance = nullptr;
+
+    CuBoolInstanceDescExt instanceDesc{};
+    instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
+
+    error = CuBool_Instance_NewExt(&instanceDesc, &instance);
+
+    EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
+    EXPECT_NE(instance, nullptr);
+
+    error = CuBool_Instance_Free(instance);
+
+    EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
+
+    instance = nullptr;
+}
+
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

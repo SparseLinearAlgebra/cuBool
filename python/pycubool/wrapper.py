@@ -2,14 +2,12 @@ import os
 import ctypes
 from . import dll
 
-
 __all__ = [
     "singleton",
     "loaded_dll",
     "instance",
     "init_wrapper"
 ]
-
 
 # Wrapper
 singleton = None
@@ -55,16 +53,16 @@ class Wrapper:
         self._setup_instance()
 
     def __del__(self):
-        # self._release_instance()
+        self._release_instance()
         pass
 
     def _setup_instance(self):
         self.instance = ctypes.c_void_p(None)
-        self._descInstance = dll.CuBoolInstanceDesc()
+        self._descInstance = dll.configure_instance_desc()
         self._descInstance.memoryType = 0
 
-        status = self.loaded_dll.CuBool_Instance_New(ctypes.byref(self._descInstance),
-                                                     ctypes.byref(self.instance))
+        status = self.loaded_dll.CuBool_Instance_NewExt(ctypes.byref(self._descInstance),
+                                                        ctypes.byref(self.instance))
 
         dll.check(status)
 

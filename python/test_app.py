@@ -32,7 +32,7 @@ def gen_matrix_data(size, seed):
 
 def gen_matrix(size, seed):
     rows, cols, nvals = gen_matrix_data(size, seed)
-    mat = Matrix(size[0], size[1])
+    mat = Matrix(size)
     mat.build(rows, cols, nvals)
     return mat, lists_to_pairs(rows, cols)
 

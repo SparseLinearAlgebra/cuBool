@@ -35,6 +35,7 @@ namespace cubool {
     class Instance {
     public:
         explicit Instance(const CuBoolInstanceDesc& desc);
+        explicit Instance(const CuBoolInstanceDescExt& descExt);
         Instance(const Instance& other) = delete;
         Instance(Instance&& other) noexcept = delete;
         ~Instance();
@@ -63,6 +64,10 @@ namespace cubool {
         static bool isCudaDeviceSupported();
         static void queryDeviceCapabilities(CuBoolDeviceCaps& deviceCaps);
         static Instance& getInstanceRef();
+        static Instance* getInstancePtr();
+
+        static bool isInstancePresent();
+        static bool isManagedUsageAllowed();
 
     private:
         std::unordered_set<class MatrixBase*> mMatrixSet;
@@ -71,7 +76,8 @@ namespace cubool {
         CuBoolMessageCallback mMessageCallback{};
         CuBoolGpuMemoryType mMemoryType{};
 
-        static Instance* gInstance;
+        static volatile Instance* gInstance;
+        static volatile bool gIsManagedUsage;
     };
 
 }

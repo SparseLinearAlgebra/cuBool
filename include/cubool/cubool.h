@@ -138,6 +138,13 @@ typedef struct CuBoolInstanceDesc {
 } CuBoolInstanceDesc;
 
 /**
+ * Extension descriptor used for library setup within python wrapper.
+ */
+typedef struct CuBoolInstanceDescExt {
+    CuBoolGpuMemoryType         memoryType;
+} CuBoolInstanceDescExt;
+
+/**
  * Query human-readable text info about the project implementation
  * @return Read-only library about info
  */
@@ -176,7 +183,7 @@ CUBOOL_API CuBoolStatus CuBool_DeviceCaps_Get(
 );
 
 /**
- * Initialize library instance object, which provides context to all library operations and objects
+ * Initialize library instance object, which provides context to all library operations and primitives.
  *
  * @param instanceDesc User provided instance configuration for memory operations and error handling
  * @param instance Pointer to the place where to store instance handle
@@ -186,6 +193,19 @@ CUBOOL_API CuBoolStatus CuBool_DeviceCaps_Get(
 CUBOOL_API CuBoolStatus CuBool_Instance_New(
     const CuBoolInstanceDesc*   instanceDesc,
     CuBoolInstance*             instance
+);
+
+/**
+ * Initialize library instance object, which provides context to all library operations and primitives.
+ *
+ * @param instanceDescExt Extension descriptor for instance setup within managed env infrastructure.
+ * @param instance Pointer to the place where to store instance handle
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Instance_NewExt(
+    const CuBoolInstanceDescExt*    instanceDescExt,
+    CuBoolInstance*                 instance
 );
 
 /**

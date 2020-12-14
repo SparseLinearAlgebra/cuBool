@@ -1,19 +1,24 @@
 import ctypes
 
 __all__ = [
-    "CuBoolInstanceDesc",
+    "configure_instance_desc",
     "load_and_configure",
     "check"
 ]
 
 
-class CuBoolInstanceDesc(ctypes.Structure):
-    _fields_ = [("memoryType", ctypes.c_uint),
-                ("errorCallback.userData", ctypes.c_void_p),
-                ("errorCallback.msgFun", ctypes.c_void_p),
-                ("allocationCallback.userData", ctypes.c_void_p),
-                ("allocationCallback.allocateFun", ctypes.c_void_p),
-                ("allocationCallback.deallocateFun", ctypes.c_void_p)]
+class CuBoolInstanceDescExt(ctypes.Structure):
+    _fields_ = [("memoryType", ctypes.c_uint)]
+
+
+_memory_type_generic = 0
+_memory_type_unified = 1
+
+
+def configure_instance_desc():
+    desc = CuBoolInstanceDescExt()
+    desc.memoryType = ctypes.c_uint(_memory_type_generic)
+    return desc
 
 
 def load_and_configure(cubool_lib_path: str):
@@ -25,8 +30,8 @@ def load_and_configure(cubool_lib_path: str):
     matrix_p = ctypes.c_void_p
     p_to_matrix_p = ctypes.POINTER(matrix_p)
 
-    lib.CuBool_Instance_New.restype = ctypes.c_uint
-    lib.CuBool_Instance_New.argtypes = [ctypes.POINTER(CuBoolInstanceDesc),
+    lib.CuBool_Instance_NewExt.restype = ctypes.c_uint
+    lib.CuBool_Instance_NewExt.argtypes = [ctypes.POINTER(CuBoolInstanceDescExt),
                                         p_to_instance_p]
 
     lib.CuBool_Instance_Free.restype = ctypes.c_uint

@@ -33,8 +33,14 @@
 #include <cstdlib>
 #include <string>
 
+#define CUBOOL_CHECK_INSTANCE_LATE_FREE(instance)                                                       \
+    if ((cubool::Instance*) instance != cubool::Instance::getInstancePtr()) {                           \
+        return cubool::Instance::isManagedUsageAllowed() ?                                              \
+            CUBOOL_STATUS_SUCCESS : CUBOOL_STATUS_INVALID_ARGUMENT;                                     \
+    }
+
 #define CUBOOL_CHECK_INSTANCE(instance)                                                                 \
-    if (!instance) {                                                                                    \
+    if ((cubool::Instance*) instance != cubool::Instance::getInstancePtr()) {                           \
         return CUBOOL_STATUS_INVALID_ARGUMENT;                                                          \
     }
 
@@ -141,6 +147,11 @@ CuBoolStatus CuBool_Instance_New(const CuBoolInstanceDesc* instanceDesc, CuBoolI
         return CUBOOL_STATUS_INVALID_ARGUMENT;
     }
 
+    if (cubool::Instance::isInstancePresent()) {
+        // Instance already present
+        return CUBOOL_STATUS_INVALID_STATE;
+    }
+
     if (!cubool::Instance::isCudaDeviceSupported()) {
         // No device for cuda computations
         return CUBOOL_STATUS_DEVICE_ERROR;
@@ -163,6 +174,40 @@ CuBoolStatus CuBool_Instance_New(const CuBoolInstanceDesc* instanceDesc, CuBoolI
         // Failed to allocate instance
         return CUBOOL_STATUS_MEM_OP_FAILED;
     }
+
+    auto instanceImpl = new(instanceMem) cubool::Instance(desc);
+
+    // Raw cast. We expose to the user non-existing language structure
+    *instance = (CuBoolInstance) instanceImpl;
+
+    return CUBOOL_STATUS_SUCCESS;
+}
+
+CuBoolStatus CuBool_Instance_NewExt(const CuBoolInstanceDescExt *instanceDescExt, CuBoolInstance *instance) {
+    if (!instanceDescExt) {
+        // Instance descriptor could not be null
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (!instance) {
+        // Null to safe instance reference
+        return CUBOOL_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (cubool::Instance::isInstancePresent()) {
+        // Instance already present
+        return CUBOOL_STATUS_INVALID_STATE;
+    }
+
+    if (!cubool::Instance::isCudaDeviceSupported()) {
+        // No device for cuda computations
+        return CUBOOL_STATUS_DEVICE_ERROR;
+    }
+
+    auto& desc = *instanceDescExt;
+
+    CuBoolSize_t instanceSize = sizeof(cubool::Instance);
+    CuBoolCpuPtr_t instanceMem = malloc(instanceSize);
 
     auto instanceImpl = new(instanceMem) cubool::Instance(desc);
 
@@ -217,7 +262,7 @@ CuBoolStatus CuBool_MatrixDense_Free(CuBoolInstance instance, CuBoolMatrixDense 
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixDense*) matrix;
 
-    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_INSTANCE_LATE_FREE(instance);
     CUBOOL_CHECK_ARG_NOT_NULL(matrix);
 
     CUBOOL_BEGIN_BODY
@@ -467,7 +512,7 @@ CuBoolStatus CuBool_Matrix_Free(CuBoolInstance instance, CuBoolMatrix matrix) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixCsr*) matrix;
 
-    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_INSTANCE_LATE_FREE(instance);
     CUBOOL_CHECK_ARG_NOT_NULL(matrix);
 
     CUBOOL_BEGIN_BODY

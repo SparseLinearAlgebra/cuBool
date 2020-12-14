@@ -8,7 +8,7 @@ CuBool is a linear boolean algebra library primitives and operations for
 work with dense and sparse matrices written on the NVIDIA CUDA platform. The primary 
 goal of the library is implementation, testing and profiling algorithms for
 solving *formal-language-constrained problems*, such as *context-free* 
-and *recursive* path queries with various semantics for graph databases.
+and *regular* path queries with various semantics for graph databases.
 
 The name of the library is formed by a combination of words *Cuda* and *Boolean*,
 what literally means *Cuda with Boolean* and sounds very similar to the name of 
@@ -30,7 +30,7 @@ the programming language *COBOL*.
 - [ ] Block CSR kronecker
 - [ ] Sparse matrix wrapper ?
 - [X] Wrapper for Python API
-- [ ] Wrapper test in Python 
+- [ ] Wrapper tests in Python 
 - [ ] User guide
 - [ ] Unit Tests collection
 - [X] Dummy library implementation for testing
