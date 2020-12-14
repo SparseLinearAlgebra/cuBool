@@ -24,47 +24,58 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
+#ifndef CUBOOL_INSTANCE_HPP
+#define CUBOOL_INSTANCE_HPP
 
-#include <cubool/config.hpp>
-#include <cubool/build.hpp>
-#include <string>
+#include <cubool-dummy/matrix.hpp>
+#include <unordered_set>
+#include <iostream>
+#include <exception>
 
-namespace cubool {
+namespace cubool_dummy {
 
-    /** Base class for boolean matrix representation */
-    class MatrixBase {
+    class Instance {
     public:
-        explicit MatrixBase(class Instance& instance) : mInstanceRef(instance) {}
-        virtual ~MatrixBase() = default;
+        Instance() = default;
 
-        virtual void resize(index nrows, index ncols) = 0;
-        virtual void build(const index* rows, const index* cols, size nvals) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractExt(index* &rows, index* &cols, size_t &nvals) const = 0;
-        virtual void clone(const MatrixBase& other) = 0;
+        ~Instance() {
+            if (!mMatrices.empty()) {
+                std::cerr << "Some matrix instances was not properly released: " << mMatrices.size() << std::endl;
+            }
 
-        virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
-        virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void kron(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void add(const MatrixBase& a) = 0;
+            for (auto matrix: mMatrices) {
+                delete matrix;
+            }
+        }
 
-        void setDebugMarker(std::string string) { mDebugMarker = std::move(string); }
+        Matrix* createMatrix(CuBoolIndex_t nrow, CuBoolIndex_t ncols) {
+            auto matrix = new Matrix(*this);
+            matrix->resize(nrow, ncols);
+            mMatrices.emplace(matrix);
+            return matrix;
+        }
 
-        const std::string& getDebugMarker() const { return mDebugMarker; }
-        index getNumRows() const { return mNumRows; }
-        index getNumCols() const { return mNumCols; }
-        Instance& getInstance() const { return mInstanceRef; }
-        bool isZeroDim() const { return (size)mNumRows * (size)mNumCols == 0; }
+        void validateMatrix(Matrix* matrix) const {
+            if(mMatrices.find(matrix) == mMatrices.end()) {
+                throw std::runtime_error("No such matrix");
+            }
+        }
 
-    protected:
-        std::string mDebugMarker;
-        index mNumRows = 0;
-        index mNumCols = 0;
-        class Instance& mInstanceRef;
+        void destroyMatrix(Matrix* matrix) {
+            if (matrix == nullptr) {
+                throw std::runtime_error("An attempt to release null matrix");
+            }
+
+            auto pos = mMatrices.find(matrix);
+            mMatrices.erase(pos);
+
+            delete matrix;
+        }
+
+    private:
+        std::unordered_set<Matrix*> mMatrices;
     };
 
 }
 
-#endif //CUBOOL_MATRIX_BASE_HPP
+#endif //CUBOOL_INSTANCE_HPP

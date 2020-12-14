@@ -293,7 +293,7 @@ CUBOOL_EXPERIMENTAL CUBOOL_API CuBoolStatus CuBool_MatrixDense_Build(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPERIMENTAL CUBOOL_API CuBoolStatus CuBool_MatrixDense_ExtractPairs(
+CUBOOL_EXPERIMENTAL CUBOOL_API CuBoolStatus CuBool_MatrixDense_ExtractPairsExt(
     CuBoolInstance              instance,
     CuBoolMatrixDense           matrix,
     CuBoolIndex_t**             rows,
@@ -405,6 +405,27 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
 
 /**
  * Reads matrix data to the host visible CPU buffer as an array of values pair.
+ * The arrays must be provided by the user and the size of this arrays must
+ * be greater or equal the values count of the matrix.
+ *
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handle to perform operation on
+ * @param[in,out] rows Allocated buffer with row indices
+ * @param[in,out] cols Allocated buffer with column indices
+ * @param[in,out] nvals Total number of the pairs
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_ExtractPairs(
+        CuBoolInstance              instance,
+        CuBoolMatrix                matrix,
+        CuBoolIndex_t*              rows,
+        CuBoolIndex_t*              cols,
+        CuBoolSize_t*               nvals
+);
+
+/**
+ * Reads matrix data to the host visible CPU buffer as an array of values pair.
  * The indices of the i-th pair can be evaluated as (r=rows[i],c=cols[i]).
  *
  * @note Returned pointer to the allocated rows and cols buffers must be explicitly
@@ -418,7 +439,7 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
  *
  * @return Error code on this operation
  */
-CUBOOL_API CuBoolStatus CuBool_Matrix_ExtractPairs(
+CUBOOL_API CuBoolStatus CuBool_Matrix_ExtractPairsExt(
     CuBoolInstance              instance,
     CuBoolMatrix                matrix,
     CuBoolIndex_t**             rows,

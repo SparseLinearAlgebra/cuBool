@@ -274,7 +274,7 @@ namespace testing {
             CuBoolIndex_t* extCols;
             size_t extNvals;
 
-            EXPECT_EQ(CuBool_MatrixDense_ExtractPairs(instance, matrix, &extRows, &extCols, &extNvals), CUBOOL_STATUS_SUCCESS);
+            EXPECT_EQ(CuBool_MatrixDense_ExtractPairsExt(instance, matrix, &extRows, &extCols, &extNvals), CUBOOL_STATUS_SUCCESS);
 
             if (extNvals != mNvals)
                 return false;
@@ -303,7 +303,7 @@ namespace testing {
             CuBoolIndex_t* extCols;
             size_t extNvals;
 
-            EXPECT_EQ(CuBool_Matrix_ExtractPairs(instance, matrix, &extRows, &extCols, &extNvals), CUBOOL_STATUS_SUCCESS);
+            EXPECT_EQ(CuBool_Matrix_ExtractPairsExt(instance, matrix, &extRows, &extCols, &extNvals), CUBOOL_STATUS_SUCCESS);
 
             if (extNvals != mNvals)
                 return false;
@@ -533,7 +533,7 @@ namespace testing {
         // Query matrix data
         CuBool_Matrix_Nrows(instance, matrix, &nrows);
         CuBool_Matrix_Ncols(instance, matrix, &ncols);
-        CuBool_Matrix_ExtractPairs(instance, matrix, &rowIndex, &colIndex, &nvals);
+        CuBool_Matrix_ExtractPairsExt(instance, matrix, &rowIndex, &colIndex, &nvals);
 
         details::printMatrix(stream, rowIndex, colIndex, nrows, ncols, nvals);
 

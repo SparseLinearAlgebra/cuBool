@@ -118,6 +118,32 @@ TEST(MatrixCsr, PropertyQuery) {
     EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);
 }
 
+TEST(MatrixCsr, ExtractPairs) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+    CuBoolMatrix matrix = nullptr;
+    CuBoolSize_t m = 900, n = 600;
+    float density = 0.21;
+
+    testing::Matrix tmatrix = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
+    testing::details::setupInstanceDesc(instanceDesc);
+
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    EXPECT_EQ(CuBool_Matrix_New(instance, &matrix, m, n), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals), CUBOOL_STATUS_SUCCESS);
+
+    CuBoolSize_t nvals = tmatrix.mNvals;
+    std::vector<CuBoolIndex_t> rows(tmatrix.mNvals);
+    std::vector<CuBoolIndex_t> cols(tmatrix.mNvals);
+
+    EXPECT_EQ(CuBool_Matrix_ExtractPairs(instance, matrix, rows.data(), cols.data(), &nvals), CUBOOL_STATUS_SUCCESS);
+
+    EXPECT_EQ(nvals, tmatrix.mNvals);
+    EXPECT_EQ(CuBool_Matrix_Free(instance, matrix), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);
+}
+
 // Fills sparse matrix with random data and tests whether the transfer works correctly
 void testMatrixFilling(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInstance instance) {
     CuBoolMatrix matrix = nullptr;

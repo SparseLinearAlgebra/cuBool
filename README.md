@@ -29,9 +29,11 @@ the programming language *COBOL*.
 - [ ] Block CSR multiplication
 - [ ] Block CSR kronecker
 - [ ] Sparse matrix wrapper ?
-- [ ] Wrapper for Python API 
+- [X] Wrapper for Python API
+- [ ] Wrapper test in Python 
 - [ ] User guide
 - [ ] Unit Tests collection
+- [X] Dummy library implementation for testing
 - [ ] Publish built artifacts and shared lib
 
 ## Requirements
@@ -126,6 +128,9 @@ cuBool
 ├── docs - documents, text files and various helpful stuff
 ├── tests - gtest-based unit-tests collection
 ├── scripts - short utility programs 
+├── python - project python sources
+│   ├── pycubool - cubool library wrapper for python (similar to pygraphblas)
+│   └── tests - tests for python wrapper
 ├── thirdparty - project dependencies
 │   ├── cub - cuda utility, required for nsparse
 │   ├── gtest - google test framework for unit testing

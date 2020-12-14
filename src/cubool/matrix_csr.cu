@@ -115,7 +115,35 @@ namespace cubool {
         mMatrixImpl = std::move(MatrixImplType(std::move(colsDeviceVec), std::move(rowsDeviceVec), getNumRows(), getNumCols(), nvals));
     }
 
-    void MatrixCsr::extract(index* &rows, index* &cols, size_t &nvals) const {
+    void MatrixCsr::extract(index *rows, index *cols, size_t &nvals) {
+        if (getNumVals() > nvals)
+            throw details::InvalidArgument("Provided buffers sizes must be greater or equal the number of values in the matrix");
+
+        // Set nvlas to the exact number of nnz values
+        nvals = getNumVals();
+
+        auto& rowsDeviceVec = mMatrixImpl.m_row_index;
+        auto& colsDeviceVec = mMatrixImpl.m_col_index;
+
+        // Copy data to the host
+        thrust::host_vector<index, HostAlloc<index>> rowsVec = rowsDeviceVec;
+        thrust::host_vector<index, HostAlloc<index>> colsVec = colsDeviceVec;
+
+        if (nvals > 0) {
+            // Iterate over csr formatted data
+            size idx = 0;
+            for (index i = 0; i < getNumRows(); i++) {
+                for (index j = rowsVec[i]; j < rowsVec[i + 1]; j++) {
+                    rows[idx] = i;
+                    cols[idx] = colsVec[j];
+
+                    idx += 1;
+                }
+            }
+        }
+    }
+
+    void MatrixCsr::extractExt(index* &rows, index* &cols, size_t &nvals) const {
         // Allocate host memory vectors and copy data from the device side
         auto& rowsDeviceVec = mMatrixImpl.m_row_index;
         auto& colsDeviceVec = mMatrixImpl.m_col_index;
@@ -128,10 +156,11 @@ namespace cubool {
 
         // Set values count and allocate buffers for rows/cols indices, returned to the caller
         nvals = valuesCount;
-        mInstanceRef.allocate((void* &) rows, sizeof(index) * valuesCount);
-        mInstanceRef.allocate((void* &) cols, sizeof(index) * valuesCount);
 
         if (nvals > 0) {
+            mInstanceRef.allocate((void* &) rows, sizeof(index) * valuesCount);
+            mInstanceRef.allocate((void* &) cols, sizeof(index) * valuesCount);
+
             // Iterate over csr formatted data
             size idx = 0;
             for (index i = 0; i < getNumRows(); i++) {

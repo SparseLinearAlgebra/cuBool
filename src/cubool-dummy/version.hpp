@@ -24,47 +24,12 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
+#ifndef CUBOOL_VERSION_HPP
+#define CUBOOL_VERSION_HPP
 
-#include <cubool/config.hpp>
 #include <cubool/build.hpp>
-#include <string>
 
-namespace cubool {
+#define CUBOOL_VERSION ((uint32_t) CUBOOL_VERSION_MAJOR << 4u) | ((uint32_t) CUBOOL_VERSION_MINOR)
+#define CUBOOL_VERSION_STRING #CUBOOL_VERSION_MAJOR "." #CUBOOL_VERSION_MINOR
 
-    /** Base class for boolean matrix representation */
-    class MatrixBase {
-    public:
-        explicit MatrixBase(class Instance& instance) : mInstanceRef(instance) {}
-        virtual ~MatrixBase() = default;
-
-        virtual void resize(index nrows, index ncols) = 0;
-        virtual void build(const index* rows, const index* cols, size nvals) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractExt(index* &rows, index* &cols, size_t &nvals) const = 0;
-        virtual void clone(const MatrixBase& other) = 0;
-
-        virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
-        virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void kron(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void add(const MatrixBase& a) = 0;
-
-        void setDebugMarker(std::string string) { mDebugMarker = std::move(string); }
-
-        const std::string& getDebugMarker() const { return mDebugMarker; }
-        index getNumRows() const { return mNumRows; }
-        index getNumCols() const { return mNumCols; }
-        Instance& getInstance() const { return mInstanceRef; }
-        bool isZeroDim() const { return (size)mNumRows * (size)mNumCols == 0; }
-
-    protected:
-        std::string mDebugMarker;
-        index mNumRows = 0;
-        index mNumCols = 0;
-        class Instance& mInstanceRef;
-    };
-
-}
-
-#endif //CUBOOL_MATRIX_BASE_HPP
+#endif //CUBOOL_VERSION_HPP

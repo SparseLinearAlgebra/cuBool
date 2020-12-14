@@ -24,47 +24,39 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
+#ifndef CUBOOL_MATRIX_HPP
+#define CUBOOL_MATRIX_HPP
 
-#include <cubool/config.hpp>
-#include <cubool/build.hpp>
-#include <string>
+#include <cubool/cubool.h>
 
-namespace cubool {
+namespace cubool_dummy {
 
-    /** Base class for boolean matrix representation */
-    class MatrixBase {
+    class Matrix {
     public:
-        explicit MatrixBase(class Instance& instance) : mInstanceRef(instance) {}
-        virtual ~MatrixBase() = default;
+        explicit Matrix(class Instance& instance)
+                : mInstance(instance) {
 
-        virtual void resize(index nrows, index ncols) = 0;
-        virtual void build(const index* rows, const index* cols, size nvals) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractExt(index* &rows, index* &cols, size_t &nvals) const = 0;
-        virtual void clone(const MatrixBase& other) = 0;
+        }
 
-        virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
-        virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void kron(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void add(const MatrixBase& a) = 0;
+        void resize(CuBoolIndex_t nrows, CuBoolIndex_t ncols) {
+            mNrows = nrows;
+            mNcols = ncols;
+        }
 
-        void setDebugMarker(std::string string) { mDebugMarker = std::move(string); }
+        CuBoolIndex_t getNumRows() const {
+            return mNrows;
+        }
 
-        const std::string& getDebugMarker() const { return mDebugMarker; }
-        index getNumRows() const { return mNumRows; }
-        index getNumCols() const { return mNumCols; }
-        Instance& getInstance() const { return mInstanceRef; }
-        bool isZeroDim() const { return (size)mNumRows * (size)mNumCols == 0; }
+        CuBoolIndex_t getNumCols() const {
+            return mNcols;
+        }
 
-    protected:
-        std::string mDebugMarker;
-        index mNumRows = 0;
-        index mNumCols = 0;
-        class Instance& mInstanceRef;
+    private:
+        CuBoolIndex_t mNrows = 0;
+        CuBoolIndex_t mNcols = 0;
+        class Instance& mInstance;
     };
 
 }
 
-#endif //CUBOOL_MATRIX_BASE_HPP
+#endif //CUBOOL_MATRIX_HPP
