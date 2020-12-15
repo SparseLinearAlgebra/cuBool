@@ -1,4 +1,4 @@
-![Project logo](https://github.com/JetBrains-Research/cuBool/blob/master/docs/logo/logo_white-back.png)
+![Project logo](https://github.com/JetBrains-Research/cuBool/blob/master/docs/logo/logo_white_back_medium.png?raw=true)
 
 # CUBOOL
 
