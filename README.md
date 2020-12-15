@@ -28,7 +28,6 @@ the programming language *COBOL*.
 - [ ] Block СSR matrix
 - [ ] Block CSR multiplication
 - [ ] Block CSR kronecker
-- [ ] Sparse matrix wrapper ?
 - [X] Wrapper for Python API
 - [ ] Wrapper tests in Python 
 - [ ] User guide
@@ -140,6 +139,72 @@ cuBool
 └── CMakeLists.txt - library cmake config, add this as sub-directory to your project
 ```
 
+## Example
+
+The following C++ code snipped demonstrates, how the library interface and
+primitives can be used for the transitive closure evaluation of the directed
+graph, represented as an adjacency matrix with boolean values. The transitive
+closure provides info about reachable vertices in the graph.
+
+```c++
+/**
+ * Performs transitive closure for directed graph
+ * @param Inst Library instance, which provides context for operations
+ * @param A Adjacency matrix of the graph
+ * @param T Reference to the handle where to allocate and store result
+ *
+ * @return Status on this operation
+ */
+CuBoolStatus TransitiveClosure(CuBoolInstance Inst, CuBoolMatrix A, CuBoolMatrix* T) {
+    CuBool_Matrix_Duplicate(Inst, A, T);         /** Create result matrix and copy initial values */
+
+    CuBoolSize_t total;
+    CuBool_Matrix_Nvals(Inst, *T, &total);       /** Query current number on non-zero elements */
+
+    CuBoolSize_t current = total;                /** Loop while values are added */
+
+    do {
+        total = current;
+        CuBool_MxM(Inst, *T, *T, *T);            /** T += T * T */
+        CuBool_Matrix_Nvals(Inst, *T, &current);
+    }
+    while (current != total);
+
+    return CUBOOL_STATUS_SUCCESS;
+}
+```
+
+The following Python code snippet demonstrates, how the library python
+wrapper can be used to compute the same transitive closure problem for the
+directed graph.
+
+```python
+from python import pycubool
+
+
+def transitive_closure(a: pycubool.Matrix):
+    """
+    Evaluates transitive closure for the provided
+    adjacency matrix of the graph
+
+    :param a: Adjacency matrix of the graph
+    :return: The transitive closure adjacency matrix
+    """
+
+    t = a.duplicate()                 # Duplicate matrix where to store result
+
+    total = t.nvals                   # Current number of values
+    changing = True                   # track changing
+
+    while changing:
+        pycubool.mxm(t, t, t)         # t += t * t
+        changing = t.nvals != total
+        total = t.nvals
+
+    return t
+
+```
+
 ## License
 
 This project is licensed under MIT License. License text can be found in the 
@@ -147,5 +212,6 @@ This project is licensed under MIT License. License text can be found in the
 
 ## Contributors
 
-- Semyon Grigorev (Github: [gsvgit](https://github.com/gsvgit))
 - Egor Orachyov (Github: [EgorOrachyov](https://github.com/EgorOrachyov))
+- Pavel Alimov (Github : [Krekep](https://github.com/Krekep))
+- Semyon Grigorev (Github: [gsvgit](https://github.com/gsvgit))

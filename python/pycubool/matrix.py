@@ -13,22 +13,29 @@ class Matrix:
     Wrapper for CuBool Sparse boolean matrix type
     """
 
-    def __init__(self, shape):
-        self.hnd = ctypes.c_void_p(0)
-        self.wrapper = wrapper.singleton
+    __slots__ = ["hnd"]
+
+    def __init__(self, hnd):
+        self.hnd = hnd
+
+    @classmethod
+    def empty(cls, shape):
+        hnd = ctypes.c_void_p(0)
 
         nrows = shape[0]
         ncols = shape[1]
 
         status = wrapper.loaded_dll.CuBool_Matrix_New(wrapper.instance,
-                                                      ctypes.byref(self.hnd),
+                                                      ctypes.byref(hnd),
                                                       ctypes.c_uint(nrows),
                                                       ctypes.c_uint(ncols))
 
         dll.check(status)
 
+        return Matrix(hnd)
+
     def __del__(self):
-        dll.check(self.wrapper.loaded_dll.CuBool_Matrix_Free(wrapper.instance, self.hnd))
+        dll.check(wrapper.loaded_dll.CuBool_Matrix_Free(wrapper.instance, self.hnd))
 
     def resize(self, nrows, ncols):
         status = wrapper.loaded_dll.matrix_resizer(wrapper.instance,
@@ -52,6 +59,17 @@ class Matrix:
                                                         ctypes.c_size_t(nvals))
 
         dll.check(status)
+
+    def duplicate(self):
+        hnd = ctypes.c_void_p(0)
+
+        status = wrapper.loaded_dll.CuBool_Matrix_Duplicate(wrapper.instance,
+                                                            self.hnd,
+                                                            ctypes.byref(hnd))
+
+        dll.check(status)
+
+        return Matrix(hnd)
 
     @property
     def nrows(self) -> int:
@@ -92,6 +110,7 @@ class Matrix:
 
     def to_lists(self):
         values_count = self.nvals
+
         rows = (ctypes.c_uint * values_count)()
         cols = (ctypes.c_uint * values_count)()
         nvals = ctypes.c_size_t(values_count)
@@ -105,12 +124,3 @@ class Matrix:
         dll.check(status)
 
         return rows, cols
-
-    def duplicate(self):
-        result_matrix = Matrix(self.nrows, self.ncols)
-        status = wrapper.loaded_dll.CuBool_Matrix_Duplicate(wrapper.instance,
-                                                            self.hnd,
-                                                            result_matrix.hnd)
-
-        dll.check(status)
-        return result_matrix
