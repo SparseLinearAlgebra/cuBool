@@ -6,4 +6,4 @@
 /build
 
 # Python cache
-/python/pycubool/__pycache__/
+/**/__pycache__/

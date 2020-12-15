@@ -1,3 +1,5 @@
+![Project logo](https://github.com/JetBrains-Research/cuBool/blob/master/docs/logo/logo_white-back.png)
+
 # CUBOOL
 
 [![JB Research](https://jb.gg/badges/research-flat-square.svg)](https://research.jetbrains.org/)
@@ -141,10 +143,10 @@ cuBool
 
 ## Example
 
-The following C++ code snipped demonstrates, how the library interface and
+The following C++ code snipped demonstrates, how library functions and
 primitives can be used for the transitive closure evaluation of the directed
 graph, represented as an adjacency matrix with boolean values. The transitive
-closure provides info about reachable vertices in the graph.
+closure provides info about reachable vertices in the graph:
 
 ```c++
 /**
@@ -176,7 +178,7 @@ CuBoolStatus TransitiveClosure(CuBoolInstance Inst, CuBoolMatrix A, CuBoolMatrix
 
 The following Python code snippet demonstrates, how the library python
 wrapper can be used to compute the same transitive closure problem for the
-directed graph.
+directed graph within python environment:
 
 ```python
 from python import pycubool
