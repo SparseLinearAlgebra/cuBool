@@ -11,13 +11,10 @@ def transitive_closure(a: pycubool.Matrix):
     """
 
     t = a.duplicate()                 # Duplicate matrix where to store result
+    total = 0                         # Current number of values
 
-    total = t.nvals                   # Current number of values
-    changing = True                   # track changing
-
-    while changing:
-        pycubool.mxm(t, t, t)         # t += t * t
-        changing = t.nvals != total
+    while total != t.nvals:
         total = t.nvals
+        pycubool.mxm(t, t, t)         # t += t * t
 
     return t

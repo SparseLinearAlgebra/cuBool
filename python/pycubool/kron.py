@@ -1,5 +1,5 @@
 from . import wrapper
-from . import dll
+from . import bridge
 from . import matrix
 
 __all__ = [
@@ -13,4 +13,4 @@ def kron(result_matrix: matrix.Matrix, a_matrix: matrix.Matrix, b_matrix: matrix
                                             a_matrix.hnd,
                                             b_matrix.hnd)
 
-    dll.check(status)
+    bridge.check(status)

@@ -1,7 +1,7 @@
 import ctypes
 
 from . import wrapper
-from . import dll
+from . import bridge
 
 __all__ = [
     "Matrix"
@@ -30,12 +30,12 @@ class Matrix:
                                                       ctypes.c_uint(nrows),
                                                       ctypes.c_uint(ncols))
 
-        dll.check(status)
+        bridge.check(status)
 
         return Matrix(hnd)
 
     def __del__(self):
-        dll.check(wrapper.loaded_dll.CuBool_Matrix_Free(wrapper.instance, self.hnd))
+        bridge.check(wrapper.loaded_dll.CuBool_Matrix_Free(wrapper.instance, self.hnd))
 
     def resize(self, nrows, ncols):
         status = wrapper.loaded_dll.matrix_resizer(wrapper.instance,
@@ -43,7 +43,7 @@ class Matrix:
                                                    ctypes.c_uint(nrows),
                                                    ctypes.c_uint(ncols))
 
-        dll.check(status)
+        bridge.check(status)
 
     def build(self, rows, cols, nvals):
         if len(rows) != len(cols) or len(rows) != nvals:
@@ -58,7 +58,7 @@ class Matrix:
                                                         t_cols,
                                                         ctypes.c_size_t(nvals))
 
-        dll.check(status)
+        bridge.check(status)
 
     def duplicate(self):
         hnd = ctypes.c_void_p(0)
@@ -67,7 +67,7 @@ class Matrix:
                                                             self.hnd,
                                                             ctypes.byref(hnd))
 
-        dll.check(status)
+        bridge.check(status)
 
         return Matrix(hnd)
 
@@ -79,7 +79,7 @@ class Matrix:
                                                         self.hnd,
                                                         ctypes.byref(result))
 
-        dll.check(status)
+        bridge.check(status)
         return int(result.value)
 
     @property
@@ -90,7 +90,7 @@ class Matrix:
                                                         self.hnd,
                                                         ctypes.byref(result))
 
-        dll.check(status)
+        bridge.check(status)
         return int(result.value)
 
     @property
@@ -101,7 +101,7 @@ class Matrix:
                                                         self.hnd,
                                                         ctypes.byref(result))
 
-        dll.check(status)
+        bridge.check(status)
         return int(result.value)
 
     @property
@@ -121,6 +121,6 @@ class Matrix:
                                                                cols,
                                                                ctypes.byref(nvals))
 
-        dll.check(status)
+        bridge.check(status)
 
         return rows, cols

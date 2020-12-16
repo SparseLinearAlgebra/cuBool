@@ -89,6 +89,7 @@ TEST(CuBoolInstance, SetupExt) {
 
 /**
  * Performs transitive closure for directed graph
+ *
  * @param Inst Library instance, which provides context for operations
  * @param A Adjacency matrix of the graph
  * @param T Reference to the handle where to allocate and store result
@@ -98,17 +99,15 @@ TEST(CuBoolInstance, SetupExt) {
 CuBoolStatus TransitiveClosure(CuBoolInstance Inst, CuBoolMatrix A, CuBoolMatrix* T) {
     CuBool_Matrix_Duplicate(Inst, A, T);         /** Create result matrix and copy initial values */
 
-    CuBoolSize_t total;
-    CuBool_Matrix_Nvals(Inst, *T, &total);       /** Query current number on non-zero elements */
+    CuBoolSize_t total = 0;
+    CuBoolSize_t current;
+    CuBool_Matrix_Nvals(Inst, *T, &current);     /** Query current number on non-zero elements */
 
-    CuBoolSize_t current = total;                /** Loop while values are added */
-
-    do {
+    while (current != total) {                   /** Loop while values are added */
         total = current;
         CuBool_MxM(Inst, *T, *T, *T);            /** T += T * T */
         CuBool_Matrix_Nvals(Inst, *T, &current);
     }
-    while (current != total);
 
     return CUBOOL_STATUS_SUCCESS;
 }

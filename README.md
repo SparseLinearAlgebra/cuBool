@@ -151,6 +151,7 @@ closure provides info about reachable vertices in the graph:
 ```c++
 /**
  * Performs transitive closure for directed graph
+ * 
  * @param Inst Library instance, which provides context for operations
  * @param A Adjacency matrix of the graph
  * @param T Reference to the handle where to allocate and store result
@@ -160,17 +161,15 @@ closure provides info about reachable vertices in the graph:
 CuBoolStatus TransitiveClosure(CuBoolInstance Inst, CuBoolMatrix A, CuBoolMatrix* T) {
     CuBool_Matrix_Duplicate(Inst, A, T);         /** Create result matrix and copy initial values */
 
-    CuBoolSize_t total;
-    CuBool_Matrix_Nvals(Inst, *T, &total);       /** Query current number on non-zero elements */
+    CuBoolSize_t total = 0;
+    CuBoolSize_t current;
+    CuBool_Matrix_Nvals(Inst, *T, &current);     /** Query current number on non-zero elements */
 
-    CuBoolSize_t current = total;                /** Loop while values are added */
-
-    do {
+    while (current != total) {                   /** Loop while values are added */
         total = current;
         CuBool_MxM(Inst, *T, *T, *T);            /** T += T * T */
         CuBool_Matrix_Nvals(Inst, *T, &current);
     }
-    while (current != total);
 
     return CUBOOL_STATUS_SUCCESS;
 }
@@ -194,17 +193,13 @@ def transitive_closure(a: pycubool.Matrix):
     """
 
     t = a.duplicate()                 # Duplicate matrix where to store result
+    total = 0                         # Current number of values
 
-    total = t.nvals                   # Current number of values
-    changing = True                   # track changing
-
-    while changing:
-        pycubool.mxm(t, t, t)         # t += t * t
-        changing = t.nvals != total
+    while total != t.nvals:
         total = t.nvals
+        pycubool.mxm(t, t, t)         # t += t * t
 
     return t
-
 ```
 
 ## License

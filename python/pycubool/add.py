@@ -1,5 +1,5 @@
 from . import wrapper
-from . import dll
+from . import bridge
 from . import matrix
 
 __all__ = [
@@ -12,4 +12,4 @@ def add(result_matrix: matrix.Matrix, a_matrix: matrix.Matrix):
                                                   result_matrix.hnd,
                                                   a_matrix.hnd)
 
-    dll.check(status)
+    bridge.check(status)
