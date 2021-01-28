@@ -22,20 +22,17 @@ the programming language *COBOL*.
 - [X] Library instance/context
 - [X] Dense matrix
 - [X] Dense multiplication 
-- [ ] Dense kronecker product 
 - [X] CSR matrix
 - [X] CSR multiplication
 - [X] CSR addition
 - [X] CSR kronecker
-- [ ] Block СSR matrix
-- [ ] Block CSR multiplication
-- [ ] Block CSR kronecker
 - [X] Wrapper for Python API
 - [ ] Wrapper tests in Python 
 - [ ] User guide
-- [ ] Unit Tests collection
+- [X] Unit Tests collection
 - [X] Dummy library implementation for testing
-- [ ] Publish built artifacts and shared lib
+- [ ] Publish built artifacts and shared libs
+- [ ] Publish stable source code archives
 
 ## Requirements
 

@@ -11,11 +11,6 @@ option(CUBOOL_WITH_NSPARSE "Build library with nsparse crs matrix multiplication
 option(CUBOOL_WITH_NAIVE "Build library with naive and naive-shared dense matrix multiplication" ON)
 option(CUBOOL_BUILD_TESTS "Build project unit-tests with gtest" ON)
 
-SET(CUBOOL_WITH_CUB ON CACHE BOOL "" FORCE)
-SET(CUBOOL_WITH_NSPARSE ON CACHE BOOL "" FORCE)
-SET(CUBOOL_WITH_NAIVE ON CACHE BOOL "" FORCE)
-SET(CUBOOL_BUILD_TESTS ON CACHE BOOL "" FORCE)
-
 # Library version setup
 set(CUBOOL_VERSION_MAJOR 0)
 set(CUBOOL_VERSION_MINOR 1)
