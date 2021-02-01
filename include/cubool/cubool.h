@@ -425,13 +425,14 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
 
 /**
  * Reads matrix data to the host visible CPU buffer as an array of values pair.
+ *
  * The arrays must be provided by the user and the size of this arrays must
  * be greater or equal the values count of the matrix.
  *
  * @param instance An instance object reference to perform this operation
  * @param matrix Matrix handle to perform operation on
- * @param[in,out] rows Allocated buffer with row indices
- * @param[in,out] cols Allocated buffer with column indices
+ * @param[in,out] rows Buffer to store row indices
+ * @param[in,out] cols Buffer to store column indices
  * @param[in,out] nvals Total number of the pairs
  *
  * @return Error code on this operation
@@ -480,6 +481,22 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Duplicate(
     CuBoolInstance              instance,
     CuBoolMatrix                matrix,
     CuBoolMatrix*               duplicated
+);
+
+/**
+ * Transpose source matrix and store result of this operation in result matrix.
+ * Formally: result = matrix ^ T
+ *
+ * @param instance An instance object reference to perform this operation
+ * @param result Matrix handle to store result of the operation
+ * @param matrix The source matrix
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_Transpose(
+    CuBoolInstance              instance,
+    CuBoolMatrix                result,
+    CuBoolMatrix                matrix
 );
 
 /**

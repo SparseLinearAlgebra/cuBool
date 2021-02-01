@@ -68,8 +68,18 @@ class Matrix:
                                                             ctypes.byref(hnd))
 
         bridge.check(status)
-
         return Matrix(hnd)
+
+    def transpose(self):
+        shape = (self.ncols, self.nrows)
+        result = Matrix.empty(shape)
+
+        status = wrapper.loaded_dll.CuBool_Matrix_Transpose(wrapper.instance,
+                                                            result.hnd,
+                                                            self.hnd)
+
+        bridge.check(status)
+        return result
 
     @property
     def nrows(self) -> int:

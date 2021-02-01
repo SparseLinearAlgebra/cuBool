@@ -72,6 +72,11 @@ def load_and_configure(cubool_lib_path: str):
                                             matrix_p,
                                             p_to_matrix_p]
 
+    lib.CuBool_Matrix_Transpose.restype = ctypes.c_uint
+    lib.CuBool_Matrix_Transpose.argtypes = [instance_p,
+                                            matrix_p,
+                                            matrix_p]
+
     lib.CuBool_Matrix_Nrows.restype = ctypes.c_uint
     lib.CuBool_Matrix_Nrows.argtype = [instance_p,
                                        matrix_p,

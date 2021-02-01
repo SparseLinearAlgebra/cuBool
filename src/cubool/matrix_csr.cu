@@ -28,6 +28,7 @@
 #include <cubool/details/error.hpp>
 #include <cubool/kernels/matrix_csr_spkron.cuh>
 #include <cubool/kernels/matrix_csr_spmerge.cuh>
+#include <cubool/kernels/matrix_csr_sptranspose.cuh>
 #include <nsparse/spgemm.h>
 #include <algorithm>
 
@@ -187,13 +188,31 @@ namespace cubool {
         this->mMatrixImpl = other->mMatrixImpl;
     }
 
+    void MatrixCsr::transpose(const MatrixBase &otherBase) {
+        auto other = dynamic_cast<const MatrixCsr*>(&otherBase);
+
+        if (!other)
+            throw details::InvalidArgument("Passed matrix does not belong to csr matrix class");
+
+        size M = other->getNumRows();
+        size N = other->getNumCols();
+
+        this->resize(N, M);
+
+        kernels::SpTransposeFunctor<index, DeviceAlloc<index>> spTransposeFunctor;
+        auto result = spTransposeFunctor(other->mMatrixImpl);
+
+        // Assign the actual impl result to this storage
+        this->mMatrixImpl = std::move(result);
+    }
+
     void MatrixCsr::multiplySum(const MatrixBase &aBase, const MatrixBase &bBase, const MatrixBase &cBase) {
         auto a = dynamic_cast<const MatrixCsr*>(&aBase);
         auto b = dynamic_cast<const MatrixCsr*>(&bBase);
         auto c = dynamic_cast<const MatrixCsr*>(&cBase);
 
         if (!a || !b || !c)
-            throw details::InvalidArgument("Passed matrices do not belong to dense matrix class");
+            throw details::InvalidArgument("Passed matrices do not belong to csr matrix class");
 
         if (a->isZeroDim() || b->isZeroDim() || c->isZeroDim())
             throw details::InvalidArgument("An attempt to operate on 0-dim matrices");

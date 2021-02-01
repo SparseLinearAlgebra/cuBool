@@ -450,6 +450,22 @@ CuBoolStatus CuBool_Matrix_Duplicate(CuBoolInstance instance, CuBoolMatrix matri
     CUBOOL_END_BODY
 }
 
+CuBoolStatus CuBool_Matrix_Transpose(CuBoolInstance instance, CuBoolMatrix result, CuBoolMatrix matrix) {
+    auto instanceImpl = (cubool::Instance *) instance;
+    auto resultImpl = (cubool::MatrixCsr*) result;
+    auto matrixImpl = (cubool::MatrixCsr*) matrix;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
+    CUBOOL_CHECK_ARG_NOT_NULL(result);
+
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrix(matrixImpl);
+        instanceImpl->validateMatrix(resultImpl);
+        resultImpl->transpose(*matrixImpl);
+    CUBOOL_END_BODY
+}
+
 CuBoolStatus CuBool_Matrix_Nvals(CuBoolInstance instance, CuBoolMatrix matrix, CuBoolSize_t *nvals) {
     auto instanceImpl = (cubool::Instance *) instance;
     auto matrixImpl = (cubool::MatrixCsr *) matrix;

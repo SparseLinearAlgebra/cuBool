@@ -53,6 +53,7 @@ namespace cubool {
         void extract(index* rows, index* cols, size_t &nvals) override;
         void extractExt(index* &rows, index* &cols, size_t &nvals) const override;
         void clone(const MatrixBase &other) override;
+        void transpose(const MatrixBase &other);
 
         void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
         void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;

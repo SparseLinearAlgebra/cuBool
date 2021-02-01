@@ -60,3 +60,14 @@ t = test_example.transitive_closure(a)
 
 print(a.nvals, a.shape)
 print(t.nvals, t.shape)
+
+rows = [0, 1, 2, 3, 3, 3, 3]
+cols = [0, 1, 2, 0, 1, 2, 3]
+
+matrix = pycubool.Matrix.empty((4, 4))
+matrix.build(rows, cols, nvals=7)
+
+transposed = matrix.transpose()
+rows, cols = transposed.to_lists()
+
+print([(rows[i], cols[i]) for i in range(transposed.nvals)])

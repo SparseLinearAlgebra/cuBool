@@ -458,6 +458,87 @@ TEST(MatrixCsr, KronLarge) {
     EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);
 }
 
+void testMatrixTranspose(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInstance instance) {
+    CuBoolMatrix r, a;
+
+    testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
+
+    // Allocate input matrices and resize to fill with input data
+    EXPECT_EQ(CuBool_Matrix_New(instance, &a, m, n), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_New(instance, &r, n, m), CUBOOL_STATUS_SUCCESS);
+
+    // Transfer input data into input matrices
+    EXPECT_EQ(CuBool_Matrix_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals), CUBOOL_STATUS_SUCCESS);
+
+    // Evaluate r = a ^ T
+    EXPECT_EQ(CuBool_Matrix_Transpose(instance, r, a), CUBOOL_STATUS_SUCCESS);
+
+    // Evaluate naive r = a ^ T on the cpu to compare results
+    testing::MatrixTrFunctor functor;
+    testing::Matrix tr = std::move(functor(ta));
+
+    std::cout << ta;
+    std::cout << tr;
+
+    // Compare results
+    EXPECT_EQ(tr.areEqual(r, instance), true);
+
+    // Deallocate matrices
+    EXPECT_EQ(CuBool_Matrix_Free(instance, a), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Free(instance, r), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, TransposeSmall) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+    CuBoolSize_t m = 60, n = 80;
+
+    // Setup instance
+    testing::details::setupInstanceDescSilent(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixTranspose(m, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
+
+    // Destroy instance
+    EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, TransposeMedium) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+    CuBoolSize_t m = 500, n = 800;
+
+    // Setup instance
+    testing::details::setupInstanceDescSilent(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixTranspose(m, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
+
+    // Destroy instance
+    EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, TransposeLarge) {
+    CuBoolInstance instance = nullptr;
+    CuBoolInstanceDesc instanceDesc{};
+    CuBoolSize_t m = 2500, n = 1500;
+
+    // Setup instance
+    testing::details::setupInstanceDescSilent(instanceDesc);
+    EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixTranspose(m, n, 0.1f + (0.05f) * ((float) i), instance);
+    }
+
+    // Destroy instance
+    EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);
+}
+
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
