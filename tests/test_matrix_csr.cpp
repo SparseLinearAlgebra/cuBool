@@ -477,9 +477,6 @@ void testMatrixTranspose(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolIn
     testing::MatrixTrFunctor functor;
     testing::Matrix tr = std::move(functor(ta));
 
-    std::cout << ta;
-    std::cout << tr;
-
     // Compare results
     EXPECT_EQ(tr.areEqual(r, instance), true);
 

@@ -26,6 +26,7 @@ the programming language *COBOL*.
 - [X] CSR multiplication
 - [X] CSR addition
 - [X] CSR kronecker
+- [X] CSR transpose
 - [X] Wrapper for Python API
 - [ ] Wrapper tests in Python 
 - [ ] User guide
@@ -134,7 +135,7 @@ cuBool
 │   ├── gtest - google test framework for unit testing
 │   ├── naive - GEMM implementation for squared dense boolean matrices
 │   ├── nsparse - SpGEMM implementation for csr matrices
-│   └── nsparse-um - SpGEMM implementation for csr matrices with unified memory 
+│   └── nsparse-um - SpGEMM implementation for csr matrices with unified memory (configurable)
 └── CMakeLists.txt - library cmake config, add this as sub-directory to your project
 ```
 
