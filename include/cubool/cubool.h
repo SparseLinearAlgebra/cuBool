@@ -438,11 +438,11 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
  * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Matrix_ExtractPairs(
-        CuBoolInstance              instance,
-        CuBoolMatrix                matrix,
-        CuBoolIndex_t*              rows,
-        CuBoolIndex_t*              cols,
-        CuBoolSize_t*               nvals
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
+    CuBoolIndex_t*              rows,
+    CuBoolIndex_t*              cols,
+    CuBoolSize_t*               nvals
 );
 
 /**
@@ -542,6 +542,19 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Ncols(
 );
 
 /**
+ * Deletes sparse matrix object.
+ *
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handle to delete the matrix
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_Free(
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix
+);
+
+/**
  * Performs r += a, where '+' is boolean semiring operation.
  *
  * @note Matrices must be compatible
@@ -554,23 +567,10 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Ncols(
  *
  * @return Error code on this operation
  */
-CUBOOL_API CuBoolStatus CuBool_Matrix_Add(
-    CuBoolInstance              instance,
-    CuBoolMatrix                r,
-    CuBoolMatrix                a
-);
-
-/**
- * Deletes sparse matrix object.
- *
- * @param instance An instance object reference to perform this operation
- * @param matrix Matrix handle to delete the matrix
- *
- * @return Error code on this operation
- */
-CUBOOL_API CuBoolStatus CuBool_Matrix_Free(
-    CuBoolInstance              instance,
-    CuBoolMatrix                matrix
+CUBOOL_API CuBoolStatus CuBool_EWise_Add(
+        CuBoolInstance              instance,
+        CuBoolMatrix                r,
+        CuBoolMatrix                a
 );
 
 /**

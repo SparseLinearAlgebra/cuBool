@@ -113,9 +113,6 @@ namespace cubool {
                 // Use prefix sum to evaluate row index offsets
                 thrust::exclusive_scan(tmpBuffer.begin(), tmpBuffer.end(), rowIndex.begin(), 0, thrust::plus<IndexType>());
 
-                // Explicitly release resources
-                tmpBuffer.clear();
-
                 // For each (i,j) value write i indices into j rows of the result
                 // Note: use order matrix to avoid address overlap
                 thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(nvals),

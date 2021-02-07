@@ -92,8 +92,8 @@ def load_and_configure(cubool_lib_path: str):
                                        matrix_p,
                                        ctypes.POINTER(ctypes.c_size_t)]
 
-    lib.CuBool_Matrix_Add.restype = ctypes.c_uint
-    lib.CuBool_Matrix_Add.argtypes = [instance_p,
+    lib.CuBool_EWise_Add.restype = ctypes.c_uint
+    lib.CuBool_EWise_Add.argtypes = [instance_p,
                                       matrix_p,
                                       matrix_p]
 

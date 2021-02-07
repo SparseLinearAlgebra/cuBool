@@ -1,6 +1,6 @@
 # CuBool library Cmake config file
 # Add this file as sub-directory to your project to use library functionality
-cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
 project(CUBOOL LANGUAGES CXX CUDA)
 
 # Exposed to the user build options

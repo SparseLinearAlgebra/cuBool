@@ -38,10 +38,9 @@ the programming language *COBOL*.
 ## Requirements
 
 - Linux Ubuntu 18 or higher (current version is 20.04)
-- CMake Version 3.10 or higher
+- CMake Version 3.17 or higher
 - CUDA Compatible GPU device
 - GCC 8 Compiler 
-- G++ 8 Compiler
 - NVIDIA CUDA 10 toolkit
 
 ## Setup

@@ -308,7 +308,7 @@ void testMatrixAdd(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInstance
     EXPECT_EQ(CuBool_Matrix_Build(instance, r, tr.mRowsIndex.data(), tr.mColsIndex.data(), tr.mNvals), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r += a
-    EXPECT_EQ(CuBool_Matrix_Add(instance, r, a), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_EWise_Add(instance, r, a), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r += a on the cpu to compare results
     testing::MatrixAddFunctor functor;
