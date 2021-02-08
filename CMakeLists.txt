@@ -32,7 +32,6 @@ endif()
 
 if (CUBOOL_WITH_NSPARSE)
     message(STATUS "Add nsparse library as crs matrix multiplication backend")
-    add_subdirectory(thirdparty/nsparse)
     add_subdirectory(thirdparty/nsparse-um)
 endif()
 

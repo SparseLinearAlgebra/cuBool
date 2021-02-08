@@ -5,4 +5,7 @@ add_library(nsparse INTERFACE)
 target_include_directories(nsparse INTERFACE include/)
 target_compile_options(nsparse INTERFACE $<$<COMPILE_LANGUAGE:CUDA>: --expt-relaxed-constexpr --expt-extended-lambda -Xptxas -O3 >)
 
-add_subdirectory(test)
+if (CUBOOL_BUILD_TESTS)
+    add_subdirectory(test)
+endif()
+
