@@ -59,8 +59,13 @@ set(CUBOOL_SOURCES
     src/cubool/matrix_base.hpp
     src/cubool/matrix_dense.cu
     src/cubool/matrix_dense.hpp
-    src/cubool/matrix_csr.cu
     src/cubool/matrix_csr.hpp
+    src/cubool/matrix_csr.cu
+    src/cubool/matrix_csr_multiply_sum.cu
+    src/cubool/matrix_csr_multiply_add.cu
+    src/cubool/matrix_csr_ewise_add.cu
+    src/cubool/matrix_csr_kron.cu
+    src/cubool/matrix_csr_transpose.cu
     src/cubool/kernels/matrix_dense_multiply_add.cuh
     src/cubool/kernels/matrix_dense_common.cuh
     src/cubool/kernels/matrix_csr_spkron.cuh

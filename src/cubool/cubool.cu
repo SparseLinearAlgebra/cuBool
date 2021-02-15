@@ -293,7 +293,7 @@ CuBoolStatus CuBool_MatrixDense_Build(CuBoolInstance instance, CuBoolMatrixDense
 
     CUBOOL_BEGIN_BODY
         instanceImpl->validateMatrix(matrixImpl);
-        matrixImpl->build(rows, cols, nvals);
+        matrixImpl->build(rows, cols, nvals, false);
     CUBOOL_END_BODY
 }
 
@@ -391,7 +391,7 @@ CuBoolStatus CuBool_Matrix_Resize(CuBoolInstance instance, CuBoolMatrix matrix, 
     CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_Matrix_Build(CuBoolInstance instance, CuBoolMatrix matrix, const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals) {
+CuBoolStatus CuBool_Matrix_Build(CuBoolInstance instance, CuBoolMatrix matrix, const CuBoolIndex_t *rows, const CuBoolIndex_t *cols, CuBoolSize_t nvals, CuBoolHints_t hints) {
     auto instanceImpl = (cubool::Instance*) instance;
     auto matrixImpl = (cubool::MatrixCsr*) matrix;
 
@@ -399,7 +399,7 @@ CuBoolStatus CuBool_Matrix_Build(CuBoolInstance instance, CuBoolMatrix matrix, c
 
     CUBOOL_BEGIN_BODY
         instanceImpl->validateMatrix(matrixImpl);
-        matrixImpl->build(rows, cols, nvals);
+        matrixImpl->build(rows, cols, nvals, hints & CUBOOL_HINT_VALUES_SORTED);
     CUBOOL_END_BODY
 }
 
@@ -532,7 +532,7 @@ CuBoolStatus CuBool_EWise_Add(CuBoolInstance instance, CuBoolMatrix r, CuBoolMat
     CUBOOL_BEGIN_BODY
         instanceImpl->validateMatrix(rImpl);
         instanceImpl->validateMatrix(aImpl);
-        rImpl->add(*aImpl);
+        rImpl->ewiseAdd(*aImpl);
     CUBOOL_END_BODY
 }
 

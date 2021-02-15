@@ -127,7 +127,7 @@ TEST(CuBoolInstance, Example) {
 
     testing::Matrix ta = testing::Matrix::generateSparse(n , n, 0.2);
 
-    CuBool_Matrix_Build(Inst, A, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals);
+    CuBool_Matrix_Build(Inst, A, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED);
 
     TransitiveClosure(Inst, A, &T);
 

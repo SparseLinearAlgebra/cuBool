@@ -38,30 +38,39 @@
 /** Possible status codes that can be returned from cubool api */
 typedef enum CuBoolStatus {
     /** Successful execution of the function */
-    CUBOOL_STATUS_SUCCESS,
+    CUBOOL_STATUS_SUCCESS = 0,
     /** Generic error code */
-    CUBOOL_STATUS_ERROR,
+    CUBOOL_STATUS_ERROR = 1,
     /** No cuda compatible device in the system */
-    CUBOOL_STATUS_DEVICE_NOT_PRESENT,
+    CUBOOL_STATUS_DEVICE_NOT_PRESENT = 2,
     /** Device side error */
-    CUBOOL_STATUS_DEVICE_ERROR,
+    CUBOOL_STATUS_DEVICE_ERROR = 3,
     /** Failed to allocate memory on cpy or gpu side */
-    CUBOOL_STATUS_MEM_OP_FAILED,
+    CUBOOL_STATUS_MEM_OP_FAILED = 4,
     /** Passed invalid argument to some function */
-    CUBOOL_STATUS_INVALID_ARGUMENT,
+    CUBOOL_STATUS_INVALID_ARGUMENT = 5,
     /** Call of the function is not possible for some context */
-    CUBOOL_STATUS_INVALID_STATE,
+    CUBOOL_STATUS_INVALID_STATE = 6,
     /** Some library feature is not implemented */
-    CUBOOL_STATUS_NOT_IMPLEMENTED
+    CUBOOL_STATUS_NOT_IMPLEMENTED = 7
 } CuBoolStatus;
 
 /** Type of the GPU memory used to allocated gpu resources */
 typedef enum CuBoolGpuMemoryType {
     /** Unified memory space */
-    CUBOOL_GPU_MEMORY_TYPE_MANAGED,
+    CUBOOL_GPU_MEMORY_TYPE_MANAGED = 0,
     /** Device only allocations */
-    CUBOOL_GPU_MEMORY_TYPE_GENERIC
+    CUBOOL_GPU_MEMORY_TYPE_GENERIC = 1
 } CuBoolGpuMemoryType;
+
+/** Generic lib hits for matrix processing */
+typedef enum CuBoolHint {
+    /** Mark input data as row-col sorted */
+    CUBOOL_HINT_VALUES_SORTED = 0x1
+} CuBoolHint;
+
+/** Hit mask */
+typedef unsigned int                CuBoolHints_t;
 
 /** Alias size type for memory and size specification */
 typedef size_t                      CuBoolSize_t;
@@ -79,7 +88,7 @@ typedef struct CuBoolInstance_t*    CuBoolInstance;
 typedef struct CuBoolMatrixDense_t* CuBoolMatrixDense;
 
 /** Cubool sparse boolean matrix handle */
-typedef struct CuBoolMatrix_t* CuBoolMatrix;
+typedef struct CuBoolMatrix_t*      CuBoolMatrix;
 
 /**
  * @brief Memory allocate callback
@@ -412,6 +421,7 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Resize(
  * @param rows Array of pairs row indices
  * @param cols Array of pairs column indices
  * @param nvals Number of the pairs passed
+ * @param hints Hits flags for processing. Pass VALUES_SORTED if values already in the proper order.
  *
  * @return Error code on this operation
  */
@@ -420,7 +430,8 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
     CuBoolMatrix                matrix,
     const CuBoolIndex_t*        rows,
     const CuBoolIndex_t*        cols,
-    CuBoolSize_t                nvals
+    CuBoolSize_t                nvals,
+    CuBoolHints_t               hints
 );
 
 /**
@@ -568,9 +579,9 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Free(
  * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_EWise_Add(
-        CuBoolInstance              instance,
-        CuBoolMatrix                r,
-        CuBoolMatrix                a
+    CuBoolInstance              instance,
+    CuBoolMatrix                r,
+    CuBoolMatrix                a
 );
 
 /**

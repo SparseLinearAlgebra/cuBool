@@ -24,48 +24,35 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
-
-#include <cubool/config.hpp>
-#include <cubool/build.hpp>
-#include <string>
+#include <cubool/matrix_csr.hpp>
+#include <cubool/kernels/matrix_csr_spkron.cuh>
 
 namespace cubool {
 
-    /** Base class for boolean matrix representation */
-    class MatrixBase {
-    public:
-        explicit MatrixBase(class Instance& instance) : mInstanceRef(instance) {}
-        virtual ~MatrixBase() = default;
+    void MatrixCsr::kron(const MatrixBase &aBase, const MatrixBase &bBase) {
+        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
+        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
 
-        virtual void resize(index nrows, index ncols) = 0;
-        virtual void build(const index *rows, const index *cols, size nvals, bool isSorted) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractExt(index* &rows, index* &cols, size_t &nvals) const = 0;
-        virtual void clone(const MatrixBase& other) = 0;
-        virtual void transpose(const MatrixBase &other) = 0;
+        if (!a || !b)
+            throw details::InvalidArgument("Passed matrices do not belong to csr matrix class");
 
-        virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
-        virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void kron(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void ewiseAdd(const MatrixBase& a) = 0;
+        index M = a->getNumRows();
+        index N = a->getNumCols();
+        index K = b->getNumRows();
+        index T = b->getNumCols();
 
-        void setDebugMarker(std::string string) { mDebugMarker = std::move(string); }
+        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
+            // Result will be empty
+            this->resize(M * K, N * T);
+            return;
+        }
 
-        const std::string& getDebugMarker() const { return mDebugMarker; }
-        index getNumRows() const { return mNumRows; }
-        index getNumCols() const { return mNumCols; }
-        Instance& getInstance() const { return mInstanceRef; }
-        bool isZeroDim() const { return (size)mNumRows * (size)mNumCols == 0; }
+        kernels::SpKronFunctor<index, DeviceAlloc<index>> spKronFunctor;
+        auto result = spKronFunctor(a->mMatrixImpl, b->mMatrixImpl);
 
-    protected:
-        std::string mDebugMarker;
-        index mNumRows = 0;
-        index mNumCols = 0;
-        class Instance& mInstanceRef;
-    };
+        // Assign result to this
+        this->resize(M * K, N * T);
+        this->mMatrixImpl = std::move(result);
+    }
 
 }
-
-#endif //CUBOOL_MATRIX_BASE_HPP

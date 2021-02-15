@@ -24,48 +24,39 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
-
-#include <cubool/config.hpp>
-#include <cubool/build.hpp>
-#include <string>
+#include <cubool/matrix_csr.hpp>
+#include <cubool/kernels/matrix_csr_spmerge.cuh>
 
 namespace cubool {
 
-    /** Base class for boolean matrix representation */
-    class MatrixBase {
-    public:
-        explicit MatrixBase(class Instance& instance) : mInstanceRef(instance) {}
-        virtual ~MatrixBase() = default;
+    void MatrixCsr::ewiseAdd(const MatrixBase &aBase) {
+        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
 
-        virtual void resize(index nrows, index ncols) = 0;
-        virtual void build(const index *rows, const index *cols, size nvals, bool isSorted) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractExt(index* &rows, index* &cols, size_t &nvals) const = 0;
-        virtual void clone(const MatrixBase& other) = 0;
-        virtual void transpose(const MatrixBase &other) = 0;
+        if (!a)
+            throw details::InvalidArgument("Passed matrix does not belong to csr matrix class");
 
-        virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
-        virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void kron(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void ewiseAdd(const MatrixBase& a) = 0;
+        index M = a->getNumRows();
+        index N = a->getNumCols();
 
-        void setDebugMarker(std::string string) { mDebugMarker = std::move(string); }
+        if (this->getNumRows() != M || this->getNumCols() != N)
+            throw details::InvalidArgument("Incompatible matrix size to add");
 
-        const std::string& getDebugMarker() const { return mDebugMarker; }
-        index getNumRows() const { return mNumRows; }
-        index getNumCols() const { return mNumCols; }
-        Instance& getInstance() const { return mInstanceRef; }
-        bool isZeroDim() const { return (size)mNumRows * (size)mNumCols == 0; }
+        if (a->isMatrixEmpty()) {
+            // A or B has no values
+            return;
+        }
 
-    protected:
-        std::string mDebugMarker;
-        index mNumRows = 0;
-        index mNumCols = 0;
-        class Instance& mInstanceRef;
-    };
+        if (this->isMatrixEmpty()) {
+            // So the result is the exact copy of the a
+            this->clone(*a);
+            return;
+        }
+
+        kernels::SpMergeFunctor<index, DeviceAlloc<index>> spMergeFunctor;
+        auto result = spMergeFunctor(this->mMatrixImpl, a->mMatrixImpl);
+
+        // Assign the actual impl result to this storage
+        this->mMatrixImpl = std::move(result);
+    }
 
 }
-
-#endif //CUBOOL_MATRIX_BASE_HPP

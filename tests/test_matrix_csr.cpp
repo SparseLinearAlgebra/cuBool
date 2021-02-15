@@ -73,7 +73,7 @@ TEST(MatrixCsr, Duplicate) {
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     EXPECT_EQ(CuBool_Matrix_New(instance, &matrix, m, n), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     EXPECT_EQ(CuBool_Matrix_Duplicate(instance, matrix, &duplicated), CUBOOL_STATUS_SUCCESS);
 
@@ -99,7 +99,7 @@ TEST(MatrixCsr, PropertyQuery) {
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     EXPECT_EQ(CuBool_Matrix_New(instance, &matrix, m, n), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     CuBoolIndex_t nrows;
     CuBoolIndex_t ncols;
@@ -131,7 +131,7 @@ TEST(MatrixCsr, ExtractPairs) {
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
 
     EXPECT_EQ(CuBool_Matrix_New(instance, &matrix, m, n), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     CuBoolSize_t nvals = tmatrix.mNvals;
     std::vector<CuBoolIndex_t> rows(tmatrix.mNvals);
@@ -151,7 +151,7 @@ void testMatrixFilling(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInst
     testing::Matrix tmatrix = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
 
     EXPECT_EQ(CuBool_Matrix_New(instance, &matrix, m, n), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Compare test matrix and library one
     EXPECT_EQ(tmatrix.areEqual(matrix, instance), true);
@@ -222,9 +222,9 @@ void testMatrixMultiplyAdd(CuBoolSize_t m, CuBoolSize_t t, CuBoolSize_t n, float
     EXPECT_EQ(CuBool_Matrix_New(instance, &r, m, n), CUBOOL_STATUS_SUCCESS);
 
     // Transfer input data into input matrices
-    EXPECT_EQ(CuBool_Matrix_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_Matrix_Build(instance, b, tb.mRowsIndex.data(), tb.mColsIndex.data(), tb.mNvals), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_Matrix_Build(instance, r, tr.mRowsIndex.data(), tr.mColsIndex.data(), tr.mNvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, b, tb.mRowsIndex.data(), tb.mColsIndex.data(), tb.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, r, tr.mRowsIndex.data(), tr.mColsIndex.data(), tr.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r += a x b
     EXPECT_EQ(CuBool_MxM(instance, r, a, b), CUBOOL_STATUS_SUCCESS);
@@ -304,8 +304,8 @@ void testMatrixAdd(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInstance
     EXPECT_EQ(CuBool_Matrix_New(instance, &r, m, n), CUBOOL_STATUS_SUCCESS);
 
     // Transfer input data into input matrices
-    EXPECT_EQ(CuBool_Matrix_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_Matrix_Build(instance, r, tr.mRowsIndex.data(), tr.mColsIndex.data(), tr.mNvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, r, tr.mRowsIndex.data(), tr.mColsIndex.data(), tr.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r += a
     EXPECT_EQ(CuBool_EWise_Add(instance, r, a), CUBOOL_STATUS_SUCCESS);
@@ -385,8 +385,8 @@ void testMatrixKron(CuBoolSize_t m, CuBoolSize_t n, CuBoolSize_t k, CuBoolSize_t
     EXPECT_EQ(CuBool_Matrix_New(instance, &r, m * k, n * t), CUBOOL_STATUS_SUCCESS);
 
     // Transfer input data into input matrices
-    EXPECT_EQ(CuBool_Matrix_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(CuBool_Matrix_Build(instance, b, tb.mRowsIndex.data(), tb.mColsIndex.data(), tb.mNvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, b, tb.mRowsIndex.data(), tb.mColsIndex.data(), tb.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a `kron` b
     EXPECT_EQ(CuBool_Kron(instance, r, a, b), CUBOOL_STATUS_SUCCESS);
@@ -468,7 +468,7 @@ void testMatrixTranspose(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolIn
     EXPECT_EQ(CuBool_Matrix_New(instance, &r, n, m), CUBOOL_STATUS_SUCCESS);
 
     // Transfer input data into input matrices
-    EXPECT_EQ(CuBool_Matrix_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(CuBool_Matrix_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a ^ T
     EXPECT_EQ(CuBool_Matrix_Transpose(instance, r, a), CUBOOL_STATUS_SUCCESS);

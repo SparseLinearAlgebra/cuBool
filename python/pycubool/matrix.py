@@ -10,7 +10,7 @@ __all__ = [
 
 class Matrix:
     """
-    Wrapper for CuBool Sparse boolean matrix type
+    Wrapper for CuBool Sparse boolean matrix type.
     """
 
     __slots__ = ["hnd"]

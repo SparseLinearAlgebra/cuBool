@@ -49,16 +49,16 @@ namespace cubool {
         ~MatrixCsr() override = default;
 
         void resize(index nrows, index ncols) override;
-        void build(const index *rows, const index *cols, size nvals) override;
+        void build(const index *rows, const index *cols, size nvals, bool isSorted) override;
         void extract(index* rows, index* cols, size_t &nvals) override;
         void extractExt(index* &rows, index* &cols, size_t &nvals) const override;
         void clone(const MatrixBase &other) override;
-        void transpose(const MatrixBase &other);
+        void transpose(const MatrixBase &other) override;
 
         void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
         void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
         void kron(const MatrixBase& a, const MatrixBase& b) override;
-        void add(const MatrixBase& a) override;
+        void ewiseAdd(const MatrixBase& a) override;
 
         size_t getNumVals() const { return mMatrixImpl.m_vals; }
 

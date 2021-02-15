@@ -45,7 +45,7 @@ namespace cubool {
         mBuffer.clear(); // clear all the data, since resize does not preserve the content
     }
 
-    void MatrixDense::build(const index *rows, const index *cols, size_t nvals) {
+    void MatrixDense::build(const index *rows, const index *cols, size nvals, bool isSorted) {
         if (isZeroDim())
             throw details::InvalidState("An attempt to write to empty matrix");
 
@@ -101,6 +101,10 @@ namespace cubool {
 
         this->resize(M, N);
         this->mBuffer = other->getBuffer();
+    }
+
+    void MatrixDense::transpose(const MatrixBase &other) {
+        throw details::NotImplemented("This function is not implemented");
     }
 
     void MatrixDense::multiplySum(const MatrixBase &aBase, const MatrixBase &bBase, const MatrixBase &cBase) {
@@ -170,7 +174,7 @@ namespace cubool {
         throw details::NotImplemented("This function is not implemented");
     }
 
-    void MatrixDense::add(const MatrixBase &a) {
+    void MatrixDense::ewiseAdd(const MatrixBase &a) {
         throw details::NotImplemented("This function is not implemented");
     }
 

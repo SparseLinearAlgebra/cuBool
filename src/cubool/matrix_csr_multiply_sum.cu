@@ -24,48 +24,45 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
-
-#include <cubool/config.hpp>
-#include <cubool/build.hpp>
-#include <string>
+#include <cubool/matrix_csr.hpp>
+#include <nsparse/spgemm.h>
 
 namespace cubool {
 
-    /** Base class for boolean matrix representation */
-    class MatrixBase {
-    public:
-        explicit MatrixBase(class Instance& instance) : mInstanceRef(instance) {}
-        virtual ~MatrixBase() = default;
+    void MatrixCsr::multiplySum(const MatrixBase &aBase, const MatrixBase &bBase, const MatrixBase &cBase) {
+        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
+        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
+        auto c = dynamic_cast<const MatrixCsr*>(&cBase);
 
-        virtual void resize(index nrows, index ncols) = 0;
-        virtual void build(const index *rows, const index *cols, size nvals, bool isSorted) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractExt(index* &rows, index* &cols, size_t &nvals) const = 0;
-        virtual void clone(const MatrixBase& other) = 0;
-        virtual void transpose(const MatrixBase &other) = 0;
+        if (!a || !b || !c)
+            throw details::InvalidArgument("Passed matrices do not belong to csr matrix class");
 
-        virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
-        virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void kron(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void ewiseAdd(const MatrixBase& a) = 0;
+        if (a->isZeroDim() || b->isZeroDim() || c->isZeroDim())
+            throw details::InvalidArgument("An attempt to operate on 0-dim matrices");
 
-        void setDebugMarker(std::string string) { mDebugMarker = std::move(string); }
+        if (a->getNumCols() != b->getNumRows())
+            throw details::InvalidArgument("Incompatible matrix size to multiply");
 
-        const std::string& getDebugMarker() const { return mDebugMarker; }
-        index getNumRows() const { return mNumRows; }
-        index getNumCols() const { return mNumCols; }
-        Instance& getInstance() const { return mInstanceRef; }
-        bool isZeroDim() const { return (size)mNumRows * (size)mNumCols == 0; }
+        index M = a->getNumRows();
+        index N = b->getNumCols();
 
-    protected:
-        std::string mDebugMarker;
-        index mNumRows = 0;
-        index mNumCols = 0;
-        class Instance& mInstanceRef;
-    };
+        if (c->getNumRows() != M || c->getNumCols() != N)
+            throw details::InvalidArgument("Incompatible matrix size to add");
+
+        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
+            // A or B emtpy, therefore result equals C matrix data
+            this->resize(M, N);
+            this->mMatrixImpl = c->mMatrixImpl;
+            return;
+        }
+
+        // Call backend r = c + a * b implementation
+        nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
+        auto result = spgemmFunctor(c->mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
+
+        // Assign result r to this matrix
+        this->resize(M, N);
+        this->mMatrixImpl = std::move(result);
+    }
 
 }
-
-#endif //CUBOOL_MATRIX_BASE_HPP

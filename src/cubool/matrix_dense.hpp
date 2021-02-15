@@ -59,15 +59,16 @@ namespace cubool {
         ~MatrixDense() override = default;
 
         void resize(index nrows, index ncols) override;
-        void build(const index *rows, const index *cols, size_t nvals) override;
+        void build(const index *rows, const index *cols, size nvals, bool isSorted) override;
         void extract(index* rows, index* cols, size_t& nvals) override;
         void extractExt(index* &rows, index* &cols, size_t &nvals) const override;
         void clone(const MatrixBase& other) override;
+        void transpose(const MatrixBase &other) override;
 
         void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
         void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
         void kron(const MatrixBase& a, const MatrixBase& b) override;
-        void add(const MatrixBase& a) override;
+        void ewiseAdd(const MatrixBase& a) override;
 
         index getNumRowsPacked() const { return mNumRowsPacked; }
         index getNumColsPadded() const { return mNumColsPadded; }
