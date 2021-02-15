@@ -27,8 +27,13 @@
 #ifndef CUBOOL_VERSION_HPP
 #define CUBOOL_VERSION_HPP
 
-#include <cubool/build.hpp>
+/** Defined in cmake */
+#define CUBOOL_MAJOR CUBOOL_VERSION_MAJOR
 
+/** Defined in cmake */
+#define CUBOOL_MINOR CUBOOL_VERSION_MINOR
+
+/** Nice utility */
 #define CUBOOL_VERSION ((uint32_t) CUBOOL_VERSION_MAJOR << 4u) | ((uint32_t) CUBOOL_VERSION_MINOR)
 #define CUBOOL_VERSION_STRING #CUBOOL_VERSION_MAJOR "." #CUBOOL_VERSION_MINOR
 

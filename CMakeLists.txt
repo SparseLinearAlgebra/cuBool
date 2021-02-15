@@ -4,20 +4,13 @@ cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
 project(CUBOOL LANGUAGES CXX CUDA)
 
 # Exposed to the user build options
-option(CUBOOL_DEBUG "Build library in debug mode" ON)
-option(CUBOOL_RELEASE "Build library in release mode" OFF)
 option(CUBOOL_WITH_CUB "Build project with locally stored CUB library" ON)
 option(CUBOOL_WITH_NSPARSE "Build library with nsparse crs matrix multiplication backend" ON)
 option(CUBOOL_WITH_NAIVE "Build library with naive and naive-shared dense matrix multiplication" ON)
 option(CUBOOL_BUILD_TESTS "Build project unit-tests with gtest" ON)
 
-# Library version setup
-set(CUBOOL_VERSION_MAJOR 0)
-set(CUBOOL_VERSION_MINOR 1)
-
-configure_file(
-    ${CMAKE_CURRENT_LIST_DIR}/src/cubool/build.hpp.in
-    ${CMAKE_BINARY_DIR}/src/cubool/build.hpp)
+set(CUBOOL_VERSION_MAJOR 1)
+set(CUBOOL_VERSION_MINOR 0)
 
 # Configure dependencies
 if (CUBOOL_WITH_CUB)
@@ -81,7 +74,9 @@ add_library(cubool SHARED ${CUBOOL_SOURCES})
 
 target_include_directories(cubool PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(cubool PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
-target_include_directories(cubool PRIVATE ${CMAKE_BINARY_DIR}/src)
+
+target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_MAJOR=${CUBOOL_VERSION_MAJOR})
+target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_MINOR=${CUBOOL_VERSION_MINOR})
 
 target_link_libraries(cubool PRIVATE nsparse_um)
 target_compile_features(cubool PUBLIC cxx_std_14)
@@ -106,7 +101,9 @@ add_library(cubool_dummy SHARED ${CUBOOL_DUMMY_SOURCES})
 
 target_include_directories(cubool_dummy PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(cubool_dummy PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
-target_include_directories(cubool_dummy PRIVATE ${CMAKE_BINARY_DIR}/src)
+
+target_compile_definitions(cubool_dummy PRIVATE CUBOOL_VERSION_MAJOR=${CUBOOL_VERSION_MAJOR})
+target_compile_definitions(cubool_dummy PRIVATE CUBOOL_VERSION_MINOR=${CUBOOL_VERSION_MINOR})
 
 target_compile_features(cubool_dummy PUBLIC cxx_std_11)
 
@@ -117,3 +114,9 @@ set_target_properties(cubool_dummy PROPERTIES CXX_STANDARD_REQUIRED ON)
 if (CUBOOL_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
+
+# Copy scripts into binary directory
+file(COPY scripts DESTINATION ${CMAKE_BINARY_DIR}/)
+
+# Copy python related stuff
+file(COPY python DESTINATION ${CMAKE_BINARY_DIR}/)

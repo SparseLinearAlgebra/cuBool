@@ -28,7 +28,6 @@
 #define CUBOOL_MATRIX_BASE_HPP
 
 #include <cubool/config.hpp>
-#include <cubool/build.hpp>
 #include <string>
 
 namespace cubool {

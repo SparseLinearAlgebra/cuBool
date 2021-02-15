@@ -4,3 +4,4 @@
 ./tests/test_basic_cuda
 ./tests/test_library_api
 ./tests/test_matrix_dense
+./tests/test_matrix_csr

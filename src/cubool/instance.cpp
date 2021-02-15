@@ -25,7 +25,6 @@
 /**********************************************************************************/
 
 #include <cubool/instance.hpp>
-#include <cubool/build.hpp>
 #include <cubool/details/error.hpp>
 #include <string>
 #include <cstdlib>
