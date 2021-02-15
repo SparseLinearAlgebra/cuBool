@@ -45,7 +45,7 @@ class Matrix:
 
         bridge.check(status)
 
-    def build(self, rows, cols, nvals):
+    def build(self, rows, cols, nvals, is_sorted=False):
         if len(rows) != len(cols) or len(rows) != nvals:
             raise Exception("Size of rows and cols arrays must match the nval values")
 
@@ -56,7 +56,8 @@ class Matrix:
                                                         self.hnd,
                                                         t_rows,
                                                         t_cols,
-                                                        ctypes.c_size_t(nvals))
+                                                        ctypes.c_size_t(nvals),
+                                                        ctypes.c_uint(bridge.get_build_hints(is_sorted)))
 
         bridge.check(status)
 

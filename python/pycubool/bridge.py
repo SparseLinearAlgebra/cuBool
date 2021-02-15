@@ -3,6 +3,7 @@ import ctypes
 __all__ = [
     "configure_instance_desc",
     "load_and_configure",
+    "get_build_hints",
     "check"
 ]
 
@@ -14,11 +15,18 @@ class CuBoolInstanceDescExt(ctypes.Structure):
 _memory_type_generic = 0
 _memory_type_unified = 1
 
+_hint_none = 0x0
+_hint_values_sorted = 0x1
+
 
 def configure_instance_desc():
     desc = CuBoolInstanceDescExt()
     desc.memoryType = ctypes.c_uint(_memory_type_generic)
     return desc
+
+
+def get_build_hints(is_sorted):
+    return _hint_values_sorted if is_sorted else _hint_none
 
 
 def load_and_configure(cubool_lib_path: str):
@@ -58,7 +66,8 @@ def load_and_configure(cubool_lib_path: str):
                                         matrix_p,
                                         ctypes.POINTER(ctypes.c_uint),
                                         ctypes.POINTER(ctypes.c_uint),
-                                        ctypes.c_size_t]
+                                        ctypes.c_size_t,
+                                        ctypes.c_uint]
 
     lib.CuBool_Matrix_ExtractPairs.restype = ctypes.c_uint
     lib.CuBool_Matrix_ExtractPairs.argtypes = [instance_p,
