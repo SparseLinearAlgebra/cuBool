@@ -94,14 +94,6 @@ if you want to build library from the command line only.
 - [CUDA Hello world program](https://developer.nvidia.com/blog/easy-introduction-cuda-c-and-c/)
 - [CUDA CMake tutorial](https://developer.nvidia.com/blog/building-cuda-applications-cmake/)
 
-## Python Setup
-
-After the build process, the shared library object `libcubool.so` is placed
-inside the build directory. Export into the environment or add into bash
-profile the variable `CUBOOL_PATH=/path/to/the/libcubool.so` with appropriate
-path to your setup. Then you will be able to use `pycubool` python wrapper,
-which uses this variable in order to located library object.
-
 ## Get and run
 
 Run the following commands in the command shell to download the repository,
@@ -126,6 +118,14 @@ $ sh ./scripts/tests_run_all.sh
 > $ export CXX=/usr/bin/g++-8
 > $ export CUDAHOSTCXX=/usr/bin/g++-8
 > ```
+
+## Python Wrapper
+
+After the build process, the shared library object `libcubool.so` is placed
+inside the build directory. Export into the environment or add into bash
+profile the variable `CUBOOL_PATH=/path/to/the/libcubool.so` with appropriate
+path to your setup. Then you will be able to use `pycubool` python wrapper,
+which uses this variable in order to located library object.
 
 ## Directory structure
 
@@ -241,12 +241,8 @@ int main() {
     CuBoolInstanceDesc desc{};
     desc.memoryType = CUBOOL_GPU_MEMORY_TYPE_GENERIC;
 
-    status = CuBool_Instance_New(&desc, &I);
-
-    if (status == CUBOOL_STATUS_DEVICE_NOT_PRESENT) {
-        /* System does not provide Cuda compatible device */
-        return 1;
-    }
+    /* System may not provide Cuda compatible device */
+    CHECK(CuBool_Instance_New(&desc, &I));
 
     /* Input graph G */
 
