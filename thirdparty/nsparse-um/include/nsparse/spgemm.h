@@ -74,6 +74,11 @@ struct spgemm_functor_t<bool, index_type, alloc_type> {
             bin_info_t<merge_conf_t<32>, 0, 32>
         >;
 
+    if (c.m_vals == 0) {
+        auto vals = col_index.size();
+        return {std::move(col_index), std::move(res.row_index), rows, cols, (index_type) vals};
+    }
+
     auto merge_res = unique_merge_functor(res.row_index, col_index, c.m_row_index, c.m_col_index, config_merge);
 
     auto& rpt_result = merge_res.first;

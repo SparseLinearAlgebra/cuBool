@@ -24,53 +24,39 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_HPP
-#define CUBOOL_MATRIX_CSR_HPP
-
-#include <cubool/matrix_base.hpp>
-#include <cubool/details/host_allocator.hpp>
-#include <cubool/details/device_allocator.cuh>
-#include <nsparse/matrix.h>
+#include <cubool/matrix_csr.hpp>
+#include <cubool/kernels/matrix_csr_spmerge.cuh>
 
 namespace cubool {
 
-    class MatrixCsr: public MatrixBase {
-    public:
-        using Super = MatrixBase;
-        using Super::mNumRows;
-        using Super::mNumCols;
-        template<typename T>
-        using DeviceAlloc = details::DeviceAllocator<T>;
-        template<typename T>
-        using HostAlloc = details::HostAllocator<T>;
-        using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
+    void MatrixCsr::ewiseAdd(const MatrixBase &aBase) {
+        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
 
-        explicit MatrixCsr(Instance& instance);
-        ~MatrixCsr() override = default;
+        if (!a)
+            throw details::InvalidArgument("Passed matrix does not belong to csr matrix class");
 
-        void resize(index nrows, index ncols) override;
-        void build(const index *rows, const index *cols, size nvals, bool isSorted) override;
-        void extract(index* rows, index* cols, size_t &nvals) override;
-        void extractExt(index* &rows, index* &cols, size_t &nvals) const override;
-        void clone(const MatrixBase &other) override;
-        void transpose(const MatrixBase &other) override;
+        index M = a->getNumRows();
+        index N = a->getNumCols();
 
-        void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
-        void multiplyAdd(const MatrixBase &a, const MatrixBase &b) override;
-        void kron(const MatrixBase& a, const MatrixBase& b) override;
-        void ewiseAdd(const MatrixBase& a) override;
+        if (this->getNumRows() != M || this->getNumCols() != N)
+            throw details::InvalidArgument("Incompatible matrix size to add");
 
-        size_t getNumVals() const { return mMatrixImpl.m_vals; }
+        if (a->isMatrixEmpty()) {
+            // A or B has no values
+            return;
+        }
 
-    private:
-        void resizeStorageToDim();
-        bool isStorageEmpty() const;
-        bool isMatrixEmpty() const;
+        if (this->isMatrixEmpty()) {
+            // So the result is the exact copy of the a
+            this->clone(*a);
+            return;
+        }
 
-        // Uses nsparse csr matrix implementation as a backend
-        MatrixImplType mMatrixImpl;
-    };
+        kernels::SpMergeFunctor<index, DeviceAlloc<index>> spMergeFunctor;
+        auto result = spMergeFunctor(this->mMatrixImpl, a->mMatrixImpl);
+
+        // Assign the actual impl result to this storage
+        this->mMatrixImpl = std::move(result);
+    }
 
 }
-
-#endif //CUBOOL_MATRIX_CSR_HPP

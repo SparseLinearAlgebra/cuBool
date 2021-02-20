@@ -38,30 +38,39 @@
 /** Possible status codes that can be returned from cubool api */
 typedef enum CuBoolStatus {
     /** Successful execution of the function */
-    CUBOOL_STATUS_SUCCESS,
+    CUBOOL_STATUS_SUCCESS = 0,
     /** Generic error code */
-    CUBOOL_STATUS_ERROR,
+    CUBOOL_STATUS_ERROR = 1,
     /** No cuda compatible device in the system */
-    CUBOOL_STATUS_DEVICE_NOT_PRESENT,
+    CUBOOL_STATUS_DEVICE_NOT_PRESENT = 2,
     /** Device side error */
-    CUBOOL_STATUS_DEVICE_ERROR,
+    CUBOOL_STATUS_DEVICE_ERROR = 3,
     /** Failed to allocate memory on cpy or gpu side */
-    CUBOOL_STATUS_MEM_OP_FAILED,
+    CUBOOL_STATUS_MEM_OP_FAILED = 4,
     /** Passed invalid argument to some function */
-    CUBOOL_STATUS_INVALID_ARGUMENT,
+    CUBOOL_STATUS_INVALID_ARGUMENT = 5,
     /** Call of the function is not possible for some context */
-    CUBOOL_STATUS_INVALID_STATE,
+    CUBOOL_STATUS_INVALID_STATE = 6,
     /** Some library feature is not implemented */
-    CUBOOL_STATUS_NOT_IMPLEMENTED
+    CUBOOL_STATUS_NOT_IMPLEMENTED = 7
 } CuBoolStatus;
 
 /** Type of the GPU memory used to allocated gpu resources */
 typedef enum CuBoolGpuMemoryType {
     /** Unified memory space */
-    CUBOOL_GPU_MEMORY_TYPE_MANAGED,
+    CUBOOL_GPU_MEMORY_TYPE_MANAGED = 0,
     /** Device only allocations */
-    CUBOOL_GPU_MEMORY_TYPE_GENERIC
+    CUBOOL_GPU_MEMORY_TYPE_GENERIC = 1
 } CuBoolGpuMemoryType;
+
+/** Generic lib hits for matrix processing */
+typedef enum CuBoolHint {
+    /** Mark input data as row-col sorted */
+    CUBOOL_HINT_VALUES_SORTED = 0x1
+} CuBoolHint;
+
+/** Hit mask */
+typedef unsigned int                CuBoolHints_t;
 
 /** Alias size type for memory and size specification */
 typedef size_t                      CuBoolSize_t;
@@ -79,7 +88,7 @@ typedef struct CuBoolInstance_t*    CuBoolInstance;
 typedef struct CuBoolMatrixDense_t* CuBoolMatrixDense;
 
 /** Cubool sparse boolean matrix handle */
-typedef struct CuBoolMatrix_t* CuBoolMatrix;
+typedef struct CuBoolMatrix_t*      CuBoolMatrix;
 
 /**
  * @brief Memory allocate callback
@@ -138,6 +147,13 @@ typedef struct CuBoolInstanceDesc {
 } CuBoolInstanceDesc;
 
 /**
+ * Extension descriptor used for library setup within python wrapper.
+ */
+typedef struct CuBoolInstanceDescExt {
+    CuBoolGpuMemoryType         memoryType;
+} CuBoolInstanceDescExt;
+
+/**
  * Query human-readable text info about the project implementation
  * @return Read-only library about info
  */
@@ -176,7 +192,7 @@ CUBOOL_API CuBoolStatus CuBool_DeviceCaps_Get(
 );
 
 /**
- * Initialize library instance object, which provides context to all library operations and objects
+ * Initialize library instance object, which provides context to all library operations and primitives.
  *
  * @param instanceDesc User provided instance configuration for memory operations and error handling
  * @param instance Pointer to the place where to store instance handle
@@ -186,6 +202,19 @@ CUBOOL_API CuBoolStatus CuBool_DeviceCaps_Get(
 CUBOOL_API CuBoolStatus CuBool_Instance_New(
     const CuBoolInstanceDesc*   instanceDesc,
     CuBoolInstance*             instance
+);
+
+/**
+ * Initialize library instance object, which provides context to all library operations and primitives.
+ *
+ * @param instanceDescExt Extension descriptor for instance setup within managed env infrastructure.
+ * @param instance Pointer to the place where to store instance handle
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Instance_NewExt(
+    const CuBoolInstanceDescExt*    instanceDescExt,
+    CuBoolInstance*                 instance
 );
 
 /**
@@ -392,6 +421,7 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Resize(
  * @param rows Array of pairs row indices
  * @param cols Array of pairs column indices
  * @param nvals Number of the pairs passed
+ * @param hints Hits flags for processing. Pass VALUES_SORTED if values already in the proper order.
  *
  * @return Error code on this operation
  */
@@ -400,28 +430,30 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Build(
     CuBoolMatrix                matrix,
     const CuBoolIndex_t*        rows,
     const CuBoolIndex_t*        cols,
-    CuBoolSize_t                nvals
+    CuBoolSize_t                nvals,
+    CuBoolHints_t               hints
 );
 
 /**
  * Reads matrix data to the host visible CPU buffer as an array of values pair.
+ *
  * The arrays must be provided by the user and the size of this arrays must
  * be greater or equal the values count of the matrix.
  *
  * @param instance An instance object reference to perform this operation
  * @param matrix Matrix handle to perform operation on
- * @param[in,out] rows Allocated buffer with row indices
- * @param[in,out] cols Allocated buffer with column indices
+ * @param[in,out] rows Buffer to store row indices
+ * @param[in,out] cols Buffer to store column indices
  * @param[in,out] nvals Total number of the pairs
  *
  * @return Error code on this operation
  */
 CUBOOL_API CuBoolStatus CuBool_Matrix_ExtractPairs(
-        CuBoolInstance              instance,
-        CuBoolMatrix                matrix,
-        CuBoolIndex_t*              rows,
-        CuBoolIndex_t*              cols,
-        CuBoolSize_t*               nvals
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix,
+    CuBoolIndex_t*              rows,
+    CuBoolIndex_t*              cols,
+    CuBoolSize_t*               nvals
 );
 
 /**
@@ -460,6 +492,22 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Duplicate(
     CuBoolInstance              instance,
     CuBoolMatrix                matrix,
     CuBoolMatrix*               duplicated
+);
+
+/**
+ * Transpose source matrix and store result of this operation in result matrix.
+ * Formally: result = matrix ^ T
+ *
+ * @param instance An instance object reference to perform this operation
+ * @param result Matrix handle to store result of the operation
+ * @param matrix The source matrix
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_Transpose(
+    CuBoolInstance              instance,
+    CuBoolMatrix                result,
+    CuBoolMatrix                matrix
 );
 
 /**
@@ -505,6 +553,19 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Ncols(
 );
 
 /**
+ * Deletes sparse matrix object.
+ *
+ * @param instance An instance object reference to perform this operation
+ * @param matrix Matrix handle to delete the matrix
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_API CuBoolStatus CuBool_Matrix_Free(
+    CuBoolInstance              instance,
+    CuBoolMatrix                matrix
+);
+
+/**
  * Performs r += a, where '+' is boolean semiring operation.
  *
  * @note Matrices must be compatible
@@ -517,23 +578,10 @@ CUBOOL_API CuBoolStatus CuBool_Matrix_Ncols(
  *
  * @return Error code on this operation
  */
-CUBOOL_API CuBoolStatus CuBool_Matrix_Add(
+CUBOOL_API CuBoolStatus CuBool_EWise_Add(
     CuBoolInstance              instance,
     CuBoolMatrix                r,
     CuBoolMatrix                a
-);
-
-/**
- * Deletes sparse matrix object.
- *
- * @param instance An instance object reference to perform this operation
- * @param matrix Matrix handle to delete the matrix
- *
- * @return Error code on this operation
- */
-CUBOOL_API CuBoolStatus CuBool_Matrix_Free(
-    CuBoolInstance              instance,
-    CuBoolMatrix                matrix
 );
 
 /**

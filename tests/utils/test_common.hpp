@@ -511,6 +511,33 @@ namespace testing {
         }
     };
 
+    struct MatrixTrFunctor {
+        Matrix operator()(const Matrix& ma) {
+            Matrix result;
+            result.mNrows = ma.mNcols;
+            result.mNcols = ma.mNrows;
+            result.mNvals = ma.mNvals;
+            result.mRowsIndex.reserve(result.mNvals);
+            result.mRowsIndex.reserve(result.mNvals);
+
+            std::vector<details::Pair> vals;
+            vals.reserve(result.mNvals);
+
+            for (auto i = 0; i < ma.mNvals; i++) {
+                vals.push_back(details::Pair{ma.mColsIndex[i], ma.mRowsIndex[i]});
+            }
+
+            std::sort(vals.begin(), vals.end(), details::PairCmp{});
+
+            for (auto& p: vals) {
+                result.mRowsIndex.push_back(p.i);
+                result.mColsIndex.push_back(p.j);
+            }
+
+            return std::move(result);
+        }
+    };
+
     struct Printing {
         CuBoolMatrix matrix;
         CuBoolInstance instance;

@@ -26,9 +26,6 @@
 
 #include <cubool/matrix_csr.hpp>
 #include <cubool/details/error.hpp>
-#include <cubool/kernels/matrix_csr_spkron.cuh>
-#include <cubool/kernels/matrix_csr_spmerge.cuh>
-#include <nsparse/spgemm.h>
 #include <algorithm>
 
 namespace cubool {
@@ -46,65 +43,66 @@ namespace cubool {
         mMatrixImpl.zero_dim();  // no content, empty matrix
     }
 
-    void MatrixCsr::build(const index *rows, const index *cols, size nvals) {
+    void MatrixCsr::build(const index *rows, const index *cols, size nvals, bool isSorted) {
         if (nvals == 0) {
             mMatrixImpl.zero_dim();  // no content, empty matrix
             return;
         }
 
-        // Create tmp buffer and pack indices into pairs
-        using CuBoolPairAlloc = details::HostAllocator<Pair>;
-        std::vector<Pair, CuBoolPairAlloc> values;
-        values.reserve(nvals);
-
-        for (size idx = 0; idx < nvals; idx++) {
-            index i = rows[idx];
-            index j = cols[idx];
-
-            if ((i >= getNumRows()) || (j >= getNumCols()))
-                throw details::InvalidArgument(std::string{"Out of matrix bounds value"});
-
-            values.push_back({i, j});
-        }
-
-        // Sort pairs to ensure that data are in the proper format
-        std::sort(values.begin(), values.end(), [](const Pair& a, const Pair& b) {
-            return a.i < b.i || (a.i == b.i && a.j < b.j);
-        });
-
         thrust::host_vector<index, HostAlloc<index>> rowsVec;
-        rowsVec.resize(getNumRows() + 1);
+        rowsVec.resize(getNumRows() + 1, 0);
 
         thrust::host_vector<index, HostAlloc<index>> colsVec;
         colsVec.reserve(nvals);
 
-        {
-            // Start from the first (indexed as 0) row
-            index currentRow = 0;
-            rowsVec[currentRow] = 0;
+        if (isSorted) {
+            // Assign cols indices and count num nnz per each row
+            for (size_t idx = 0; idx < nvals; idx++) {
+                index i = rows[idx];
+                index j = cols[idx];
 
-            for (size idx = 0; idx < nvals; idx++) {
-                index i = values[idx].i;
-                index j = values[idx].j;
+                if ((i >= getNumRows()) || (j >= getNumCols()))
+                    throw details::InvalidArgument(std::string{"Out of matrix bounds value"});
 
-                // When go to the new line commit previous offsets
-                if (currentRow < i) {
-                    do {
-                        // Since we can skip some lines and explicitly offsets here
-                        currentRow += 1;
-                        rowsVec[currentRow] = colsVec.size();
-                    } while (currentRow != i);
-                }
-
-                // Add column index
+                rowsVec[i] += 1;
                 colsVec.push_back(j);
             }
+        }
+        else {
+            // Create tmp buffer and pack indices into pairs
+            using CuBoolPairAlloc = details::HostAllocator<Pair>;
 
-            // Before finish commit the rest of the rows (note: rows_vec is from [0 .. nrows])
-            do {
-                currentRow += 1;
-                rowsVec[currentRow] = colsVec.size();
-            } while (currentRow != getNumRows());
+            std::vector<Pair, CuBoolPairAlloc> values;
+            values.reserve(nvals);
+
+            for (size idx = 0; idx < nvals; idx++) {
+                index i = rows[idx];
+                index j = cols[idx];
+
+                if ((i >= getNumRows()) || (j >= getNumCols()))
+                    throw details::InvalidArgument(std::string{"Out of matrix bounds value"});
+
+                values.push_back({i, j});
+            }
+
+            // Sort pairs to ensure that data are in the proper format
+            std::sort(values.begin(), values.end(), [](const Pair& a, const Pair& b) {
+                return a.i < b.i || (a.i == b.i && a.j < b.j);
+            });
+
+            // Assign cols indices and count num nnz per each row
+            for (const auto& p: values) {
+                rowsVec[p.i] += 1;
+                colsVec.push_back(p.j);
+            }
+        }
+
+        // Exclusive scan to eval rows offsets
+        index sum = 0;
+        for (size_t i = 0; i < rowsVec.size(); i++) {
+            index prevSum = sum;
+            sum += rowsVec[i];
+            rowsVec[i] = prevSum;
         }
 
         // Create device buffers and copy data from the cpu side
@@ -119,7 +117,7 @@ namespace cubool {
         if (getNumVals() > nvals)
             throw details::InvalidArgument("Provided buffers sizes must be greater or equal the number of values in the matrix");
 
-        // Set nvlas to the exact number of nnz values
+        // Set nvals to the exact number of nnz values
         nvals = getNumVals();
 
         auto& rowsDeviceVec = mMatrixImpl.m_row_index;
@@ -185,136 +183,6 @@ namespace cubool {
 
         this->resize(M, N);
         this->mMatrixImpl = other->mMatrixImpl;
-    }
-
-    void MatrixCsr::multiplySum(const MatrixBase &aBase, const MatrixBase &bBase, const MatrixBase &cBase) {
-        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
-        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
-        auto c = dynamic_cast<const MatrixCsr*>(&cBase);
-
-        if (!a || !b || !c)
-            throw details::InvalidArgument("Passed matrices do not belong to dense matrix class");
-
-        if (a->isZeroDim() || b->isZeroDim() || c->isZeroDim())
-            throw details::InvalidArgument("An attempt to operate on 0-dim matrices");
-
-        if (a->getNumCols() != b->getNumRows())
-            throw details::InvalidArgument("Incompatible matrix size to multiply");
-
-        index M = a->getNumRows();
-        index N = b->getNumCols();
-
-        if (c->getNumRows() != M || c->getNumCols() != N)
-            throw details::InvalidArgument("Incompatible matrix size to add");
-
-        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
-            // A or B emtpy, therefore result equals C matrix data
-            this->resize(M, N);
-            this->mMatrixImpl = c->mMatrixImpl;
-            return;
-        }
-
-        // Call backend r = c + a * b implementation
-        nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
-        auto result = spgemmFunctor(c->mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
-
-        // Assign result r to this matrix
-        this->resize(M, N);
-        this->mMatrixImpl = std::move(result);
-    }
-
-    void MatrixCsr::multiplyAdd(const MatrixBase &aBase, const MatrixBase &bBase) {
-        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
-        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
-
-        if (!a || !b)
-            throw details::InvalidArgument("Passed matrices do not belong to csr matrix class");
-
-        if (a->isZeroDim() || b->isZeroDim())
-            throw details::InvalidArgument("An attempt to operate on 0-dim matrices");
-
-        if (a->getNumCols() != b->getNumRows())
-            throw details::InvalidArgument("Incompatible matrix size to multiply");
-
-        index M = a->getNumRows();
-        index N = b->getNumCols();
-
-        if (this->getNumRows() != M || this->getNumCols() != N)
-            throw details::InvalidArgument("Incompatible matrix size to add");
-
-        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
-            // A or B has no values
-            return;
-        }
-
-        if (this->isStorageEmpty()) {
-            // If this was resized but actual data was not allocated
-            this->resizeStorageToDim();
-        }
-
-        // Call backend r = c + a * b implementation, as C this is passed
-        nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
-        auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
-
-        // Assign result to this
-        this->resize(M, N);
-        this->mMatrixImpl = std::move(result);
-    }
-
-    void MatrixCsr::kron(const MatrixBase &aBase, const MatrixBase &bBase) {
-        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
-        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
-
-        if (!a || !b)
-            throw details::InvalidArgument("Passed matrices do not belong to csr matrix class");
-
-        index M = a->getNumRows();
-        index N = a->getNumCols();
-        index K = b->getNumRows();
-        index T = b->getNumCols();
-
-        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
-            // Result will be empty
-            this->resize(M * K, N * T);
-            return;
-        }
-
-        kernels::SpKronFunctor<index, DeviceAlloc<index>> spKronFunctor;
-        auto result = spKronFunctor(a->mMatrixImpl, b->mMatrixImpl);
-
-        // Assign result to this
-        this->resize(M * K, N * T);
-        this->mMatrixImpl = std::move(result);
-    }
-
-    void MatrixCsr::add(const MatrixBase &aBase) {
-        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
-
-        if (!a)
-            throw details::InvalidArgument("Passed matrix does not belong to csr matrix class");
-
-        index M = a->getNumRows();
-        index N = a->getNumCols();
-
-        if (this->getNumRows() != M || this->getNumCols() != N)
-            throw details::InvalidArgument("Incompatible matrix size to add");
-
-        if (a->isMatrixEmpty()) {
-            // A or B has no values
-            return;
-        }
-
-        if (this->isMatrixEmpty()) {
-            // So the result is the exact copy of the a
-            this->clone(*a);
-            return;
-        }
-
-        kernels::SpMergeFunctor<index, DeviceAlloc<index>> spMergeFunctor;
-        auto result = spMergeFunctor(this->mMatrixImpl, a->mMatrixImpl);
-
-        // Assign the actual impl result to this storage
-        this->mMatrixImpl = std::move(result);
     }
 
     void MatrixCsr::resizeStorageToDim() {

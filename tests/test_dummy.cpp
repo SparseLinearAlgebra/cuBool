@@ -83,9 +83,7 @@ TEST(CuBoolMatrix, Error) {
     CuBoolInstanceDesc instanceDesc{};
 
     EXPECT_EQ(CuBool_Instance_New(&instanceDesc, &instance), CUBOOL_STATUS_SUCCESS);
-
     EXPECT_EQ(CuBool_Matrix_New(nullptr, &matrix, 1024, 2048), CUBOOL_STATUS_INVALID_ARGUMENT);
-
     EXPECT_EQ(CuBool_Matrix_New(instance, &matrix, 1024, 2048), CUBOOL_STATUS_SUCCESS);
 
     auto randomAddress = (char *) matrix + 0x0f0;
@@ -94,7 +92,6 @@ TEST(CuBoolMatrix, Error) {
     EXPECT_EQ(CuBool_Matrix_Resize(instance, invalidMatrix, 2 * 1024, 2 * 2048), CUBOOL_STATUS_ERROR);
 
     EXPECT_EQ(CuBool_Matrix_Free(instance, matrix), CUBOOL_STATUS_SUCCESS);
-
     EXPECT_EQ(CuBool_Matrix_Free(nullptr, matrix), CUBOOL_STATUS_INVALID_ARGUMENT);
 
     EXPECT_EQ(CuBool_Instance_Free(instance), CUBOOL_STATUS_SUCCESS);

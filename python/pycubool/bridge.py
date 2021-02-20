@@ -1,19 +1,32 @@
 import ctypes
 
 __all__ = [
-    "CuBoolInstanceDesc",
+    "configure_instance_desc",
     "load_and_configure",
+    "get_build_hints",
     "check"
 ]
 
 
-class CuBoolInstanceDesc(ctypes.Structure):
-    _fields_ = [("memoryType", ctypes.c_uint),
-                ("errorCallback.userData", ctypes.c_void_p),
-                ("errorCallback.msgFun", ctypes.c_void_p),
-                ("allocationCallback.userData", ctypes.c_void_p),
-                ("allocationCallback.allocateFun", ctypes.c_void_p),
-                ("allocationCallback.deallocateFun", ctypes.c_void_p)]
+class CuBoolInstanceDescExt(ctypes.Structure):
+    _fields_ = [("memoryType", ctypes.c_uint)]
+
+
+_memory_type_generic = 0
+_memory_type_unified = 1
+
+_hint_none = 0x0
+_hint_values_sorted = 0x1
+
+
+def configure_instance_desc():
+    desc = CuBoolInstanceDescExt()
+    desc.memoryType = ctypes.c_uint(_memory_type_generic)
+    return desc
+
+
+def get_build_hints(is_sorted):
+    return _hint_values_sorted if is_sorted else _hint_none
 
 
 def load_and_configure(cubool_lib_path: str):
@@ -25,8 +38,8 @@ def load_and_configure(cubool_lib_path: str):
     matrix_p = ctypes.c_void_p
     p_to_matrix_p = ctypes.POINTER(matrix_p)
 
-    lib.CuBool_Instance_New.restype = ctypes.c_uint
-    lib.CuBool_Instance_New.argtypes = [ctypes.POINTER(CuBoolInstanceDesc),
+    lib.CuBool_Instance_NewExt.restype = ctypes.c_uint
+    lib.CuBool_Instance_NewExt.argtypes = [ctypes.POINTER(CuBoolInstanceDescExt),
                                         p_to_instance_p]
 
     lib.CuBool_Instance_Free.restype = ctypes.c_uint
@@ -53,7 +66,8 @@ def load_and_configure(cubool_lib_path: str):
                                         matrix_p,
                                         ctypes.POINTER(ctypes.c_uint),
                                         ctypes.POINTER(ctypes.c_uint),
-                                        ctypes.c_size_t]
+                                        ctypes.c_size_t,
+                                        ctypes.c_uint]
 
     lib.CuBool_Matrix_ExtractPairs.restype = ctypes.c_uint
     lib.CuBool_Matrix_ExtractPairs.argtypes = [instance_p,
@@ -66,6 +80,11 @@ def load_and_configure(cubool_lib_path: str):
     lib.CuBool_Matrix_Duplicate.argtypes = [instance_p,
                                             matrix_p,
                                             p_to_matrix_p]
+
+    lib.CuBool_Matrix_Transpose.restype = ctypes.c_uint
+    lib.CuBool_Matrix_Transpose.argtypes = [instance_p,
+                                            matrix_p,
+                                            matrix_p]
 
     lib.CuBool_Matrix_Nrows.restype = ctypes.c_uint
     lib.CuBool_Matrix_Nrows.argtype = [instance_p,
@@ -82,8 +101,8 @@ def load_and_configure(cubool_lib_path: str):
                                        matrix_p,
                                        ctypes.POINTER(ctypes.c_size_t)]
 
-    lib.CuBool_Matrix_Add.restype = ctypes.c_uint
-    lib.CuBool_Matrix_Add.argtypes = [instance_p,
+    lib.CuBool_EWise_Add.restype = ctypes.c_uint
+    lib.CuBool_EWise_Add.argtypes = [instance_p,
                                       matrix_p,
                                       matrix_p]
 

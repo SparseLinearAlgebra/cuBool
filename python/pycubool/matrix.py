@@ -1,7 +1,7 @@
 import ctypes
 
 from . import wrapper
-from . import dll
+from . import bridge
 
 __all__ = [
     "Matrix"
@@ -10,22 +10,32 @@ __all__ = [
 
 class Matrix:
     """
-    Wrapper for CuBool Sparse boolean matrix type
+    Wrapper for CuBool Sparse boolean matrix type.
     """
 
-    def __init__(self, nrows: int, ncols: int):
-        self.hnd = ctypes.c_void_p(0)
-        self.wrapper = wrapper.singleton
+    __slots__ = ["hnd"]
+
+    def __init__(self, hnd):
+        self.hnd = hnd
+
+    @classmethod
+    def empty(cls, shape):
+        hnd = ctypes.c_void_p(0)
+
+        nrows = shape[0]
+        ncols = shape[1]
 
         status = wrapper.loaded_dll.CuBool_Matrix_New(wrapper.instance,
-                                                      ctypes.byref(self.hnd),
+                                                      ctypes.byref(hnd),
                                                       ctypes.c_uint(nrows),
                                                       ctypes.c_uint(ncols))
 
-        dll.check(status)
+        bridge.check(status)
+
+        return Matrix(hnd)
 
     def __del__(self):
-        dll.check(self.wrapper.loaded_dll.CuBool_Matrix_Free(wrapper.instance, self.hnd))
+        bridge.check(wrapper.loaded_dll.CuBool_Matrix_Free(wrapper.instance, self.hnd))
 
     def resize(self, nrows, ncols):
         status = wrapper.loaded_dll.matrix_resizer(wrapper.instance,
@@ -33,9 +43,9 @@ class Matrix:
                                                    ctypes.c_uint(nrows),
                                                    ctypes.c_uint(ncols))
 
-        dll.check(status)
+        bridge.check(status)
 
-    def build(self, rows, cols, nvals):
+    def build(self, rows, cols, nvals, is_sorted=False):
         if len(rows) != len(cols) or len(rows) != nvals:
             raise Exception("Size of rows and cols arrays must match the nval values")
 
@@ -46,9 +56,31 @@ class Matrix:
                                                         self.hnd,
                                                         t_rows,
                                                         t_cols,
-                                                        ctypes.c_size_t(nvals))
+                                                        ctypes.c_size_t(nvals),
+                                                        ctypes.c_uint(bridge.get_build_hints(is_sorted)))
 
-        dll.check(status)
+        bridge.check(status)
+
+    def duplicate(self):
+        hnd = ctypes.c_void_p(0)
+
+        status = wrapper.loaded_dll.CuBool_Matrix_Duplicate(wrapper.instance,
+                                                            self.hnd,
+                                                            ctypes.byref(hnd))
+
+        bridge.check(status)
+        return Matrix(hnd)
+
+    def transpose(self):
+        shape = (self.ncols, self.nrows)
+        result = Matrix.empty(shape)
+
+        status = wrapper.loaded_dll.CuBool_Matrix_Transpose(wrapper.instance,
+                                                            result.hnd,
+                                                            self.hnd)
+
+        bridge.check(status)
+        return result
 
     @property
     def nrows(self) -> int:
@@ -58,18 +90,18 @@ class Matrix:
                                                         self.hnd,
                                                         ctypes.byref(result))
 
-        dll.check(status)
+        bridge.check(status)
         return int(result.value)
 
     @property
-    def nclos(self) -> int:
+    def ncols(self) -> int:
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.CuBool_Matrix_Ncols(wrapper.instance,
                                                         self.hnd,
                                                         ctypes.byref(result))
 
-        dll.check(status)
+        bridge.check(status)
         return int(result.value)
 
     @property
@@ -80,15 +112,16 @@ class Matrix:
                                                         self.hnd,
                                                         ctypes.byref(result))
 
-        dll.check(status)
+        bridge.check(status)
         return int(result.value)
 
     @property
     def shape(self) -> (int, int):
-        return self.nrows, self.nclos
+        return self.nrows, self.ncols
 
     def to_lists(self):
         values_count = self.nvals
+
         rows = (ctypes.c_uint * values_count)()
         cols = (ctypes.c_uint * values_count)()
         nvals = ctypes.c_size_t(values_count)
@@ -99,15 +132,6 @@ class Matrix:
                                                                cols,
                                                                ctypes.byref(nvals))
 
-        dll.check(status)
+        bridge.check(status)
 
         return rows, cols
-
-    def duplicate(self):
-        result_matrix = Matrix(self.nrows, self.nclos)
-        status = wrapper.loaded_dll.CuBool_Matrix_Duplicate(wrapper.instance,
-                                                            self.hnd,
-                                                            result_matrix.hnd)
-
-        dll.check(status)
-        return result_matrix

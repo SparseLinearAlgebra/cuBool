@@ -329,6 +329,21 @@ CuBoolStatus CuBool_Matrix_Duplicate(CuBoolInstance instance, CuBoolMatrix matri
     CUBOOL_END_BODY
 }
 
+CuBoolStatus CuBool_Matrix_Transpose(CuBoolInstance instance, CuBoolMatrix result, CuBoolMatrix matrix) {
+    auto instanceImpl = (cubool_dummy::Instance *) instance;
+    auto resultImpl = (cubool_dummy::Matrix *) result;
+    auto matrixImpl = (cubool_dummy::Matrix *) matrix;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
+    CUBOOL_CHECK_ARG_NOT_NULL(result);
+
+    CUBOOL_BEGIN_BODY
+        instanceImpl->validateMatrix(matrixImpl);
+        instanceImpl->validateMatrix(resultImpl);
+    CUBOOL_END_BODY
+}
+
 CuBoolStatus CuBool_Matrix_Nvals(CuBoolInstance instance, CuBoolMatrix matrix, CuBoolSize_t *nvals) {
     auto instanceImpl = (cubool_dummy::Instance *) instance;
     auto matrixImpl = (cubool_dummy::Matrix *) matrix;
@@ -371,7 +386,19 @@ CuBoolStatus CuBool_Matrix_Ncols(CuBoolInstance instance, CuBoolMatrix matrix, C
     CUBOOL_END_BODY
 }
 
-CuBoolStatus CuBool_Matrix_Add(CuBoolInstance instance, CuBoolMatrix r, CuBoolMatrix a) {
+CuBoolStatus CuBool_Matrix_Free(CuBoolInstance instance, CuBoolMatrix matrix) {
+    auto instanceImpl = (cubool_dummy::Instance*) instance;
+    auto matrixImpl = (cubool_dummy::Matrix*) matrix;
+
+    CUBOOL_CHECK_INSTANCE(instance);
+    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
+
+    CUBOOL_BEGIN_BODY
+        instanceImpl->destroyMatrix(matrixImpl);
+    CUBOOL_END_BODY
+}
+
+CuBoolStatus CuBool_EWise_Add(CuBoolInstance instance, CuBoolMatrix r, CuBoolMatrix a) {
     auto instanceImpl = (cubool_dummy::Instance *) instance;
     auto rImpl = (cubool_dummy::Matrix *) r;
     auto aImpl = (cubool_dummy::Matrix *) a;
@@ -383,18 +410,6 @@ CuBoolStatus CuBool_Matrix_Add(CuBoolInstance instance, CuBoolMatrix r, CuBoolMa
     CUBOOL_BEGIN_BODY
         instanceImpl->validateMatrix(rImpl);
         instanceImpl->validateMatrix(aImpl);
-    CUBOOL_END_BODY
-}
-
-CuBoolStatus CuBool_Matrix_Free(CuBoolInstance instance, CuBoolMatrix matrix) {
-    auto instanceImpl = (cubool_dummy::Instance*) instance;
-    auto matrixImpl = (cubool_dummy::Matrix*) matrix;
-
-    CUBOOL_CHECK_INSTANCE(instance);
-    CUBOOL_CHECK_ARG_NOT_NULL(matrix);
-
-    CUBOOL_BEGIN_BODY
-        instanceImpl->destroyMatrix(matrixImpl);
     CUBOOL_END_BODY
 }
 

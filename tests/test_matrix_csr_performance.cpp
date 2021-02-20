@@ -32,7 +32,7 @@ CuBoolMatrix createMatrixFromTestData(const testing::Matrix& source, CuBoolInsta
     CuBoolMatrix matrix = nullptr;
 
     CuBool_Matrix_New(instance, &matrix, source.mNrows, source.mNcols);
-    CuBool_Matrix_Build(instance, matrix, source.mRowsIndex.data(), source.mColsIndex.data(), source.mNvals);
+    CuBool_Matrix_Build(instance, matrix, source.mRowsIndex.data(), source.mColsIndex.data(), source.mNvals, CUBOOL_HINT_VALUES_SORTED);
 
     return matrix;
 }

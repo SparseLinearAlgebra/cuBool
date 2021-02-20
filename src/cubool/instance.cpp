@@ -25,17 +25,18 @@
 /**********************************************************************************/
 
 #include <cubool/instance.hpp>
-#include <cubool/build.hpp>
 #include <cubool/details/error.hpp>
 #include <string>
 #include <cstdlib>
 
 namespace cubool {
 
-    Instance* Instance::gInstance = nullptr;
+    volatile Instance* Instance::gInstance = nullptr;
+    volatile bool Instance::gIsManagedUsage = false;
 
     Instance::Instance(const CuBoolInstanceDesc &desc) {
         gInstance = this;
+        gIsManagedUsage = false;
 
         mAllocCallback = desc.allocationCallback;
         mMessageCallback = desc.errorCallback;
@@ -51,6 +52,20 @@ namespace cubool {
             mAllocCallback.deallocateFun = nullptr;
             mAllocCallback.userData = nullptr;
         }
+
+#ifdef CUBOOL_DEBUG
+        sendMessage(CUBOOL_STATUS_SUCCESS, "Initialize CuBool instance");
+        printDeviceCapabilities();
+#endif // CUBOOL_DEBUG
+    }
+
+    Instance::Instance(const CuBoolInstanceDescExt &descExt) {
+        gInstance = this;
+
+        // For RAM allocations uses default malloc
+        mMemoryType = descExt.memoryType;
+        // Set managed usage on, since this could be called within managed env
+        gIsManagedUsage = true;
 
 #ifdef CUBOOL_DEBUG
         sendMessage(CUBOOL_STATUS_SUCCESS, "Initialize CuBool instance");
@@ -119,7 +134,19 @@ namespace cubool {
         if (!gInstance)
             throw details::InvalidState("No instance in the system");
 
-        return *gInstance;
+        return (Instance&) *gInstance;
+    }
+
+    Instance* Instance::getInstancePtr() {
+        return (Instance* ) gInstance;
+    }
+
+    bool Instance::isInstancePresent() {
+        return gInstance != nullptr;
+    }
+
+    bool Instance::isManagedUsageAllowed() {
+        return gIsManagedUsage;
     }
 
 }

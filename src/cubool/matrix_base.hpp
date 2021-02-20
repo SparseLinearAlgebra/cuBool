@@ -28,7 +28,6 @@
 #define CUBOOL_MATRIX_BASE_HPP
 
 #include <cubool/config.hpp>
-#include <cubool/build.hpp>
 #include <string>
 
 namespace cubool {
@@ -40,15 +39,16 @@ namespace cubool {
         virtual ~MatrixBase() = default;
 
         virtual void resize(index nrows, index ncols) = 0;
-        virtual void build(const index* rows, const index* cols, size nvals) = 0;
+        virtual void build(const index *rows, const index *cols, size nvals, bool isSorted) = 0;
         virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
         virtual void extractExt(index* &rows, index* &cols, size_t &nvals) const = 0;
         virtual void clone(const MatrixBase& other) = 0;
+        virtual void transpose(const MatrixBase &other) = 0;
 
         virtual void multiplySum(const MatrixBase& a, const MatrixBase& b, const MatrixBase& c) = 0;
         virtual void multiplyAdd(const MatrixBase& a, const MatrixBase& b) = 0;
         virtual void kron(const MatrixBase& a, const MatrixBase& b) = 0;
-        virtual void add(const MatrixBase& a) = 0;
+        virtual void ewiseAdd(const MatrixBase& a) = 0;
 
         void setDebugMarker(std::string string) { mDebugMarker = std::move(string); }
 
