@@ -22,8 +22,8 @@ class TestMatrixOperations(unittest.TestCase):
 
     def test_add(self):
         """
-       Unit test for addition of two matrix
-       """
+        Unit test for addition of two matrices
+        """
 
         a = pycubool.Matrix.empty([4, 4])
         a_rows = [0, 1, 2, 3, 3, 3, 3]
@@ -44,7 +44,7 @@ class TestMatrixOperations(unittest.TestCase):
 
     def test_mxm(self):
         """
-        Unit test for multiplication of two matrix
+        Unit test for multiplication of two matrices
         """
 
         a = pycubool.Matrix.empty([4, 4])
