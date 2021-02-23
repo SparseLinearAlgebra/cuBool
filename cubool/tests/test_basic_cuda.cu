@@ -24,7 +24,7 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <gtest/gtest.h>
+#include <testing/testing.hpp>
 #include <memory>
 
 // Simple kernel to sum float matrices
@@ -75,7 +75,7 @@ TEST(Cuda, BasicExample) {
     cudaMemcpy(c, device_c, sizeof(float) * NxN, cudaMemcpyDeviceToHost);
 
     for (int i = 0; i < NxN; i++) {
-        EXPECT_EQ(c[i], a[i] + b[i]);
+        ASSERT_EQ(c[i], a[i] + b[i]);
     }
 
     cudaFree(device_a);
@@ -87,7 +87,4 @@ TEST(Cuda, BasicExample) {
     free(c);
 }
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+CUBOOL_GTEST_MAIN

@@ -1,8 +1,7 @@
 /**********************************************************************************/
-/*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
+/* Copyright (c) 2021 JetBrains-Research                                          */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -21,25 +20,51 @@
 /* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  */
 /* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  */
 /* SOFTWARE.                                                                      */
-/*                                                                                */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#ifndef CUBOOL_TESTING_MATRIXEWISEADD_HPP
+#define CUBOOL_TESTING_MATRIXEWISEADD_HPP
 
-cuBoolStatus cuBool_MxM(
-        cuBoolMatrix        result,
-        cuBoolMatrix        left,
-        cuBoolMatrix        right,
-        cuBoolHints         hints
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(left)
-        CUBOOL_ARG_NOT_NULL(right)
-        auto resultM = (cubool::Matrix*) result;
-        auto leftM = (cubool::Matrix*) left;
-        auto rightM = (cubool::Matrix*) right;
-        resultM->multiply(*leftM, *rightM, hints & CUBOOL_HINT_ACCUMULATE);
-    CUBOOL_END_BODY
+#include <testing/matrix.hpp>
+
+namespace testing {
+
+    struct MatrixEWiseAddFunctor {
+        Matrix operator()(const Matrix& ma, const Matrix& mb) {
+            auto m = ma.mNrows;
+            auto n = ma.mNcols;
+
+            assert(ma.mNrows == mb.mNrows);
+            assert(ma.mNcols == mb.mNcols);
+
+            std::vector<std::vector<uint8_t>> r(m, std::vector<uint8_t>(n, 0));
+
+            for (size_t i = 0; i < ma.mNvals; i++) {
+                r[ma.mRowsIndex[i]][ma.mColsIndex[i]] = 1;
+            }
+
+            for (size_t i = 0; i < mb.mNvals; i++) {
+                r[mb.mRowsIndex[i]][mb.mColsIndex[i]] = 1;
+            }
+
+            Matrix result;
+            result.mNrows = m;
+            result.mNcols = n;
+
+            for (size_t i = 0; i < m; i++) {
+                for (size_t j = 0; j < n; j++) {
+                    if (r[i][j] != 0) {
+                        result.mRowsIndex.push_back(i);
+                        result.mColsIndex.push_back(j);
+                        result.mNvals += 1;
+                    }
+                }
+            }
+
+            return std::move(result);
+        }
+    };
+
 }
+
+#endif //CUBOOL_TESTING_MATRIXEWISEADD_HPP

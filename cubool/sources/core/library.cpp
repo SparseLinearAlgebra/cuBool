@@ -26,6 +26,7 @@
 
 #include <core/library.hpp>
 #include <core/error.hpp>
+#include <core/matrix.hpp>
 #include <backend/backend_base.hpp>
 #include <backend/matrix_base.hpp>
 
@@ -79,10 +80,10 @@ namespace cubool {
     }
 
     MatrixBase *Library::createMatrix(size_t nrows, size_t ncols) {
-        return mBackend->createMatrix(nrows, ncols);
+        return new Matrix(nrows, ncols, *mBackend);
     }
 
     void Library::releaseMatrix(MatrixBase *matrixBase) {
-        mBackend->releaseMatrix(matrixBase);
+        delete matrixBase;
     }
 }

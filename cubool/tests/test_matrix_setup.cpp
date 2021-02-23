@@ -2,7 +2,7 @@
 /*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020 JetBrains-Research                                          */
+/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -24,53 +24,59 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_HPP
-#define CUBOOL_MATRIX_CSR_HPP
+#include <testing/testing.hpp>
 
-#include <backend/matrix_base.hpp>
-#include <cuda/details/host_allocator.hpp>
-#include <cuda/details/device_allocator.cuh>
-#include <nsparse/matrix.h>
+TEST(MatrixCsr, CreateDestroy) {
+    cuBoolMatrix matrix = nullptr;
 
-namespace cubool {
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
 
-    class MatrixCsr: public MatrixBase {
-    public:
-        template<typename T>
-        using DeviceAlloc = details::DeviceAllocator<T>;
-        template<typename T>
-        using HostAlloc = details::HostAllocator<T>;
-        using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
+    ASSERT_EQ(cuBool_Matrix_New(&matrix, 0, 0), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
 
-        explicit MatrixCsr(size_t nrows, size_t ncols, Instance& instance);
-        ~MatrixCsr() override = default;
+    ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
 
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
-        void extract(index* rows, index* cols, size_t &nvals) override;
+// Fills sparse matrix with random data and tests whether the transfer works correctly
+void testMatrixFilling(cuBoolIndex m, cuBoolIndex n, float density) {
+    cuBoolMatrix matrix = nullptr;
 
-        void clone(const MatrixBase &other) override;
-        void transpose(const MatrixBase &other) override;
+    testing::Matrix tmatrix = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
 
-        void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
-        void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate) override;
-        void kronecker(const MatrixBase& a, const MatrixBase& b) override;
-        void eWiseAdd(const MatrixBase& a, const MatrixBase& b) override;
+    ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-        index getNrows() const override;
-        index getNcols() const override;
-        index getNvals() const override;
+    // Compare test matrix and library one
+    ASSERT_EQ(tmatrix.areEqual(matrix), true);
 
-    private:
-        void resizeStorageToDim();
-        bool isStorageEmpty() const;
-        bool isMatrixEmpty() const;
+    // Remember to release resources
+    ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
+}
 
-        // Uses nsparse csr matrix implementation as a backend
-        MatrixImplType mMatrixImpl;
-        size_t mNrows = 0;
-        size_t mNcols = 0;
-        Instance& mInstance;
-    };
-};
+void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolHints setup) {
+    ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
-#endif //CUBOOL_MATRIX_CSR_HPP
+    for (size_t i = 0; i < 10; i++) {
+        testMatrixFilling(m, n, 0.001f + (0.05f) * ((float) i));
+    }
+
+    ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, FillingSmall) {
+    cuBoolIndex m = 60, n = 100;
+    testRun(m, n, CUBOOL_HINT_NO);
+}
+
+TEST(MatrixCsr, FillingMedium) {
+    cuBoolIndex m = 500, n = 1000;
+    testRun(m, n, CUBOOL_HINT_NO);
+
+}
+
+TEST(MatrixCsr, FillingLarge) {
+    cuBoolIndex m = 1000, n = 2000;
+    testRun(m, n, CUBOOL_HINT_NO);
+}
+
+CUBOOL_GTEST_MAIN

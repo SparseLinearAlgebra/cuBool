@@ -2,7 +2,7 @@
 /*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020 JetBrains-Research                                          */
+/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -24,53 +24,67 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_HPP
-#define CUBOOL_MATRIX_CSR_HPP
+#ifndef CUBOOL_TESTING_TIMER_HPP
+#define CUBOOL_TESTING_TIMER_HPP
 
-#include <backend/matrix_base.hpp>
-#include <cuda/details/host_allocator.hpp>
-#include <cuda/details/device_allocator.cuh>
-#include <nsparse/matrix.h>
+#include <chrono>
 
-namespace cubool {
+namespace testing {
 
-    class MatrixCsr: public MatrixBase {
+    struct Timer {
     public:
-        template<typename T>
-        using DeviceAlloc = details::DeviceAllocator<T>;
-        template<typename T>
-        using HostAlloc = details::HostAllocator<T>;
-        using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
+        void start() {
+            mStart = mEnd = clock::now();
+        }
 
-        explicit MatrixCsr(size_t nrows, size_t ncols, Instance& instance);
-        ~MatrixCsr() override = default;
+        void end() {
+            mEnd = clock::now();
+        }
 
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
-        void extract(index* rows, index* cols, size_t &nvals) override;
-
-        void clone(const MatrixBase &other) override;
-        void transpose(const MatrixBase &other) override;
-
-        void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
-        void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate) override;
-        void kronecker(const MatrixBase& a, const MatrixBase& b) override;
-        void eWiseAdd(const MatrixBase& a, const MatrixBase& b) override;
-
-        index getNrows() const override;
-        index getNcols() const override;
-        index getNvals() const override;
+        double getElapsedTimeMs() const {
+            using namespace std::chrono;
+            return (double) duration_cast<nanoseconds>(mEnd - mStart).count() / 1.0e6;
+        }
 
     private:
-        void resizeStorageToDim();
-        bool isStorageEmpty() const;
-        bool isMatrixEmpty() const;
-
-        // Uses nsparse csr matrix implementation as a backend
-        MatrixImplType mMatrixImpl;
-        size_t mNrows = 0;
-        size_t mNcols = 0;
-        Instance& mInstance;
+        using clock = std::chrono::high_resolution_clock;
+        using timepoint = clock::time_point;
+        timepoint mStart;
+        timepoint mEnd;
     };
-};
 
-#endif //CUBOOL_MATRIX_CSR_HPP
+    struct TimeQuery {
+    public:
+        void addTimeSample(double ms) {
+            mSamplesCount += 1;
+            mTimeSumMS += ms;
+        }
+
+        double getAverageTimeMs() const {
+            return mTimeSumMS / (double) mSamplesCount;
+        }
+
+    private:
+        double mTimeSumMS = 0.0f;
+        int mSamplesCount = 0;
+    };
+
+    struct TimeScope {
+    public:
+        explicit TimeScope(TimeQuery &query) : mTimeQuery(query) {
+            mTimer.start();
+        }
+
+        ~TimeScope() {
+            mTimer.end();
+            mTimeQuery.addTimeSample(mTimer.getElapsedTimeMs());
+        }
+
+    private:
+        Timer mTimer;
+        TimeQuery &mTimeQuery;
+    };
+
+}
+
+#endif //CUBOOL_TESTING_TIMER_HPP

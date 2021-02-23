@@ -1,8 +1,7 @@
 /**********************************************************************************/
-/*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
+/* Copyright (c) 2021 JetBrains-Research                                          */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -21,25 +20,58 @@
 /* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  */
 /* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  */
 /* SOFTWARE.                                                                      */
-/*                                                                                */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#ifndef CUBOOL_TESTING_MATRIXKRONECKER_HPP
+#define CUBOOL_TESTING_MATRIXKRONECKER_HPP
 
-cuBoolStatus cuBool_MxM(
-        cuBoolMatrix        result,
-        cuBoolMatrix        left,
-        cuBoolMatrix        right,
-        cuBoolHints         hints
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(left)
-        CUBOOL_ARG_NOT_NULL(right)
-        auto resultM = (cubool::Matrix*) result;
-        auto leftM = (cubool::Matrix*) left;
-        auto rightM = (cubool::Matrix*) right;
-        resultM->multiply(*leftM, *rightM, hints & CUBOOL_HINT_ACCUMULATE);
-    CUBOOL_END_BODY
+#include <testing/matrix.hpp>
+
+namespace testing {
+
+    struct MatrixKroneckerFunctor {
+        Matrix operator()(const Matrix& ma, const Matrix& mb) {
+            auto m = ma.mNrows;
+            auto n = ma.mNcols;
+            auto k = mb.mNrows;
+            auto t = mb.mNcols;
+
+            Matrix result;
+            result.mNrows = m * k;
+            result.mNcols = n * t;
+            result.mNvals = ma.mNvals * mb.mNvals;
+            result.mRowsIndex.reserve(result.mNvals);
+            result.mColsIndex.reserve(result.mNvals);
+
+            std::vector<Pair> vals;
+            vals.reserve(result.mNvals);
+
+            for (cuBoolIndex i = 0; i < ma.mNvals; i++) {
+                auto blockI = ma.mRowsIndex[i];
+                auto blockJ = ma.mColsIndex[i];
+
+                for (cuBoolIndex j = 0; j < mb.mNvals; j++) {
+                    auto valueI = mb.mRowsIndex[j];
+                    auto valueJ = mb.mColsIndex[j];
+
+                    cuBoolIndex idI = k * blockI + valueI;
+                    cuBoolIndex idJ = t * blockJ + valueJ;
+
+                    vals.push_back(Pair{idI, idJ});
+                }
+            }
+
+            std::sort(vals.begin(), vals.end(), PairCmp{});
+
+            for (auto& p: vals) {
+                result.mRowsIndex.push_back(p.i);
+                result.mColsIndex.push_back(p.j);
+            }
+
+            return std::move(result);
+        }
+    };
+
 }
+
+#endif //CUBOOL_TESTING_MATRIXKRONECKER_HPP

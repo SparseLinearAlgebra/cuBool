@@ -81,7 +81,9 @@ typedef enum cuBoolHint {
     /** Use managed gpu memory type instead of default (device) memory */
     CUBOOL_HINT_GPU_MEM_MANAGED = 0x2,
     /** Mark input data as row-col sorted */
-    CUBOOL_HINT_VALUES_SORTED = 0x3
+    CUBOOL_HINT_VALUES_SORTED = 0x4,
+    /** Accumulate result of the operation in the result matrix */
+    CUBOOL_HINT_ACCUMULATE = 0x8
 } cuBoolHint;
 
 /** Hit mask */
@@ -353,7 +355,8 @@ CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_EWiseAdd(
 );
 
 /**
- * Performs result = left x right evaluation, where source '+' and 'x' are boolean semiring operations.
+ * Performs result (accum)= left x right evaluation, where source '+' and 'x' are boolean semiring operations.
+ * If accum hint passed, the the result of the multiplication is added to the result matrix.
  *
  * @note to perform this operation matrices must be compatible
  *       dim(left) = M x T
@@ -363,13 +366,15 @@ CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_EWiseAdd(
  * @param result Matrix handle where to store operation result
  * @param left Input left matrix
  * @param right Input right matrix
+ * @param hints Pass CUBOOL_HINT_ACCUMULATE hint to add result of the left x right operation.
  *
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_MxM(
     cuBoolMatrix        result,
     cuBoolMatrix        left,
-    cuBoolMatrix        right
+    cuBoolMatrix        right,
+    cuBoolHints         hints
 );
 
 /**

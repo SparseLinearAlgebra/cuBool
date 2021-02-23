@@ -1,8 +1,7 @@
 /**********************************************************************************/
-/*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020 JetBrains-Research                                          */
+/* Copyright (c) 2021 JetBrains-Research                                          */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -21,43 +20,47 @@
 /* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  */
 /* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  */
 /* SOFTWARE.                                                                      */
-/*                                                                                */
 /**********************************************************************************/
 
-#include <cuda/matrix_csr.hpp>
-#include <nsparse/spgemm.h>
+#ifndef CUBOOL_TESTING_PAIR_HPP
+#define CUBOOL_TESTING_PAIR_HPP
 
-namespace cubool {
+#include <cubool/cubool.h>
+#include <unordered_set>
 
-    void MatrixCsr::multiply(const MatrixBase &aBase, const MatrixBase &bBase) {
-        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
-        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
+namespace testing {
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
+    struct Pair {
+        cuBoolIndex i;
+        cuBoolIndex j;
+    };
 
-        index M = a->getNrows();
-        index N = b->getNcols();
-
-        assert(this->getNrows() == M);
-        assert(this->getNcols() == N);
-
-        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
-            // A or B has no values
-            return;
+    struct PairHash {
+    public:
+        std::size_t operator()(const Pair &x) const {
+            return std::hash<size_t>()(x.i) ^ std::hash<size_t>()(x.j);
         }
+    };
 
-        if (this->isStorageEmpty()) {
-            // If this was resized but actual data was not allocated
-            this->resizeStorageToDim();
+    struct PairCmp {
+    public:
+        bool operator()(const Pair &a, const Pair& b) const {
+            return a.i < b.i || (a.i == b.i && a.j < b.j);
         }
+    };
 
-        // Call backend r = c + a * b implementation, as C this is passed
-        nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
-        auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
+    struct PairEq {
+    public:
+        bool operator()(const Pair &a, const Pair& b)  const {
+            return a.i == b.i && a.j == b.j;
+        }
+    };
 
-        // Assign result to this
-        this->mMatrixImpl = std::move(result);
+    bool operator ==(const Pair& a, const Pair& b) {
+        PairEq pairEq;
+        return pairEq(a, b);
     }
 
 }
+
+#endif //CUBOOL_TESTING_PAIR_HPP

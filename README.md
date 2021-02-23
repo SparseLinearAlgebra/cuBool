@@ -167,16 +167,16 @@ closure provides info about reachable vertices in the graph:
  * @return Status on this operation
  */
 cuBoolStatus TransitiveClosure(CuBoolInstance Inst, cuBoolMatrix A, cuBoolMatrix* T) {
-    CuBool_Matrix_Duplicate(Inst, A, T);         /** Create result matrix and copy initial values */
+    cuBool_Matrix_Duplicate(Inst, A, T);         /** Create result matrix and copy initial values */
 
     CuBoolSize_t total = 0;
     CuBoolSize_t current;
-    CuBool_Matrix_Nvals(Inst, *T, &current);     /** Query current number on non-zero elements */
+    cuBool_Matrix_Nvals(Inst, *T, &current);     /** Query current number on non-zero elements */
 
     while (current != total) {                   /** Loop while values are added */
         total = current;
-        CuBool_MxM(Inst, *T, *T, *T);            /** T += T * T */
-        CuBool_Matrix_Nvals(Inst, *T, &current);
+        cuBool_MxM(Inst, *T, *T, *T);            /** T += T * T */
+        cuBool_Matrix_Nvals(Inst, *T, &current);
     }
 
     return CUBOOL_STATUS_SUCCESS;
@@ -242,7 +242,7 @@ int main() {
     desc.memoryType = CUBOOL_GPU_MEMORY_TYPE_GENERIC;
 
     /* System may not provide Cuda compatible device */
-    CHECK(CuBool_Instance_New(&desc, &I));
+    CHECK(cuBool_Instance_New(&desc, &I));
 
     /* Input graph G */
 
@@ -251,16 +251,16 @@ int main() {
     /* (0) --> (2) <--> (3) */
 
     /* Adjacency matrix in sparse format  */
-    cuBoolIndex_t n = 4;
+    cuBoolIndex n = 4;
     CuBoolSize_t e = 5;
-    cuBoolIndex_t rows[] = { 0, 0, 1, 2, 3 };
-    cuBoolIndex_t cols[] = { 1, 2, 2, 3, 2 };
+    cuBoolIndex rows[] = { 0, 0, 1, 2, 3 };
+    cuBoolIndex cols[] = { 1, 2, 2, 3, 2 };
 
     /* Create matrix */
-    CHECK(CuBool_Matrix_New(I, &A, n, n));
+    CHECK(cuBool_Matrix_New(I, &A, n, n));
 
     /* Fill the data */
-    CHECK(CuBool_Matrix_Build(I, A, rows, cols, e, CUBOOL_HINT_VALUES_SORTED));
+    CHECK(cuBool_Matrix_Build(I, A, rows, cols, e, CUBOOL_HINT_VALUES_SORTED));
 
     /* Now we have created the following matrix */
 
@@ -271,25 +271,25 @@ int main() {
     /* [3] .  .  1  .  */
 
     /* Create result matrix from source as copy */
-    CHECK(CuBool_Matrix_Duplicate(I, A, &TC));
+    CHECK(cuBool_Matrix_Duplicate(I, A, &TC));
 
     /* Query current number on non-zero elements */
     CuBoolSize_t total = 0;
     CuBoolSize_t current;
-    CHECK(CuBool_Matrix_Nvals(I, TC, &current));
+    CHECK(cuBool_Matrix_Nvals(I, TC, &current));
 
     /* Loop while values are added */
     while (current != total) {
         total = current;
 
         /** Transitive closure step */
-        CHECK(CuBool_MxM(I, TC, TC, TC));
-        CHECK(CuBool_Matrix_Nvals(I, TC, &current));
+        CHECK(cuBool_MxM(I, TC, TC, TC));
+        CHECK(cuBool_Matrix_Nvals(I, TC, &current));
     }
 
     /** Get result */
-    cuBoolIndex_t tc_rows[16], tc_cols[16];
-    CHECK(CuBool_Matrix_ExtractPairs(I, TC, tc_rows, tc_cols, &total));
+    cuBoolIndex tc_rows[16], tc_cols[16];
+    CHECK(cuBool_Matrix_ExtractPairs(I, TC, tc_rows, tc_cols, &total));
 
     /** Now tc_rows and tc_cols contain (i,j) pairs of the result G_tc graph */
 
@@ -306,11 +306,11 @@ int main() {
         printf("(%u,%u) ", tc_rows[i], tc_cols[i]);
 
     /* Release resources */
-    CHECK(CuBool_Matrix_Free(I, A));
-    CHECK(CuBool_Matrix_Free(I, TC));
+    CHECK(cuBool_Matrix_Free(I, A));
+    CHECK(cuBool_Matrix_Free(I, TC));
 
     /* Release library instance */
-    return CuBool_Instance_Free(I) != CUBOOL_STATUS_SUCCESS;
+    return cuBool_Instance_Free(I) != CUBOOL_STATUS_SUCCESS;
 }
 ```
 

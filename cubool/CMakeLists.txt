@@ -21,13 +21,14 @@ set(CUBOOL_SOURCES
     sources/core/config.hpp
     sources/core/version.hpp
     sources/core/error.hpp
-        sources/core/library.cpp
-        sources/core/library.hpp
+    sources/core/library.cpp
+    sources/core/library.hpp
     sources/core/matrix.cpp
     sources/core/matrix.hpp)
 
 set(CUBOOL_C_API_SOURCES
     include/cubool/cubool.h
+    sources/cuBool_Version_Get.cpp
     sources/cuBool_About_Get.cpp
     sources/cuBool_LicenseInfo_Get.cpp
     sources/cuBool_Initialize.cpp
@@ -64,7 +65,7 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/matrix_csr.cu
         sources/cuda/matrix_csr_ewiseadd.cu
         sources/cuda/matrix_csr_kronecker.cu
-        sources/cuda/matrix_csr_multiply_add.cu
+        sources/cuda/matrix_csr_multiply.cu
         sources/cuda/matrix_csr_multiply_sum.cu
         sources/cuda/matrix_csr_transpose.cu)
 endif()
@@ -105,6 +106,11 @@ endif()
 
 # If tests enabled, add tests sources to the build
 if (CUBOOL_BUILD_TESTS)
+    add_library(testing INTERFACE)
+    target_include_directories(testing INTERFACE ${CMAKE_CURRENT_LIST_DIR}/utils/)
+    target_link_libraries(testing INTERFACE cubool)
+    target_link_libraries(testing INTERFACE gtest)
+
     message(STATUS "Add unit tests directory to the project")
     add_subdirectory(tests)
 endif()

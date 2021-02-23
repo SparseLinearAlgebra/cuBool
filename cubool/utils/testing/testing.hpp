@@ -1,8 +1,7 @@
 /**********************************************************************************/
-/*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
+/* Copyright (c) 2021 JetBrains-Research                                          */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -21,25 +20,25 @@
 /* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  */
 /* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  */
 /* SOFTWARE.                                                                      */
-/*                                                                                */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#ifndef CUBOOL_TESTING_TESTING_HPP
+#define CUBOOL_TESTING_TESTING_HPP
 
-cuBoolStatus cuBool_MxM(
-        cuBoolMatrix        result,
-        cuBoolMatrix        left,
-        cuBoolMatrix        right,
-        cuBoolHints         hints
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(left)
-        CUBOOL_ARG_NOT_NULL(right)
-        auto resultM = (cubool::Matrix*) result;
-        auto leftM = (cubool::Matrix*) left;
-        auto rightM = (cubool::Matrix*) right;
-        resultM->multiply(*leftM, *rightM, hints & CUBOOL_HINT_ACCUMULATE);
-    CUBOOL_END_BODY
-}
+#include <gtest/gtest.h>
+#include <testing/pair.hpp>
+#include <testing/matrix.hpp>
+#include <testing/matrox_printing.hpp>
+#include <testing/matrix_generator.hpp>
+#include <testing/matrix_ewise_add.hpp>
+#include <testing/matrix_mxm.hpp>
+#include <testing/matrix_kronecker.hpp>
+
+// Put in the end of the unit test file
+#define CUBOOL_GTEST_MAIN                                                       \
+    int main(int argc, char *argv[]) {                                          \
+        ::testing::InitGoogleTest(&argc, argv);                                 \
+        return RUN_ALL_TESTS();                                                 \
+    }
+
+#endif //CUBOOL_TESTING_TESTING_HPP

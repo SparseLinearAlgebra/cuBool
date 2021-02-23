@@ -24,22 +24,64 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#include <testing/testing.hpp>
 
-cuBoolStatus cuBool_MxM(
-        cuBoolMatrix        result,
-        cuBoolMatrix        left,
-        cuBoolMatrix        right,
-        cuBoolHints         hints
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(left)
-        CUBOOL_ARG_NOT_NULL(right)
-        auto resultM = (cubool::Matrix*) result;
-        auto leftM = (cubool::Matrix*) left;
-        auto rightM = (cubool::Matrix*) right;
-        resultM->multiply(*leftM, *rightM, hints & CUBOOL_HINT_ACCUMULATE);
-    CUBOOL_END_BODY
+void testMatrixAdd(cuBoolIndex m, cuBoolIndex n, float density) {
+    cuBoolMatrix r, a, b;
+
+    testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
+    testing::Matrix tb = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
+
+    // Allocate input matrices and resize to fill with input data
+    ASSERT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_New(&b, m, n), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_New(&r, m, n), CUBOOL_STATUS_SUCCESS);
+
+    // Transfer input data into input matrices
+    ASSERT_EQ(cuBool_Matrix_Build(a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(b, tb.mRowsIndex.data(), tb.mColsIndex.data(), tb.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+
+    // Evaluate r = a + b
+    ASSERT_EQ(cuBool_Matrix_EWiseAdd(r, a, b), CUBOOL_STATUS_SUCCESS);
+
+    // Evaluate naive r += a on the cpu to compare results
+    testing::MatrixEWiseAddFunctor functor;
+    auto tr = std::move(functor(ta, tb));
+
+    // Compare results
+    ASSERT_EQ(tr.areEqual(r), true);
+
+    // Deallocate matrices
+    ASSERT_EQ(cuBool_Matrix_Free(a), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Free(b), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Free(r), CUBOOL_STATUS_SUCCESS);
 }
+
+void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolHints setup) {
+    // Setup library
+    ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixAdd(m, n, 0.1f + (0.05f) * ((float) i));
+    }
+
+    // Finalize library
+    EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, AddSmall) {
+    cuBoolIndex m = 60, n = 80;
+    testRun(m, n, CUBOOL_HINT_NO);
+}
+
+TEST(MatrixCsr, AddMedium) {
+    cuBoolIndex m = 500, n = 800;
+    testRun(m, n, CUBOOL_HINT_NO);
+}
+
+TEST(MatrixCsr, AddLarge) {
+    cuBoolIndex m = 2500, n = 1500;
+    testRun(m, n, CUBOOL_HINT_NO);
+}
+
+CUBOOL_GTEST_MAIN

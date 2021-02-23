@@ -8,7 +8,7 @@ __all__ = [
 
 
 def add(result_matrix: matrix.Matrix, a_matrix: matrix.Matrix):
-    status = wrapper.loaded_dll.CuBool_EWise_Add(wrapper.instance,
+    status = wrapper.loaded_dll.cuBool_EWise_Add(wrapper.instance,
                                                   result_matrix.hnd,
                                                   a_matrix.hnd)
 

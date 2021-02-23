@@ -2,7 +2,7 @@
 /*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020 JetBrains-Research                                          */
+/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -24,53 +24,59 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_HPP
-#define CUBOOL_MATRIX_CSR_HPP
+#include <testing/testing.hpp>
 
-#include <backend/matrix_base.hpp>
-#include <cuda/details/host_allocator.hpp>
-#include <cuda/details/device_allocator.cuh>
-#include <nsparse/matrix.h>
+void testMatrixTranspose(cuBoolIndex m, cuBoolIndex n, float density) {
+    cuBoolMatrix r, a;
 
-namespace cubool {
+    testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
 
-    class MatrixCsr: public MatrixBase {
-    public:
-        template<typename T>
-        using DeviceAlloc = details::DeviceAllocator<T>;
-        template<typename T>
-        using HostAlloc = details::HostAllocator<T>;
-        using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
+    // Allocate input matrices and resize to fill with input data
+    EXPECT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(cuBool_Matrix_New(&r, n, m), CUBOOL_STATUS_SUCCESS);
 
-        explicit MatrixCsr(size_t nrows, size_t ncols, Instance& instance);
-        ~MatrixCsr() override = default;
+    // Transfer input data into input matrices
+    EXPECT_EQ(cuBool_Matrix_Build(a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
-        void extract(index* rows, index* cols, size_t &nvals) override;
+    // Evaluate r = a ^ T
+    EXPECT_EQ(cuBool_Matrix_Transpose(r, a), CUBOOL_STATUS_SUCCESS);
 
-        void clone(const MatrixBase &other) override;
-        void transpose(const MatrixBase &other) override;
+    // Evaluate naive r = a ^ T on the cpu to compare results
+    testing::Matrix tr = ta.transpose();
 
-        void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
-        void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate) override;
-        void kronecker(const MatrixBase& a, const MatrixBase& b) override;
-        void eWiseAdd(const MatrixBase& a, const MatrixBase& b) override;
+    // Compare results
+    EXPECT_EQ(tr.areEqual(r), true);
 
-        index getNrows() const override;
-        index getNcols() const override;
-        index getNvals() const override;
+    // Deallocate matrices
+    EXPECT_EQ(cuBool_Matrix_Free(a), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(cuBool_Matrix_Free(r), CUBOOL_STATUS_SUCCESS);
+}
 
-    private:
-        void resizeStorageToDim();
-        bool isStorageEmpty() const;
-        bool isMatrixEmpty() const;
+void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolHints setup) {
+    // Setup library
+    EXPECT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
-        // Uses nsparse csr matrix implementation as a backend
-        MatrixImplType mMatrixImpl;
-        size_t mNrows = 0;
-        size_t mNcols = 0;
-        Instance& mInstance;
-    };
-};
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixTranspose(m, n, 0.1f + (0.05f) * ((float) i));
+    }
 
-#endif //CUBOOL_MATRIX_CSR_HPP
+    // Finalize library
+    EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, TransposeSmall) {
+    cuBoolIndex m = 60, n = 80;
+    testRun(m, n, CUBOOL_HINT_NO);
+}
+
+TEST(MatrixCsr, TransposeMedium) {
+    cuBoolIndex m = 500, n = 800;
+    testRun(m, n, CUBOOL_HINT_NO);
+}
+
+TEST(MatrixCsr, TransposeLarge) {
+    cuBoolIndex m = 2500, n = 1500;
+    testRun(m, n, CUBOOL_HINT_NO);
+}
+
+CUBOOL_GTEST_MAIN

@@ -61,11 +61,11 @@ class Wrapper:
         self._descInstance = bridge.configure_instance_desc()
         self._descInstance.memoryType = 0
 
-        status = self.loaded_dll.CuBool_Instance_NewExt(ctypes.byref(self._descInstance),
+        status = self.loaded_dll.cuBool_Instance_NewExt(ctypes.byref(self._descInstance),
                                                         ctypes.byref(self.instance))
 
         bridge.check(status)
 
     def _release_instance(self):
-        status = self.loaded_dll.CuBool_Instance_Free(self.instance)
+        status = self.loaded_dll.cuBool_Instance_Free(self.instance)
         bridge.check(status)

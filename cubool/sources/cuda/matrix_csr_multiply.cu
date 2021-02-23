@@ -24,53 +24,44 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_HPP
-#define CUBOOL_MATRIX_CSR_HPP
-
-#include <backend/matrix_base.hpp>
-#include <cuda/details/host_allocator.hpp>
-#include <cuda/details/device_allocator.cuh>
-#include <nsparse/matrix.h>
+#include <cuda/matrix_csr.hpp>
+#include <nsparse/spgemm.h>
 
 namespace cubool {
 
-    class MatrixCsr: public MatrixBase {
-    public:
-        template<typename T>
-        using DeviceAlloc = details::DeviceAllocator<T>;
-        template<typename T>
-        using HostAlloc = details::HostAllocator<T>;
-        using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
+    void MatrixCsr::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) {
+        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
+        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
 
-        explicit MatrixCsr(size_t nrows, size_t ncols, Instance& instance);
-        ~MatrixCsr() override = default;
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
 
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
-        void extract(index* rows, index* cols, size_t &nvals) override;
+        index M = a->getNrows();
+        index N = b->getNcols();
 
-        void clone(const MatrixBase &other) override;
-        void transpose(const MatrixBase &other) override;
+        assert(this->getNrows() == M);
+        assert(this->getNcols() == N);
 
-        void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
-        void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate) override;
-        void kronecker(const MatrixBase& a, const MatrixBase& b) override;
-        void eWiseAdd(const MatrixBase& a, const MatrixBase& b) override;
+        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
+            // A or B has no values
+            return;
+        }
 
-        index getNrows() const override;
-        index getNcols() const override;
-        index getNvals() const override;
+        if (this->isStorageEmpty()) {
+            // If this was resized but actual data was not allocated
+            this->resizeStorageToDim();
+        }
 
-    private:
-        void resizeStorageToDim();
-        bool isStorageEmpty() const;
-        bool isMatrixEmpty() const;
+        assert(accumulate);
 
-        // Uses nsparse csr matrix implementation as a backend
-        MatrixImplType mMatrixImpl;
-        size_t mNrows = 0;
-        size_t mNcols = 0;
-        Instance& mInstance;
-    };
-};
+        if (accumulate) {
+            // Call backend r = c + a * b implementation, as C this is passed
+            nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
+            auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
 
-#endif //CUBOOL_MATRIX_CSR_HPP
+            // Assign result to this
+            this->mMatrixImpl = std::move(result);
+        }
+    }
+
+}

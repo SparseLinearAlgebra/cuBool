@@ -25,7 +25,7 @@
 /**********************************************************************************/
 
 #include <gtest/gtest.h>
-#include <test_common.hpp>
+#include <testing/testing.hpp>
 
 // Query library version info
 TEST(CuBoolVersion, Query) {
@@ -33,7 +33,7 @@ TEST(CuBoolVersion, Query) {
     int minor;
     int version;
 
-    CuBool_Version_Get(&major, &minor, &version);
+    cuBool_Version_Get(&major, &minor, &version);
 
     std::cout << "Major: " << major << std::endl;
     std::cout << "Minor: " << minor << std::endl;
@@ -45,46 +45,12 @@ TEST(CuBoolVersion, Query) {
 // Test cubool library instance creation and destruction
 TEST(CuBoolInstance, Setup) {
     cuBoolStatus error;
-    CuBoolInstance instance = nullptr;
 
-    CuBoolInstanceDesc instanceDesc{};
-    instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
-    instanceDesc.errorCallback.userData = nullptr;
-    instanceDesc.errorCallback.msgFun = testing::details::testMsgFun;
-    instanceDesc.allocationCallback.userData = nullptr;
-    instanceDesc.allocationCallback.allocateFun = testing::details::testAllocateFun;
-    instanceDesc.allocationCallback.deallocateFun = testing::details::testDeallocateFun;
+    error = cuBool_Initialize(CUBOOL_HINT_NO);
+    ASSERT_EQ(error, CUBOOL_STATUS_SUCCESS);
 
-    error = CuBool_Instance_New(&instanceDesc, &instance);
-
-    EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
-    EXPECT_NE(instance, nullptr);
-
-    error = CuBool_Instance_Free(instance);
-
-    EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
-
-    instance = nullptr;
-}
-
-// Test cubool library instance creation and destruction
-TEST(CuBoolInstance, SetupExt) {
-    cuBoolStatus error;
-    CuBoolInstance instance = nullptr;
-
-    CuBoolInstanceDescExt instanceDesc{};
-    instanceDesc.memoryType = CuBoolGpuMemoryType::CUBOOL_GPU_MEMORY_TYPE_GENERIC;
-
-    error = CuBool_Instance_NewExt(&instanceDesc, &instance);
-
-    EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
-    EXPECT_NE(instance, nullptr);
-
-    error = CuBool_Instance_Free(instance);
-
-    EXPECT_EQ(error, CUBOOL_STATUS_SUCCESS);
-
-    instance = nullptr;
+    error = cuBool_Finalize();
+    ASSERT_EQ(error, CUBOOL_STATUS_SUCCESS);
 }
 
 /**
@@ -96,40 +62,37 @@ TEST(CuBoolInstance, SetupExt) {
  *
  * @return Status on this operation
  */
-cuBoolStatus TransitiveClosure(CuBoolInstance Inst, cuBoolMatrix A, cuBoolMatrix* T) {
-    CuBool_Matrix_Duplicate(Inst, A, T);         /** Create result matrix and copy initial values */
+cuBoolStatus TransitiveClosure(cuBoolMatrix A, cuBoolMatrix* T) {
+    cuBool_Matrix_Duplicate(A, T);                              /* Duplicate A to result T */
 
-    CuBoolSize_t total = 0;
-    CuBoolSize_t current;
-    CuBool_Matrix_Nvals(Inst, *T, &current);     /** Query current number on non-zero elements */
+    cuBoolIndex total = 0;
+    cuBoolIndex current;
 
-    while (current != total) {                   /** Loop while values are added */
+    cuBool_Matrix_Nvals(*T, &current);                          /* Query current nvals value */
+
+    while (current != total) {                                  /* Iterate, while new values are added */
         total = current;
-        CuBool_MxM(Inst, *T, *T, *T);            /** T += T * T */
-        CuBool_Matrix_Nvals(Inst, *T, &current);
+        cuBool_MxM(*T, *T, *T, CUBOOL_HINT_ACCUMULATE);  /* T += T x T */
+        cuBool_Matrix_Nvals(*T, &current);
     }
 
     return CUBOOL_STATUS_SUCCESS;
 }
 
 TEST(CuBoolInstance, Example) {
-    CuBoolInstanceDescExt descExt{};
-    CuBoolInstance Inst;
-    cuBoolMatrix A;
-    cuBoolMatrix T;
+    cuBoolMatrix A = nullptr;
+    cuBoolMatrix T = nullptr;
 
-    cuBoolIndex_t n = 100;
+    cuBoolIndex n = 100;
 
-    descExt.memoryType = CUBOOL_GPU_MEMORY_TYPE_GENERIC;
-
-    CuBool_Instance_NewExt(&descExt, &Inst);
-    CuBool_Matrix_New(Inst, &A, n, n);
+    cuBool_Initialize(CUBOOL_HINT_NO);
+    cuBool_Matrix_New(&A, n, n);
 
     testing::Matrix ta = testing::Matrix::generateSparse(n , n, 0.2);
 
-    CuBool_Matrix_Build(Inst, A, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED);
+    cuBool_Matrix_Build(A, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED);
 
-    TransitiveClosure(Inst, A, &T);
+    TransitiveClosure(A, &T);
 
     testing::Matrix tr = ta;
     size_t total = 0;
@@ -137,19 +100,16 @@ TEST(CuBoolInstance, Example) {
     do {
         total = tr.mNvals;
 
-        testing::MatrixMultiplyAddFunctor functor;
+        testing::MatrixMultiplyFunctor functor;
         tr = std::move(functor(tr, tr, tr));
     }
     while (tr.mNvals != total);
 
-    ASSERT_TRUE(tr.areEqual(T, Inst));
+    ASSERT_TRUE(tr.areEqual(T));
 
-    CuBool_Matrix_Free(Inst, A);
-    CuBool_Matrix_Free(Inst, T);
-    CuBool_Instance_Free(Inst);
+    cuBool_Matrix_Free(A);
+    cuBool_Matrix_Free(T);
+    cuBool_Finalize();
 }
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+CUBOOL_GTEST_MAIN

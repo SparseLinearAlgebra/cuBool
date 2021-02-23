@@ -8,7 +8,7 @@ __all__ = [
 
 
 def kron(result_matrix: matrix.Matrix, a_matrix: matrix.Matrix, b_matrix: matrix.Matrix):
-    status = wrapper.loaded_dll.CuBool_Kron(wrapper.instance,
+    status = wrapper.loaded_dll.cuBool_Kron(wrapper.instance,
                                             result_matrix.hnd,
                                             a_matrix.hnd,
                                             b_matrix.hnd)

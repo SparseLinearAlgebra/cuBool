@@ -27,65 +27,12 @@
 #include <gtest/gtest.h>
 #include <chrono>
 
-#include <test_common.hpp>
+#include <testing/testing.hpp>
 #include <naive-gpu/GpuMatrix.h> // Naive gpu implementation for dense boolean matrix multiplication
 #include <naive-gpu-shared/GpuMatrix.h> // Naive gpu with small shared mem optimization
 
 static size_t iterations = 1;
 static size_t sizes[] = { 128, 256, 512, 1024, 2048, 4096, 8192, 8192 * 2, 8192 * 4, 8192 * 8 };
-
-TEST(Benchmanrk, CuboolDenseMatrix) {
-    CuBoolInstance instance;
-    CuBoolSize_t m, t, n;
-
-    CuBoolInstanceDesc instanceDesc;
-    testing::details::setupInstanceDescSilent(instanceDesc);
-
-    CuBool_Instance_New(&instanceDesc, &instance);
-
-    for (auto s: sizes) {
-        m = t = n = s;
-
-        cuBoolMatrixDense a, b, c;
-
-        testing::Matrix ta = std::move(testing::Matrix::generate(m, t, testing::details::Condition2{}));
-        testing::Matrix tb = std::move(testing::Matrix::generate(m, t, testing::details::Condition2{}));
-        testing::Matrix tc = std::move(testing::Matrix::generate(m, t, testing::details::Condition2{}));
-
-
-        CuBool_MatrixDense_New(instance, &a, m, t);
-        CuBool_MatrixDense_New(instance, &b, t, n);
-        CuBool_MatrixDense_New(instance, &c, m, n);
-
-        CuBool_MatrixDense_Build(instance, a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals);
-        CuBool_MatrixDense_Build(instance, b, tb.mRowsIndex.data(), tb.mColsIndex.data(), ta.mNvals);
-        CuBool_MatrixDense_Build(instance, c, tc.mRowsIndex.data(), tc.mColsIndex.data(), ta.mNvals);
-
-        double executionTimeMs = 0;
-
-        for (size_t i = 0; i < iterations; i++) {
-            using namespace std::chrono;
-
-            CuBool_HostDevice_Sync(instance);
-            auto start = high_resolution_clock::now();
-
-            CuBool_MatrixDense_MxM(instance, c, a, b);
-
-            CuBool_HostDevice_Sync(instance);
-            auto end = high_resolution_clock::now();
-
-            executionTimeMs += (double)duration_cast<nanoseconds>(end - start).count() / 1.0e6;
-        }
-
-        std::cout << "Operation: Mult-Add [N=" << s << "]: " << executionTimeMs / (double)iterations << " ms" << std::endl;
-
-        CuBool_MatrixDense_Free(instance, a);
-        CuBool_MatrixDense_Free(instance, b);
-        CuBool_MatrixDense_Free(instance, c);
-    }
-
-    CuBool_Instance_Free(instance);
-}
 
 TEST(Benchmark, NaiveGpuDenseMatrix) {
     using namespace naive_gpu;
@@ -95,13 +42,13 @@ TEST(Benchmark, NaiveGpuDenseMatrix) {
     for (auto s: sizes) {
         int n = (int) s;
 
-        std::vector<testing::details::Pair> aval;
-        std::vector<testing::details::Pair> bval;
-        std::vector<testing::details::Pair> cval;
+        std::vector<testing::Pair> aval;
+        std::vector<testing::Pair> bval;
+        std::vector<testing::Pair> cval;
 
-        testing::details::generateTestData(n, n, aval, testing::details::Condition2{});
-        testing::details::generateTestData(n, n, bval, testing::details::Condition2{});
-        testing::details::generateTestData(n, n, cval, testing::details::Condition2{});
+        testing::generateTestData(n, n, aval, testing::Condition2{});
+        testing::generateTestData(n, n, bval, testing::Condition2{});
+        testing::generateTestData(n, n, cval, testing::Condition2{});
 
         gpuMatrix::set_N(n);
 
@@ -161,13 +108,13 @@ TEST(Benchmark, NaiveGpuSharedDenseMatrix) {
     for (auto s: sizes) {
         int n = (int) s;
 
-        std::vector<testing::details::Pair> aval;
-        std::vector<testing::details::Pair> bval;
-        std::vector<testing::details::Pair> cval;
+        std::vector<testing::Pair> aval;
+        std::vector<testing::Pair> bval;
+        std::vector<testing::Pair> cval;
 
-        testing::details::generateTestData(n, n, aval, testing::details::Condition2{});
-        testing::details::generateTestData(n, n, bval, testing::details::Condition2{});
-        testing::details::generateTestData(n, n, cval, testing::details::Condition2{});
+        testing::generateTestData(n, n, aval, testing::Condition2{});
+        testing::generateTestData(n, n, bval, testing::Condition2{});
+        testing::generateTestData(n, n, cval, testing::Condition2{});
 
         gpuMatrix::set_N(n);
 
@@ -219,7 +166,4 @@ TEST(Benchmark, NaiveGpuSharedDenseMatrix) {
     }
 }
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+CUBOOL_GTEST_MAIN

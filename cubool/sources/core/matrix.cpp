@@ -79,13 +79,13 @@ namespace cubool {
         mHnd->multiplySum(*a->mHnd, *b->mHnd, *c->mHnd);
     }
 
-    void Matrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase) {
+    void Matrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
         // todo: validation of the state and arguments
 
-        mHnd->multiply(*a->mHnd, *b->mHnd);
+        mHnd->multiply(*a->mHnd, *b->mHnd, accumulate);
     }
 
     void Matrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase) {

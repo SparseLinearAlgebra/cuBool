@@ -25,7 +25,7 @@ class Matrix:
         nrows = shape[0]
         ncols = shape[1]
 
-        status = wrapper.loaded_dll.CuBool_Matrix_New(wrapper.instance,
+        status = wrapper.loaded_dll.cuBool_Matrix_New(wrapper.instance,
                                                       ctypes.byref(hnd),
                                                       ctypes.c_uint(nrows),
                                                       ctypes.c_uint(ncols))
@@ -35,7 +35,7 @@ class Matrix:
         return Matrix(hnd)
 
     def __del__(self):
-        bridge.check(wrapper.loaded_dll.CuBool_Matrix_Free(wrapper.instance, self.hnd))
+        bridge.check(wrapper.loaded_dll.cuBool_Matrix_Free(wrapper.instance, self.hnd))
 
     def resize(self, nrows, ncols):
         status = wrapper.loaded_dll.matrix_resizer(wrapper.instance,
@@ -52,7 +52,7 @@ class Matrix:
         t_rows = (ctypes.c_uint * len(rows))(*rows)
         t_cols = (ctypes.c_uint * len(cols))(*cols)
 
-        status = wrapper.loaded_dll.CuBool_Matrix_Build(wrapper.instance,
+        status = wrapper.loaded_dll.cuBool_Matrix_Build(wrapper.instance,
                                                         self.hnd,
                                                         t_rows,
                                                         t_cols,
@@ -64,7 +64,7 @@ class Matrix:
     def duplicate(self):
         hnd = ctypes.c_void_p(0)
 
-        status = wrapper.loaded_dll.CuBool_Matrix_Duplicate(wrapper.instance,
+        status = wrapper.loaded_dll.cuBool_Matrix_Duplicate(wrapper.instance,
                                                             self.hnd,
                                                             ctypes.byref(hnd))
 
@@ -75,7 +75,7 @@ class Matrix:
         shape = (self.ncols, self.nrows)
         result = Matrix.empty(shape)
 
-        status = wrapper.loaded_dll.CuBool_Matrix_Transpose(wrapper.instance,
+        status = wrapper.loaded_dll.cuBool_Matrix_Transpose(wrapper.instance,
                                                             result.hnd,
                                                             self.hnd)
 
@@ -86,7 +86,7 @@ class Matrix:
     def nrows(self) -> int:
         result = ctypes.c_uint(0)
 
-        status = wrapper.loaded_dll.CuBool_Matrix_Nrows(wrapper.instance,
+        status = wrapper.loaded_dll.cuBool_Matrix_Nrows(wrapper.instance,
                                                         self.hnd,
                                                         ctypes.byref(result))
 
@@ -97,7 +97,7 @@ class Matrix:
     def ncols(self) -> int:
         result = ctypes.c_uint(0)
 
-        status = wrapper.loaded_dll.CuBool_Matrix_Ncols(wrapper.instance,
+        status = wrapper.loaded_dll.cuBool_Matrix_Ncols(wrapper.instance,
                                                         self.hnd,
                                                         ctypes.byref(result))
 
@@ -108,7 +108,7 @@ class Matrix:
     def nvals(self) -> int:
         result = ctypes.c_size_t(0)
 
-        status = wrapper.loaded_dll.CuBool_Matrix_Nvals(wrapper.instance,
+        status = wrapper.loaded_dll.cuBool_Matrix_Nvals(wrapper.instance,
                                                         self.hnd,
                                                         ctypes.byref(result))
 
@@ -126,7 +126,7 @@ class Matrix:
         cols = (ctypes.c_uint * values_count)()
         nvals = ctypes.c_size_t(values_count)
 
-        status = wrapper.loaded_dll.CuBool_Matrix_ExtractPairs(wrapper.instance,
+        status = wrapper.loaded_dll.cuBool_Matrix_ExtractPairs(wrapper.instance,
                                                                self.hnd,
                                                                rows,
                                                                cols,

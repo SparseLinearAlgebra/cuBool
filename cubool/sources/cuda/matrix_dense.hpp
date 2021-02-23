@@ -63,7 +63,7 @@ namespace cubool {
         void transpose(const MatrixBase &other) override;
 
         void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
-        void multiply(const MatrixBase &aBase, const MatrixBase &bBase) override;
+        void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) override;
         void kronecker(const MatrixBase& aBase, const MatrixBase& bBase) override;
         void eWiseAdd(const MatrixBase& aBase, const MatrixBase& bBase) override;
 
