@@ -18,7 +18,7 @@ as well as python high-level wrapper with automated resources management.
 > what literally means *Cuda with Boolean* and sounds very similar to the name of 
 > the programming language *COBOL*.
 
-## Features
+### Features
 
 - [X] Library C interface
 - [X] Library instance/context
@@ -30,6 +30,9 @@ as well as python high-level wrapper with automated resources management.
 - [ ] CSR submatrix
 - [ ] CSR matrix reduce
 - [ ] CSR slicing
+- [ ] IO matrix loading from mtx file
+- [ ] IO matrix saving into mtx file
+- [ ] IO user-defined file logging
 - [X] Wrapper for Python API
 - [ ] Wrapper tests in Python 
 - [ ] User guide
@@ -38,7 +41,9 @@ as well as python high-level wrapper with automated resources management.
 - [ ] Publish built artifacts and shared libs
 - [ ] Publish stable source code archives
 
-## Requirements
+## Getting Started
+
+### Requirements
 
 - Linux Ubuntu (tested on 20.04)
 - CMake Version 3.17 or higher
@@ -47,7 +52,7 @@ as well as python high-level wrapper with automated resources management.
 - NVIDIA CUDA toolkit
 - Python 3 (for `pycubool` library)
 
-## Setup
+### Setup
 
 Before the CUDA setup process, validate your system NVIDIA driver with `nvidia-smi`
 command. if it is need, install required driver via `ubuntu-drivers devices` and 
@@ -95,7 +100,7 @@ if you want to build library from the command line only.
 - [CUDA Hello world program](https://developer.nvidia.com/blog/easy-introduction-cuda-c-and-c/)
 - [CUDA CMake tutorial](https://developer.nvidia.com/blog/building-cuda-applications-cmake/)
 
-## Get and run
+### Get the source code and run
 
 Run the following commands in the command shell to download the repository,
 make `build` directory, configure `cmake build` and run compilation process:
@@ -121,7 +126,7 @@ $ sh ./scripts/tests_run_all.sh
 > $ export CUDAHOSTCXX=/usr/bin/g++-8
 > ```
 
-## Python Wrapper
+### Python Wrapper
 
 After the build process, the shared library object `libcubool.so` is placed
 inside the build directory. Export into the environment or add into bash
@@ -129,35 +134,10 @@ profile the variable `CUBOOL_PATH=/path/to/the/libcubool.so` with appropriate
 path to your setup. Then you will be able to use `pycubool` python wrapper,
 which uses this variable in order to located library object.
 
-## Directory structure
 
-```
-cuBool
-├── .github - GitHub Actions CI setup 
-├── docs - documents, text files and various helpful stuff
-├── scripts - short utility programs 
-├── cubool - library core source code
-│   ├── include - library C API 
-│   ├── sources - source-code for implementation
-│   │   ├── backend - common interfaces
-│   │   ├── core - library core and state management
-│   │   ├── cpu - fallback cpu implementation
-│   │   └── cuda - cuda backend
-│   ├── utils - testing utilities
-│   └── tests - gtest-based unit-tests collection
-├── pycubool - pycubool related source
-│   ├── pycubool - cubool library wrapper for python (similar to pygraphblas)
-│   └── tests - tests for python wrapper
-├── deps - project dependencies
-│   ├── cub - cuda utility, required for nsparse
-│   ├── gtest - google test framework for unit testing
-│   ├── naive - GEMM implementation for squared dense boolean matrices
-│   ├── nsparse - SpGEMM implementation for csr matrices
-│   └── nsparse-um - SpGEMM implementation for csr matrices with unified memory (configurable)
-└── CMakeLists.txt - library cmake config, add this as sub-directory to your project
-```
+## Usage 
 
-## Example
+### Quick Example
 
 The following C++ code snipped demonstrates, how library functions and
 primitives can be used for the transitive closure evaluation of the directed
@@ -208,17 +188,17 @@ def transitive_closure(a: pycubool.Matrix):
     :return: The transitive closure adjacency matrix
     """
 
-    t = a.duplicate()                 # Duplicate matrix where to store result
-    total = 0                         # Current number of values
+    t = a.duplicate()                          # Duplicate matrix where to store result
+    total = 0                                  # Current number of values
 
     while total != t.nvals:
         total = t.nvals
-        pycubool.mxm(t, t, t)         # t += t * t
+        pycubool.mxm(t, t, t, accumulate=True) # t += t * t
 
     return t
 ```
 
-## Basic application
+### Detailed Example
 
 The following code snippet demonstrates, how to create basic cubool based application
 for sparse matrix-matrix multiplication and matrix-matrix element-wise addition
@@ -329,13 +309,46 @@ Nnz(tc)=9
 (0,1) (0,2) (0,3) (1,2) (1,3) (2,2) (2,3) (3,2) (3,3)
 ```
 
-## License
+## Directory structure
 
-This project is licensed under MIT License. License text can be found in the 
-[license file](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE).
+```
+cuBool
+├── .github - GitHub Actions CI setup 
+├── docs - documents, text files and various helpful stuff
+├── scripts - short utility programs 
+├── cubool - library core source code
+│   ├── include - library C API 
+│   ├── sources - source-code for implementation
+│   │   ├── backend - common interfaces
+│   │   ├── core - library core and state management
+│   │   ├── cpu - fallback cpu implementation
+│   │   └── cuda - cuda backend
+│   ├── utils - testing utilities
+│   └── tests - gtest-based unit-tests collection
+├── python - pycubool related source
+│   ├── pycubool - cubool library wrapper for python (similar to pygraphblas)
+│   └── tests - tests for python wrapper
+├── deps - project dependencies
+│   ├── cub - cuda utility, required for nsparse
+│   ├── gtest - google test framework for unit testing
+│   ├── naive - GEMM implementation for squared dense boolean matrices
+│   ├── nsparse - SpGEMM implementation for csr matrices
+│   └── nsparse-um - SpGEMM implementation for csr matrices with unified memory (configurable)
+└── CMakeLists.txt - library cmake config, add this as sub-directory to your project
+```
 
 ## Contributors
 
 - Egor Orachyov (Github: [EgorOrachyov](https://github.com/EgorOrachyov))
 - Pavel Alimov (Github : [Krekep](https://github.com/Krekep))
 - Semyon Grigorev (Github: [gsvgit](https://github.com/gsvgit))
+
+## License
+
+This project is licensed under MIT License. License text can be found in the 
+[license file](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE).
+
+## Acknowledgments
+
+This is research project of the Programming Languages and Tools Laboratory
+at Jet-Brains Research company. Laboratory website [link](https://research.jetbrains.org/groups/plt_lab/projects/).
