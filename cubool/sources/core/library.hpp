@@ -30,6 +30,7 @@
 #include <core/config.hpp>
 #include <core/error.hpp>
 #include <memory>
+#include <unordered_set>
 
 namespace cubool {
 
@@ -43,8 +44,9 @@ namespace cubool {
         static void handleError(const std::exception& error);
 
     private:
-        // todo: track all created resources
+        static std::unordered_set<class MatrixBase*> mAllocated;
         static class BackendBase* mBackend;
+        static bool mRelaxedRelease;
     };
 
 }

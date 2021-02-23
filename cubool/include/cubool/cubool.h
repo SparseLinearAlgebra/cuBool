@@ -83,7 +83,9 @@ typedef enum cuBoolHint {
     /** Mark input data as row-col sorted */
     CUBOOL_HINT_VALUES_SORTED = 0x4,
     /** Accumulate result of the operation in the result matrix */
-    CUBOOL_HINT_ACCUMULATE = 0x8
+    CUBOOL_HINT_ACCUMULATE = 0x8,
+    /** Finalize library state, even if not all resources were explicitly released */
+    CUBOOL_HINT_RELAXED_FINALIZE = 0x16
 } cuBoolHint;
 
 /** Hit mask */
@@ -187,6 +189,8 @@ CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_DeviceCaps_Get(
 
 /**
  * Initialize library instance object, which provides context to all library operations and primitives.
+ *
+ * @note Pass CUBOOL_HINT_RELAXED_FINALIZE for library setup within python.
  *
  * @param hints Init hints.
  *

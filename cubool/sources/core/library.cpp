@@ -40,7 +40,9 @@
 
 namespace cubool {
 
+    std::unordered_set<class MatrixBase*> Library::mAllocated;
     BackendBase* Library::mBackend = nullptr;
+    bool Library::mRelaxedRelease = false;
 
     void Library::initialize(hints initHints) {
         CHECK_RAISE_CRITICAL_ERROR(mBackend == nullptr, InvalidState, "Library already initialized");
@@ -65,10 +67,20 @@ namespace cubool {
 #endif
 
         CHECK_RAISE_ERROR(mBackend != nullptr, BackendError, "Failed to select backend");
+        mRelaxedRelease = initHints & CUBOOL_HINT_RELAXED_FINALIZE;
     }
 
     void Library::finalize() {
         if (mBackend) {
+            // Release all allocated resources implicitly
+            if (mRelaxedRelease) {
+                for (auto m: mAllocated) {
+                    delete m;
+                }
+
+                mAllocated.clear();
+            }
+
             // Remember to finalize backend
             mBackend->finalize();
             delete mBackend;
@@ -77,14 +89,19 @@ namespace cubool {
     }
 
     void Library::validate() {
-        CHECK_RAISE_CRITICAL_ERROR(mBackend != nullptr, InvalidState, "Library is not initialized");
+        CHECK_RAISE_CRITICAL_ERROR(mBackend != nullptr || mRelaxedRelease, InvalidState, "Library is not initialized");
     }
 
     MatrixBase *Library::createMatrix(size_t nrows, size_t ncols) {
-        return new Matrix(nrows, ncols, *mBackend);
+        auto m = new Matrix(nrows, ncols, *mBackend);
+        mAllocated.emplace(m);
+        return m;
     }
 
     void Library::releaseMatrix(MatrixBase *matrixBase) {
+        if (mRelaxedRelease && !mBackend) return;
+
+        mAllocated.erase(matrixBase);
         delete matrixBase;
     }
 

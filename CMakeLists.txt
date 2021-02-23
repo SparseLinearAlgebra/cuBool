@@ -44,4 +44,4 @@ add_subdirectory(cubool)
 file(COPY scripts DESTINATION ${CMAKE_BINARY_DIR}/)
 
 # Copy python related stuff
-file(COPY pycubool DESTINATION ${CMAKE_BINARY_DIR}/)
+file(COPY python DESTINATION ${CMAKE_BINARY_DIR}/)
