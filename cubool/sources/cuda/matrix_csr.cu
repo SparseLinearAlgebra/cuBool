@@ -133,7 +133,7 @@ namespace cubool {
     void MatrixCsr::clone(const MatrixBase &otherBase) {
         auto other = dynamic_cast<const MatrixCsr*>(&otherBase);
 
-        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
 
         size_t M = other->getNrows();
         size_t N = other->getNcols();
@@ -141,10 +141,15 @@ namespace cubool {
         assert(this->getNrows() == M);
         assert(this->getNcols() == N);
 
+        if (other->isMatrixEmpty()) {
+            mMatrixImpl.zero_dim();
+            return;
+        }
+
         this->mMatrixImpl = other->mMatrixImpl;
     }
 
-    void MatrixCsr::resizeStorageToDim() {
+    void MatrixCsr::resizeStorageToDim() const {
         if (mMatrixImpl.is_zero_dim()) {
             // If actual storage was not allocated, allocate one for an empty matrix
             mMatrixImpl = std::move(MatrixImplType(mNrows, mNcols));

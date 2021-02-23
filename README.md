@@ -22,13 +22,14 @@ as well as python high-level wrapper with automated resources management.
 
 - [X] Library C interface
 - [X] Library instance/context
-- [X] Dense matrix
-- [X] Dense multiplication 
 - [X] CSR matrix
 - [X] CSR multiplication
 - [X] CSR addition
 - [X] CSR kronecker
 - [X] CSR transpose
+- [ ] CSR submatrix
+- [ ] CSR matrix reduce
+- [ ] CSR slicing
 - [X] Wrapper for Python API
 - [ ] Wrapper tests in Python 
 - [ ] User guide
@@ -42,8 +43,8 @@ as well as python high-level wrapper with automated resources management.
 - Linux Ubuntu (tested on 20.04)
 - CMake Version 3.17 or higher
 - CUDA Compatible GPU device
-- GCC 8 Compiler 
-- NVIDIA CUDA 10 toolkit
+- GCC Compiler 
+- NVIDIA CUDA toolkit
 - Python 3 (for `pycubool` library)
 
 ## Setup
@@ -100,8 +101,9 @@ Run the following commands in the command shell to download the repository,
 make `build` directory, configure `cmake build` and run compilation process:
 
 ```shell script
-$ git clone --recurse-submodules https://github.com/JetBrains-Research/cuBool.git
+$ git clone https://github.com/JetBrains-Research/cuBool.git
 $ cd cuBool
+$ git submodule update --init --recursive
 $ mkdir build
 $ cd build
 $ cmake .. -DCUBOOL_BUILD_TESTS=ON
@@ -132,15 +134,21 @@ which uses this variable in order to located library object.
 ```
 cuBool
 ├── .github - GitHub Actions CI setup 
-├── include - library C API 
-├── src - source-code for library implementation
 ├── docs - documents, text files and various helpful stuff
-├── tests - gtest-based unit-tests collection
 ├── scripts - short utility programs 
-├── python - project python sources
+├── cubool - library core source code
+│   ├── include - library C API 
+│   ├── sources - source-code for implementation
+│   │   ├── backend - common interfaces
+│   │   ├── core - library core and state management
+│   │   ├── cpu - fallback cpu implementation
+│   │   └── cuda - cuda backend
+│   ├── utils - testing utilities
+│   └── tests - gtest-based unit-tests collection
+├── pycubool - pycubool related source
 │   ├── pycubool - cubool library wrapper for python (similar to pygraphblas)
 │   └── tests - tests for python wrapper
-├── thirdparty - project dependencies
+├── deps - project dependencies
 │   ├── cub - cuda utility, required for nsparse
 │   ├── gtest - google test framework for unit testing
 │   ├── naive - GEMM implementation for squared dense boolean matrices
@@ -159,24 +167,24 @@ closure provides info about reachable vertices in the graph:
 ```c++
 /**
  * Performs transitive closure for directed graph
- * 
- * @param Inst Library instance, which provides context for operations
+ *
  * @param A Adjacency matrix of the graph
  * @param T Reference to the handle where to allocate and store result
  *
  * @return Status on this operation
  */
-cuBoolStatus TransitiveClosure(CuBoolInstance Inst, cuBoolMatrix A, cuBoolMatrix* T) {
-    cuBool_Matrix_Duplicate(Inst, A, T);         /** Create result matrix and copy initial values */
+cuBoolStatus TransitiveClosure(cuBoolMatrix A, cuBoolMatrix* T) {
+    cuBool_Matrix_Duplicate(A, T);                       /* Duplicate A to result T */
 
-    CuBoolSize_t total = 0;
-    CuBoolSize_t current;
-    cuBool_Matrix_Nvals(Inst, *T, &current);     /** Query current number on non-zero elements */
+    cuBoolIndex total = 0;
+    cuBoolIndex current;
 
-    while (current != total) {                   /** Loop while values are added */
+    cuBool_Matrix_Nvals(*T, &current);                   /* Query current nvals value */
+
+    while (current != total) {                           /* Iterate, while new values are added */
         total = current;
-        cuBool_MxM(Inst, *T, *T, *T);            /** T += T * T */
-        cuBool_Matrix_Nvals(Inst, *T, &current);
+        cuBool_MxM(*T, *T, *T, CUBOOL_HINT_ACCUMULATE);  /* T += T x T */
+        cuBool_Matrix_Nvals(*T, &current);
     }
 
     return CUBOOL_STATUS_SUCCESS;
@@ -229,20 +237,11 @@ with cubool C API usage.
 #define CHECK(f) { cuBoolStatus s = f; if (s != CUBOOL_STATUS_SUCCESS) return s; }
 
 int main() {
-    /* Return code of the operation */
-    cuBoolStatus status;
-
-    /* Declare resources for the application */
-    CuBoolInstance I;
     cuBoolMatrix A;
     cuBoolMatrix TC;
 
-    /* Initialize instance of the library */
-    CuBoolInstanceDesc desc{};
-    desc.memoryType = CUBOOL_GPU_MEMORY_TYPE_GENERIC;
-
     /* System may not provide Cuda compatible device */
-    CHECK(cuBool_Instance_New(&desc, &I));
+    CHECK(cuBool_Initialize(CUBOOL_HINT_NO));
 
     /* Input graph G */
 
@@ -252,15 +251,15 @@ int main() {
 
     /* Adjacency matrix in sparse format  */
     cuBoolIndex n = 4;
-    CuBoolSize_t e = 5;
+    cuBoolIndex e = 5;
     cuBoolIndex rows[] = { 0, 0, 1, 2, 3 };
     cuBoolIndex cols[] = { 1, 2, 2, 3, 2 };
 
     /* Create matrix */
-    CHECK(cuBool_Matrix_New(I, &A, n, n));
+    CHECK(cuBool_Matrix_New(&A, n, n));
 
     /* Fill the data */
-    CHECK(cuBool_Matrix_Build(I, A, rows, cols, e, CUBOOL_HINT_VALUES_SORTED));
+    CHECK(cuBool_Matrix_Build(A, rows, cols, e, CUBOOL_HINT_VALUES_SORTED));
 
     /* Now we have created the following matrix */
 
@@ -271,25 +270,25 @@ int main() {
     /* [3] .  .  1  .  */
 
     /* Create result matrix from source as copy */
-    CHECK(cuBool_Matrix_Duplicate(I, A, &TC));
+    CHECK(cuBool_Matrix_Duplicate(A, &TC));
 
     /* Query current number on non-zero elements */
-    CuBoolSize_t total = 0;
-    CuBoolSize_t current;
-    CHECK(cuBool_Matrix_Nvals(I, TC, &current));
+    cuBoolIndex total = 0;
+    cuBoolIndex current;
+    CHECK(cuBool_Matrix_Nvals(TC, &current));
 
     /* Loop while values are added */
     while (current != total) {
         total = current;
 
         /** Transitive closure step */
-        CHECK(cuBool_MxM(I, TC, TC, TC));
-        CHECK(cuBool_Matrix_Nvals(I, TC, &current));
+        CHECK(cuBool_MxM(TC, TC, TC, CUBOOL_HINT_ACCUMULATE));
+        CHECK(cuBool_Matrix_Nvals(TC, &current));
     }
 
     /** Get result */
     cuBoolIndex tc_rows[16], tc_cols[16];
-    CHECK(cuBool_Matrix_ExtractPairs(I, TC, tc_rows, tc_cols, &total));
+    CHECK(cuBool_Matrix_ExtractPairs(TC, tc_rows, tc_cols, &total));
 
     /** Now tc_rows and tc_cols contain (i,j) pairs of the result G_tc graph */
 
@@ -302,15 +301,15 @@ int main() {
     /* Output result size */
     printf("Nnz(tc)=%lli\n", (unsigned long long) total);
 
-    for (CuBoolSize_t i = 0; i < total; i++)
+    for (cuBoolIndex i = 0; i < total; i++)
         printf("(%u,%u) ", tc_rows[i], tc_cols[i]);
 
     /* Release resources */
-    CHECK(cuBool_Matrix_Free(I, A));
-    CHECK(cuBool_Matrix_Free(I, TC));
+    CHECK(cuBool_Matrix_Free(A));
+    CHECK(cuBool_Matrix_Free(TC));
 
-    /* Release library instance */
-    return cuBool_Instance_Free(I) != CUBOOL_STATUS_SUCCESS;
+    /* Release library */
+    return cuBool_Finalize() != CUBOOL_STATUS_SUCCESS;
 }
 ```
 
@@ -319,7 +318,7 @@ command (assuming, that source code is placed into tc.cpp file):
 
 ```shell script
 $ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:path/to/folder/with/libcubool/"
-$ gcc tc.cpp -o tc -I/path/to/cubool/include/dir/ -Lpath/to/folder/with/libcubool/ -lcubool
+$ gcc tc.cpp -o tc -I/path/to/cubool/include/dir/ -L/path/to/folder/with/libcubool/ -lcubool
 $ ./tc 
 ```
 

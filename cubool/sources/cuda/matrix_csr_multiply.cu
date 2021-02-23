@@ -33,8 +33,8 @@ namespace cubool {
         auto a = dynamic_cast<const MatrixCsr*>(&aBase);
         auto b = dynamic_cast<const MatrixCsr*>(&bBase);
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
 
         index M = a->getNrows();
         index N = b->getNcols();
@@ -47,14 +47,14 @@ namespace cubool {
             return;
         }
 
-        if (this->isStorageEmpty()) {
-            // If this was resized but actual data was not allocated
-            this->resizeStorageToDim();
-        }
-
-        assert(accumulate);
+        CHECK_RAISE_ERROR(accumulate, NotImplemented, "Supported only accumulated multiplication");
 
         if (accumulate) {
+            // Ensure csr proper csr format even if empty
+            a->resizeStorageToDim();
+            b->resizeStorageToDim();
+            this->resizeStorageToDim();
+
             // Call backend r = c + a * b implementation, as C this is passed
             nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
             auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);

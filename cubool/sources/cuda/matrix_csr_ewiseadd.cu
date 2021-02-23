@@ -33,8 +33,8 @@ namespace cubool {
         auto a = dynamic_cast<const MatrixCsr*>(&aBase);
         auto b = dynamic_cast<const MatrixCsr*>(&bBase);
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
 
         index M = this->getNrows();
         index N = this->getNcols();
@@ -54,6 +54,10 @@ namespace cubool {
             this->clone(aBase);
             return;
         }
+
+        // Ensure csr proper csr format even if empty
+        a->resizeStorageToDim();
+        b->resizeStorageToDim();
 
         kernels::SpMergeFunctor<index, DeviceAlloc<index>> spMergeFunctor;
         auto result = spMergeFunctor(a->mMatrixImpl, b->mMatrixImpl);

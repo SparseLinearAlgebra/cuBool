@@ -57,12 +57,12 @@ void testMatrixKronecker(cuBoolIndex m, cuBoolIndex n, cuBoolIndex k, cuBoolInde
     EXPECT_EQ(cuBool_Matrix_Free(r), CUBOOL_STATUS_SUCCESS);
 }
 
-void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolIndex k, cuBoolIndex t, cuBoolHints setup) {
+void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolIndex k, cuBoolIndex t, float step, cuBoolHints setup) {
     // Setup library
     EXPECT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
-    for (size_t i = 0; i < 5; i++) {
-        testMatrixKronecker(m, n, k, t, 0.1f + (0.05f) * ((float) i));
+    for (size_t i = 0; i < 10; i++) {
+        testMatrixKronecker(m, n, k, t, 0.01f + step * ((float) i));
     }
 
     // Finalize library
@@ -72,19 +72,22 @@ void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolIndex k, cuBoolIndex t, cuBoolH
 TEST(MatrixCsr, KroneckerSmall) {
     cuBoolIndex m = 10, n = 20;
     cuBoolIndex k = 5, t = 15;
-    testRun(m, n, k, t, CUBOOL_HINT_NO);
+    float step = 0.05f;
+    testRun(m, n, k, t, step, CUBOOL_HINT_NO);
 }
 
 TEST(MatrixCsr, KroneckerMedium) {
     cuBoolIndex m = 100, n = 40;
     cuBoolIndex k = 30, t = 80;
-    testRun(m, n, k, t, CUBOOL_HINT_NO);
+    float step = 0.02f;
+    testRun(m, n, k, t, step, CUBOOL_HINT_NO);
 }
 
 TEST(MatrixCsr, KroneckerLarge) {
     cuBoolIndex m = 1000, n = 400;
     cuBoolIndex k = 300, t = 800;
-    testRun(m, n, k, t, CUBOOL_HINT_NO);
+    float step = 0.001f;
+    testRun(m, n, k, t, step, CUBOOL_HINT_NO);
 }
 
 CUBOOL_GTEST_MAIN

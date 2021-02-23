@@ -47,10 +47,12 @@
 
 #define CUBOOL_END_BODY }                                                               \
     catch (const cubool::Error& err) {                                                  \
+         cubool::Library::handleError(err);                                             \
          return err.getStatus();                                                        \
     }                                                                                   \
     catch (const std::exception& exc) {                                                 \
-        return CUBOOL_STATUS_ERROR;                                                     \
+         cubool::Library::handleError(exc);                                             \
+         return CUBOOL_STATUS_ERROR;                                                    \
     }                                                                                   \
     return cuBoolStatus::CUBOOL_STATUS_SUCCESS;
 

@@ -28,6 +28,7 @@
 #define CUBOOL_LIBRARY_HPP
 
 #include <core/config.hpp>
+#include <core/error.hpp>
 #include <memory>
 
 namespace cubool {
@@ -39,6 +40,7 @@ namespace cubool {
         static void validate();
         static class MatrixBase *createMatrix(size_t nrows, size_t ncols);
         static void releaseMatrix(class MatrixBase *matrixBase);
+        static void handleError(const std::exception& error);
 
     private:
         // todo: track all created resources

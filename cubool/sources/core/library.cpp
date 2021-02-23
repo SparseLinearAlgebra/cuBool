@@ -29,6 +29,7 @@
 #include <core/matrix.hpp>
 #include <backend/backend_base.hpp>
 #include <backend/matrix_base.hpp>
+#include <iostream>
 
 #ifdef CUBOOL_WITH_CUDA
 #include <cuda/cuda_backend.hpp>
@@ -86,4 +87,9 @@ namespace cubool {
     void Library::releaseMatrix(MatrixBase *matrixBase) {
         delete matrixBase;
     }
+
+    void Library::handleError(const std::exception& error) {
+        std::cerr << "cuBool:Error: " << error.what() << std::endl;
+    }
+
 }

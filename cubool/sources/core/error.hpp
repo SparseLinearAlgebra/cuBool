@@ -30,6 +30,7 @@
 #include <cubool/cubool.h>
 #include <exception>
 #include <string>
+#include <sstream>
 
 namespace cubool {
 
@@ -41,7 +42,8 @@ namespace cubool {
     public:
 
         Exception(std::string message, std::string function, std::string file, size_t line, cuBoolStatus status, bool critical)
-                : mMessage(std::move(message)),
+                : std::exception(),
+                  mMessage(std::move(message)),
                   mFunction(std::move(function)),
                   mFile(std::move(file)),
                   mLine(line),
@@ -52,22 +54,31 @@ namespace cubool {
 
         Exception(const Exception& e) noexcept = default;
         Exception(Exception&& e) noexcept = default;
-
-        ~Exception() override = default;
+        ~Exception() noexcept override = default;
 
         const char* what() const noexcept override {
-            return mMessage.c_str();
+            if (!mCached) {
+                mCached = true;
+
+                std::stringstream s;
+                s << getMessage() << " in" << std::endl
+                  << getFile() << ": line: " << getLine() << " function: " << getFunction();
+
+                mWhatCached = s.str();
+            }
+
+            return mWhatCached.c_str();
         }
 
-        const std::string& getMessage() const {
+        const std::string& getMessage() const noexcept {
             return mMessage;
         }
 
-        const std::string& getFunction() const {
+        const std::string& getFunction() const noexcept {
             return mFunction;
         }
 
-        const std::string& getFile() const {
+        const std::string& getFile() const noexcept {
             return mFile;
         }
 
@@ -75,21 +86,23 @@ namespace cubool {
             return mLine;
         }
 
-        cuBoolStatus getStatus() const {
+        cuBoolStatus getStatus() const noexcept {
             return nStatus;
         }
 
-        bool isCritical() const {
+        bool isCritical() const noexcept {
             return mCritical;
         }
 
     private:
+        mutable std::string mWhatCached;
         std::string mMessage;
         std::string mFunction;
         std::string mFile;
         size_t mLine;
         cuBoolStatus nStatus;
         bool mCritical;
+        mutable bool mCached = false;
     };
 
     /**
@@ -106,8 +119,7 @@ namespace cubool {
 
         TException(const TException& other) noexcept = default;
         TException(TException&& other) noexcept = default;
-
-        ~TException() override = default;
+        ~TException() noexcept override = default;
     };
 
     // Errors exposed to the C API

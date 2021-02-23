@@ -66,7 +66,6 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/matrix_csr_ewiseadd.cu
         sources/cuda/matrix_csr_kronecker.cu
         sources/cuda/matrix_csr_multiply.cu
-        sources/cuda/matrix_csr_multiply_sum.cu
         sources/cuda/matrix_csr_transpose.cu)
 endif()
 

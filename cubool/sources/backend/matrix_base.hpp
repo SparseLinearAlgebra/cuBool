@@ -45,7 +45,6 @@ namespace cubool {
         virtual void clone(const MatrixBase& other) = 0;
         virtual void transpose(const MatrixBase &other) = 0;
 
-        virtual void multiplySum(const MatrixBase& aBase, const MatrixBase& bBase, const MatrixBase& cBase) = 0;
         virtual void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) = 0;
         virtual void kronecker(const MatrixBase& aBase, const MatrixBase& bBase) = 0;
         virtual void eWiseAdd(const MatrixBase& aBase, const MatrixBase& bBase) = 0;

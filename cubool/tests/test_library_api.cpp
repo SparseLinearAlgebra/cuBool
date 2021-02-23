@@ -56,7 +56,6 @@ TEST(CuBoolInstance, Setup) {
 /**
  * Performs transitive closure for directed graph
  *
- * @param Inst Library instance, which provides context for operations
  * @param A Adjacency matrix of the graph
  * @param T Reference to the handle where to allocate and store result
  *

@@ -33,8 +33,8 @@ namespace cubool {
         auto a = dynamic_cast<const MatrixCsr*>(&aBase);
         auto b = dynamic_cast<const MatrixCsr*>(&bBase);
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix do not belong to csr matrix class");
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
 
         index M = a->getNrows();
         index N = a->getNcols();
@@ -46,6 +46,7 @@ namespace cubool {
 
         if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
             // Result will be empty
+            mMatrixImpl.zero_dim();
             return;
         }
 

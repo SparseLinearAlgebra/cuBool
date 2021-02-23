@@ -25,6 +25,7 @@
 /**********************************************************************************/
 
 #include <core/matrix.hpp>
+#include <core/error.hpp>
 
 namespace cubool {
 
@@ -42,13 +43,16 @@ namespace cubool {
     }
 
     void Matrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted) {
-        // todo: validation of the state and arguments
+        CHECK_RAISE_ERROR(rows != nullptr, InvalidArgument, "Null ptr rows array");
+        CHECK_RAISE_ERROR(cols != nullptr, InvalidArgument, "Null ptr cols array");
 
         mHnd->build(rows, cols, nvals, isSorted);
     }
 
     void Matrix::extract(index *rows, index *cols, size_t &nvals) {
-        // todo: validation of the state and arguments
+        CHECK_RAISE_ERROR(rows != nullptr, InvalidArgument, "Null ptr rows array");
+        CHECK_RAISE_ERROR(cols != nullptr, InvalidArgument, "Null ptr cols array");
+        CHECK_RAISE_ERROR(getNvals() <= nvals, InvalidArgument, "Passed arrays size must be more or equal to the nvals of the matrix");
 
         mHnd->extract(rows, cols, nvals);
     }
@@ -56,7 +60,13 @@ namespace cubool {
     void Matrix::clone(const MatrixBase &otherBase) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
-        // todo: validation of the state and arguments
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+
+        auto M = other->getNrows();
+        auto N = other->getNcols();
+
+        CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Cloned matrix has incompatible size");
+        CHECK_RAISE_ERROR(N == this->getNcols(), InvalidArgument, "Cloned matrix has incompatible size");
 
         mHnd->clone(*other->mHnd);
     }
@@ -64,26 +74,31 @@ namespace cubool {
     void Matrix::transpose(const MatrixBase &otherBase) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
-        // todo: validation of the state and arguments
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+
+        auto M = other->getNrows();
+        auto N = other->getNcols();
+
+        CHECK_RAISE_ERROR(M == this->getNcols(), InvalidArgument, "Transposed matrix has incompatible size");
+        CHECK_RAISE_ERROR(N == this->getNrows(), InvalidArgument, "Transposed matrix has incompatible size");
 
         mHnd->transpose(*other->mHnd);
-    }
-
-    void Matrix::multiplySum(const MatrixBase &aBase, const MatrixBase &bBase, const MatrixBase &cBase) {
-        const auto* a = dynamic_cast<const Matrix*>(&aBase);
-        const auto* b = dynamic_cast<const Matrix*>(&bBase);
-        const auto* c = dynamic_cast<const Matrix*>(&cBase);
-
-        // todo: validation of the state and arguments
-
-        mHnd->multiplySum(*a->mHnd, *b->mHnd, *c->mHnd);
     }
 
     void Matrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
-        // todo: validation of the state and arguments
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+
+        auto M = a->getNrows();
+        auto T = a->getNcols();
+        auto N = b->getNcols();
+
+        CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Matrix has incompatible size for operation result");
+        CHECK_RAISE_ERROR(N == this->getNcols(), InvalidArgument, "Matrix has incompatible size for operation result");
+        CHECK_RAISE_ERROR(T == b->getNrows(), InvalidArgument, "Cannot multiply passed matrices");
 
         mHnd->multiply(*a->mHnd, *b->mHnd, accumulate);
     }
@@ -92,7 +107,16 @@ namespace cubool {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
-        // todo: validation of the state and arguments
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+
+        index M = a->getNrows();
+        index N = a->getNcols();
+        index K = b->getNrows();
+        index T = b->getNcols();
+
+        CHECK_RAISE_ERROR(M * K == this->getNrows(), InvalidArgument, "Matrix has incompatible size for operation result");
+        CHECK_RAISE_ERROR(N * T == this->getNcols(), InvalidArgument, "Matrix has incompatible size for operation result");
 
         mHnd->kronecker(*a->mHnd, *b->mHnd);
     }
@@ -101,7 +125,17 @@ namespace cubool {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
-        // todo: validation of the state and arguments
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+
+        index M = a->getNrows();
+        index N = a->getNcols();
+
+        CHECK_RAISE_ERROR(M == b->getNrows(), InvalidArgument, "Passed matrices have incompatible size");
+        CHECK_RAISE_ERROR(N == b->getNrows(), InvalidArgument, "Passed matrices have incompatible size");
+
+        CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Matrix has incompatible size for operation result");
+        CHECK_RAISE_ERROR(N == this->getNrows(), InvalidArgument, "Matrix has incompatible size for operation result");
 
         mHnd->eWiseAdd(*a->mHnd, *b->mHnd);
     }

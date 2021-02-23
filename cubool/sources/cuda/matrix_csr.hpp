@@ -51,7 +51,6 @@ namespace cubool {
         void clone(const MatrixBase &other) override;
         void transpose(const MatrixBase &other) override;
 
-        void multiplySum(const MatrixBase &a, const MatrixBase &b, const MatrixBase &c) override;
         void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate) override;
         void kronecker(const MatrixBase& a, const MatrixBase& b) override;
         void eWiseAdd(const MatrixBase& a, const MatrixBase& b) override;
@@ -61,12 +60,12 @@ namespace cubool {
         index getNvals() const override;
 
     private:
-        void resizeStorageToDim();
+        void resizeStorageToDim() const;
         bool isStorageEmpty() const;
         bool isMatrixEmpty() const;
 
         // Uses nsparse csr matrix implementation as a backend
-        MatrixImplType mMatrixImpl;
+        mutable MatrixImplType mMatrixImpl;
         size_t mNrows = 0;
         size_t mNcols = 0;
         Instance& mInstance;
