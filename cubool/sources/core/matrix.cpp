@@ -28,47 +28,93 @@
 
 namespace cubool {
 
-    void Matrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted) {
+    Matrix::Matrix(size_t nrows, size_t ncols, BackendBase &backend) {
+        mHnd = backend.createMatrix(nrows, ncols);
+        mProvider = &backend;
+    }
 
+    Matrix::~Matrix() {
+        if (mHnd) {
+            mProvider->releaseMatrix(mHnd);
+            mHnd = nullptr;
+            mProvider = nullptr;
+        }
+    }
+
+    void Matrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted) {
+        // todo: validation of the state and arguments
+
+        mHnd->build(rows, cols, nvals, isSorted);
     }
 
     void Matrix::extract(index *rows, index *cols, size_t &nvals) {
+        // todo: validation of the state and arguments
 
+        mHnd->extract(rows, cols, nvals);
     }
 
-    void Matrix::clone(const MatrixBase &other) {
+    void Matrix::clone(const MatrixBase &otherBase) {
+        const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
+        // todo: validation of the state and arguments
+
+        mHnd->clone(*other->mHnd);
     }
 
-    void Matrix::transpose(const MatrixBase &other) {
+    void Matrix::transpose(const MatrixBase &otherBase) {
+        const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
+        // todo: validation of the state and arguments
+
+        mHnd->transpose(*other->mHnd);
     }
 
     void Matrix::multiplySum(const MatrixBase &aBase, const MatrixBase &bBase, const MatrixBase &cBase) {
+        const auto* a = dynamic_cast<const Matrix*>(&aBase);
+        const auto* b = dynamic_cast<const Matrix*>(&bBase);
+        const auto* c = dynamic_cast<const Matrix*>(&cBase);
 
+        // todo: validation of the state and arguments
+
+        mHnd->multiplySum(*a->mHnd, *b->mHnd, *c->mHnd);
     }
 
     void Matrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase) {
+        const auto* a = dynamic_cast<const Matrix*>(&aBase);
+        const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
+        // todo: validation of the state and arguments
+
+        mHnd->multiply(*a->mHnd, *b->mHnd);
     }
 
     void Matrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase) {
+        const auto* a = dynamic_cast<const Matrix*>(&aBase);
+        const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
+        // todo: validation of the state and arguments
+
+        mHnd->kronecker(*a->mHnd, *b->mHnd);
     }
 
     void Matrix::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase) {
+        const auto* a = dynamic_cast<const Matrix*>(&aBase);
+        const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
+        // todo: validation of the state and arguments
+
+        mHnd->eWiseAdd(*a->mHnd, *b->mHnd);
     }
 
     index Matrix::getNrows() const {
-        return 0;
+        return mHnd->getNrows();
     }
 
     index Matrix::getNcols() const {
-        return 0;
+        return mHnd->getNcols();
     }
 
     index Matrix::getNvals() const {
-        return 0;
+        return mHnd->getNvals();
     }
 }

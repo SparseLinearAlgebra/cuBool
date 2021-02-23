@@ -28,12 +28,14 @@
 #define CUBOOL_MATRIX_HPP
 
 #include <backend/matrix_base.hpp>
+#include <backend/backend_base.hpp>
 
 namespace cubool {
 
     class Matrix final: public MatrixBase {
     public:
-        ~Matrix() override = default;
+        Matrix(size_t nrows, size_t ncols, BackendBase& backend);
+        ~Matrix() override;
 
         void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
         void extract(index *rows, index *cols, size_t &nvals) override;
@@ -49,6 +51,12 @@ namespace cubool {
         index getNrows() const override;
         index getNcols() const override;
         index getNvals() const override;
+
+    private:
+
+        // To reference matrix api
+        MatrixBase* mHnd = nullptr;
+        BackendBase* mProvider = nullptr;
     };
 
 }
