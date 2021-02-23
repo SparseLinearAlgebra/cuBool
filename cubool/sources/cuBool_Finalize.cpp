@@ -24,24 +24,12 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_BACKEND_BASE_HPP
-#define CUBOOL_BACKEND_BASE_HPP
+#include <cuBool_Common.hpp>
 
-#include <backend/matrix_base.hpp>
-#include <core/config.hpp>
-
-namespace cubool {
-
-    class BackendBase {
-    public:
-        virtual ~BackendBase() = default;
-        virtual void initialize(hints initHints) = 0;
-        virtual void finalize() = 0;
-        virtual bool isInitialized() const = 0;
-        virtual MatrixBase* createMatrix(size_t nrows, size_t ncols) = 0;
-        virtual void releaseMatrix(MatrixBase* matrixBase) = 0;
-    };
-
+cuBoolStatus cuBool_Finalize(
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        cubool::Library::finalize();
+    CUBOOL_END_BODY
 }
-
-#endif //CUBOOL_BACKEND_BASE_HPP

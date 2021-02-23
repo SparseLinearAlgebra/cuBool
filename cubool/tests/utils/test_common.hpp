@@ -39,8 +39,8 @@ namespace testing {
     namespace details {
 
         struct Pair {
-            CuBoolIndex_t i;
-            CuBoolIndex_t j;
+            cuBoolIndex_t i;
+            cuBoolIndex_t j;
         };
 
         struct PairHash {
@@ -69,7 +69,7 @@ namespace testing {
             return pairEq(a, b);
         }
 
-        static void testMsgFun(CuBoolStatus error, const char* message, void* _) {
+        static void testMsgFun(cuBoolStatus error, const char* message, void* _) {
             std::cout << "CuBool: " << message << std::endl;
         }
 
@@ -93,13 +93,13 @@ namespace testing {
         }
 
         struct Condition1 {
-            bool operator()(CuBoolIndex_t i, CuBoolIndex_t j) {
+            bool operator()(cuBoolIndex_t i, cuBoolIndex_t j) {
                 return (((i - 1) & i) == 0 && ((j - 1) & j) == 0);
             }
         };
 
         struct Condition2 {
-            bool operator()(CuBoolIndex_t i, CuBoolIndex_t j) {
+            bool operator()(cuBoolIndex_t i, cuBoolIndex_t j) {
                 return !(i % 5) && !(j % 7);
             }
         };
@@ -109,7 +109,7 @@ namespace testing {
             explicit Condition3(float density): mDensity(density) {
                 mRandomEngine.seed(std::time(0));
             }
-            bool operator()(CuBoolIndex_t i, CuBoolIndex_t j) {
+            bool operator()(cuBoolIndex_t i, cuBoolIndex_t j) {
                 return std::uniform_real_distribution<float>(0.0f, 1.0f)(mRandomEngine) <= mDensity;
             }
         private:
@@ -119,8 +119,8 @@ namespace testing {
 
         template<typename Condition>
         static void generateTestData(size_t rows, size_t columns, std::vector<Pair> &values, Condition&& condition) {
-            for (CuBoolIndex_t i = 0; i < rows; i++) {
-                for (CuBoolIndex_t j = 0; j < columns; j++) {
+            for (cuBoolIndex_t i = 0; i < rows; i++) {
+                for (cuBoolIndex_t j = 0; j < columns; j++) {
                     // is i and j power of two or 0
                     if (condition(i, j)) {
                         values.push_back(Pair{i, j});
@@ -130,10 +130,10 @@ namespace testing {
         }
 
         template<typename Condition>
-        static void generateTestData(size_t nrows, size_t ncols, std::vector<CuBoolIndex_t> &rows, std::vector<CuBoolIndex_t> &cols, size_t& nvals, Condition&& condition) {
+        static void generateTestData(size_t nrows, size_t ncols, std::vector<cuBoolIndex_t> &rows, std::vector<cuBoolIndex_t> &cols, size_t& nvals, Condition&& condition) {
             nvals = 0;
-            for (CuBoolIndex_t i = 0; i < nrows; i++) {
-                for (CuBoolIndex_t j = 0; j < ncols; j++) {
+            for (cuBoolIndex_t i = 0; i < nrows; i++) {
+                for (cuBoolIndex_t j = 0; j < ncols; j++) {
                     // is i and j power of two or 0
                     if (condition(i, j)) {
                         rows.push_back(i);
@@ -163,10 +163,10 @@ namespace testing {
         }
 
         template <typename Stream>
-        void printMatrix(Stream& stream, const CuBoolIndex_t* rowsIndex, const CuBoolIndex_t* colsIndex, CuBoolIndex_t nrows, CuBoolIndex_t ncols, CuBoolSize_t nvals) {
-            CuBoolIndex_t currentRow = 0;
-            CuBoolIndex_t currentCol = 0;
-            CuBoolIndex_t currentId = 0;
+        void printMatrix(Stream& stream, const cuBoolIndex_t* rowsIndex, const cuBoolIndex_t* colsIndex, cuBoolIndex_t nrows, cuBoolIndex_t ncols, CuBoolSize_t nvals) {
+            cuBoolIndex_t currentRow = 0;
+            cuBoolIndex_t currentCol = 0;
+            cuBoolIndex_t currentId = 0;
 
             while (currentId < nvals) {
                 auto i = rowsIndex[currentId];
@@ -261,17 +261,17 @@ namespace testing {
 
 
     struct Matrix {
-        std::vector<CuBoolIndex_t> mRowsIndex;
-        std::vector<CuBoolIndex_t> mColsIndex;
+        std::vector<cuBoolIndex_t> mRowsIndex;
+        std::vector<cuBoolIndex_t> mColsIndex;
         size_t mNvals = 0;
         size_t mNrows = 0;
         size_t mNcols = 0;
 
-        bool areEqual(CuBoolMatrixDense matrix, CuBoolInstance instance) const {
+        bool areEqual(cuBoolMatrixDense matrix, CuBoolInstance instance) const {
             using namespace details;
 
-            CuBoolIndex_t* extRows;
-            CuBoolIndex_t* extCols;
+            cuBoolIndex_t* extRows;
+            cuBoolIndex_t* extCols;
             size_t extNvals;
 
             EXPECT_EQ(CuBool_MatrixDense_ExtractPairsExt(instance, matrix, &extRows, &extCols, &extNvals), CUBOOL_STATUS_SUCCESS);
@@ -282,7 +282,7 @@ namespace testing {
             std::vector<Pair> extracted(mNvals);
             std::vector<Pair> reference(mNvals);
 
-            for (CuBoolIndex_t idx = 0; idx < mNvals; idx++) {
+            for (cuBoolIndex_t idx = 0; idx < mNvals; idx++) {
                 extracted[idx] = Pair{extRows[idx], extCols[idx]};
                 reference[idx] = Pair{mRowsIndex[idx], mColsIndex[idx]};
             }
@@ -296,11 +296,11 @@ namespace testing {
             return extracted == reference;
         }
 
-        bool areEqual(CuBoolMatrix matrix, CuBoolInstance instance) const {
+        bool areEqual(cuBoolMatrix matrix, CuBoolInstance instance) const {
             using namespace details;
 
-            CuBoolIndex_t* extRows;
-            CuBoolIndex_t* extCols;
+            cuBoolIndex_t* extRows;
+            cuBoolIndex_t* extCols;
             size_t extNvals;
 
             EXPECT_EQ(CuBool_Matrix_ExtractPairsExt(instance, matrix, &extRows, &extCols, &extNvals), CUBOOL_STATUS_SUCCESS);
@@ -311,7 +311,7 @@ namespace testing {
             std::vector<Pair> extracted(mNvals);
             std::vector<Pair> reference(mNvals);
 
-            for (CuBoolIndex_t idx = 0; idx < mNvals; idx++) {
+            for (cuBoolIndex_t idx = 0; idx < mNvals; idx++) {
                 extracted[idx] = Pair{extRows[idx], extCols[idx]};
                 reference[idx] = Pair{mRowsIndex[idx], mColsIndex[idx]};
             }
@@ -354,11 +354,11 @@ namespace testing {
                 auto pr = dist(engine);
                 auto pc = dist(engine);
 
-                auto r = (CuBoolIndex_t) (pr * (float) nrows);
-                auto c = (CuBoolIndex_t) (pc * (float) ncols);
+                auto r = (cuBoolIndex_t) (pr * (float) nrows);
+                auto c = (cuBoolIndex_t) (pc * (float) ncols);
 
-                r = std::min(r, (CuBoolIndex_t)nrows - 1);
-                c = std::min(c, (CuBoolIndex_t)ncols - 1);
+                r = std::min(r, (cuBoolIndex_t)nrows - 1);
+                c = std::min(c, (cuBoolIndex_t)ncols - 1);
 
                 indices.emplace(details::Pair{r, c});
             }
@@ -485,16 +485,16 @@ namespace testing {
             std::vector<details::Pair> vals;
             vals.reserve(result.mNvals);
 
-            for (CuBoolIndex_t i = 0; i < ma.mNvals; i++) {
+            for (cuBoolIndex_t i = 0; i < ma.mNvals; i++) {
                 auto blockI = ma.mRowsIndex[i];
                 auto blockJ = ma.mColsIndex[i];
 
-                for (CuBoolIndex_t j = 0; j < mb.mNvals; j++) {
+                for (cuBoolIndex_t j = 0; j < mb.mNvals; j++) {
                     auto valueI = mb.mRowsIndex[j];
                     auto valueJ = mb.mColsIndex[j];
 
-                    CuBoolIndex_t idI = k * blockI + valueI;
-                    CuBoolIndex_t idJ = t * blockJ + valueJ;
+                    cuBoolIndex_t idI = k * blockI + valueI;
+                    cuBoolIndex_t idJ = t * blockJ + valueJ;
 
                     vals.push_back(details::Pair{idI, idJ});
                 }
@@ -539,7 +539,7 @@ namespace testing {
     };
 
     struct Printing {
-        CuBoolMatrix matrix;
+        cuBoolMatrix matrix;
         CuBoolInstance instance;
     };
 
@@ -548,13 +548,13 @@ namespace testing {
         assert(printing.matrix);
         assert(printing.instance);
 
-        CuBoolMatrix matrix = printing.matrix;
+        cuBoolMatrix matrix = printing.matrix;
         CuBoolInstance instance = printing.instance;
 
-        CuBoolIndex_t* rowIndex;
-        CuBoolIndex_t* colIndex;
-        CuBoolIndex_t nrows;
-        CuBoolIndex_t ncols;
+        cuBoolIndex_t* rowIndex;
+        cuBoolIndex_t* colIndex;
+        cuBoolIndex_t nrows;
+        cuBoolIndex_t ncols;
         CuBoolSize_t nvals;
 
         // Query matrix data

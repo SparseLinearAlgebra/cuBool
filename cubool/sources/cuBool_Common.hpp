@@ -30,34 +30,28 @@
 #include <cubool/cubool.h>
 #include <core/config.hpp>
 #include <core/version.hpp>
+#include <core/error.hpp>
+#include <core/library.hpp>
+#include <core/matrix.hpp>
 
-#define CUBOOL_CHECK_INSTANCE_LATE_FREE(instance)                                                       \
-    if ((cubool::Instance*) instance != cubool::Instance::getInstancePtr()) {                           \
-        return cubool::Instance::isManagedUsageAllowed() ?                                              \
-            CUBOOL_STATUS_SUCCESS : CUBOOL_STATUS_INVALID_ARGUMENT;                                     \
-    }
+// State validation
+#define CUBOOL_VALIDATE_LIBRARY                                                         \
+    cubool::Library::validate();
 
-#define CUBOOL_CHECK_INSTANCE(instance)                                                                 \
-    if ((cubool::Instance*) instance != cubool::Instance::getInstancePtr()) {                           \
-        return CUBOOL_STATUS_INVALID_ARGUMENT;                                                          \
-    }
+// Arguments validation
+#define CUBOOL_ARG_NOT_NULL(arg)                                                        \
+    CHECK_RAISE_ERROR(arg != nullptr, InvalidArgument, "Passed null argument")
 
-#define CUBOOL_CHECK_ARG_NOT_NULL(arg)                                                                  \
-    if (!arg) {                                                                                         \
-        std::string message = "Passed null ptr to arg: ";                                               \
-        message += #arg ;                                                                               \
-        instanceImpl->sendMessage(CUBOOL_STATUS_INVALID_ARGUMENT, message.c_str());                     \
-        return CUBOOL_STATUS_INVALID_ARGUMENT;                                                          \
-    }
-
-#define CUBOOL_BEGIN_BODY                                                                               \
+#define CUBOOL_BEGIN_BODY                                                               \
     try {
 
-#define CUBOOL_END_BODY }                                                                               \
-    catch (const cubool::details::Error& err) {                                                         \
-         instanceImpl->sendMessage(err.status(), err.what());                                           \
-         return err.status();                                                                           \
-    }                                                                                                   \
-    return CuBoolStatus::CUBOOL_STATUS_SUCCESS;
+#define CUBOOL_END_BODY }                                                               \
+    catch (const cubool::Error& err) {                                                  \
+         return err.getStatus();                                                        \
+    }                                                                                   \
+    catch (const std::exception& exc) {                                                 \
+        return CUBOOL_STATUS_ERROR;                                                     \
+    }                                                                                   \
+    return cuBoolStatus::CUBOOL_STATUS_SUCCESS;
 
 #endif //CUBOOL_CUBOOL_COMMON_HPP

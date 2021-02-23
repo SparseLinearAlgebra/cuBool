@@ -30,8 +30,9 @@
 #include <cubool/cubool.h>
 
 namespace cubool {
-    using index = CuBoolIndex;
-    struct Pair { CuBoolIndex i; CuBoolIndex j; };
+    using index = cuBoolIndex;
+    using hints = cuBoolHints;
+    struct Pair { cuBoolIndex i; cuBoolIndex j; };
 }
 
 #endif //CUBOOL_CONFIG_HPP

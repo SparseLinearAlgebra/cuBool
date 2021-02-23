@@ -24,24 +24,34 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_BACKEND_BASE_HPP
-#define CUBOOL_BACKEND_BASE_HPP
+#ifndef CUBOOL_CUDA_BACKEND_HPP
+#define CUBOOL_CUDA_BACKEND_HPP
 
-#include <backend/matrix_base.hpp>
-#include <core/config.hpp>
+#include <backend/backend_base.hpp>
+#include <cuda/instance.hpp>
 
 namespace cubool {
 
-    class BackendBase {
+    /**
+     * Main entry to cuda provided backend implementation.
+     */
+    class CudaBackend final: public BackendBase {
     public:
-        virtual ~BackendBase() = default;
-        virtual void initialize(hints initHints) = 0;
-        virtual void finalize() = 0;
-        virtual bool isInitialized() const = 0;
-        virtual MatrixBase* createMatrix(size_t nrows, size_t ncols) = 0;
-        virtual void releaseMatrix(MatrixBase* matrixBase) = 0;
+        ~CudaBackend() override = default;
+
+        void initialize(hints initHints) override;
+        void finalize() override;
+        bool isInitialized() const override;
+
+        MatrixBase *createMatrix(size_t nrows, size_t ncols) override;
+        void releaseMatrix(MatrixBase *matrixBase) override;
+
+        Instance& getInstance();
+
+    private:
+        Instance* mInstance;
     };
 
 }
 
-#endif //CUBOOL_BACKEND_BASE_HPP
+#endif //CUBOOL_CUDA_BACKEND_HPP

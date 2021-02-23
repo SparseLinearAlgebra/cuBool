@@ -24,24 +24,51 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_BACKEND_BASE_HPP
-#define CUBOOL_BACKEND_BASE_HPP
-
-#include <backend/matrix_base.hpp>
-#include <core/config.hpp>
+#include <core/matrix.hpp>
 
 namespace cubool {
 
-    class BackendBase {
-    public:
-        virtual ~BackendBase() = default;
-        virtual void initialize(hints initHints) = 0;
-        virtual void finalize() = 0;
-        virtual bool isInitialized() const = 0;
-        virtual MatrixBase* createMatrix(size_t nrows, size_t ncols) = 0;
-        virtual void releaseMatrix(MatrixBase* matrixBase) = 0;
-    };
+    void Matrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted) {
 
+    }
+
+    void Matrix::extract(index *rows, index *cols, size_t &nvals) {
+
+    }
+
+    void Matrix::clone(const MatrixBase &other) {
+
+    }
+
+    void Matrix::transpose(const MatrixBase &other) {
+
+    }
+
+    void Matrix::multiplySum(const MatrixBase &aBase, const MatrixBase &bBase, const MatrixBase &cBase) {
+
+    }
+
+    void Matrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase) {
+
+    }
+
+    void Matrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase) {
+
+    }
+
+    void Matrix::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase) {
+
+    }
+
+    index Matrix::getNrows() const {
+        return 0;
+    }
+
+    index Matrix::getNcols() const {
+        return 0;
+    }
+
+    index Matrix::getNvals() const {
+        return 0;
+    }
 }
-
-#endif //CUBOOL_BACKEND_BASE_HPP

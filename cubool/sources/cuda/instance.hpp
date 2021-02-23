@@ -32,42 +32,40 @@
 
 namespace cubool {
 
+    /**
+     * Manages global state for various internal operations.
+     */
     class Instance {
     public:
-        explicit Instance(CuBoolGpuMemoryType memoryType);
+        enum MemType {
+            Default,
+            Managed
+        };
+
+        explicit Instance(bool useManagedMemory);
         Instance(const Instance& other) = delete;
         Instance(Instance&& other) noexcept = delete;
         ~Instance();
 
-        void createMatrixCsr(size_t nrows, size_t ncols, class MatrixCsr* &matrix);
-        void validateMatrix(class MatrixBase* matrix);
-        void destroyMatrix(class MatrixBase* matrix);
-
+        // For custom host & device allocators
         void allocate(void* &ptr, size_t s) const;
         void allocateOnGpu(void* &ptr, size_t s) const;
-
         void deallocate(void* ptr) const;
         void deallocateOnGpu(void* ptr) const;
 
         void syncHostDevice() const;
-
-        void sendMessage(CuBoolStatus status, const char* message) const;
         void printDeviceCapabilities() const;
 
         static bool isCudaDeviceSupported();
         static void queryDeviceCapabilities(CuBoolDeviceCaps& deviceCaps);
         static Instance& getInstanceRef();
         static Instance* getInstancePtr();
-
         static bool isInstancePresent();
-        static bool isManagedUsageAllowed();
 
     private:
-        std::unordered_set<class MatrixBase*> mMatrixSet;
-        CuBoolGpuMemoryType mMemoryType = CUBOOL_GPU_MEMORY_TYPE_GENERIC;
+        MemType mMemoryType = Default;
 
         static volatile Instance* gInstance;
-        static volatile bool gIsManagedUsage;
     };
 
 }

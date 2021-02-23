@@ -24,3 +24,13 @@
 /*                                                                                */
 /**********************************************************************************/
 
+#include <cuBool_Common.hpp>
+
+cuBoolStatus cuBool_Initialize(
+        cuBoolHints         hints
+) {
+    CUBOOL_BEGIN_BODY
+        cubool::Library::initialize(hints);
+    CUBOOL_END_BODY
+}
+

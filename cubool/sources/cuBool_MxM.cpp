@@ -24,24 +24,21 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_BACKEND_BASE_HPP
-#define CUBOOL_BACKEND_BASE_HPP
+#include <cuBool_Common.hpp>
 
-#include <backend/matrix_base.hpp>
-#include <core/config.hpp>
-
-namespace cubool {
-
-    class BackendBase {
-    public:
-        virtual ~BackendBase() = default;
-        virtual void initialize(hints initHints) = 0;
-        virtual void finalize() = 0;
-        virtual bool isInitialized() const = 0;
-        virtual MatrixBase* createMatrix(size_t nrows, size_t ncols) = 0;
-        virtual void releaseMatrix(MatrixBase* matrixBase) = 0;
-    };
-
+cuBoolStatus cuBool_MxM(
+        cuBoolMatrix        result,
+        cuBoolMatrix        left,
+        cuBoolMatrix        right
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(result)
+        CUBOOL_ARG_NOT_NULL(left)
+        CUBOOL_ARG_NOT_NULL(right)
+        auto resultM = (cubool::Matrix*) result;
+        auto leftM = (cubool::Matrix*) left;
+        auto rightM = (cubool::Matrix*) right;
+        resultM->multiply(*leftM, *rightM);
+    CUBOOL_END_BODY
 }
-
-#endif //CUBOOL_BACKEND_BASE_HPP

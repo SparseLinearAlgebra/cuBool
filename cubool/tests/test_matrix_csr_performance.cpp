@@ -28,8 +28,8 @@
 #include <test_common.hpp>
 #include <cubool/cubool.h>
 
-CuBoolMatrix createMatrixFromTestData(const testing::Matrix& source, CuBoolInstance instance) {
-    CuBoolMatrix matrix = nullptr;
+cuBoolMatrix createMatrixFromTestData(const testing::Matrix& source, CuBoolInstance instance) {
+    cuBoolMatrix matrix = nullptr;
 
     CuBool_Matrix_New(instance, &matrix, source.mNrows, source.mNcols);
     CuBool_Matrix_Build(instance, matrix, source.mRowsIndex.data(), source.mColsIndex.data(), source.mNvals, CUBOOL_HINT_VALUES_SORTED);
@@ -55,9 +55,9 @@ KronResult matrixKronSample(size_t N, CuBoolSize_t m, CuBoolSize_t n, CuBoolSize
         testing::Matrix ta = testing::Matrix::generateSparse(m, n, densityA);
         testing::Matrix tb = testing::Matrix::generateSparse(k, t, densityB);
 
-        CuBoolMatrix a = createMatrixFromTestData(ta, instance);
-        CuBoolMatrix b = createMatrixFromTestData(tb, instance);
-        CuBoolMatrix r = nullptr;
+        cuBoolMatrix a = createMatrixFromTestData(ta, instance);
+        cuBoolMatrix b = createMatrixFromTestData(tb, instance);
+        cuBoolMatrix r = nullptr;
         CuBoolSize_t nvals;
 
         CuBool_Matrix_New(instance, &r, 0, 0);
@@ -137,9 +137,9 @@ MultAddResult matrixMultAddSample(size_t N, CuBoolSize_t m, CuBoolSize_t n, CuBo
         testing::Matrix tb = testing::Matrix::generateSparse(t, n, densityB);
         testing::Matrix tr = testing::Matrix::generateSparse(m, n, densityC);
 
-        CuBoolMatrix a = createMatrixFromTestData(ta, instance);
-        CuBoolMatrix b = createMatrixFromTestData(tb, instance);
-        CuBoolMatrix r = createMatrixFromTestData(tr, instance);
+        cuBoolMatrix a = createMatrixFromTestData(ta, instance);
+        cuBoolMatrix b = createMatrixFromTestData(tb, instance);
+        cuBoolMatrix r = createMatrixFromTestData(tr, instance);
 
         CuBoolSize_t nvals;
 

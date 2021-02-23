@@ -51,7 +51,7 @@
 #endif
 
 /** Possible status codes that can be returned from cubool api */
-typedef enum CuBoolStatus {
+typedef enum cuBoolStatus {
     /** Successful execution of the function */
     CUBOOL_STATUS_SUCCESS = 0,
     /** Generic error code */
@@ -66,44 +66,39 @@ typedef enum CuBoolStatus {
     CUBOOL_STATUS_INVALID_ARGUMENT = 5,
     /** Call of the function is not possible for some context */
     CUBOOL_STATUS_INVALID_STATE = 6,
+    /** Failed to select supported backend for computations */
+    CUBOOL_STATUS_BACKEND_ERROR = 7,
     /** Some library feature is not implemented */
-    CUBOOL_STATUS_NOT_IMPLEMENTED = 7
-} CuBoolStatus;
-
-/** Type of the GPU memory used to allocated gpu resources */
-typedef enum CuBoolGpuMemoryType {
-    /** Unified memory space */
-    CUBOOL_GPU_MEMORY_TYPE_MANAGED = 0,
-    /** Device only allocations */
-    CUBOOL_GPU_MEMORY_TYPE_GENERIC = 1
-} CuBoolGpuMemoryType;
+    CUBOOL_STATUS_NOT_IMPLEMENTED = 8
+} cuBoolStatus;
 
 /** Generic lib hits for matrix processing */
-typedef enum CuBoolHint {
+typedef enum cuBoolHint {
     /** No hints passed */
     CUBOOL_HINT_NO = 0x0,
+    /** Force Cpu based backend usage */
+    CUBOOL_HINT_CPU_BACKEND = 0x1,
+    /** Use managed gpu memory type instead of default (device) memory */
+    CUBOOL_HINT_GPU_MEM_MANAGED = 0x2,
     /** Mark input data as row-col sorted */
-    CUBOOL_HINT_VALUES_SORTED = 0x1
-} CuBoolHint;
+    CUBOOL_HINT_VALUES_SORTED = 0x3
+} cuBoolHint;
 
 /** Hit mask */
-typedef uint32_t                    CuBoolHints;
+typedef uint32_t                cuBoolHints;
 
 /** Alias integer type for indexing operations */
-typedef uint32_t                    CuBoolIndex;
-
-/** Cubool dense boolean matrix handle */
-typedef struct CuBoolMatrixDense_t* CuBoolMatrixDense;
+typedef uint32_t                cuBoolIndex;
 
 /** Cubool sparse boolean matrix handle */
-typedef struct CuBoolMatrix_t*      CuBoolMatrix;
+typedef struct cuBoolMatrix_t*  cuBoolMatrix;
 
 /**
  * @brief Memory allocate callback
  * Signature for user-provided function pointer, used to allocate CPU memory for library resources
  */
 typedef void* (*CuBoolCpuMemAllocateFun)(
-    CuBoolIndex                 size,
+    cuBoolIndex                 size,
     void*                       userData
 );
 
@@ -121,7 +116,7 @@ typedef void (*CuBoolCpuMemDeallocateFun)(
  * User provided message callback to observe library messages and errors
  */
 typedef void (*CuBoolMsgFun)(
-    CuBoolStatus                status,
+    cuBoolStatus                status,
     const char*                 message,
     void*                       userData
 );
@@ -132,9 +127,9 @@ typedef struct CuBoolDeviceCaps {
     int                         minor;
     int                         warp;
     bool                        cudaSupported;
-    CuBoolIndex                 globalMemoryKiBs;
-    CuBoolIndex                 sharedMemoryPerMultiProcKiBs;
-    CuBoolIndex                 sharedMemoryPerBlockKiBs;
+    cuBoolIndex                 globalMemoryKiBs;
+    cuBoolIndex                 sharedMemoryPerMultiProcKiBs;
+    cuBoolIndex                 sharedMemoryPerBlockKiBs;
 } CuBoolDeviceCaps;
 
 typedef struct CuBoolAllocationCallback {
@@ -147,13 +142,6 @@ typedef struct CuBoolMessageCallback {
     void*                       userData;
     CuBoolMsgFun                msgFun;
 } CuBoolMessageCallback;
-
-/**
- * Extension descriptor used for library setup within python wrapper.
- */
-typedef struct CuBoolInstanceDescExt {
-    CuBoolGpuMemoryType         memoryType;
-} CuBoolInstanceDescExt;
 
 /**
  * Query human-readable text info about the project implementation
@@ -178,10 +166,10 @@ CUBOOL_EXPORT CUBOOL_API const char* cuBool_LicenseInfo_Get(
  *
  * @return Error if failed to query version info
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Version_Get(
-    int*                        major,
-    int*                        minor,
-    int*                        version
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Version_Get(
+    int*                major,
+    int*                minor,
+    int*                version
 );
 
 /**
@@ -191,19 +179,19 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Version_Get(
  *
  * @return Error if cuda device not present or if failed to query capabilities
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_DeviceCaps_Get(
-    CuBoolDeviceCaps*           deviceCaps
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_DeviceCaps_Get(
+    CuBoolDeviceCaps*   deviceCaps
 );
 
 /**
  * Initialize library instance object, which provides context to all library operations and primitives.
  *
- * @param memoryType Type of the Cuda side memory
+ * @param hints Init hints.
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Initialize(
-    CuBoolGpuMemoryType         memoryType
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Initialize(
+    cuBoolHints         hints
 );
 
 /**
@@ -213,15 +201,7 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Initialize(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Finalize(
-);
-
-/**
- * Synchronize host and associated to the instance device execution flows.
- *
- * @return Error code on this operation
- */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_HostDevice_Sync(
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Finalize(
 );
 
 /**
@@ -233,25 +213,10 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_HostDevice_Sync(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_New(
-    CuBoolMatrix*               matrix,
-    CuBoolIndex                 nrows,
-    CuBoolIndex                 ncols
-);
-
-/**
- * Resize the sparse matrix. All previous values will be lost.
- *
- * @param matrix Matrix handle to perform operation on
- * @param nrows Matrix new rows count
- * @param ncols Matrix new columns count
- *
- * @return Error code on this operation
- */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Resize(
-    CuBoolMatrix                matrix,
-    CuBoolIndex                 nrows,
-    CuBoolIndex                 ncols
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_New(
+    cuBoolMatrix*       matrix,
+    cuBoolIndex         nrows,
+    cuBoolIndex         ncols
 );
 
 /**
@@ -266,12 +231,12 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Resize(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Build(
-    CuBoolMatrix                matrix,
-    const CuBoolIndex*          rows,
-    const CuBoolIndex*          cols,
-    CuBoolIndex                 nvals,
-    CuBoolHints                 hints
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Build(
+    cuBoolMatrix        matrix,
+    const cuBoolIndex*  rows,
+    const cuBoolIndex*  cols,
+    cuBoolIndex         nvals,
+    cuBoolHints         hints
 );
 
 /**
@@ -287,11 +252,11 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Build(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_ExtractPairs(
-    CuBoolMatrix                matrix,
-    CuBoolIndex*                rows,
-    CuBoolIndex*                cols,
-    CuBoolIndex*                nvals
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_ExtractPairs(
+    cuBoolMatrix        matrix,
+    cuBoolIndex*        rows,
+    cuBoolIndex*        cols,
+    cuBoolIndex*        nvals
 );
 
 /**
@@ -302,9 +267,9 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_ExtractPairs(
  * 
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Duplicate(
-    CuBoolMatrix                matrix,
-    CuBoolMatrix*               duplicated
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Duplicate(
+    cuBoolMatrix        matrix,
+    cuBoolMatrix*       duplicated
 );
 
 /**
@@ -316,9 +281,9 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Duplicate(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Transpose(
-    CuBoolMatrix                result,
-    CuBoolMatrix                matrix
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Transpose(
+    cuBoolMatrix        result,
+    cuBoolMatrix        matrix
 );
 
 /**
@@ -328,9 +293,9 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Transpose(
  * 
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Nvals(
-    CuBoolMatrix                matrix,
-    CuBoolIndex*                nvals
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Nvals(
+    cuBoolMatrix        matrix,
+    cuBoolIndex*        nvals
 );
 
 /**
@@ -340,9 +305,9 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Nvals(
  * 
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Nrows(
-    CuBoolMatrix                matrix,
-    CuBoolIndex*                nrows
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Nrows(
+    cuBoolMatrix        matrix,
+    cuBoolIndex*        nrows
 );
 
 /**
@@ -352,9 +317,9 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Nrows(
  * 
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Ncols(
-    CuBoolMatrix                matrix,
-    CuBoolIndex*                ncols
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Ncols(
+    cuBoolMatrix        matrix,
+    cuBoolIndex*        ncols
 );
 
 /**
@@ -364,8 +329,8 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Ncols(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Free(
-    CuBoolMatrix                matrix
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Free(
+    cuBoolMatrix        matrix
 );
 
 /**
@@ -381,10 +346,10 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_Free(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_EWiseAdd(
-    CuBoolMatrix                result,
-    CuBoolMatrix                left,
-    CuBoolMatrix                right
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_EWiseAdd(
+    cuBoolMatrix        result,
+    cuBoolMatrix        left,
+    cuBoolMatrix        right
 );
 
 /**
@@ -401,10 +366,10 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Matrix_EWiseAdd(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_MxM(
-    CuBoolMatrix                result,
-    CuBoolMatrix                left,
-    CuBoolMatrix                right
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_MxM(
+    cuBoolMatrix        result,
+    cuBoolMatrix        left,
+    cuBoolMatrix        right
 );
 
 /**
@@ -421,21 +386,10 @@ CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_MxM(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Kronecker(
-    CuBoolMatrix                result,
-    CuBoolMatrix                left,
-    CuBoolMatrix                right
-);
-
-/**
- * Release values array buffer, allocated by one of *ReadData operations.
- *
- * @param vals Valid pointer to returned arrays buffer from *ReadData method
- *
- * @return Error code on this operation
- */
-CUBOOL_EXPORT CUBOOL_API CuBoolStatus cuBool_Vals_Free(
-    CuBoolIndex*                vals
+CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Kronecker(
+    cuBoolMatrix        result,
+    cuBoolMatrix        left,
+    cuBoolMatrix        right
 );
 
 #endif //CUBOOL_CUBOOL_H

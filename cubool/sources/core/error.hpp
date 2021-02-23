@@ -40,7 +40,7 @@ namespace cubool {
     class Exception: public std::exception {
     public:
 
-        Exception(std::string message, std::string function, std::string file, size_t line, CuBoolStatus status, bool critical)
+        Exception(std::string message, std::string function, std::string file, size_t line, cuBoolStatus status, bool critical)
                 : mMessage(std::move(message)),
                   mFunction(std::move(function)),
                   mFile(std::move(file)),
@@ -59,27 +59,27 @@ namespace cubool {
             return mMessage.c_str();
         }
 
-        const std::string& GetMessage() const {
+        const std::string& getMessage() const {
             return mMessage;
         }
 
-        const std::string& GetFunction() const {
+        const std::string& getFunction() const {
             return mFunction;
         }
 
-        const std::string& GetFile() const {
+        const std::string& getFile() const {
             return mFile;
         }
 
-        size_t GetLine() const {
+        size_t getLine() const {
             return mLine;
         }
 
-        CuBoolStatus GetStatus() const {
+        cuBoolStatus getStatus() const {
             return nStatus;
         }
 
-        bool IsCritical() const {
+        bool isCritical() const {
             return mCritical;
         }
 
@@ -88,15 +88,15 @@ namespace cubool {
         std::string mFunction;
         std::string mFile;
         size_t mLine;
-        CuBoolStatus nStatus;
+        cuBoolStatus nStatus;
         bool mCritical;
     };
 
     /**
-     * Exceptions with CuBoolStatus error code parametrisation.
+     * Exceptions with cuBoolStatus error code parametrisation.
      * @tparam Type Exception error code (type)
      */
-    template<CuBoolStatus Type>
+    template<cuBoolStatus Type>
     class TException: public Exception {
     public:
         TException(std::string message, std::string&& function, std::string&& file, size_t line, bool critical)
@@ -111,12 +111,14 @@ namespace cubool {
     };
 
     // Errors exposed to the C API
-    using Error = TException<CuBoolStatus::CUBOOL_STATUS_ERROR>;
-    using DeviceError = TException<CuBoolStatus::CUBOOL_STATUS_DEVICE_ERROR>;
-    using MemOpFailed = TException<CuBoolStatus::CUBOOL_STATUS_MEM_OP_FAILED>;
-    using InvalidArgument = TException<CuBoolStatus::CUBOOL_STATUS_INVALID_ARGUMENT>;
-    using InvalidState = TException<CuBoolStatus::CUBOOL_STATUS_INVALID_STATE>;
-    using NotImplemented = TException<CuBoolStatus::CUBOOL_STATUS_NOT_IMPLEMENTED>;
+    using Error = TException<cuBoolStatus::CUBOOL_STATUS_ERROR>;
+    using DeviceError = TException<cuBoolStatus::CUBOOL_STATUS_DEVICE_ERROR>;
+    using DeviceNotPresent = TException<cuBoolStatus::CUBOOL_STATUS_DEVICE_NOT_PRESENT>;
+    using MemOpFailed = TException<cuBoolStatus::CUBOOL_STATUS_MEM_OP_FAILED>;
+    using InvalidArgument = TException<cuBoolStatus::CUBOOL_STATUS_INVALID_ARGUMENT>;
+    using InvalidState = TException<cuBoolStatus::CUBOOL_STATUS_INVALID_STATE>;
+    using BackendError = TException<cuBoolStatus::CUBOOL_STATUS_BACKEND_ERROR>;
+    using NotImplemented = TException<cuBoolStatus::CUBOOL_STATUS_NOT_IMPLEMENTED>;
 
 }
 

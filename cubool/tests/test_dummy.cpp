@@ -44,7 +44,7 @@ TEST(CuBoolVersion, Query) {
 
 // Test cubool library instance creation and destruction
 TEST(CuBoolInstance, Setup) {
-    CuBoolStatus error;
+    cuBoolStatus error;
     CuBoolInstance instance = nullptr;
 
     CuBoolInstanceDesc instanceDesc{};
@@ -61,9 +61,9 @@ TEST(CuBoolInstance, Setup) {
     instance = nullptr;
 }
 
-TEST(CuBoolMatrix, Creation) {
+TEST(cuBoolMatrix, Creation) {
     CuBoolInstance instance;
-    CuBoolMatrix matrix;
+    cuBoolMatrix matrix;
 
     CuBoolInstanceDesc instanceDesc{};
 
@@ -76,9 +76,9 @@ TEST(CuBoolMatrix, Creation) {
 }
 
 // Test args errors
-TEST(CuBoolMatrix, Error) {
+TEST(cuBoolMatrix, Error) {
     CuBoolInstance instance;
-    CuBoolMatrix matrix;
+    cuBoolMatrix matrix;
 
     CuBoolInstanceDesc instanceDesc{};
 
@@ -87,7 +87,7 @@ TEST(CuBoolMatrix, Error) {
     EXPECT_EQ(CuBool_Matrix_New(instance, &matrix, 1024, 2048), CUBOOL_STATUS_SUCCESS);
 
     auto randomAddress = (char *) matrix + 0x0f0;
-    auto invalidMatrix = (CuBoolMatrix) randomAddress;
+    auto invalidMatrix = (cuBoolMatrix) randomAddress;
 
     EXPECT_EQ(CuBool_Matrix_Resize(instance, invalidMatrix, 2 * 1024, 2 * 2048), CUBOOL_STATUS_ERROR);
 

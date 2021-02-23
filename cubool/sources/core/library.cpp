@@ -24,24 +24,65 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_BACKEND_BASE_HPP
-#define CUBOOL_BACKEND_BASE_HPP
-
+#include <core/library.hpp>
+#include <core/error.hpp>
+#include <backend/backend_base.hpp>
 #include <backend/matrix_base.hpp>
-#include <core/config.hpp>
+
+#ifdef CUBOOL_WITH_CUDA
+#include <cuda/cuda_backend.hpp>
+#endif
+
+#ifdef CUBOOL_WITH_CPU
+#endif
 
 namespace cubool {
 
-    class BackendBase {
-    public:
-        virtual ~BackendBase() = default;
-        virtual void initialize(hints initHints) = 0;
-        virtual void finalize() = 0;
-        virtual bool isInitialized() const = 0;
-        virtual MatrixBase* createMatrix(size_t nrows, size_t ncols) = 0;
-        virtual void releaseMatrix(MatrixBase* matrixBase) = 0;
-    };
+    BackendBase* Library::mBackend = nullptr;
 
+    void Library::initialize(hints initHints) {
+        CHECK_RAISE_CRITICAL_ERROR(mBackend == nullptr, InvalidState, "Library already initialized");
+
+        bool preferCpu = initHints & CUBOOL_HINT_CPU_BACKEND;
+
+        // If user do not force the cpu backend usage
+        if (!preferCpu) {
+#ifdef CUBOOL_WITH_CUDA
+            mBackend = new CudaBackend();
+            mBackend->initialize(initHints);
+
+            // Failed to setup cuda, release backend and go to try cpu
+            if (!mBackend->isInitialized()) {
+                delete mBackend;
+                mBackend = nullptr;
+            }
+#endif
+        }
+
+#ifdef CUBOOL_WITH_CPU
+#endif
+
+        CHECK_RAISE_ERROR(mBackend != nullptr, BackendError, "Failed to select backend");
+    }
+
+    void Library::finalize() {
+        if (mBackend) {
+            // Remember to finalize backend
+            mBackend->finalize();
+            delete mBackend;
+            mBackend = nullptr;
+        }
+    }
+
+    void Library::validate() {
+        CHECK_RAISE_CRITICAL_ERROR(mBackend != nullptr, InvalidState, "Library is not initialized");
+    }
+
+    MatrixBase *Library::createMatrix(size_t nrows, size_t ncols) {
+        return mBackend->createMatrix(nrows, ncols);
+    }
+
+    void Library::releaseMatrix(MatrixBase *matrixBase) {
+        mBackend->releaseMatrix(matrixBase);
+    }
 }
-
-#endif //CUBOOL_BACKEND_BASE_HPP

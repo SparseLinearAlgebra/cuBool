@@ -26,7 +26,6 @@
 
 #include <cuda/instance.hpp>
 #include <cuda/matrix_dense.hpp>
-#include <cuda/matrix_csr.hpp>
 #include <core/error.hpp>
 #include <string>
 #include <cstring>
@@ -34,58 +33,17 @@
 namespace cubool {
 
     Instance::~Instance() {
-#ifdef DEBUG
-        // Notify user if he lost or forgot to release some library objects
-
-        if (!mMatrixSet.empty()) {
-            char message[2000];
-
-            snprintf(message, 2000, "Some Matrix objects (%llu) were not properly deallocated by user",
-                     (unsigned long long) mMatrixSet.size());
-
-            sendMessage(CUBOOL_STATUS_INVALID_STATE, message);
-        }
-
-#endif //DEBUG
-        for (auto matrix: mMatrixSet) {
-            matrix->~MatrixBase();
-            deallocate(matrix);
-        }
-
         gInstance = nullptr;
-    }
-
-    void Instance::createMatrixCsr(size_t nrows, size_t ncols, MatrixCsr *&matrix) {
-        void* mem = nullptr;
-        allocate(mem, sizeof(MatrixCsr));
-
-        matrix = new (mem) MatrixCsr(nrows, ncols, *this);
-        mMatrixSet.emplace(matrix);
-    }
-
-    void Instance::validateMatrix(MatrixBase *matrix) {
-        bool contains = mMatrixSet.find(matrix) != mMatrixSet.end();
-        CHECK_RAISE_ERROR(contains, InvalidArgument, "No such matrix for provided handler");
-    }
-
-    void Instance::destroyMatrix(MatrixBase* matrix) {
-        auto itr = mMatrixSet.find(matrix);
-
-        CHECK_RAISE_ERROR(itr != mMatrixSet.end(), InvalidArgument, "No such matrix for provided handler");
-
-        mMatrixSet.erase(itr);
-        matrix->~MatrixBase();
-        deallocate(matrix);
     }
 
     void Instance::allocateOnGpu(void* &ptr, size_t size) const {
         cudaError error;
 
         switch (mMemoryType) {
-            case CUBOOL_GPU_MEMORY_TYPE_GENERIC:
+            case MemType::Default:
                 error = cudaMalloc(&ptr, size);
                 break;
-            case CUBOOL_GPU_MEMORY_TYPE_MANAGED:
+            case MemType::Managed:
                 error = cudaMallocManaged(&ptr, size);
                 break;
             default:

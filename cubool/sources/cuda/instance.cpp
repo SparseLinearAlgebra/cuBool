@@ -32,12 +32,10 @@
 namespace cubool {
 
     volatile Instance* Instance::gInstance = nullptr;
-    volatile bool Instance::gIsManagedUsage = false;
 
-    Instance::Instance(CuBoolGpuMemoryType memoryType) {
+    Instance::Instance(bool useManagedMemory) {
         gInstance = this;
-        gIsManagedUsage = false;
-        mMemoryType = memoryType;
+        mMemoryType = useManagedMemory? Managed: Default;
 
 #ifdef CUBOOL_DEBUG
         sendMessage(CUBOOL_STATUS_SUCCESS, "Initialize CuBool instance");
@@ -53,10 +51,6 @@ namespace cubool {
     void Instance::deallocate(void* ptr) const {
         CHECK_RAISE_ERROR(ptr != nullptr, InvalidArgument, "Passed null ptr to free");
         free(ptr);
-    }
-
-    void Instance::sendMessage(CuBoolStatus status, const char *message) const {
-
     }
 
     void Instance::printDeviceCapabilities() const {
@@ -80,10 +74,7 @@ namespace cubool {
         char structInfo[BUFFER_SIZE];
         snprintf(structInfo, BUFFER_SIZE, "Kernel: warp %llu", (unsigned long long) deviceCaps.warp);
 
-        sendMessage(CUBOOL_STATUS_SUCCESS, deviceInfo);
-        sendMessage(CUBOOL_STATUS_SUCCESS, memoryInfo);
-        sendMessage(CUBOOL_STATUS_SUCCESS, sharedMemoryInfo);
-        sendMessage(CUBOOL_STATUS_SUCCESS, structInfo);
+        // todo
     }
 
     Instance& Instance::getInstanceRef() {
@@ -97,10 +88,6 @@ namespace cubool {
 
     bool Instance::isInstancePresent() {
         return gInstance != nullptr;
-    }
-
-    bool Instance::isManagedUsageAllowed() {
-        return gIsManagedUsage;
     }
 
 }

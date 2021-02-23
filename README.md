@@ -166,7 +166,7 @@ closure provides info about reachable vertices in the graph:
  *
  * @return Status on this operation
  */
-CuBoolStatus TransitiveClosure(CuBoolInstance Inst, CuBoolMatrix A, CuBoolMatrix* T) {
+cuBoolStatus TransitiveClosure(CuBoolInstance Inst, cuBoolMatrix A, cuBoolMatrix* T) {
     CuBool_Matrix_Duplicate(Inst, A, T);         /** Create result matrix and copy initial values */
 
     CuBoolSize_t total = 0;
@@ -226,16 +226,16 @@ with cubool C API usage.
 #include <stdio.h>
 
 /* Macro to check result of the function call */
-#define CHECK(f) { CuBoolStatus s = f; if (s != CUBOOL_STATUS_SUCCESS) return s; }
+#define CHECK(f) { cuBoolStatus s = f; if (s != CUBOOL_STATUS_SUCCESS) return s; }
 
 int main() {
     /* Return code of the operation */
-    CuBoolStatus status;
+    cuBoolStatus status;
 
     /* Declare resources for the application */
     CuBoolInstance I;
-    CuBoolMatrix A;
-    CuBoolMatrix TC;
+    cuBoolMatrix A;
+    cuBoolMatrix TC;
 
     /* Initialize instance of the library */
     CuBoolInstanceDesc desc{};
@@ -251,10 +251,10 @@ int main() {
     /* (0) --> (2) <--> (3) */
 
     /* Adjacency matrix in sparse format  */
-    CuBoolIndex_t n = 4;
+    cuBoolIndex_t n = 4;
     CuBoolSize_t e = 5;
-    CuBoolIndex_t rows[] = { 0, 0, 1, 2, 3 };
-    CuBoolIndex_t cols[] = { 1, 2, 2, 3, 2 };
+    cuBoolIndex_t rows[] = { 0, 0, 1, 2, 3 };
+    cuBoolIndex_t cols[] = { 1, 2, 2, 3, 2 };
 
     /* Create matrix */
     CHECK(CuBool_Matrix_New(I, &A, n, n));
@@ -288,7 +288,7 @@ int main() {
     }
 
     /** Get result */
-    CuBoolIndex_t tc_rows[16], tc_cols[16];
+    cuBoolIndex_t tc_rows[16], tc_cols[16];
     CHECK(CuBool_Matrix_ExtractPairs(I, TC, tc_rows, tc_cols, &total));
 
     /** Now tc_rows and tc_cols contain (i,j) pairs of the result G_tc graph */

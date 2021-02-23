@@ -24,24 +24,19 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_BACKEND_BASE_HPP
-#define CUBOOL_BACKEND_BASE_HPP
+#include <cuBool_Common.hpp>
 
-#include <backend/matrix_base.hpp>
-#include <core/config.hpp>
-
-namespace cubool {
-
-    class BackendBase {
-    public:
-        virtual ~BackendBase() = default;
-        virtual void initialize(hints initHints) = 0;
-        virtual void finalize() = 0;
-        virtual bool isInitialized() const = 0;
-        virtual MatrixBase* createMatrix(size_t nrows, size_t ncols) = 0;
-        virtual void releaseMatrix(MatrixBase* matrixBase) = 0;
-    };
-
+cuBoolStatus cuBool_Matrix_Duplicate(
+        cuBoolMatrix        matrix,
+        cuBoolMatrix*       duplicated
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(matrix)
+        CUBOOL_ARG_NOT_NULL(duplicated)
+        auto m = (cubool::Matrix*) matrix;
+        auto d = cubool::Library::createMatrix(m->getNrows(), m->getNcols());
+        d->clone(*m);
+        *duplicated = (cuBoolMatrix_t*) d;
+    CUBOOL_END_BODY
 }
-
-#endif //CUBOOL_BACKEND_BASE_HPP

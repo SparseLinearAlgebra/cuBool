@@ -31,7 +31,7 @@
 TEST(MatrixCsr, CreateDestroy) {
     CuBoolInstance instance = nullptr;
     CuBoolInstanceDesc instanceDesc{};
-    CuBoolMatrix matrix = nullptr;
+    cuBoolMatrix matrix = nullptr;
 
     testing::details::setupInstanceDesc(instanceDesc);
 
@@ -46,7 +46,7 @@ TEST(MatrixCsr, CreateDestroy) {
 TEST(MatrixCsr, Resize) {
     CuBoolInstance instance = nullptr;
     CuBoolInstanceDesc instanceDesc{};
-    CuBoolMatrix matrix = nullptr;
+    cuBoolMatrix matrix = nullptr;
     CuBoolSize_t rows = 1024, columns = 1024;
 
     testing::details::setupInstanceDesc(instanceDesc);
@@ -62,7 +62,7 @@ TEST(MatrixCsr, Resize) {
 TEST(MatrixCsr, Duplicate) {
     CuBoolInstance instance = nullptr;
     CuBoolInstanceDesc instanceDesc{};
-    CuBoolMatrix matrix = nullptr, duplicated = nullptr;
+    cuBoolMatrix matrix = nullptr, duplicated = nullptr;
     CuBoolSize_t m = 900, n = 600;
     float density = 0.31;
 
@@ -88,7 +88,7 @@ TEST(MatrixCsr, Duplicate) {
 TEST(MatrixCsr, PropertyQuery) {
     CuBoolInstance instance = nullptr;
     CuBoolInstanceDesc instanceDesc{};
-    CuBoolMatrix matrix = nullptr;
+    cuBoolMatrix matrix = nullptr;
     CuBoolSize_t m = 900, n = 600;
     float density = 0.21;
 
@@ -101,8 +101,8 @@ TEST(MatrixCsr, PropertyQuery) {
     EXPECT_EQ(CuBool_Matrix_New(instance, &matrix, m, n), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-    CuBoolIndex_t nrows;
-    CuBoolIndex_t ncols;
+    cuBoolIndex_t nrows;
+    cuBoolIndex_t ncols;
     CuBoolSize_t nvals;
 
     EXPECT_EQ(CuBool_Matrix_Nvals(instance, matrix, &nvals), CUBOOL_STATUS_SUCCESS);
@@ -121,7 +121,7 @@ TEST(MatrixCsr, PropertyQuery) {
 TEST(MatrixCsr, ExtractPairs) {
     CuBoolInstance instance = nullptr;
     CuBoolInstanceDesc instanceDesc{};
-    CuBoolMatrix matrix = nullptr;
+    cuBoolMatrix matrix = nullptr;
     CuBoolSize_t m = 900, n = 600;
     float density = 0.21;
 
@@ -134,8 +134,8 @@ TEST(MatrixCsr, ExtractPairs) {
     EXPECT_EQ(CuBool_Matrix_Build(instance, matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     CuBoolSize_t nvals = tmatrix.mNvals;
-    std::vector<CuBoolIndex_t> rows(tmatrix.mNvals);
-    std::vector<CuBoolIndex_t> cols(tmatrix.mNvals);
+    std::vector<cuBoolIndex_t> rows(tmatrix.mNvals);
+    std::vector<cuBoolIndex_t> cols(tmatrix.mNvals);
 
     EXPECT_EQ(CuBool_Matrix_ExtractPairs(instance, matrix, rows.data(), cols.data(), &nvals), CUBOOL_STATUS_SUCCESS);
 
@@ -146,7 +146,7 @@ TEST(MatrixCsr, ExtractPairs) {
 
 // Fills sparse matrix with random data and tests whether the transfer works correctly
 void testMatrixFilling(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInstance instance) {
-    CuBoolMatrix matrix = nullptr;
+    cuBoolMatrix matrix = nullptr;
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
 
@@ -209,7 +209,7 @@ TEST(MatrixCsr, FillingLarge) {
 }
 
 void testMatrixMultiplyAdd(CuBoolSize_t m, CuBoolSize_t t, CuBoolSize_t n, float density, CuBoolInstance instance) {
-    CuBoolMatrix a, b, r;
+    cuBoolMatrix a, b, r;
 
     // Generate test data with specified density
     testing::Matrix ta = std::move(testing::Matrix::generate(m, t, testing::details::Condition3(density)));
@@ -294,7 +294,7 @@ TEST(MatrixCsr, MultiplyAddLarge) {
 }
 
 void testMatrixAdd(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInstance instance) {
-    CuBoolMatrix r, a;
+    cuBoolMatrix r, a;
 
     testing::Matrix tr = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
     testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
@@ -374,7 +374,7 @@ TEST(MatrixCsr, AddLarge) {
 }
 
 void testMatrixKron(CuBoolSize_t m, CuBoolSize_t n, CuBoolSize_t k, CuBoolSize_t t, float density, CuBoolInstance instance) {
-    CuBoolMatrix r, a, b;
+    cuBoolMatrix r, a, b;
 
     testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
     testing::Matrix tb = std::move(testing::Matrix::generate(k, t, testing::details::Condition3(density)));
@@ -459,7 +459,7 @@ TEST(MatrixCsr, KronLarge) {
 }
 
 void testMatrixTranspose(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInstance instance) {
-    CuBoolMatrix r, a;
+    cuBoolMatrix r, a;
 
     testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
 

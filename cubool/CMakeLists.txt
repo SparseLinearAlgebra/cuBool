@@ -18,18 +18,32 @@ set(CUBOOL_SOURCES)
 
 # Library sources
 set(CUBOOL_SOURCES
-    # Public sources
-    include/cubool/cubool.h
-    # Private sources
     sources/core/config.hpp
     sources/core/version.hpp
     sources/core/error.hpp
-        )
+        sources/core/library.cpp
+        sources/core/library.hpp
+    sources/core/matrix.cpp
+    sources/core/matrix.hpp)
 
 set(CUBOOL_C_API_SOURCES
+    include/cubool/cubool.h
     sources/cuBool_About_Get.cpp
     sources/cuBool_LicenseInfo_Get.cpp
-    sources/cuBool_Initialize.cpp)
+    sources/cuBool_Initialize.cpp
+    sources/cuBool_Finalize.cpp
+    sources/cuBool_Matrix_New.cpp
+    sources/cuBool_Matrix_Build.cpp
+    sources/cuBool_Matrix_ExtractPairs.cpp
+    sources/cuBool_Matrix_Duplicate.cpp
+    sources/cuBool_Matrix_Transpose.cpp
+    sources/cuBool_Matrix_Nvals.cpp
+    sources/cuBool_Matrix_Nrows.cpp
+    sources/cuBool_Matrix_Ncols.cpp
+    sources/cuBool_Matrix_Free.cpp
+    sources/cuBool_Matrix_EWiseAdd.cpp
+    sources/cuBool_MxM.cpp
+    sources/cuBool_Kronecker.cpp)
 
 set(CUBOOL_BACKEND_SOURCES
     sources/backend/backend_base.hpp
@@ -41,6 +55,8 @@ set(CUBOOL_CPU_SOURCES)
 # Cuda backend sources
 if (CUBOOL_WITH_CUDA)
     set(CUBOOL_CUDA_SOURCES
+        sources/cuda/cuda_backend.hpp
+        sources/cuda/cuda_backend.cu
         sources/cuda/instance.hpp
         sources/cuda/instance.cu
         sources/cuda/instance.cpp
@@ -78,7 +94,13 @@ if (CUBOOL_WITH_CUDA)
     set_target_properties(cubool PROPERTIES CUDA_STANDARD_REQUIRED ON)
     set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
+    target_compile_definitions(cubool PRIVATE CUBOOL_WITH_CUDA)
     target_link_libraries(cubool PRIVATE nsparse_um)
+endif()
+
+# SuiteSparse based backend
+if (CUBOOL_WITH_CPU)
+    target_compile_definitions(cubool PRIVATE CUBOOL_WITH_CPU)
 endif()
 
 # If tests enabled, add tests sources to the build

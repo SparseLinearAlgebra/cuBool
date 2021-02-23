@@ -24,24 +24,40 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_BACKEND_BASE_HPP
-#define CUBOOL_BACKEND_BASE_HPP
-
-#include <backend/matrix_base.hpp>
-#include <core/config.hpp>
+#include <cuda/cuda_backend.hpp>
+#include <cuda/matrix_csr.hpp>
 
 namespace cubool {
 
-    class BackendBase {
-    public:
-        virtual ~BackendBase() = default;
-        virtual void initialize(hints initHints) = 0;
-        virtual void finalize() = 0;
-        virtual bool isInitialized() const = 0;
-        virtual MatrixBase* createMatrix(size_t nrows, size_t ncols) = 0;
-        virtual void releaseMatrix(MatrixBase* matrixBase) = 0;
-    };
+    void CudaBackend::initialize(hints initHints) {
+        if (Instance::isCudaDeviceSupported()) {
+            mInstance = new Instance(initHints & CUBOOL_HINT_GPU_MEM_MANAGED);
+        }
+
+        CHECK_RAISE_CRITICAL_ERROR(mInstance != nullptr, DeviceNotPresent, "No cuda compatible device in the system");
+    }
+
+    void CudaBackend::finalize() {
+        if (mInstance) {
+            delete mInstance;
+            mInstance = nullptr;
+        }
+    }
+
+    bool CudaBackend::isInitialized() const {
+        return mInstance != nullptr;
+    }
+
+    MatrixBase *CudaBackend::createMatrix(size_t nrows, size_t ncols) {
+        return new MatrixCsr(nrows, ncols, getInstance());
+    }
+
+    void CudaBackend::releaseMatrix(MatrixBase *matrixBase) {
+        delete matrixBase;
+    }
+
+    Instance & CudaBackend::getInstance() {
+        return *mInstance;
+    }
 
 }
-
-#endif //CUBOOL_BACKEND_BASE_HPP

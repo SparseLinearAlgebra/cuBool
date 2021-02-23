@@ -44,7 +44,7 @@ TEST(CuBoolVersion, Query) {
 
 // Test cubool library instance creation and destruction
 TEST(CuBoolInstance, Setup) {
-    CuBoolStatus error;
+    cuBoolStatus error;
     CuBoolInstance instance = nullptr;
 
     CuBoolInstanceDesc instanceDesc{};
@@ -69,7 +69,7 @@ TEST(CuBoolInstance, Setup) {
 
 // Test cubool library instance creation and destruction
 TEST(CuBoolInstance, SetupExt) {
-    CuBoolStatus error;
+    cuBoolStatus error;
     CuBoolInstance instance = nullptr;
 
     CuBoolInstanceDescExt instanceDesc{};
@@ -96,7 +96,7 @@ TEST(CuBoolInstance, SetupExt) {
  *
  * @return Status on this operation
  */
-CuBoolStatus TransitiveClosure(CuBoolInstance Inst, CuBoolMatrix A, CuBoolMatrix* T) {
+cuBoolStatus TransitiveClosure(CuBoolInstance Inst, cuBoolMatrix A, cuBoolMatrix* T) {
     CuBool_Matrix_Duplicate(Inst, A, T);         /** Create result matrix and copy initial values */
 
     CuBoolSize_t total = 0;
@@ -115,10 +115,10 @@ CuBoolStatus TransitiveClosure(CuBoolInstance Inst, CuBoolMatrix A, CuBoolMatrix
 TEST(CuBoolInstance, Example) {
     CuBoolInstanceDescExt descExt{};
     CuBoolInstance Inst;
-    CuBoolMatrix A;
-    CuBoolMatrix T;
+    cuBoolMatrix A;
+    cuBoolMatrix T;
 
-    CuBoolIndex_t n = 100;
+    cuBoolIndex_t n = 100;
 
     descExt.memoryType = CUBOOL_GPU_MEMORY_TYPE_GENERIC;
 

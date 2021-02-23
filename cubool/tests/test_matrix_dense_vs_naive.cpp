@@ -46,7 +46,7 @@ TEST(Benchmanrk, CuboolDenseMatrix) {
     for (auto s: sizes) {
         m = t = n = s;
 
-        CuBoolMatrixDense a, b, c;
+        cuBoolMatrixDense a, b, c;
 
         testing::Matrix ta = std::move(testing::Matrix::generate(m, t, testing::details::Condition2{}));
         testing::Matrix tb = std::move(testing::Matrix::generate(m, t, testing::details::Condition2{}));

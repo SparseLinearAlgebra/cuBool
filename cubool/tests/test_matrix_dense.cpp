@@ -31,7 +31,7 @@
 TEST(MatrixDense, CreateDestroy) {
     CuBoolInstance instance = nullptr;
     CuBoolInstanceDesc instanceDesc{};
-    CuBoolMatrixDense matrix = nullptr;
+    cuBoolMatrixDense matrix = nullptr;
 
     testing::details::setupInstanceDesc(instanceDesc);
 
@@ -46,7 +46,7 @@ TEST(MatrixDense, CreateDestroy) {
 TEST(MatrixDense, Resize) {
     CuBoolInstance instance = nullptr;
     CuBoolInstanceDesc instanceDesc{};
-    CuBoolMatrixDense matrix = nullptr;
+    cuBoolMatrixDense matrix = nullptr;
     CuBoolSize_t rows = 1024, columns = 1024;
 
     testing::details::setupInstanceDesc(instanceDesc);
@@ -61,7 +61,7 @@ TEST(MatrixDense, Resize) {
 
 // Fills dense matrix with random data and tests whether the transfer works correctly
 void testMatrixFilling(CuBoolSize_t m, CuBoolSize_t n, float density, CuBoolInstance instance) {
-    CuBoolMatrixDense matrix = nullptr;
+    cuBoolMatrixDense matrix = nullptr;
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generate(m, n, testing::details::Condition3(density)));
 
@@ -124,7 +124,7 @@ TEST(MatrixDense, FillingLarge) {
 }
 
 void testMatrixMultiplySum(CuBoolSize_t m, CuBoolSize_t t, CuBoolSize_t n, float density, CuBoolInstance instance) {
-    CuBoolMatrixDense a, b, c, r;
+    cuBoolMatrixDense a, b, c, r;
 
     // Generate test data with specified density
     testing::Matrix ta = std::move(testing::Matrix::generate(m, t, testing::details::Condition3(density)));
@@ -213,7 +213,7 @@ TEST(MatrixDense, MultiplySumLarge) {
 }
 
 void testMatrixMultiplyAdd(CuBoolSize_t m, CuBoolSize_t t, CuBoolSize_t n, float density, CuBoolInstance instance) {
-    CuBoolMatrixDense a, b, r;
+    cuBoolMatrixDense a, b, r;
 
     // Generate test data with specified density
     testing::Matrix ta = std::move(testing::Matrix::generate(m, t, testing::details::Condition3(density)));

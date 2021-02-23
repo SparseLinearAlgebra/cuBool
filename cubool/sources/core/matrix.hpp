@@ -24,24 +24,33 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_BACKEND_BASE_HPP
-#define CUBOOL_BACKEND_BASE_HPP
+#ifndef CUBOOL_MATRIX_HPP
+#define CUBOOL_MATRIX_HPP
 
 #include <backend/matrix_base.hpp>
-#include <core/config.hpp>
 
 namespace cubool {
 
-    class BackendBase {
+    class Matrix final: public MatrixBase {
     public:
-        virtual ~BackendBase() = default;
-        virtual void initialize(hints initHints) = 0;
-        virtual void finalize() = 0;
-        virtual bool isInitialized() const = 0;
-        virtual MatrixBase* createMatrix(size_t nrows, size_t ncols) = 0;
-        virtual void releaseMatrix(MatrixBase* matrixBase) = 0;
+        ~Matrix() override = default;
+
+        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
+        void extract(index *rows, index *cols, size_t &nvals) override;
+
+        void clone(const MatrixBase &other) override;
+        void transpose(const MatrixBase &other) override;
+
+        void multiplySum(const MatrixBase &aBase, const MatrixBase &bBase, const MatrixBase &cBase) override;
+        void multiply(const MatrixBase &aBase, const MatrixBase &bBase) override;
+        void kronecker(const MatrixBase &aBase, const MatrixBase &bBase) override;
+        void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase) override;
+
+        index getNrows() const override;
+        index getNcols() const override;
+        index getNvals() const override;
     };
 
 }
 
-#endif //CUBOOL_BACKEND_BASE_HPP
+#endif //CUBOOL_MATRIX_HPP
