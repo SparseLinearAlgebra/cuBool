@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.11)
-project(nsparse_um CXX CUDA)
+cmake_minimum_required(VERSION 3.17)
+project(nsparse_um LANGUAGES CXX CUDA)
 
 add_library(nsparse_um INTERFACE)
 target_include_directories(nsparse_um INTERFACE include/)

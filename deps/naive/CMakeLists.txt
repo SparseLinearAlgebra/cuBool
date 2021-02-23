@@ -1,3 +1,5 @@
+project(naive-gpu LANGUAGES CXX CUDA)
+
 set(NAIVE_SOURCES
         naive-gpu/GpuMatrix.cpp
         naive-gpu/GpuMatrix.h

@@ -1,0 +1,6 @@
+[submodule "deps/gtest"]
+	path = deps/gtest
+	url = https://github.com/google/googletest.git
+[submodule "deps/cub"]
+	path = deps/cub
+	url = https://github.com/NVIDIA/cub.git
