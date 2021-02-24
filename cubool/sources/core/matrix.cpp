@@ -50,11 +50,31 @@ namespace cubool {
     }
 
     void Matrix::extract(index *rows, index *cols, size_t &nvals) {
-        CHECK_RAISE_ERROR(rows != nullptr, InvalidArgument, "Null ptr rows array");
-        CHECK_RAISE_ERROR(cols != nullptr, InvalidArgument, "Null ptr cols array");
+        CHECK_RAISE_ERROR(rows != nullptr || getNvals() == 0, InvalidArgument, "Null ptr rows array");
+        CHECK_RAISE_ERROR(cols != nullptr || getNvals() == 0, InvalidArgument, "Null ptr cols array");
         CHECK_RAISE_ERROR(getNvals() <= nvals, InvalidArgument, "Passed arrays size must be more or equal to the nvals of the matrix");
 
         mHnd->extract(rows, cols, nvals);
+    }
+
+    void Matrix::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols) {
+        const auto* other = dynamic_cast<const Matrix*>(&otherBase);
+
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+
+        auto bI = i + nrows;
+        auto bJ = j + ncols;
+
+        CHECK_RAISE_ERROR(nrows > 0, InvalidArgument, "Cannot extract sub-matrix with zero dimension");
+        CHECK_RAISE_ERROR(ncols > 0, InvalidArgument, "Cannot extract sub-matrix with zero dimension");
+
+        CHECK_RAISE_ERROR(bI <= other->getNrows(), InvalidArgument, "Provided sub-matrix range must be within matrix bounds");
+        CHECK_RAISE_ERROR(bJ <= other->getNcols(), InvalidArgument, "Provided sub-matrix range must be within matrix bounds");
+
+        CHECK_RAISE_ERROR(nrows <= this->getNrows(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
+        CHECK_RAISE_ERROR(ncols <= this->getNcols(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
+
+        mHnd->extractSubMatrix(*other->mHnd, i, j, nrows, ncols);
     }
 
     void Matrix::clone(const MatrixBase &otherBase) {

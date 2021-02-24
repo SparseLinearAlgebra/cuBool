@@ -240,6 +240,38 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractPairs(
 );
 
 /**
+ * Extracts sub-matrix of the input matrix and stores it into result matrix.
+ * Formally: result = matrix[i:i + nrows, j:j+ncols].
+ *
+ * @note The result sub-matrix have nrows x ncols dimension,
+ *       and includes [i;i+nrow) x [j;j+ncols) cells of the input matrix.
+ *
+ * @note Result matrix must have compatible size
+ *          dim(result) = nrows x ncols
+ *
+ * @note Provided sub-matrix region must be within the input matrix.
+ *
+ * @param result[out] Matrix handle where to store result of the operation
+ * @param matrix Input matrix to extract values from
+ * @param i First row id to extract
+ * @param j First column id to extract
+ * @param nrows Number of rows to extract
+ * @param ncols Number of columns to extract
+ * @param hints Optional hints, pass CUBOOL_HINT_NO
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractSubMatrix(
+    cuBool_Matrix result,
+    cuBool_Matrix matrix,
+    cuBool_Index i,
+    cuBool_Index j,
+    cuBool_Index nrows,
+    cuBool_Index ncols,
+    cuBool_Hints hints
+);
+
+/**
  * Creates new sparse matrix, duplicates content and stores handle in the provided pointer.
  * 
  * @param matrix Matrix handle to perform operation on
@@ -256,7 +288,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Duplicate(
  * Transpose source matrix and store result of this operation in result matrix.
  * Formally: result = matrix ^ T.
  *
- * @param result Matrix handle to store result of the operation
+ * @param result[out] Matrix handle to store result of the operation
  * @param matrix The source matrix
  *
  * @return Error code on this operation
@@ -270,7 +302,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Transpose(
  * Query number of non-zero values of the matrix.
  *
  * @param matrix Matrix handle to perform operation on
- * @param nvals[out] Pointer to  the place where to store number of the non-zero elements of the matrix
+ * @param nvals[out] Pointer to the place where to store number of the non-zero elements of the matrix
  * 
  * @return Error code on this operation
  */
@@ -324,7 +356,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Free(
  *          dim(matrix) = M x N
  *          dim(result) = M x 1
  *
- * @param result Matrix hnd where to store result
+ * @param result[out] Matrix hnd where to store result
  * @param matrix Source matrix to reduce
  *
  * @return Error code on this operation
@@ -342,7 +374,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
  *          dim(left) = M x N
  *          dim(right) = M x N
  *
- * @param result Destination matrix for add-and-assign operation
+ * @param result[out] Destination matrix for add-and-assign operation
  * @param left Source matrix to be added
  * @param right Source matrix to be added
  *
@@ -365,7 +397,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
  *
  * @note Pass CUBOOL_HINT_ACCUMULATE hint to add result of the left x right operation.
  *
- * @param result Matrix handle where to store operation result
+ * @param result[out] Matrix handle where to store operation result
  * @param left Input left matrix
  * @param right Input right matrix
  * @param hints Hints for the operation.
@@ -387,7 +419,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxM(
  *          dim(right) = K x T
  *          dim(result) = MK x NT
  *
- * @param result Matrix handle where to store operation result
+ * @param result[out] Matrix handle where to store operation result
  * @param left Input left matrix
  * @param right Input right matrix
  *

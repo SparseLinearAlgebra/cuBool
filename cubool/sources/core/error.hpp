@@ -61,7 +61,7 @@ namespace cubool {
                 mCached = true;
 
                 std::stringstream s;
-                s << getMessage() << " in" << std::endl
+                s << "\"" << getMessage() << "\" in" << std::endl
                   << getFile() << ": line: " << getLine() << " function: " << getFunction();
 
                 mWhatCached = s.str();

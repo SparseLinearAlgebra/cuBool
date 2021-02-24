@@ -35,8 +35,6 @@ cuBool_Status cuBool_Matrix_ExtractPairs(
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
         CUBOOL_ARG_NOT_NULL(matrix)
-        CUBOOL_ARG_NOT_NULL(rows)
-        CUBOOL_ARG_NOT_NULL(cols)
         CUBOOL_ARG_NOT_NULL(nvals)
         auto m = (cubool::Matrix *) matrix;
         size_t count = *nvals;

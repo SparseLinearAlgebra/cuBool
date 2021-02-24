@@ -94,19 +94,38 @@ namespace testing {
             return std::move(result);
         }
 
+        Matrix subMatrix(cuBool_Index i, cuBool_Index j, cuBool_Index m, cuBool_Index n) const {
+            Matrix result;
+            result.mNrows = m;
+            result.mNcols = n;
+
+            for (size_t id = 0; id < mNvals; id++) {
+                auto r = mRowsIndex[id];
+                auto c = mColsIndex[id];
+
+                if (i <= r && r < i + m && j <= c && c < j + n) {
+                    result.mRowsIndex.push_back(r - i);
+                    result.mColsIndex.push_back(c - j);
+                    result.mNvals += 1;
+                }
+            }
+
+            return std::move(result);
+        }
+
         bool areEqual(cuBool_Matrix matrix) const {
             cuBool_Index extNvals;
 
             if (cuBool_Matrix_Nvals(matrix, &extNvals) != CUBOOL_STATUS_SUCCESS)
                 return false;
 
+            if (extNvals != mNvals)
+                return false;
+
             std::vector<cuBool_Index> extRows(extNvals);
             std::vector<cuBool_Index> extCols(extNvals);
 
             if (cuBool_Matrix_ExtractPairs(matrix, extRows.data(), extCols.data(), &extNvals) != CUBOOL_STATUS_SUCCESS)
-                return false;
-
-            if (extNvals != mNvals)
                 return false;
 
             std::vector<Pair> extracted(mNvals);
@@ -159,11 +178,15 @@ namespace testing {
                 indices.emplace(Pair{r, c});
             }
 
-            matrix.mNvals = indices.size();
+            std::vector<Pair> toSort(indices.size());
+            std::copy(indices.begin(), indices.end(), toSort.begin());
+            std::sort(toSort.begin(), toSort.end(), PairCmp());
+
+            matrix.mNvals = toSort.size();
             matrix.mRowsIndex.reserve(matrix.mNvals);
             matrix.mColsIndex.reserve(matrix.mNvals);
 
-            for (auto& p: indices) {
+            for (auto& p: toSort) {
                 matrix.mRowsIndex.push_back(p.i);
                 matrix.mColsIndex.push_back(p.j);
             }

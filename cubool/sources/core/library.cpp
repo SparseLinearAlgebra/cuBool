@@ -93,6 +93,9 @@ namespace cubool {
     }
 
     MatrixBase *Library::createMatrix(size_t nrows, size_t ncols) {
+        CHECK_RAISE_ERROR(nrows > 0, InvalidArgument, "Cannot create matrix with zero dimension");
+        CHECK_RAISE_ERROR(ncols > 0, InvalidArgument, "Cannot create matrix with zero dimension");
+
         auto m = new Matrix(nrows, ncols, *mBackend);
         mAllocated.emplace(m);
         return m;

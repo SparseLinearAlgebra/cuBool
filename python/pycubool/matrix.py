@@ -18,6 +18,9 @@ class Matrix:
     def __init__(self, hnd):
         self.hnd = hnd
 
+    def __del__(self):
+        bridge.check(wrapper.loaded_dll.cuBool_Matrix_Free(self.hnd))
+
     @classmethod
     def empty(cls, shape):
         """
@@ -54,9 +57,6 @@ class Matrix:
         out = cls.empty(shape)
         out.build(rows, cols, is_sorted=is_sorted)
         return out
-
-    def __del__(self):
-        bridge.check(wrapper.loaded_dll.cuBool_Matrix_Free(self.hnd))
 
     def build(self, rows, cols, nvals, is_sorted=False):
         if len(rows) != len(cols) or len(rows) != nvals:
@@ -154,7 +154,7 @@ class Matrix:
 
         :param other: Input matrix for multiplication
         :param out: Optional out matrix to store result
-        :param accumulate: Set in true to accumulate the result with out matrix
+        :param accumulate: Set in true to accumulate the result with `out` matrix
         :return: Matrix-matrix multiplication result (with possible accumulation to `out` if provided)
         """
 

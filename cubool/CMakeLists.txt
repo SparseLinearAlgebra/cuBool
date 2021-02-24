@@ -36,6 +36,7 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Matrix_New.cpp
     sources/cuBool_Matrix_Build.cpp
     sources/cuBool_Matrix_ExtractPairs.cpp
+    sources/cuBool_Matrix_ExtractSubMatrix.cpp
     sources/cuBool_Matrix_Duplicate.cpp
     sources/cuBool_Matrix_Transpose.cpp
     sources/cuBool_Matrix_Nvals.cpp
@@ -69,12 +70,14 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/matrix_csr_multiply.cu
         sources/cuda/matrix_csr_transpose.cu
         sources/cuda/matrix_csr_reduce.cu
+        sources/cuda/matrix_csr_extract_sub_matrix.cu
         sources/cuda/kernels/slow_sort.cuh
         sources/cuda/kernels/bin_search.cuh
         sources/cuda/kernels/matrix_csr_sptranspose.cuh
         sources/cuda/kernels/matrix_csr_spkron.cuh
         sources/cuda/kernels/matrix_csr_spmerge.cuh
         sources/cuda/kernels/matrix_csr_spreduce.cuh
+        sources/cuda/kernels/matrix_csr_spsubmatrix.cuh
             )
 endif()
 
@@ -89,6 +92,7 @@ add_library(cubool SHARED
 target_include_directories(cubool PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(cubool PRIVATE ${CMAKE_CURRENT_LIST_DIR}/sources)
 
+target_compile_definitions(cubool PRIVATE CUBOOL_EXPORTS)
 target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_MAJOR=${CUBOOL_VERSION_MAJOR})
 target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_MINOR=${CUBOOL_VERSION_MINOR})
 

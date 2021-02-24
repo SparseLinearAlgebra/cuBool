@@ -2,7 +2,7 @@
 /*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020 JetBrains-Research                                          */
+/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -24,40 +24,66 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
+#include <testing/testing.hpp>
 
-#include <core/config.hpp>
-#include <string>
+void testMatrixExtractSubMatrix(cuBool_Index m, cuBool_Index n, cuBool_Index N, float density) {
+    cuBool_Matrix r, a;
 
-namespace cubool {
+    auto ta = testing::Matrix::generateSparse(m, n, density);
 
-    /**
-     * Base class for boolean matrix representation.
-     */
-    class MatrixBase {
-    public:
-        virtual ~MatrixBase() = default;
+    ASSERT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
 
-        virtual void build(const index *rows, const index *cols, size_t nvals, bool isSorted) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols) = 0;
+    ASSERT_EQ(cuBool_Matrix_Build(a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-        virtual void clone(const MatrixBase& other) = 0;
-        virtual void transpose(const MatrixBase &other) = 0;
-        virtual void reduce(const MatrixBase& other) = 0;
+    for (size_t i = 0; i < N; i++) {
+        for (size_t j = 0; j < N; j++) {
+            auto k = m / N;
+            auto l = n / N;
 
-        virtual void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) = 0;
-        virtual void kronecker(const MatrixBase& aBase, const MatrixBase& bBase) = 0;
-        virtual void eWiseAdd(const MatrixBase& aBase, const MatrixBase& bBase) = 0;
+            ASSERT_EQ(cuBool_Matrix_New(&r, k, l), CUBOOL_STATUS_SUCCESS);
+            ASSERT_EQ(cuBool_Matrix_ExtractSubMatrix(r, a, i * k, j * l, k, l, CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
 
-        virtual index getNrows() const = 0;
-        virtual index getNcols() const = 0;
-        virtual index getNvals() const = 0;
+            auto tr = ta.subMatrix(i * k, j * l, k, l);
 
-        bool isZeroDim() const { return (size_t)getNrows() * (size_t)getNcols() == 0; }
-    };
+            ASSERT_TRUE(tr.areEqual(r));
+            ASSERT_EQ(cuBool_Matrix_Free(r), CUBOOL_STATUS_SUCCESS);
+        }
+    }
 
+
+    ASSERT_EQ(cuBool_Matrix_Free(a), CUBOOL_STATUS_SUCCESS);
 }
 
-#endif //CUBOOL_MATRIX_BASE_HPP
+void testRun(cuBool_Index m, cuBool_Index n, float step, cuBool_Hints setup) {
+    // Setup library
+    EXPECT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
+
+    auto N = 10;
+
+    for (size_t i = 0; i < N; i++) {
+        testMatrixExtractSubMatrix(m, n, N, 0.01f + step * ((float) i));
+    }
+
+    // Finalize library
+    EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, SubMatrixExtractSmall) {
+    cuBool_Index m = 100, n = 200;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_NO);
+}
+
+TEST(MatrixCsr, SubMatrixExtractMedium) {
+    cuBool_Index m = 400, n = 700;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_NO);
+}
+
+TEST(MatrixCsr, SubMatrixExtractLarge) {
+    cuBool_Index m = 2000, n = 4000;
+    float step = 0.01f;
+    testRun(m, n, step, CUBOOL_HINT_NO);
+}
+
+CUBOOL_GTEST_MAIN

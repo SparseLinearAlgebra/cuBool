@@ -2,7 +2,7 @@
 /*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020 JetBrains-Research                                          */
+/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -24,40 +24,23 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
+#include <cuBool_Common.hpp>
 
-#include <core/config.hpp>
-#include <string>
-
-namespace cubool {
-
-    /**
-     * Base class for boolean matrix representation.
-     */
-    class MatrixBase {
-    public:
-        virtual ~MatrixBase() = default;
-
-        virtual void build(const index *rows, const index *cols, size_t nvals, bool isSorted) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols) = 0;
-
-        virtual void clone(const MatrixBase& other) = 0;
-        virtual void transpose(const MatrixBase &other) = 0;
-        virtual void reduce(const MatrixBase& other) = 0;
-
-        virtual void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) = 0;
-        virtual void kronecker(const MatrixBase& aBase, const MatrixBase& bBase) = 0;
-        virtual void eWiseAdd(const MatrixBase& aBase, const MatrixBase& bBase) = 0;
-
-        virtual index getNrows() const = 0;
-        virtual index getNcols() const = 0;
-        virtual index getNvals() const = 0;
-
-        bool isZeroDim() const { return (size_t)getNrows() * (size_t)getNcols() == 0; }
-    };
-
+cuBool_Status cuBool_Matrix_ExtractSubMatrix(
+        cuBool_Matrix result,
+        cuBool_Matrix matrix,
+        cuBool_Index i,
+        cuBool_Index j,
+        cuBool_Index nrows,
+        cuBool_Index ncols,
+        cuBool_Hints hints
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(result)
+        CUBOOL_ARG_NOT_NULL(matrix)
+        auto r = (cubool::Matrix*) result;
+        auto m = (cubool::Matrix*) matrix;
+        r->extractSubMatrix(*m, i, j, nrows, ncols);
+    CUBOOL_END_BODY
 }
-
-#endif //CUBOOL_MATRIX_BASE_HPP

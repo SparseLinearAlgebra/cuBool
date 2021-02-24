@@ -2,7 +2,7 @@
 /*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020 JetBrains-Research                                          */
+/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -24,40 +24,31 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
-
-#include <core/config.hpp>
-#include <string>
+#include <cuda/matrix_csr.hpp>
+#include <cuda/kernels/matrix_csr_spsubmatrix.cuh>
 
 namespace cubool {
 
-    /**
-     * Base class for boolean matrix representation.
-     */
-    class MatrixBase {
-    public:
-        virtual ~MatrixBase() = default;
+    void MatrixCsr::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols) {
+        auto other = dynamic_cast<const MatrixCsr*>(&otherBase);
 
-        virtual void build(const index *rows, const index *cols, size_t nvals, bool isSorted) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols) = 0;
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belong to matrix csr class");
 
-        virtual void clone(const MatrixBase& other) = 0;
-        virtual void transpose(const MatrixBase &other) = 0;
-        virtual void reduce(const MatrixBase& other) = 0;
+        assert(nrows > 0);
+        assert(ncols > 0);
 
-        virtual void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) = 0;
-        virtual void kronecker(const MatrixBase& aBase, const MatrixBase& bBase) = 0;
-        virtual void eWiseAdd(const MatrixBase& aBase, const MatrixBase& bBase) = 0;
+        assert(other->getNrows() >= i + nrows);
+        assert(other->getNcols() >= j + ncols);
 
-        virtual index getNrows() const = 0;
-        virtual index getNcols() const = 0;
-        virtual index getNvals() const = 0;
+        assert(this->getNrows() == nrows);
+        assert(this->getNcols() == ncols);
 
-        bool isZeroDim() const { return (size_t)getNrows() * (size_t)getNcols() == 0; }
-    };
+        other->resizeStorageToDim();
+
+        kernels::SpSubMatrix<index, details::DeviceAllocator<index>> spSubMatrix;
+        auto result = spSubMatrix(other->mMatrixImpl, i, j, nrows, ncols);
+
+        mMatrixImpl = std::move(result);
+    }
 
 }
-
-#endif //CUBOOL_MATRIX_BASE_HPP

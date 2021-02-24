@@ -109,14 +109,14 @@ namespace cubool {
         // Set nvals to the exact number of nnz values
         nvals = getNvals();
 
-        auto& rowsDeviceVec = mMatrixImpl.m_row_index;
-        auto& colsDeviceVec = mMatrixImpl.m_col_index;
-
-        // Copy data to the host
-        thrust::host_vector<index, HostAlloc<index>> rowsVec = rowsDeviceVec;
-        thrust::host_vector<index, HostAlloc<index>> colsVec = colsDeviceVec;
-
         if (nvals > 0) {
+            auto& rowsDeviceVec = mMatrixImpl.m_row_index;
+            auto& colsDeviceVec = mMatrixImpl.m_col_index;
+
+            // Copy data to the host
+            thrust::host_vector<index, HostAlloc<index>> rowsVec = rowsDeviceVec;
+            thrust::host_vector<index, HostAlloc<index>> colsVec = colsDeviceVec;
+
             // Iterate over csr formatted data
             size_t idx = 0;
             for (index i = 0; i < getNrows(); i++) {

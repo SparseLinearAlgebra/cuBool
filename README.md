@@ -28,7 +28,7 @@ as well as python high-level wrapper with automated resources management.
 - [X] CSR kronecker
 - [X] CSR transpose
 - [ ] CSR submatrix
-- [ ] CSR matrix reduce
+- [X] CSR matrix reduce
 - [ ] CSR slicing
 - [ ] IO matrix loading from mtx file
 - [ ] IO matrix saving into mtx file
