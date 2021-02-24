@@ -25,9 +25,8 @@ class Matrix:
         nrows = shape[0]
         ncols = shape[1]
 
-        status = wrapper.loaded_dll.cuBool_Matrix_New(ctypes.byref(hnd),
-                                                      ctypes.c_uint(nrows),
-                                                      ctypes.c_uint(ncols))
+        status = wrapper.loaded_dll.cuBool_Matrix_New(
+            ctypes.byref(hnd), ctypes.c_uint(nrows), ctypes.c_uint(ncols))
 
         bridge.check(status)
 
@@ -43,19 +42,17 @@ class Matrix:
         t_rows = (ctypes.c_uint * len(rows))(*rows)
         t_cols = (ctypes.c_uint * len(cols))(*cols)
 
-        status = wrapper.loaded_dll.cuBool_Matrix_Build(self.hnd,
-                                                        t_rows,
-                                                        t_cols,
-                                                        ctypes.c_uint(nvals),
-                                                        ctypes.c_uint(bridge.get_build_hints(is_sorted)))
+        status = wrapper.loaded_dll.cuBool_Matrix_Build(
+            self.hnd, t_rows, t_cols, ctypes.c_uint(nvals),
+            ctypes.c_uint(bridge.get_build_hints(is_sorted)))
 
         bridge.check(status)
 
-    def duplicate(self):
+    def dup(self):
         hnd = ctypes.c_void_p(0)
 
-        status = wrapper.loaded_dll.cuBool_Matrix_Duplicate(self.hnd,
-                                                            ctypes.byref(hnd))
+        status = wrapper.loaded_dll.cuBool_Matrix_Duplicate(
+            self.hnd, ctypes.byref(hnd))
 
         bridge.check(status)
         return Matrix(hnd)
@@ -64,8 +61,8 @@ class Matrix:
         shape = (self.ncols, self.nrows)
         result = Matrix.empty(shape)
 
-        status = wrapper.loaded_dll.cuBool_Matrix_Transpose(result.hnd,
-                                                            self.hnd)
+        status = wrapper.loaded_dll.cuBool_Matrix_Transpose(
+            result.hnd, self.hnd)
 
         bridge.check(status)
         return result
@@ -74,8 +71,8 @@ class Matrix:
     def nrows(self) -> int:
         result = ctypes.c_uint(0)
 
-        status = wrapper.loaded_dll.cuBool_Matrix_Nrows(self.hnd,
-                                                        ctypes.byref(result))
+        status = wrapper.loaded_dll.cuBool_Matrix_Nrows(
+            self.hnd, ctypes.byref(result))
 
         bridge.check(status)
         return int(result.value)
@@ -84,8 +81,8 @@ class Matrix:
     def ncols(self) -> int:
         result = ctypes.c_uint(0)
 
-        status = wrapper.loaded_dll.cuBool_Matrix_Ncols(self.hnd,
-                                                        ctypes.byref(result))
+        status = wrapper.loaded_dll.cuBool_Matrix_Ncols(
+            self.hnd, ctypes.byref(result))
 
         bridge.check(status)
         return int(result.value)
@@ -94,8 +91,8 @@ class Matrix:
     def nvals(self) -> int:
         result = ctypes.c_uint(0)
 
-        status = wrapper.loaded_dll.cuBool_Matrix_Nvals(self.hnd,
-                                                        ctypes.byref(result))
+        status = wrapper.loaded_dll.cuBool_Matrix_Nvals(
+            self.hnd, ctypes.byref(result))
 
         bridge.check(status)
         return int(result.value)
@@ -111,11 +108,53 @@ class Matrix:
         cols = (ctypes.c_uint * values_count)()
         nvals = ctypes.c_uint(values_count)
 
-        status = wrapper.loaded_dll.cuBool_Matrix_ExtractPairs(self.hnd,
-                                                               rows,
-                                                               cols,
-                                                               ctypes.byref(nvals))
+        status = wrapper.loaded_dll.cuBool_Matrix_ExtractPairs(
+            self.hnd, rows, cols, ctypes.byref(nvals))
 
         bridge.check(status)
 
         return rows, cols
+
+    def mxm(self, a, b, accumulate=True):
+        """
+
+        :param a:
+        :param b:
+        :param accumulate:
+        :return:
+        """
+
+        status = wrapper.loaded_dll.cuBool_MxM(
+            self.hnd, a.hnd, b.hnd,
+            ctypes.c_uint(bridge.get_mxm_hints(accumulate)))
+
+        bridge.check(status)
+        return self
+
+    def kronecker(self, a, b):
+        """
+
+        :param a:
+        :param b:
+        :return:
+        """
+
+        status = wrapper.loaded_dll.cuBool_Kronecker(
+            self.hnd, a.hnd, b.hnd)
+
+        bridge.check(status)
+        return self
+
+    def ewiseadd(self, a, b):
+        """
+
+        :param a:
+        :param b:
+        :return:
+        """
+
+        status = wrapper.loaded_dll.cuBool_Matrix_EWiseAdd(
+            self.hnd, a.hnd, b.hnd)
+
+        bridge.check(status)
+        return self

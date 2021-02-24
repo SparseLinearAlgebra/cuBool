@@ -21,7 +21,7 @@ as well as python high-level wrapper with automated resources management.
 ### Features
 
 - [X] Library C interface
-- [X] Library instance/context
+- [X] Library setup
 - [X] CSR matrix
 - [X] CSR multiplication
 - [X] CSR addition
@@ -32,6 +32,7 @@ as well as python high-level wrapper with automated resources management.
 - [ ] CSR slicing
 - [ ] IO matrix loading from mtx file
 - [ ] IO matrix saving into mtx file
+- [ ] IO matrix saving into gviz format
 - [ ] IO user-defined file logging
 - [X] Wrapper for Python API
 - [ ] Wrapper tests in Python 
@@ -51,6 +52,7 @@ as well as python high-level wrapper with automated resources management.
 - GCC Compiler 
 - NVIDIA CUDA toolkit
 - Python 3 (for `pycubool` library)
+- Git
 
 ### Setup
 
@@ -103,18 +105,34 @@ if you want to build library from the command line only.
 ### Get the source code and run
 
 Run the following commands in the command shell to download the repository,
-make `build` directory, configure `cmake build` and run compilation process:
+make `build` directory, configure `cmake build` and run compilation process.
+First of all, get the source code and project dependencies:
 
 ```shell script
 $ git clone https://github.com/JetBrains-Research/cuBool.git
 $ cd cuBool
 $ git submodule update --init --recursive
+```
+
+Make the build directory and go into it:
+
+```shell script
 $ mkdir build
 $ cd build
-$ cmake .. -DCUBOOL_BUILD_TESTS=ON
+```
+
+Configure build in Release mode with tests and run actual compilation process:
+
+```shell script
+$ cmake .. -DCMAKE_BUILD_TYPE=Release -DCUBOOL_BUILD_TESTS=ON
 $ cmake --build . --target all -j `nproc`
 $ sh ./scripts/tests_run_all.sh
 ```
+
+By default, the following cmake options will be automatically enabled:
+
+- `CUBOOL_WITH_CUDA` - build library with actual cuda backend
+- `CUBOOL_WITH_CPU` - build library witt cpu based backend
 
 > Note: in order to provide correct GCC version for CUDA sources compiling,
 > you will have to provide custom paths to the CC and CXX compilers before 
@@ -178,7 +196,6 @@ directed graph within python environment:
 ```python
 from python import pycubool
 
-
 def transitive_closure(a: pycubool.Matrix):
     """
     Evaluates transitive closure for the provided
@@ -188,12 +205,12 @@ def transitive_closure(a: pycubool.Matrix):
     :return: The transitive closure adjacency matrix
     """
 
-    t = a.duplicate()                          # Duplicate matrix where to store result
-    total = 0                                  # Current number of values
+    t = a.dup()                       # Duplicate matrix where to store result
+    total = 0                         # Current number of values
 
     while total != t.nvals:
         total = t.nvals
-        pycubool.mxm(t, t, t, accumulate=True) # t += t * t
+        t.mxm(t, t, accumulate=True)  # t += t * t
 
     return t
 ```

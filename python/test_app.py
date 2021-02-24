@@ -49,7 +49,7 @@ print("Matrix b dim:", b.shape, "values count:", b.nvals)
 
 r = pycubool.Matrix.empty(dim)
 
-pycubool.ewiseadd(r, a, b)
+r.ewiseadd(a, b)
 
 print("Matrix r values count:", r.nvals)
 
