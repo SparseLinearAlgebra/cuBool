@@ -26,11 +26,11 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_Matrix_ExtractPairs(
-        cuBoolMatrix        matrix,
-        cuBoolIndex*        rows,
-        cuBoolIndex*        cols,
-        cuBoolIndex*        nvals
+cuBool_Status cuBool_Matrix_ExtractPairs(
+        cuBool_Matrix matrix,
+        cuBool_Index *rows,
+        cuBool_Index *cols,
+        cuBool_Index *nvals
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
@@ -38,7 +38,7 @@ cuBoolStatus cuBool_Matrix_ExtractPairs(
         CUBOOL_ARG_NOT_NULL(rows)
         CUBOOL_ARG_NOT_NULL(cols)
         CUBOOL_ARG_NOT_NULL(nvals)
-        auto m = (cubool::Matrix*) matrix;
+        auto m = (cubool::Matrix *) matrix;
         size_t count = *nvals;
         m->extract(rows, cols, count);
         *nvals = count;

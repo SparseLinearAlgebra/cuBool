@@ -26,8 +26,8 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixMultiplyAdd(cuBoolIndex m, cuBoolIndex t, cuBoolIndex n, float density) {
-    cuBoolMatrix a, b, r;
+void testMatrixMultiplyAdd(cuBool_Index m, cuBool_Index t, cuBool_Index n, float density) {
+    cuBool_Matrix a, b, r;
 
     // Generate test data with specified density
     testing::Matrix ta = std::move(testing::Matrix::generate(m, t, testing::Condition3(density)));
@@ -60,7 +60,7 @@ void testMatrixMultiplyAdd(cuBoolIndex m, cuBoolIndex t, cuBoolIndex n, float de
     ASSERT_EQ(cuBool_Matrix_Free(r), CUBOOL_STATUS_SUCCESS);
 }
 
-void testRun(cuBoolIndex m, cuBoolIndex t, cuBoolIndex n, cuBoolHints setup) {
+void testRun(cuBool_Index m, cuBool_Index t, cuBool_Index n, cuBool_Hints setup) {
     // Setup library
     ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
@@ -73,18 +73,18 @@ void testRun(cuBoolIndex m, cuBoolIndex t, cuBoolIndex n, cuBoolHints setup) {
 }
 
 TEST(MatrixCsr, MultiplyAddSmall) {
-    cuBoolIndex m = 60, t = 100, n = 80;
+    cuBool_Index m = 60, t = 100, n = 80;
     testRun(m, t, n, CUBOOL_HINT_NO);
 }
 
 TEST(MatrixCsr, MultiplyAddMedium) {
-    cuBoolIndex m = 500, t = 1000, n = 800;
+    cuBool_Index m = 500, t = 1000, n = 800;
     testRun(m, t, n, CUBOOL_HINT_NO);
 
 }
 
 TEST(MatrixCsr, MultiplyAddLarge) {
-    cuBoolIndex m = 1000, t = 2000, n = 500;
+    cuBool_Index m = 1000, t = 2000, n = 500;
     testRun(m, t, n, CUBOOL_HINT_NO);
 }
 

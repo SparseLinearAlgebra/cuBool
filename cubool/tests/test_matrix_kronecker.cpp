@@ -26,8 +26,8 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixKronecker(cuBoolIndex m, cuBoolIndex n, cuBoolIndex k, cuBoolIndex t, float density) {
-    cuBoolMatrix r, a, b;
+void testMatrixKronecker(cuBool_Index m, cuBool_Index n, cuBool_Index k, cuBool_Index t, float density) {
+    cuBool_Matrix r, a, b;
 
     testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
     testing::Matrix tb = std::move(testing::Matrix::generate(k, t, testing::Condition3(density)));
@@ -57,7 +57,7 @@ void testMatrixKronecker(cuBoolIndex m, cuBoolIndex n, cuBoolIndex k, cuBoolInde
     EXPECT_EQ(cuBool_Matrix_Free(r), CUBOOL_STATUS_SUCCESS);
 }
 
-void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolIndex k, cuBoolIndex t, float step, cuBoolHints setup) {
+void testRun(cuBool_Index m, cuBool_Index n, cuBool_Index k, cuBool_Index t, float step, cuBool_Hints setup) {
     // Setup library
     EXPECT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
@@ -70,22 +70,22 @@ void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolIndex k, cuBoolIndex t, float s
 }
 
 TEST(MatrixCsr, KroneckerSmall) {
-    cuBoolIndex m = 10, n = 20;
-    cuBoolIndex k = 5, t = 15;
+    cuBool_Index m = 10, n = 20;
+    cuBool_Index k = 5, t = 15;
     float step = 0.05f;
     testRun(m, n, k, t, step, CUBOOL_HINT_NO);
 }
 
 TEST(MatrixCsr, KroneckerMedium) {
-    cuBoolIndex m = 100, n = 40;
-    cuBoolIndex k = 30, t = 80;
+    cuBool_Index m = 100, n = 40;
+    cuBool_Index k = 30, t = 80;
     float step = 0.02f;
     testRun(m, n, k, t, step, CUBOOL_HINT_NO);
 }
 
 TEST(MatrixCsr, KroneckerLarge) {
-    cuBoolIndex m = 1000, n = 400;
-    cuBoolIndex k = 300, t = 800;
+    cuBool_Index m = 1000, n = 400;
+    cuBool_Index k = 300, t = 800;
     float step = 0.001f;
     testRun(m, n, k, t, step, CUBOOL_HINT_NO);
 }

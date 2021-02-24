@@ -26,12 +26,12 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_Matrix_Free(
-        cuBoolMatrix        matrix
+cuBool_Status cuBool_Matrix_Free(
+        cuBool_Matrix matrix
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
-        auto m = (cubool::Matrix*) matrix;
+        auto m = (cubool::Matrix *) matrix;
         cubool::Library::releaseMatrix(m);
     CUBOOL_END_BODY
 }

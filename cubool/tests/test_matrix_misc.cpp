@@ -27,8 +27,8 @@
 #include <testing/testing.hpp>
 
 TEST(MatrixCsr, Duplicate) {
-    cuBoolMatrix matrix = nullptr, duplicated = nullptr;
-    cuBoolIndex m = 900, n = 600;
+    cuBool_Matrix matrix = nullptr, duplicated = nullptr;
+    cuBool_Index m = 900, n = 600;
     float density = 0.31;
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
@@ -49,8 +49,8 @@ TEST(MatrixCsr, Duplicate) {
 }
 
 TEST(MatrixCsr, PropertyQuery) {
-    cuBoolMatrix matrix = nullptr;
-    cuBoolIndex m = 900, n = 600;
+    cuBool_Matrix matrix = nullptr;
+    cuBool_Index m = 900, n = 600;
     float density = 0.21;
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
@@ -60,9 +60,9 @@ TEST(MatrixCsr, PropertyQuery) {
     ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Matrix_Build(matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-    cuBoolIndex nrows;
-    cuBoolIndex ncols;
-    cuBoolIndex nvals;
+    cuBool_Index nrows;
+    cuBool_Index ncols;
+    cuBool_Index nvals;
 
     ASSERT_EQ(cuBool_Matrix_Nvals(matrix, &nvals), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Matrix_Nrows(matrix, &nrows), CUBOOL_STATUS_SUCCESS);
@@ -78,8 +78,8 @@ TEST(MatrixCsr, PropertyQuery) {
 }
 
 TEST(MatrixCsr, ExtractPairs) {
-    cuBoolMatrix matrix = nullptr;
-    cuBoolIndex m = 900, n = 600;
+    cuBool_Matrix matrix = nullptr;
+    cuBool_Index m = 900, n = 600;
     float density = 0.21;
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
@@ -89,9 +89,9 @@ TEST(MatrixCsr, ExtractPairs) {
     ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Matrix_Build(matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-    cuBoolIndex nvals = tmatrix.mNvals;
-    std::vector<cuBoolIndex> rows(tmatrix.mNvals);
-    std::vector<cuBoolIndex> cols(tmatrix.mNvals);
+    cuBool_Index nvals = tmatrix.mNvals;
+    std::vector<cuBool_Index> rows(tmatrix.mNvals);
+    std::vector<cuBool_Index> cols(tmatrix.mNvals);
 
     ASSERT_EQ(cuBool_Matrix_ExtractPairs(matrix, rows.data(), cols.data(), &nvals), CUBOOL_STATUS_SUCCESS);
 

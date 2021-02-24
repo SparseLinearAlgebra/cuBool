@@ -46,16 +46,16 @@ namespace testing {
             std::vector<Pair> vals;
             vals.reserve(result.mNvals);
 
-            for (cuBoolIndex i = 0; i < ma.mNvals; i++) {
+            for (cuBool_Index i = 0; i < ma.mNvals; i++) {
                 auto blockI = ma.mRowsIndex[i];
                 auto blockJ = ma.mColsIndex[i];
 
-                for (cuBoolIndex j = 0; j < mb.mNvals; j++) {
+                for (cuBool_Index j = 0; j < mb.mNvals; j++) {
                     auto valueI = mb.mRowsIndex[j];
                     auto valueJ = mb.mColsIndex[j];
 
-                    cuBoolIndex idI = k * blockI + valueI;
-                    cuBoolIndex idJ = t * blockJ + valueJ;
+                    cuBool_Index idI = k * blockI + valueI;
+                    cuBool_Index idJ = t * blockJ + valueJ;
 
                     vals.push_back(Pair{idI, idJ});
                 }

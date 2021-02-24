@@ -35,13 +35,13 @@
 namespace testing {
 
     // Default sizes
-    const cuBoolIndex SMALL_M = 50, SMALL_N = 60;
-    const cuBoolIndex MEDIUM_M = 500, MEDIUM_N = 600;
-    const cuBoolIndex LARGE_M = 1500, LARGE_N = 2600;
+    const cuBool_Index SMALL_M = 50, SMALL_N = 60;
+    const cuBool_Index MEDIUM_M = 500, MEDIUM_N = 600;
+    const cuBool_Index LARGE_M = 1500, LARGE_N = 2600;
 
     struct Matrix {
-        std::vector<cuBoolIndex> mRowsIndex;
-        std::vector<cuBoolIndex> mColsIndex;
+        std::vector<cuBool_Index> mRowsIndex;
+        std::vector<cuBool_Index> mColsIndex;
         size_t mNvals = 0;
         size_t mNrows = 0;
         size_t mNcols = 0;
@@ -71,14 +71,14 @@ namespace testing {
             return std::move(result);
         }
 
-        bool areEqual(cuBoolMatrix matrix) const {
-            cuBoolIndex extNvals;
+        bool areEqual(cuBool_Matrix matrix) const {
+            cuBool_Index extNvals;
 
             if (cuBool_Matrix_Nvals(matrix, &extNvals) != CUBOOL_STATUS_SUCCESS)
                 return false;
 
-            std::vector<cuBoolIndex> extRows(extNvals);
-            std::vector<cuBoolIndex> extCols(extNvals);
+            std::vector<cuBool_Index> extRows(extNvals);
+            std::vector<cuBool_Index> extCols(extNvals);
 
             if (cuBool_Matrix_ExtractPairs(matrix, extRows.data(), extCols.data(), &extNvals) != CUBOOL_STATUS_SUCCESS)
                 return false;
@@ -89,7 +89,7 @@ namespace testing {
             std::vector<Pair> extracted(mNvals);
             std::vector<Pair> reference(mNvals);
 
-            for (cuBoolIndex idx = 0; idx < mNvals; idx++) {
+            for (cuBool_Index idx = 0; idx < mNvals; idx++) {
                 extracted[idx] = Pair{extRows[idx], extCols[idx]};
                 reference[idx] = Pair{mRowsIndex[idx], mColsIndex[idx]};
             }
@@ -127,11 +127,11 @@ namespace testing {
                 auto pr = dist(engine);
                 auto pc = dist(engine);
 
-                auto r = (cuBoolIndex) (pr * (float) nrows);
-                auto c = (cuBoolIndex) (pc * (float) ncols);
+                auto r = (cuBool_Index) (pr * (float) nrows);
+                auto c = (cuBool_Index) (pc * (float) ncols);
 
-                r = std::min(r, (cuBoolIndex)nrows - 1);
-                c = std::min(c, (cuBoolIndex)ncols - 1);
+                r = std::min(r, (cuBool_Index)nrows - 1);
+                c = std::min(c, (cuBool_Index)ncols - 1);
 
                 indices.emplace(Pair{r, c});
             }

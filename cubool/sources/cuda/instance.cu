@@ -88,7 +88,7 @@ namespace cubool {
         return error == cudaSuccess;
     }
 
-    void Instance::queryDeviceCapabilities(CuBoolDeviceCaps &deviceCaps) {
+    void Instance::queryDeviceCapabilities(CuBool_DeviceCaps &deviceCaps) {
         static const size_t KiB = 1024;
 
         int device;

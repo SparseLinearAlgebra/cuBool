@@ -26,7 +26,7 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_Finalize(
+cuBool_Status cuBool_Finalize(
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY

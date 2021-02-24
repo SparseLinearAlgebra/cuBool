@@ -27,7 +27,7 @@
 #include <testing/testing.hpp>
 
 TEST(MatrixCsr, CreateDestroy) {
-    cuBoolMatrix matrix = nullptr;
+    cuBool_Matrix matrix = nullptr;
 
     ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
 
@@ -38,8 +38,8 @@ TEST(MatrixCsr, CreateDestroy) {
 }
 
 // Fills sparse matrix with random data and tests whether the transfer works correctly
-void testMatrixFilling(cuBoolIndex m, cuBoolIndex n, float density) {
-    cuBoolMatrix matrix = nullptr;
+void testMatrixFilling(cuBool_Index m, cuBool_Index n, float density) {
+    cuBool_Matrix matrix = nullptr;
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
 
@@ -53,7 +53,7 @@ void testMatrixFilling(cuBoolIndex m, cuBoolIndex n, float density) {
     ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
 }
 
-void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolHints setup) {
+void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 10; i++) {
@@ -64,18 +64,18 @@ void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolHints setup) {
 }
 
 TEST(MatrixCsr, FillingSmall) {
-    cuBoolIndex m = 60, n = 100;
+    cuBool_Index m = 60, n = 100;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
 TEST(MatrixCsr, FillingMedium) {
-    cuBoolIndex m = 500, n = 1000;
+    cuBool_Index m = 500, n = 1000;
     testRun(m, n, CUBOOL_HINT_NO);
 
 }
 
 TEST(MatrixCsr, FillingLarge) {
-    cuBoolIndex m = 1000, n = 2000;
+    cuBool_Index m = 1000, n = 2000;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 

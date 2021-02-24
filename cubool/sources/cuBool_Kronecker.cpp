@@ -26,19 +26,19 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_Kronecker(
-        cuBoolMatrix        result,
-        cuBoolMatrix        left,
-        cuBoolMatrix        right
+cuBool_Status cuBool_Kronecker(
+        cuBool_Matrix result,
+        cuBool_Matrix left,
+        cuBool_Matrix right
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
         CUBOOL_ARG_NOT_NULL(result)
         CUBOOL_ARG_NOT_NULL(left)
         CUBOOL_ARG_NOT_NULL(right)
-        auto resultM = (cubool::Matrix*) result;
-        auto leftM = (cubool::Matrix*) left;
-        auto rightM = (cubool::Matrix*) right;
+        auto resultM = (cubool::Matrix *) result;
+        auto leftM = (cubool::Matrix *) left;
+        auto rightM = (cubool::Matrix *) right;
         resultM->kronecker(*leftM, *rightM);
     CUBOOL_END_BODY
 }

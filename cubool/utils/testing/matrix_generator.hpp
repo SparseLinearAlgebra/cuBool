@@ -33,13 +33,13 @@
 namespace testing {
 
     struct Condition1 {
-        bool operator()(cuBoolIndex i, cuBoolIndex j) {
+        bool operator()(cuBool_Index i, cuBool_Index j) {
             return (((i - 1) & i) == 0 && ((j - 1) & j) == 0);
         }
     };
 
     struct Condition2 {
-        bool operator()(cuBoolIndex i, cuBoolIndex j) {
+        bool operator()(cuBool_Index i, cuBool_Index j) {
             return !(i % 5) && !(j % 7);
         }
     };
@@ -49,7 +49,7 @@ namespace testing {
         explicit Condition3(float density): mDensity(density) {
             mRandomEngine.seed(std::time(0));
         }
-        bool operator()(cuBoolIndex i, cuBoolIndex j) {
+        bool operator()(cuBool_Index i, cuBool_Index j) {
             return std::uniform_real_distribution<float>(0.0f, 1.0f)(mRandomEngine) <= mDensity;
         }
     private:
@@ -59,8 +59,8 @@ namespace testing {
 
     template<typename Condition>
     static void generateTestData(size_t rows, size_t columns, std::vector<Pair> &values, Condition&& condition) {
-        for (cuBoolIndex i = 0; i < rows; i++) {
-            for (cuBoolIndex j = 0; j < columns; j++) {
+        for (cuBool_Index i = 0; i < rows; i++) {
+            for (cuBool_Index j = 0; j < columns; j++) {
                 // is i and j power of two or 0
                 if (condition(i, j)) {
                     values.push_back(Pair{i, j});
@@ -70,10 +70,10 @@ namespace testing {
     }
 
     template<typename Condition>
-    static void generateTestData(size_t nrows, size_t ncols, std::vector<cuBoolIndex> &rows, std::vector<cuBoolIndex> &cols, size_t& nvals, Condition&& condition) {
+    static void generateTestData(size_t nrows, size_t ncols, std::vector<cuBool_Index> &rows, std::vector<cuBool_Index> &cols, size_t& nvals, Condition&& condition) {
         nvals = 0;
-        for (cuBoolIndex i = 0; i < nrows; i++) {
-            for (cuBoolIndex j = 0; j < ncols; j++) {
+        for (cuBool_Index i = 0; i < nrows; i++) {
+            for (cuBool_Index j = 0; j < ncols; j++) {
                 // is i and j power of two or 0
                 if (condition(i, j)) {
                     rows.push_back(i);

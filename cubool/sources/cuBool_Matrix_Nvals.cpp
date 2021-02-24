@@ -26,15 +26,15 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_Matrix_Nvals(
-        cuBoolMatrix        matrix,
-        cuBoolIndex*        nvals
+cuBool_Status cuBool_Matrix_Nvals(
+        cuBool_Matrix matrix,
+        cuBool_Index *nvals
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
         CUBOOL_ARG_NOT_NULL(matrix)
         CUBOOL_ARG_NOT_NULL(nvals)
-        auto m = (cubool::Matrix*) matrix;
+        auto m = (cubool::Matrix *) matrix;
         *nvals = m->getNvals();
     CUBOOL_END_BODY
 }

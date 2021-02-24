@@ -30,10 +30,10 @@
 namespace testing {
 
     template <typename Stream>
-    void PrintMatrix(Stream& stream, const cuBoolIndex* rowsIndex, const cuBoolIndex* colsIndex, cuBoolIndex nrows, cuBoolIndex ncols, cuBoolIndex nvals) {
-        cuBoolIndex currentRow = 0;
-        cuBoolIndex currentCol = 0;
-        cuBoolIndex currentId = 0;
+    void PrintMatrix(Stream& stream, const cuBool_Index* rowsIndex, const cuBool_Index* colsIndex, cuBool_Index nrows, cuBool_Index ncols, cuBool_Index nvals) {
+        cuBool_Index currentRow = 0;
+        cuBool_Index currentCol = 0;
+        cuBool_Index currentId = 0;
 
         while (currentId < nvals) {
             auto i = rowsIndex[currentId];
@@ -73,20 +73,20 @@ namespace testing {
     }
 
     template <typename Stream>
-    Stream& operator <<(Stream& stream, cuBoolMatrix matrix) {
+    Stream& operator <<(Stream& stream, cuBool_Matrix matrix) {
         assert(matrix);
 
-        cuBoolIndex nrows;
-        cuBoolIndex ncols;
-        cuBoolIndex nvals;
+        cuBool_Index nrows;
+        cuBool_Index ncols;
+        cuBool_Index nvals;
 
         // Query matrix data
         cuBool_Matrix_Nrows(matrix, &nrows);
         cuBool_Matrix_Ncols(matrix, &ncols);
         cuBool_Matrix_Ncols(matrix, &nvals);
 
-        std::vector<cuBoolIndex> rowIndex(nvals);
-        std::vector<cuBoolIndex> colIndex(nvals);
+        std::vector<cuBool_Index> rowIndex(nvals);
+        std::vector<cuBool_Index> colIndex(nvals);
 
         cuBool_Matrix_ExtractPairs(matrix, rowIndex.data(), colIndex.data(), &nvals);
         printMatrix(stream, rowIndex, colIndex, nrows, ncols, nvals);

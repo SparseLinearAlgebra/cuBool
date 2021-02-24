@@ -171,11 +171,11 @@ closure provides info about reachable vertices in the graph:
  *
  * @return Status on this operation
  */
-cuBoolStatus TransitiveClosure(cuBoolMatrix A, cuBoolMatrix* T) {
+cuBool_Status TransitiveClosure(cuBool_Matrix A, cuBool_Matrix* T) {
     cuBool_Matrix_Duplicate(A, T);                       /* Duplicate A to result T */
 
-    cuBoolIndex total = 0;
-    cuBoolIndex current;
+    cuBool_Index total = 0;
+    cuBool_Index current;
 
     cuBool_Matrix_Nvals(*T, &current);                   /* Query current nvals value */
 
@@ -231,11 +231,11 @@ with cubool C API usage.
 #include <stdio.h>
 
 /* Macro to check result of the function call */
-#define CHECK(f) { cuBoolStatus s = f; if (s != CUBOOL_STATUS_SUCCESS) return s; }
+#define CHECK(f) { cuBool_Status s = f; if (s != CUBOOL_STATUS_SUCCESS) return s; }
 
 int main() {
-    cuBoolMatrix A;
-    cuBoolMatrix TC;
+    cuBool_Matrix A;
+    cuBool_Matrix TC;
 
     /* System may not provide Cuda compatible device */
     CHECK(cuBool_Initialize(CUBOOL_HINT_NO));
@@ -247,10 +247,10 @@ int main() {
     /* (0) --> (2) <--> (3) */
 
     /* Adjacency matrix in sparse format  */
-    cuBoolIndex n = 4;
-    cuBoolIndex e = 5;
-    cuBoolIndex rows[] = { 0, 0, 1, 2, 3 };
-    cuBoolIndex cols[] = { 1, 2, 2, 3, 2 };
+    cuBool_Index n = 4;
+    cuBool_Index e = 5;
+    cuBool_Index rows[] = { 0, 0, 1, 2, 3 };
+    cuBool_Index cols[] = { 1, 2, 2, 3, 2 };
 
     /* Create matrix */
     CHECK(cuBool_Matrix_New(&A, n, n));
@@ -270,8 +270,8 @@ int main() {
     CHECK(cuBool_Matrix_Duplicate(A, &TC));
 
     /* Query current number on non-zero elements */
-    cuBoolIndex total = 0;
-    cuBoolIndex current;
+    cuBool_Index total = 0;
+    cuBool_Index current;
     CHECK(cuBool_Matrix_Nvals(TC, &current));
 
     /* Loop while values are added */
@@ -284,7 +284,7 @@ int main() {
     }
 
     /** Get result */
-    cuBoolIndex tc_rows[16], tc_cols[16];
+    cuBool_Index tc_rows[16], tc_cols[16];
     CHECK(cuBool_Matrix_ExtractPairs(TC, tc_rows, tc_cols, &total));
 
     /** Now tc_rows and tc_cols contain (i,j) pairs of the result G_tc graph */
@@ -298,7 +298,7 @@ int main() {
     /* Output result size */
     printf("Nnz(tc)=%lli\n", (unsigned long long) total);
 
-    for (cuBoolIndex i = 0; i < total; i++)
+    for (cuBool_Index i = 0; i < total; i++)
         printf("(%u,%u) ", tc_rows[i], tc_cols[i]);
 
     /* Release resources */

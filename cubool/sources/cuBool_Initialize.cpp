@@ -26,8 +26,8 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_Initialize(
-        cuBoolHints         hints
+cuBool_Status cuBool_Initialize(
+        cuBool_Hints hints
 ) {
     CUBOOL_BEGIN_BODY
         cubool::Library::initialize(hints);

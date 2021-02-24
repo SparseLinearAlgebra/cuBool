@@ -26,20 +26,20 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_MxM(
-        cuBoolMatrix        result,
-        cuBoolMatrix        left,
-        cuBoolMatrix        right,
-        cuBoolHints         hints
+cuBool_Status cuBool_MxM(
+        cuBool_Matrix result,
+        cuBool_Matrix left,
+        cuBool_Matrix right,
+        cuBool_Hints hints
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
         CUBOOL_ARG_NOT_NULL(result)
         CUBOOL_ARG_NOT_NULL(left)
         CUBOOL_ARG_NOT_NULL(right)
-        auto resultM = (cubool::Matrix*) result;
-        auto leftM = (cubool::Matrix*) left;
-        auto rightM = (cubool::Matrix*) right;
+        auto resultM = (cubool::Matrix *) result;
+        auto leftM = (cubool::Matrix *) left;
+        auto rightM = (cubool::Matrix *) right;
         resultM->multiply(*leftM, *rightM, hints & CUBOOL_HINT_ACCUMULATE);
     CUBOOL_END_BODY
 }

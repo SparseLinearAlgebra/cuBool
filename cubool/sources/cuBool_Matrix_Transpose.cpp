@@ -26,16 +26,16 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_Matrix_Transpose(
-        cuBoolMatrix        result,
-        cuBoolMatrix        matrix
+cuBool_Status cuBool_Matrix_Transpose(
+        cuBool_Matrix result,
+        cuBool_Matrix matrix
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
         CUBOOL_ARG_NOT_NULL(result)
         CUBOOL_ARG_NOT_NULL(matrix)
-        auto r = (cubool::Matrix*) result;
-        auto m = (cubool::Matrix*) matrix;
+        auto r = (cubool::Matrix *) result;
+        auto m = (cubool::Matrix *) matrix;
         r->transpose(*m);
     CUBOOL_END_BODY
 }

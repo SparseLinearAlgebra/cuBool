@@ -44,7 +44,7 @@ TEST(CuBoolVersion, Query) {
 
 // Test cubool library instance creation and destruction
 TEST(CuBoolInstance, Setup) {
-    cuBoolStatus error;
+    cuBool_Status error;
 
     error = cuBool_Initialize(CUBOOL_HINT_NO);
     ASSERT_EQ(error, CUBOOL_STATUS_SUCCESS);
@@ -61,11 +61,11 @@ TEST(CuBoolInstance, Setup) {
  *
  * @return Status on this operation
  */
-cuBoolStatus TransitiveClosure(cuBoolMatrix A, cuBoolMatrix* T) {
+cuBool_Status TransitiveClosure(cuBool_Matrix A, cuBool_Matrix* T) {
     cuBool_Matrix_Duplicate(A, T);                              /* Duplicate A to result T */
 
-    cuBoolIndex total = 0;
-    cuBoolIndex current;
+    cuBool_Index total = 0;
+    cuBool_Index current;
 
     cuBool_Matrix_Nvals(*T, &current);                          /* Query current nvals value */
 
@@ -79,10 +79,10 @@ cuBoolStatus TransitiveClosure(cuBoolMatrix A, cuBoolMatrix* T) {
 }
 
 TEST(CuBoolInstance, Example) {
-    cuBoolMatrix A = nullptr;
-    cuBoolMatrix T = nullptr;
+    cuBool_Matrix A = nullptr;
+    cuBool_Matrix T = nullptr;
 
-    cuBoolIndex n = 100;
+    cuBool_Index n = 100;
 
     cuBool_Initialize(CUBOOL_HINT_NO);
     cuBool_Matrix_New(&A, n, n);

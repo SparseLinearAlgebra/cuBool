@@ -51,7 +51,7 @@
 #endif
 
 /** Possible status codes that can be returned from cubool api */
-typedef enum cuBoolStatus {
+typedef enum cuBool_Status {
     /** Successful execution of the function */
     CUBOOL_STATUS_SUCCESS = 0,
     /** Generic error code */
@@ -70,10 +70,10 @@ typedef enum cuBoolStatus {
     CUBOOL_STATUS_BACKEND_ERROR = 7,
     /** Some library feature is not implemented */
     CUBOOL_STATUS_NOT_IMPLEMENTED = 8
-} cuBoolStatus;
+} cuBool_Status;
 
 /** Generic lib hits for matrix processing */
-typedef enum cuBoolHint {
+typedef enum cuBool_Hint {
     /** No hints passed */
     CUBOOL_HINT_NO = 0x0,
     /** Force Cpu based backend usage */
@@ -86,69 +86,33 @@ typedef enum cuBoolHint {
     CUBOOL_HINT_ACCUMULATE = 0x8,
     /** Finalize library state, even if not all resources were explicitly released */
     CUBOOL_HINT_RELAXED_FINALIZE = 0x16
-} cuBoolHint;
+} cuBool_Hint;
 
 /** Hit mask */
-typedef uint32_t                cuBoolHints;
+typedef uint32_t cuBool_Hints;
 
 /** Alias integer type for indexing operations */
-typedef uint32_t                cuBoolIndex;
+typedef uint32_t cuBool_Index;
 
 /** Cubool sparse boolean matrix handle */
-typedef struct cuBoolMatrix_t*  cuBoolMatrix;
+typedef struct cuBoolMatrix_t* cuBool_Matrix;
 
-/**
- * @brief Memory allocate callback
- * Signature for user-provided function pointer, used to allocate CPU memory for library resources
- */
-typedef void* (*CuBoolCpuMemAllocateFun)(
-    cuBoolIndex                 size,
-    void*                       userData
-);
-
-/**
- * @brief Memory deallocate callback
- * Signature for user-provided function pointer, used to deallocate CPU memory, previously allocated with CuBoolCpuMemAllocateFun
- */
-typedef void (*CuBoolCpuMemDeallocateFun)(
-    void*                       ptr,
-    void*                       userData
-);
-
-/**
- * @brief Message callback
- * User provided message callback to observe library messages and errors
- */
-typedef void (*CuBoolMsgFun)(
-    cuBoolStatus                status,
-    const char*                 message,
-    void*                       userData
-);
-
-typedef struct CuBoolDeviceCaps {
-    char                        name[256];
-    int                         major;
-    int                         minor;
-    int                         warp;
-    bool                        cudaSupported;
-    cuBoolIndex                 globalMemoryKiBs;
-    cuBoolIndex                 sharedMemoryPerMultiProcKiBs;
-    cuBoolIndex                 sharedMemoryPerBlockKiBs;
-} CuBoolDeviceCaps;
-
-typedef struct CuBoolAllocationCallback {
-    void*                       userData;
-    CuBoolCpuMemAllocateFun     allocateFun;
-    CuBoolCpuMemDeallocateFun   deallocateFun;
-} CuBoolAllocationCallback;
-
-typedef struct CuBoolMessageCallback {
-    void*                       userData;
-    CuBoolMsgFun                msgFun;
-} CuBoolMessageCallback;
+/** Cuda device capabilities */
+typedef struct CuBool_DeviceCaps {
+    char name[256];
+    int major;
+    int minor;
+    int warp;
+    bool cudaSupported;
+    cuBool_Index globalMemoryKiBs;
+    cuBool_Index sharedMemoryPerMultiProcKiBs;
+    cuBool_Index sharedMemoryPerBlockKiBs;
+} CuBool_DeviceCaps;
 
 /**
  * Query human-readable text info about the project implementation
+ * @note It is safe to call this function before the library is initialized.
+ *
  * @return Read-only library about info
  */
 CUBOOL_EXPORT CUBOOL_API const char* cuBool_About_Get(
@@ -156,6 +120,8 @@ CUBOOL_EXPORT CUBOOL_API const char* cuBool_About_Get(
 
 /**
  * Query human-readable text info about the project implementation
+ * @note It is safe to call this function before the library is initialized.
+
  * @return Read-only library license info
  */
 CUBOOL_EXPORT CUBOOL_API const char* cuBool_LicenseInfo_Get(
@@ -163,6 +129,7 @@ CUBOOL_EXPORT CUBOOL_API const char* cuBool_LicenseInfo_Get(
 
 /**
  * Query library version number in form MAJOR.MINOR
+ * @note It is safe to call this function before the library is initialized.
  *
  * @param major Major version number part
  * @param minor Minor version number part
@@ -170,25 +137,16 @@ CUBOOL_EXPORT CUBOOL_API const char* cuBool_LicenseInfo_Get(
  *
  * @return Error if failed to query version info
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Version_Get(
-    int*                major,
-    int*                minor,
-    int*                version
-);
-
-/**
- * Query device capabilities/properties if cuda compatible device is present
- *
- * @param deviceCaps Pointer to device caps structure to store result
- *
- * @return Error if cuda device not present or if failed to query capabilities
- */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_DeviceCaps_Get(
-    CuBoolDeviceCaps*   deviceCaps
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Version_Get(
+    int* major,
+    int* minor,
+    int* version
 );
 
 /**
  * Initialize library instance object, which provides context to all library operations and primitives.
+ * This function must be called before any other library function is called,
+ * except first get-info functions.
  *
  * @note Pass CUBOOL_HINT_RELAXED_FINALIZE for library setup within python.
  *
@@ -196,18 +154,32 @@ CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_DeviceCaps_Get(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Initialize(
-    cuBoolHints         hints
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Initialize(
+    cuBool_Hints hints
 );
 
 /**
- * Destroy library instance and all objects, which were created on this library context.
+ * Finalize library state and all objects, which were created on this library context.
+ * This function always must be called as the last library function in the application.
  *
+ * @note Pass CUBOOL_HINT_RELAXED_FINALIZE for library init call, if relaxed finalize is required.
  * @note Invalidates all handle to the resources, created within this library instance
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Finalize(
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Finalize(
+);
+
+/**
+ * Query device capabilities/properties if cuda compatible device is present.
+ *
+ * @note This function must be called only for cuda backend.
+ * @param deviceCaps Pointer to device caps structure to store result
+ *
+ * @return Error if cuda device not present or if failed to query capabilities
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_DeviceCaps_Get(
+        CuBool_DeviceCaps* deviceCaps
 );
 
 /**
@@ -219,30 +191,32 @@ CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Finalize(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_New(
-    cuBoolMatrix*       matrix,
-    cuBoolIndex         nrows,
-    cuBoolIndex         ncols
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_New(
+    cuBool_Matrix* matrix,
+    cuBool_Index nrows,
+    cuBool_Index ncols
 );
 
 /**
  * Build sparse matrix from provided pairs array. Pairs are supposed to be stored
  * as (rows[i],cols[i]) for pair with i-th index.
  *
+ * @note Pass CUBOOL_HINT_VALUES_SORTED if values already in the row-col order.
+ *
  * @param matrix Matrix handle to perform operation on
  * @param rows Array of pairs row indices
  * @param cols Array of pairs column indices
  * @param nvals Number of the pairs passed
- * @param hints Hits flags for processing. Pass VALUES_SORTED if values already in the proper order.
+ * @param hints Hits flags for processing.
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Build(
-    cuBoolMatrix        matrix,
-    const cuBoolIndex*  rows,
-    const cuBoolIndex*  cols,
-    cuBoolIndex         nvals,
-    cuBoolHints         hints
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Build(
+    cuBool_Matrix matrix,
+    const cuBool_Index* rows,
+    const cuBool_Index* cols,
+    cuBool_Index nvals,
+    cuBool_Hints hints
 );
 
 /**
@@ -258,74 +232,77 @@ CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Build(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_ExtractPairs(
-    cuBoolMatrix        matrix,
-    cuBoolIndex*        rows,
-    cuBoolIndex*        cols,
-    cuBoolIndex*        nvals
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractPairs(
+    cuBool_Matrix matrix,
+    cuBool_Index* rows,
+    cuBool_Index* cols,
+    cuBool_Index* nvals
 );
 
 /**
  * Creates new sparse matrix, duplicates content and stores handle in the provided pointer.
  * 
  * @param matrix Matrix handle to perform operation on
- * @param duplicated[out] Pointer to the matrix handle where to store created matrix
+ * @param duplicated[out] Pointer to the matrix handle where to create and store created matrix
  * 
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Duplicate(
-    cuBoolMatrix        matrix,
-    cuBoolMatrix*       duplicated
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Duplicate(
+    cuBool_Matrix matrix,
+    cuBool_Matrix* duplicated
 );
 
 /**
  * Transpose source matrix and store result of this operation in result matrix.
- * Formally: result = matrix ^ T
+ * Formally: result = matrix ^ T.
  *
  * @param result Matrix handle to store result of the operation
  * @param matrix The source matrix
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Transpose(
-    cuBoolMatrix        result,
-    cuBoolMatrix        matrix
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Transpose(
+    cuBool_Matrix result,
+    cuBool_Matrix matrix
 );
 
 /**
+ * Query number of non-zero values of the matrix.
  *
  * @param matrix Matrix handle to perform operation on
  * @param nvals[out] Pointer to  the place where to store number of the non-zero elements of the matrix
  * 
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Nvals(
-    cuBoolMatrix        matrix,
-    cuBoolIndex*        nvals
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Nvals(
+    cuBool_Matrix matrix,
+    cuBool_Index* nvals
 );
 
 /**
- * 
+ * Query number of rows in the matrix.
+ *
  * @param matrix Matrix handle to perform operation on
  * @param nrows[out] Pointer to the place where to store number of matrix rows
  * 
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Nrows(
-    cuBoolMatrix        matrix,
-    cuBoolIndex*        nrows
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Nrows(
+    cuBool_Matrix matrix,
+    cuBool_Index* nrows
 );
 
 /**
- * 
+ * Query number of columns in the matrix.
+ *
  * @param matrix Matrix handle to perform operation on
  * @param ncols[out] Pointer to the place where to store number of matrix columns
  * 
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Ncols(
-    cuBoolMatrix        matrix,
-    cuBoolIndex*        ncols
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Ncols(
+    cuBool_Matrix matrix,
+    cuBool_Index* ncols
 );
 
 /**
@@ -335,16 +312,17 @@ CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Ncols(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Free(
-    cuBoolMatrix        matrix
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Free(
+    cuBool_Matrix matrix
 );
 
 /**
- * Performs result += left, where '+' is boolean semiring operation.
+ * Performs result = left + right, where '+' is boolean semiring operation.
  *
  * @note Matrices must be compatible
  *      dim(result) = M x N
  *      dim(left) = M x N
+ *      dim(right) = M x N
  *
  * @param result Destination matrix for add-and-assign operation
  * @param left Source matrix to be added
@@ -352,10 +330,10 @@ CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_Free(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_EWiseAdd(
-    cuBoolMatrix        result,
-    cuBoolMatrix        left,
-    cuBoolMatrix        right
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
+    cuBool_Matrix result,
+    cuBool_Matrix left,
+    cuBool_Matrix right
 );
 
 /**
@@ -367,18 +345,20 @@ CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Matrix_EWiseAdd(
  *       dim(right) = T x N
  *       dim(result) = M x N
  *
+ * @note Pass CUBOOL_HINT_ACCUMULATE hint to add result of the left x right operation.
+ *
  * @param result Matrix handle where to store operation result
  * @param left Input left matrix
  * @param right Input right matrix
- * @param hints Pass CUBOOL_HINT_ACCUMULATE hint to add result of the left x right operation.
+ * @param hints Hints for the operation.
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_MxM(
-    cuBoolMatrix        result,
-    cuBoolMatrix        left,
-    cuBoolMatrix        right,
-    cuBoolHints         hints
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxM(
+    cuBool_Matrix result,
+    cuBool_Matrix left,
+    cuBool_Matrix right,
+    cuBool_Hints hints
 );
 
 /**
@@ -395,10 +375,10 @@ CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_MxM(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBoolStatus cuBool_Kronecker(
-    cuBoolMatrix        result,
-    cuBoolMatrix        left,
-    cuBoolMatrix        right
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Kronecker(
+    cuBool_Matrix result,
+    cuBool_Matrix left,
+    cuBool_Matrix right
 );
 
 #endif //CUBOOL_CUBOOL_H

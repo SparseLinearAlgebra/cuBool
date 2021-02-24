@@ -41,7 +41,7 @@ namespace cubool {
     class Exception: public std::exception {
     public:
 
-        Exception(std::string message, std::string function, std::string file, size_t line, cuBoolStatus status, bool critical)
+        Exception(std::string message, std::string function, std::string file, size_t line, cuBool_Status status, bool critical)
                 : std::exception(),
                   mMessage(std::move(message)),
                   mFunction(std::move(function)),
@@ -86,7 +86,7 @@ namespace cubool {
             return mLine;
         }
 
-        cuBoolStatus getStatus() const noexcept {
+        cuBool_Status getStatus() const noexcept {
             return nStatus;
         }
 
@@ -100,16 +100,16 @@ namespace cubool {
         std::string mFunction;
         std::string mFile;
         size_t mLine;
-        cuBoolStatus nStatus;
+        cuBool_Status nStatus;
         bool mCritical;
         mutable bool mCached = false;
     };
 
     /**
-     * Exceptions with cuBoolStatus error code parametrisation.
+     * Exceptions with cuBool_Status error code parametrisation.
      * @tparam Type Exception error code (type)
      */
-    template<cuBoolStatus Type>
+    template<cuBool_Status Type>
     class TException: public Exception {
     public:
         TException(std::string message, std::string&& function, std::string&& file, size_t line, bool critical)
@@ -123,14 +123,14 @@ namespace cubool {
     };
 
     // Errors exposed to the C API
-    using Error = TException<cuBoolStatus::CUBOOL_STATUS_ERROR>;
-    using DeviceError = TException<cuBoolStatus::CUBOOL_STATUS_DEVICE_ERROR>;
-    using DeviceNotPresent = TException<cuBoolStatus::CUBOOL_STATUS_DEVICE_NOT_PRESENT>;
-    using MemOpFailed = TException<cuBoolStatus::CUBOOL_STATUS_MEM_OP_FAILED>;
-    using InvalidArgument = TException<cuBoolStatus::CUBOOL_STATUS_INVALID_ARGUMENT>;
-    using InvalidState = TException<cuBoolStatus::CUBOOL_STATUS_INVALID_STATE>;
-    using BackendError = TException<cuBoolStatus::CUBOOL_STATUS_BACKEND_ERROR>;
-    using NotImplemented = TException<cuBoolStatus::CUBOOL_STATUS_NOT_IMPLEMENTED>;
+    using Error = TException<cuBool_Status::CUBOOL_STATUS_ERROR>;
+    using DeviceError = TException<cuBool_Status::CUBOOL_STATUS_DEVICE_ERROR>;
+    using DeviceNotPresent = TException<cuBool_Status::CUBOOL_STATUS_DEVICE_NOT_PRESENT>;
+    using MemOpFailed = TException<cuBool_Status::CUBOOL_STATUS_MEM_OP_FAILED>;
+    using InvalidArgument = TException<cuBool_Status::CUBOOL_STATUS_INVALID_ARGUMENT>;
+    using InvalidState = TException<cuBool_Status::CUBOOL_STATUS_INVALID_STATE>;
+    using BackendError = TException<cuBool_Status::CUBOOL_STATUS_BACKEND_ERROR>;
+    using NotImplemented = TException<cuBool_Status::CUBOOL_STATUS_NOT_IMPLEMENTED>;
 
 }
 

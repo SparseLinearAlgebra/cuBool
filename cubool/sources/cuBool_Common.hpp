@@ -54,6 +54,6 @@
          cubool::Library::handleError(exc);                                             \
          return CUBOOL_STATUS_ERROR;                                                    \
     }                                                                                   \
-    return cuBoolStatus::CUBOOL_STATUS_SUCCESS;
+    return cuBool_Status::CUBOOL_STATUS_SUCCESS;
 
 #endif //CUBOOL_CUBOOL_COMMON_HPP

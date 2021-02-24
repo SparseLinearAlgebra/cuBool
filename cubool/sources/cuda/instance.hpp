@@ -57,7 +57,7 @@ namespace cubool {
         void printDeviceCapabilities() const;
 
         static bool isCudaDeviceSupported();
-        static void queryDeviceCapabilities(CuBoolDeviceCaps& deviceCaps);
+        static void queryDeviceCapabilities(CuBool_DeviceCaps& deviceCaps);
         static Instance& getInstanceRef();
         static Instance* getInstancePtr();
         static bool isInstancePresent();

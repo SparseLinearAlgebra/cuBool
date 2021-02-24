@@ -26,8 +26,8 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixAdd(cuBoolIndex m, cuBoolIndex n, float density) {
-    cuBoolMatrix r, a, b;
+void testMatrixAdd(cuBool_Index m, cuBool_Index n, float density) {
+    cuBool_Matrix r, a, b;
 
     testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
     testing::Matrix tb = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
@@ -57,7 +57,7 @@ void testMatrixAdd(cuBoolIndex m, cuBoolIndex n, float density) {
     ASSERT_EQ(cuBool_Matrix_Free(r), CUBOOL_STATUS_SUCCESS);
 }
 
-void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolHints setup) {
+void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     // Setup library
     ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
@@ -70,17 +70,17 @@ void testRun(cuBoolIndex m, cuBoolIndex n, cuBoolHints setup) {
 }
 
 TEST(MatrixCsr, AddSmall) {
-    cuBoolIndex m = 60, n = 80;
+    cuBool_Index m = 60, n = 80;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
 TEST(MatrixCsr, AddMedium) {
-    cuBoolIndex m = 500, n = 800;
+    cuBool_Index m = 500, n = 800;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
 TEST(MatrixCsr, AddLarge) {
-    cuBoolIndex m = 2500, n = 1500;
+    cuBool_Index m = 2500, n = 1500;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 

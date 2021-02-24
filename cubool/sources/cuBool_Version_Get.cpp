@@ -26,10 +26,10 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_Version_Get(
-        int*                major,
-        int*                minor,
-        int*                version
+cuBool_Status cuBool_Version_Get(
+        int *major,
+        int *minor,
+        int *version
 ) {
     if (major)
         *major = CUBOOL_MAJOR;

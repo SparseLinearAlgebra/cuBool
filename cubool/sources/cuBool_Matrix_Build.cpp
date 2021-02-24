@@ -26,19 +26,19 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_Matrix_Build(
-        cuBoolMatrix        matrix,
-        const cuBoolIndex*  rows,
-        const cuBoolIndex*  cols,
-        cuBoolIndex         nvals,
-        cuBoolHints         hints
+cuBool_Status cuBool_Matrix_Build(
+        cuBool_Matrix matrix,
+        const cuBool_Index *rows,
+        const cuBool_Index *cols,
+        cuBool_Index nvals,
+        cuBool_Hints hints
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
         CUBOOL_ARG_NOT_NULL(matrix)
         CUBOOL_ARG_NOT_NULL(rows)
         CUBOOL_ARG_NOT_NULL(cols)
-        auto m = (cubool::Matrix*) matrix;
+        auto m = (cubool::Matrix *) matrix;
         m->build(rows, cols, nvals, hints & CUBOOL_HINT_VALUES_SORTED);
     CUBOOL_END_BODY
 }

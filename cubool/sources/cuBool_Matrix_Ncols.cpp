@@ -26,15 +26,15 @@
 
 #include <cuBool_Common.hpp>
 
-cuBoolStatus cuBool_Matrix_Ncols(
-        cuBoolMatrix        matrix,
-        cuBoolIndex*        ncols
+cuBool_Status cuBool_Matrix_Ncols(
+        cuBool_Matrix matrix,
+        cuBool_Index *ncols
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
         CUBOOL_ARG_NOT_NULL(matrix)
         CUBOOL_ARG_NOT_NULL(ncols)
-        auto m = (cubool::Matrix*) matrix;
+        auto m = (cubool::Matrix *) matrix;
         *ncols = m->getNcols();
     CUBOOL_END_BODY
 }

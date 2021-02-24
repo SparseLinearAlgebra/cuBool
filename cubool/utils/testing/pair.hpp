@@ -31,8 +31,8 @@
 namespace testing {
 
     struct Pair {
-        cuBoolIndex i;
-        cuBoolIndex j;
+        cuBool_Index i;
+        cuBool_Index j;
     };
 
     struct PairHash {
