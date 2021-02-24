@@ -1,6 +1,6 @@
 import random
 from python import pycubool
-from python.tests import test_example
+from python.tests import test_transitive_closure
 
 
 def lists_to_pairs(rows, cols):
@@ -47,9 +47,7 @@ b, b_set = gen_matrix(dim, to_gen)
 print("Matrix a din:", a.shape, "values count:", a.nvals)
 print("Matrix b dim:", b.shape, "values count:", b.nvals)
 
-r = pycubool.Matrix.empty(dim)
-
-r.ewiseadd(a, b)
+r = a.ewiseadd(b)
 
 print("Matrix r values count:", r.nvals)
 
@@ -58,7 +56,7 @@ res_set = lists_to_pairs(rows, cols)
 
 print(b_set.union(a_set) == res_set)
 
-t = test_example.transitive_closure(a)
+t = test_transitive_closure.transitive_closure(a)
 
 print(a.nvals, a.shape)
 print(t.nvals, t.shape)

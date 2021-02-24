@@ -50,6 +50,10 @@ namespace cubool {
             return;
         }
 
+        // Prepare matrices
+        a->resizeStorageToDim();
+        b->resizeStorageToDim();
+
         kernels::SpKronFunctor<index, DeviceAlloc<index>> spKronFunctor;
         auto result = spKronFunctor(a->mMatrixImpl, b->mMatrixImpl);
 

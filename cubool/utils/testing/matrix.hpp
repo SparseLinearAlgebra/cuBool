@@ -34,11 +34,6 @@
 
 namespace testing {
 
-    // Default sizes
-    const cuBool_Index SMALL_M = 50, SMALL_N = 60;
-    const cuBool_Index MEDIUM_M = 500, MEDIUM_N = 600;
-    const cuBool_Index LARGE_M = 1500, LARGE_N = 2600;
-
     struct Matrix {
         std::vector<cuBool_Index> mRowsIndex;
         std::vector<cuBool_Index> mColsIndex;
@@ -66,6 +61,34 @@ namespace testing {
             for (auto& p: vals) {
                 result.mRowsIndex.push_back(p.i);
                 result.mColsIndex.push_back(p.j);
+            }
+
+            return std::move(result);
+        }
+
+        Matrix reduce() const {
+            Matrix result;
+            result.mNrows = mNrows;
+            result.mNcols = 1;
+
+            std::vector<uint8_t> rows(mNrows, 0);
+
+            for (size_t i = 0; i < mNvals; i++) {
+                rows[mRowsIndex[i]] |= 0x1u;
+            }
+
+            for (auto i: rows) {
+                result.mNvals += i;
+            }
+
+            result.mRowsIndex.reserve(result.mNvals);
+            result.mColsIndex.reserve(result.mNvals);
+
+            for (size_t i = 0; i < mNrows; i++) {
+                if (rows[i] != 0) {
+                    result.mRowsIndex.push_back(i);
+                    result.mColsIndex.push_back(0);
+                }
             }
 
             return std::move(result);

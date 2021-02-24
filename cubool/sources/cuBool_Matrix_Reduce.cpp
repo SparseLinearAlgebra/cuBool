@@ -2,7 +2,7 @@
 /*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020 JetBrains-Research                                          */
+/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -24,53 +24,18 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_HPP
-#define CUBOOL_MATRIX_CSR_HPP
+#include <cuBool_Common.hpp>
 
-#include <backend/matrix_base.hpp>
-#include <cuda/details/host_allocator.hpp>
-#include <cuda/details/device_allocator.cuh>
-#include <nsparse/matrix.h>
-
-namespace cubool {
-
-    class MatrixCsr: public MatrixBase {
-    public:
-        template<typename T>
-        using DeviceAlloc = details::DeviceAllocator<T>;
-        template<typename T>
-        using HostAlloc = details::HostAllocator<T>;
-        using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
-
-        explicit MatrixCsr(size_t nrows, size_t ncols, Instance& instance);
-        ~MatrixCsr() override = default;
-
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
-        void extract(index* rows, index* cols, size_t &nvals) override;
-
-        void clone(const MatrixBase &other) override;
-        void transpose(const MatrixBase &other) override;
-        void reduce(const MatrixBase& other) override;
-
-        void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate) override;
-        void kronecker(const MatrixBase& a, const MatrixBase& b) override;
-        void eWiseAdd(const MatrixBase& a, const MatrixBase& b) override;
-
-        index getNrows() const override;
-        index getNcols() const override;
-        index getNvals() const override;
-
-    private:
-        void resizeStorageToDim() const;
-        bool isStorageEmpty() const;
-        bool isMatrixEmpty() const;
-
-        // Uses nsparse csr matrix implementation as a backend
-        mutable MatrixImplType mMatrixImpl;
-        size_t mNrows = 0;
-        size_t mNcols = 0;
-        Instance& mInstance;
-    };
-};
-
-#endif //CUBOOL_MATRIX_CSR_HPP
+cuBool_Status cuBool_Matrix_Reduce(
+        cuBool_Matrix result,
+        cuBool_Matrix matrix
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(result)
+        CUBOOL_ARG_NOT_NULL(matrix)
+        auto r = (cubool::Matrix*) result;
+        auto m = (cubool::Matrix*) matrix;
+        r->reduce(*m);
+    CUBOOL_END_BODY
+}

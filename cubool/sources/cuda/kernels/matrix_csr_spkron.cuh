@@ -27,8 +27,9 @@
 #ifndef CUBOOL_MATRIX_CSR_SPKRON_CUH
 #define CUBOOL_MATRIX_CSR_SPKRON_CUH
 
-#include <nsparse/matrix.h>
+#include <cuda/kernels/bin_search.cuh>
 #include <thrust/device_vector.h>
+#include <nsparse/matrix.h>
 
 namespace cubool {
     namespace kernels {
@@ -39,29 +40,6 @@ namespace cubool {
             template<typename T>
             using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
             using MatrixType = nsparse::matrix<bool, IndexType, AllocType>;
-
-            static __device__ IndexType findNearestRowIdx(IndexType value, IndexType range, thrust::device_ptr<const IndexType> rowIndex) {
-                IndexType left = 0;
-                IndexType right = range - 1;
-
-                while (left <= right) {
-                    IndexType i = (left + right) / 2;
-
-                    if (value < rowIndex[i]) {
-                        // value is not in =>row i range
-                        right = i - 1;
-                    } else if (value < rowIndex[i + 1]) {
-                        // value is in =>row i range and value actually in row i
-                        return i;
-                    } else {
-                        // value is in =>row i+1 range
-                        left = i + 1;
-                    }
-                }
-
-                // never goes here since kron row index always has value index
-                return range;
-            }
 
             /**
              * evaluates r = a `kron` b, where `kron` is the Kronecker product of csr matrices.
@@ -118,7 +96,7 @@ namespace cubool {
                      bRowIndex = b.m_row_index.data(), bColIndex = b.m_col_index.data()]
                     __device__  (IndexType valueId) {
                         // Find the index of the r row where to write this value
-                        IndexType rRowId = findNearestRowIdx(valueId, rNrows, rRowIndex);
+                        IndexType rRowId = findNearestRowIdx<IndexType>(valueId, rNrows, rRowIndex);
 
                         // Get row index within block (note: see kronecker product)
                         IndexType blockId = rRowId / bNrows;

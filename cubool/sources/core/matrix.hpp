@@ -42,6 +42,7 @@ namespace cubool {
 
         void clone(const MatrixBase &other) override;
         void transpose(const MatrixBase &other) override;
+        void reduce(const MatrixBase& other) override;
 
         void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) override;
         void kronecker(const MatrixBase &aBase, const MatrixBase &bBase) override;

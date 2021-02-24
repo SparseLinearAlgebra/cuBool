@@ -42,6 +42,7 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Matrix_Nrows.cpp
     sources/cuBool_Matrix_Ncols.cpp
     sources/cuBool_Matrix_Free.cpp
+    sources/cuBool_Matrix_Reduce.cpp
     sources/cuBool_Matrix_EWiseAdd.cpp
     sources/cuBool_MxM.cpp
     sources/cuBool_Kronecker.cpp)
@@ -66,7 +67,15 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/matrix_csr_ewiseadd.cu
         sources/cuda/matrix_csr_kronecker.cu
         sources/cuda/matrix_csr_multiply.cu
-        sources/cuda/matrix_csr_transpose.cu)
+        sources/cuda/matrix_csr_transpose.cu
+        sources/cuda/matrix_csr_reduce.cu
+        sources/cuda/kernels/slow_sort.cuh
+        sources/cuda/kernels/bin_search.cuh
+        sources/cuda/kernels/matrix_csr_sptranspose.cuh
+        sources/cuda/kernels/matrix_csr_spkron.cuh
+        sources/cuda/kernels/matrix_csr_spmerge.cuh
+        sources/cuda/kernels/matrix_csr_spreduce.cuh
+            )
 endif()
 
 # Shared library object config

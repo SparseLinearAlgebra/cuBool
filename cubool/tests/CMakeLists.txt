@@ -17,6 +17,9 @@ target_link_libraries(test_matrix_misc PUBLIC testing)
 add_executable(test_matrix_transpose test_matrix_transpose.cpp)
 target_link_libraries(test_matrix_transpose PUBLIC testing)
 
+add_executable(test_matrix_reduce test_matrix_reduce.cpp)
+target_link_libraries(test_matrix_reduce PUBLIC testing)
+
 add_executable(test_matrix_mxm test_matrix_mxm.cpp)
 target_link_libraries(test_matrix_mxm PUBLIC testing)
 

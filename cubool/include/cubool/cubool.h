@@ -317,12 +317,30 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Free(
 );
 
 /**
+ * Reduce the source matrix to the column matrix result (column vector).
+ * Formally: result = sum(cols of matrix).
+
+ * @note Matrices must be compatible
+ *          dim(matrix) = M x N
+ *          dim(result) = M x 1
+ *
+ * @param result Matrix hnd where to store result
+ * @param matrix Source matrix to reduce
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
+    cuBool_Matrix result,
+    cuBool_Matrix matrix
+);
+
+/**
  * Performs result = left + right, where '+' is boolean semiring operation.
  *
  * @note Matrices must be compatible
- *      dim(result) = M x N
- *      dim(left) = M x N
- *      dim(right) = M x N
+ *          dim(result) = M x N
+ *          dim(left) = M x N
+ *          dim(right) = M x N
  *
  * @param result Destination matrix for add-and-assign operation
  * @param left Source matrix to be added
@@ -340,10 +358,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
  * Performs result (accum)= left x right evaluation, where source '+' and 'x' are boolean semiring operations.
  * If accum hint passed, the the result of the multiplication is added to the result matrix.
  *
- * @note to perform this operation matrices must be compatible
- *       dim(left) = M x T
- *       dim(right) = T x N
- *       dim(result) = M x N
+ * @note To perform this operation matrices must be compatible
+ *          dim(left) = M x T
+ *          dim(right) = T x N
+ *          dim(result) = M x N
  *
  * @note Pass CUBOOL_HINT_ACCUMULATE hint to add result of the left x right operation.
  *
@@ -364,10 +382,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxM(
 /**
  * Performs result = left `kron` right, where `kron` is a Kronecker product for boolean semiring.
  *
- * @note when the operation is performed, the result matrix has the following dimension
- *      dim(left) = M x N
- *      dim(right) = K x T
- *      dim(result) = MK x NT
+ * @note When the operation is performed, the result matrix has the following dimension
+ *          dim(left) = M x N
+ *          dim(right) = K x T
+ *          dim(result) = MK x NT
  *
  * @param result Matrix handle where to store operation result
  * @param left Input left matrix

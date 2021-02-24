@@ -60,7 +60,7 @@ namespace cubool {
     void Matrix::clone(const MatrixBase &otherBase) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
-        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
 
         auto M = other->getNrows();
         auto N = other->getNcols();
@@ -74,7 +74,7 @@ namespace cubool {
     void Matrix::transpose(const MatrixBase &otherBase) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
-        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
 
         auto M = other->getNrows();
         auto N = other->getNcols();
@@ -85,12 +85,25 @@ namespace cubool {
         mHnd->transpose(*other->mHnd);
     }
 
+    void Matrix::reduce(const MatrixBase &otherBase) {
+        const auto* other = dynamic_cast<const Matrix*>(&otherBase);
+
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+
+        auto M = other->getNrows();
+
+        CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Matrix has incompatible size");
+        CHECK_RAISE_ERROR(1 == this->getNcols(), InvalidArgument, "Matrix has incompatible size");
+
+        mHnd->reduce(*other->mHnd);
+    }
+
     void Matrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
 
         auto M = a->getNrows();
         auto T = a->getNcols();
@@ -107,8 +120,8 @@ namespace cubool {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
 
         index M = a->getNrows();
         index N = a->getNcols();
@@ -125,8 +138,8 @@ namespace cubool {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
 
         index M = a->getNrows();
         index N = a->getNcols();

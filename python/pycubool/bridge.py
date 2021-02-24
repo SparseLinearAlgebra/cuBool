@@ -30,72 +30,105 @@ def get_build_hints(is_sorted):
 def load_and_configure(cubool_lib_path: str):
     lib = ctypes.cdll.LoadLibrary(cubool_lib_path)
 
+    status_t = ctypes.c_uint
     hints_t = ctypes.c_uint
     matrix_p = ctypes.c_void_p
     p_to_matrix_p = ctypes.POINTER(matrix_p)
 
-    lib.cuBool_Initialize.restype = ctypes.c_uint
-    lib.cuBool_Initialize.argtypes = [hints_t]
+    lib.cuBool_Initialize.restype = status_t
+    lib.cuBool_Initialize.argtypes = [
+        hints_t
+    ]
 
-    lib.cuBool_Finalize.restype = ctypes.c_uint
+    lib.cuBool_Finalize.restype = status_t
     lib.cuBool_Finalize.argtypes = []
 
-    lib.cuBool_Matrix_New.restype = ctypes.c_uint
-    lib.cuBool_Matrix_New.argtypes = [p_to_matrix_p,
-                                      ctypes.c_uint,
-                                      ctypes.c_uint]
+    lib.cuBool_Matrix_New.restype = status_t
+    lib.cuBool_Matrix_New.argtypes = [
+        p_to_matrix_p,
+        ctypes.c_uint,
+        ctypes.c_uint
+    ]
 
-    lib.cuBool_Matrix_Free.restype = ctypes.c_uint
-    lib.cuBool_Matrix_Free.argtypes = [matrix_p]
+    lib.cuBool_Matrix_Free.restype = status_t
+    lib.cuBool_Matrix_Free.argtypes = [
+        matrix_p
+    ]
 
-    lib.cuBool_Matrix_Build.restype = ctypes.c_uint
-    lib.cuBool_Matrix_Build.argtypes = [matrix_p,
-                                        ctypes.POINTER(ctypes.c_uint),
-                                        ctypes.POINTER(ctypes.c_uint),
-                                        ctypes.c_uint,
-                                        hints_t]
+    lib.cuBool_Matrix_Build.restype = status_t
+    lib.cuBool_Matrix_Build.argtypes = [
+        matrix_p,
+        ctypes.POINTER(ctypes.c_uint),
+        ctypes.POINTER(ctypes.c_uint),
+        ctypes.c_uint,
+        hints_t
+    ]
 
-    lib.cuBool_Matrix_ExtractPairs.restype = ctypes.c_uint
-    lib.cuBool_Matrix_ExtractPairs.argtypes = [matrix_p,
-                                               ctypes.POINTER(ctypes.c_uint),
-                                               ctypes.POINTER(ctypes.c_uint),
-                                               ctypes.POINTER(ctypes.c_uint)]
+    lib.cuBool_Matrix_ExtractPairs.restype = status_t
+    lib.cuBool_Matrix_ExtractPairs.argtypes = [
+        matrix_p,
+        ctypes.POINTER(ctypes.c_uint),
+        ctypes.POINTER(ctypes.c_uint),
+        ctypes.POINTER(ctypes.c_uint)
+    ]
 
-    lib.cuBool_Matrix_Duplicate.restype = ctypes.c_uint
-    lib.cuBool_Matrix_Duplicate.argtypes = [matrix_p,
-                                            p_to_matrix_p]
+    lib.cuBool_Matrix_Duplicate.restype = status_t
+    lib.cuBool_Matrix_Duplicate.argtypes = [
+        matrix_p,
+        p_to_matrix_p
+    ]
 
-    lib.cuBool_Matrix_Transpose.restype = ctypes.c_uint
-    lib.cuBool_Matrix_Transpose.argtypes = [matrix_p,
-                                            matrix_p]
+    lib.cuBool_Matrix_Transpose.restype = status_t
+    lib.cuBool_Matrix_Transpose.argtypes = [
+        matrix_p,
+        matrix_p
+    ]
 
-    lib.cuBool_Matrix_Nrows.restype = ctypes.c_uint
-    lib.cuBool_Matrix_Nrows.argtype = [matrix_p,
-                                       ctypes.POINTER(ctypes.c_uint)]
+    lib.cuBool_Matrix_Nrows.restype = status_t
+    lib.cuBool_Matrix_Nrows.argtype = [
+        matrix_p,
+        ctypes.POINTER(ctypes.c_uint)
+    ]
 
-    lib.cuBool_Matrix_Ncols.restype = ctypes.c_uint
-    lib.cuBool_Matrix_Ncols.argtype = [matrix_p,
-                                       ctypes.POINTER(ctypes.c_uint)]
+    lib.cuBool_Matrix_Ncols.restype = status_t
+    lib.cuBool_Matrix_Ncols.argtype = [
+        matrix_p,
+        ctypes.POINTER(ctypes.c_uint)
+    ]
 
-    lib.cuBool_Matrix_Nvals.restype = ctypes.c_uint
-    lib.cuBool_Matrix_Nvals.argtype = [matrix_p,
-                                       ctypes.POINTER(ctypes.c_size_t)]
+    lib.cuBool_Matrix_Nvals.restype = status_t
+    lib.cuBool_Matrix_Nvals.cuBool_Matrix_Reduce = [
+        matrix_p,
+        ctypes.POINTER(ctypes.c_size_t)
+    ]
 
-    lib.cuBool_Matrix_EWiseAdd.restype = ctypes.c_uint
-    lib.cuBool_Matrix_EWiseAdd.argtypes = [matrix_p,
-                                           matrix_p,
-                                           matrix_p]
+    lib.cuBool_Matrix_Reduce.restype = status_t
+    lib.cuBool_Matrix_Reduce.argtype = [
+        matrix_p,
+        matrix_p
+    ]
 
-    lib.cuBool_MxM.restype = ctypes.c_uint
-    lib.cuBool_MxM.argtypes = [matrix_p,
-                               matrix_p,
-                               matrix_p,
-                               hints_t]
+    lib.cuBool_Matrix_EWiseAdd.restype = status_t
+    lib.cuBool_Matrix_EWiseAdd.argtypes = [
+        matrix_p,
+        matrix_p,
+        matrix_p
+    ]
 
-    lib.cuBool_Kronecker.restype = ctypes.c_uint
-    lib.cuBool_Kronecker.argtypes = [matrix_p,
-                                     matrix_p,
-                                     matrix_p]
+    lib.cuBool_MxM.restype = status_t
+    lib.cuBool_MxM.argtypes = [
+        matrix_p,
+        matrix_p,
+        matrix_p,
+        hints_t
+    ]
+
+    lib.cuBool_Kronecker.restype = status_t
+    lib.cuBool_Kronecker.argtypes = [
+        matrix_p,
+        matrix_p,
+        matrix_p
+    ]
 
     return lib
 

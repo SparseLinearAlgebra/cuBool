@@ -20,6 +20,13 @@ class Matrix:
 
     @classmethod
     def empty(cls, shape):
+        """
+        Creates empty matrix of specified `shape`.
+
+        :param shape: Pair with two values with rows and cols count of the matrix
+        :return: Created empty matrix
+        """
+
         hnd = ctypes.c_void_p(0)
 
         nrows = shape[0]
@@ -31,6 +38,22 @@ class Matrix:
         bridge.check(status)
 
         return Matrix(hnd)
+
+    @classmethod
+    def from_lists(cls, shape, rows, cols, is_sorted=False):
+        """
+        Build matrix from provided `shape` and non-zero values data.
+
+        :param shape: Matrix shape
+        :param rows: List with row indices
+        :param cols: List with column indices
+        :param is_sorted: True if values are sorted in row-col order
+        :return: Created matrix filled with data
+        """
+
+        out = cls.empty(shape)
+        out.build(rows, cols, is_sorted=is_sorted)
+        return out
 
     def __del__(self):
         bridge.check(wrapper.loaded_dll.cuBool_Matrix_Free(self.hnd))
@@ -59,13 +82,13 @@ class Matrix:
 
     def transpose(self):
         shape = (self.ncols, self.nrows)
-        result = Matrix.empty(shape)
+        out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Transpose(
-            result.hnd, self.hnd)
+            out.hnd, self.hnd)
 
         bridge.check(status)
-        return result
+        return out
 
     @property
     def nrows(self) -> int:
@@ -102,6 +125,12 @@ class Matrix:
         return self.nrows, self.ncols
 
     def to_lists(self):
+        """
+        Read matrix data as lists of `rows` and `clos` indices.
+
+        :return: Pair with `rows` and `cols` lists
+        """
+
         values_count = self.nvals
 
         rows = (ctypes.c_uint * values_count)()
@@ -115,46 +144,80 @@ class Matrix:
 
         return rows, cols
 
-    def mxm(self, a, b, accumulate=True):
+    def mxm(self, other, out=None, accumulate=True):
+        """
+        Matrix-matrix multiplication in boolean semiring with "x = and" and "+ = or" operations.
+        Returns `self` multiplied to `other` matrix.
+
+        Pass optional `out` matrix to store result.
+        Pass `accumulate`=True to sum the multiplication result with `out` matrix.
+
+        :param other: Input matrix for multiplication
+        :param out: Optional out matrix to store result
+        :param accumulate: Set in true to accumulate the result with out matrix
+        :return: Matrix-matrix multiplication result (with possible accumulation to `out` if provided)
         """
 
-        :param a:
-        :param b:
-        :param accumulate:
-        :return:
-        """
+        if out is None:
+            shape = (self.nrows, other.ncols)
+            out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_MxM(
-            self.hnd, a.hnd, b.hnd,
+            out.hnd, self.hnd, other.hnd,
             ctypes.c_uint(bridge.get_mxm_hints(accumulate)))
 
         bridge.check(status)
-        return self
+        return out
 
-    def kronecker(self, a, b):
+    def kronecker(self, other):
+        """
+        Matrix-matrix kronecker product with boolean "x = and" operation.
+        Returns kronecker product of `self` and `other` matrices.
+
+        :param other: Input matrix
+        :return: Matrices kronecker product matrix
         """
 
-        :param a:
-        :param b:
-        :return:
-        """
+        shape = (self.nrows * other.nrows, self.ncols * other.ncols)
+        out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Kronecker(
-            self.hnd, a.hnd, b.hnd)
+            out.hnd, self.hnd, other.hnd)
 
         bridge.check(status)
-        return self
+        return out
 
-    def ewiseadd(self, a, b):
+    def ewiseadd(self, other):
+        """
+        Element-wise matrix-matrix addition with boolean "+ = or" operation.
+        Returns element-wise sum of `self` and `other` matrix.
+
+        :param other: Input matrix to sum
+        :return: Element-wise matrix-matrix sum
         """
 
-        :param a:
-        :param b:
-        :return:
-        """
+        shape = (self.nrows, self.ncols)
+        out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_EWiseAdd(
-            self.hnd, a.hnd, b.hnd)
+            out.hnd, self.hnd, other.hnd)
 
         bridge.check(status)
-        return self
+        return out
+
+    def reduce(self):
+        """
+        Reduce matrix to vector with boolean "+ = or" operation.
+        Return `self` reduced matrix.
+
+        :return: Reduced matrix (matrix with M x 1 shape)
+        """
+
+        shape = (self.nrows, 1)
+        out = Matrix.empty(shape)
+
+        status = wrapper.loaded_dll.cuBool_Matrix_Reduce(
+            out.hnd, self.hnd)
+
+        bridge.check(status)
+        return out

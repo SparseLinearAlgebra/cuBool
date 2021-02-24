@@ -2,7 +2,7 @@
 /*                                                                                */
 /* MIT License                                                                    */
 /*                                                                                */
-/* Copyright (c) 2020 JetBrains-Research                                          */
+/* Copyright (c) 2020, 2021 JetBrains-Research                                    */
 /*                                                                                */
 /* Permission is hereby granted, free of charge, to any person obtaining a copy   */
 /* of this software and associated documentation files (the "Software"), to deal  */
@@ -24,53 +24,56 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_HPP
-#define CUBOOL_MATRIX_CSR_HPP
+#include <testing/testing.hpp>
 
-#include <backend/matrix_base.hpp>
-#include <cuda/details/host_allocator.hpp>
-#include <cuda/details/device_allocator.cuh>
-#include <nsparse/matrix.h>
+void testMatrixReduce(cuBool_Index m, cuBool_Index n, float density) {
+    cuBool_Matrix r, a;
 
-namespace cubool {
+    auto ta = testing::Matrix::generateSparse(m, n, density);
 
-    class MatrixCsr: public MatrixBase {
-    public:
-        template<typename T>
-        using DeviceAlloc = details::DeviceAllocator<T>;
-        template<typename T>
-        using HostAlloc = details::HostAllocator<T>;
-        using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
+    ASSERT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_New(&r, m, 1), CUBOOL_STATUS_SUCCESS);
 
-        explicit MatrixCsr(size_t nrows, size_t ncols, Instance& instance);
-        ~MatrixCsr() override = default;
+    ASSERT_EQ(cuBool_Matrix_Build(a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
-        void extract(index* rows, index* cols, size_t &nvals) override;
+    ASSERT_EQ(cuBool_Matrix_Reduce(r, a), CUBOOL_STATUS_SUCCESS);
 
-        void clone(const MatrixBase &other) override;
-        void transpose(const MatrixBase &other) override;
-        void reduce(const MatrixBase& other) override;
+    auto tr = ta.reduce();
 
-        void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate) override;
-        void kronecker(const MatrixBase& a, const MatrixBase& b) override;
-        void eWiseAdd(const MatrixBase& a, const MatrixBase& b) override;
+    ASSERT_TRUE(tr.areEqual(r));
 
-        index getNrows() const override;
-        index getNcols() const override;
-        index getNvals() const override;
+    ASSERT_EQ(cuBool_Matrix_Free(a), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Free(r), CUBOOL_STATUS_SUCCESS);
+}
 
-    private:
-        void resizeStorageToDim() const;
-        bool isStorageEmpty() const;
-        bool isMatrixEmpty() const;
+void testRun(cuBool_Index m, cuBool_Index n, float step, cuBool_Hints setup) {
+    // Setup library
+    EXPECT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
-        // Uses nsparse csr matrix implementation as a backend
-        mutable MatrixImplType mMatrixImpl;
-        size_t mNrows = 0;
-        size_t mNcols = 0;
-        Instance& mInstance;
-    };
-};
+    for (size_t i = 0; i < 10; i++) {
+        testMatrixReduce(m, n, 0.01f + step * ((float) i));
+    }
 
-#endif //CUBOOL_MATRIX_CSR_HPP
+    // Finalize library
+    EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(MatrixCsr, ReduceSmall) {
+    cuBool_Index m = 100, n = 200;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_NO);
+}
+
+TEST(MatrixCsr, ReduceMedium) {
+    cuBool_Index m = 400, n = 700;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_NO);
+}
+
+TEST(MatrixCsr, ReduceLarge) {
+    cuBool_Index m = 2000, n = 4000;
+    float step = 0.01f;
+    testRun(m, n, step, CUBOOL_HINT_NO);
+}
+
+CUBOOL_GTEST_MAIN

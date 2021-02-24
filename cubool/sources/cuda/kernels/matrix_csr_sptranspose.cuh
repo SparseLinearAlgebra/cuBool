@@ -27,8 +27,10 @@
 #ifndef CUBOOL_MATRIX_CSR_SPTRANSPOSE_HPP
 #define CUBOOL_MATRIX_CSR_SPTRANSPOSE_HPP
 
-#include <nsparse/matrix.h>
+#include <cuda/kernels/bin_search.cuh>
+#include <cuda/kernels/slow_sort.cuh>
 #include <thrust/device_vector.h>
+#include <nsparse/matrix.h>
 
 namespace cubool {
     namespace kernels {
@@ -39,43 +41,6 @@ namespace cubool {
             template<typename T>
             using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
             using MatrixType = nsparse::matrix<bool, IndexType, AllocType>;
-
-            static __device__ IndexType findNearestRowIdx(IndexType value, IndexType range, thrust::device_ptr<const IndexType> rowIndex) {
-                IndexType left = 0;
-                IndexType right = range - 1;
-
-                while (left <= right) {
-                    IndexType i = (left + right) / 2;
-
-                    if (value < rowIndex[i]) {
-                        // value is not in =>row i range
-                        right = i - 1;
-                    } else if (value < rowIndex[i + 1]) {
-                        // value is in =>row i range and value actually in row i
-                        return i;
-                    } else {
-                        // value is in =>row i+1 range
-                        left = i + 1;
-                    }
-                }
-
-                // never goes here since kron row index always has value index
-                return range;
-            }
-
-            static __device__ void sort(thrust::device_ptr<IndexType> buffer, IndexType size) {
-                if (size > 1) {
-                    for (int i = 1; i < size; i++) {
-                        for (int j = 0; j < size - i; i++) {
-                            if (buffer[j] > buffer[j + 1]) {
-                                IndexType tmp = buffer[j];
-                                buffer[j] = buffer[j + 1];
-                                buffer[j + 1] = tmp;
-                            }
-                        }
-                    }
-                }
-            }
 
             /**
              * evaluates r = a^T, were r equals transposed matrix a
@@ -144,7 +109,7 @@ namespace cubool {
                     IndexType rowLength = rRowIndex[rowId + 1] - rowBegin;
 
                     // Sort column indices of the row rowId
-                    sort(&rColIndex[rowBegin], rowLength);
+                    slowSort(&rColIndex[rowBegin], rowLength);
                 });
 
                 assert(colIndex.size() == nvals);
