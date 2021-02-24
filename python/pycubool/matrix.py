@@ -131,11 +131,11 @@ class Matrix:
         :return: Pair with `rows` and `cols` lists
         """
 
-        values_count = self.nvals
+        count = self.nvals
 
-        rows = (ctypes.c_uint * values_count)()
-        cols = (ctypes.c_uint * values_count)()
-        nvals = ctypes.c_uint(values_count)
+        rows = (ctypes.c_uint * count)()
+        cols = (ctypes.c_uint * count)()
+        nvals = ctypes.c_uint(count)
 
         status = wrapper.loaded_dll.cuBool_Matrix_ExtractPairs(
             self.hnd, rows, cols, ctypes.byref(nvals))
@@ -143,6 +143,27 @@ class Matrix:
         bridge.check(status)
 
         return rows, cols
+
+    def extract_matrix(self, i, j, shape, out=None):
+        """
+        Extract a sub-matrix.
+
+        :param i: First row index to extract
+        :param j: First column index to extract
+        :param shape: Shape of the sub-matrix
+        :param out: Optional matrix where to store result
+        :return: Sub-matrix
+        """
+
+        if out is None:
+            out = Matrix.empty(shape)
+
+        status = wrapper.loaded_dll.cuBool_Matrix_ExtractSubMatrix(
+            out.hnd, self.hnd, i, j, shape[0], shape[1], bridge.get_extract_hints()
+        )
+
+        bridge.check(status)
+        return out
 
     def mxm(self, other, out=None, accumulate=True):
         """

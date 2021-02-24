@@ -27,7 +27,7 @@ as well as python high-level wrapper with automated resources management.
 - [X] CSR addition
 - [X] CSR kronecker
 - [X] CSR transpose
-- [ ] CSR submatrix
+- [X] CSR submatrix
 - [X] CSR matrix reduce
 - [ ] CSR slicing
 - [ ] IO matrix loading from mtx file
@@ -334,7 +334,7 @@ cuBool
 ├── docs - documents, text files and various helpful stuff
 ├── scripts - short utility programs 
 ├── cubool - library core source code
-│   ├── include - library C API 
+│   ├── include - library public C API 
 │   ├── sources - source-code for implementation
 │   │   ├── backend - common interfaces
 │   │   ├── core - library core and state management

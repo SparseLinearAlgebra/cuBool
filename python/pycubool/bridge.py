@@ -2,6 +2,8 @@ import ctypes
 
 __all__ = [
     "load_and_configure",
+    "get_init_hints",
+    "get_extract_hints",
     "get_build_hints",
     "get_mxm_hints",
     "check"
@@ -19,6 +21,10 @@ def get_init_hints(is_gpu_mem_managed):
     return _hint_relaxed_release | (_hint_gpu_mem_managed if is_gpu_mem_managed else _hint_no)
 
 
+def get_extract_hints():
+    return _hint_no
+
+
 def get_mxm_hints(is_accumulated):
     return _hint_accumulate if is_accumulated else _hint_no
 
@@ -31,6 +37,7 @@ def load_and_configure(cubool_lib_path: str):
     lib = ctypes.cdll.LoadLibrary(cubool_lib_path)
 
     status_t = ctypes.c_uint
+    index_t = ctypes.c_uint
     hints_t = ctypes.c_uint
     matrix_p = ctypes.c_void_p
     p_to_matrix_p = ctypes.POINTER(matrix_p)
@@ -70,6 +77,17 @@ def load_and_configure(cubool_lib_path: str):
         ctypes.POINTER(ctypes.c_uint),
         ctypes.POINTER(ctypes.c_uint),
         ctypes.POINTER(ctypes.c_uint)
+    ]
+
+    lib.cuBool_Matrix_ExtractSubMatrix.restype = status_t
+    lib.cuBool_Matrix_ExtractSubMatrix.argtypes = [
+        matrix_p,
+        matrix_p,
+        index_t,
+        index_t,
+        index_t,
+        index_t,
+        hints_t
     ]
 
     lib.cuBool_Matrix_Duplicate.restype = status_t

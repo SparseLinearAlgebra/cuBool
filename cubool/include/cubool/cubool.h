@@ -241,7 +241,6 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractPairs(
 
 /**
  * Extracts sub-matrix of the input matrix and stores it into result matrix.
- * Formally: result = matrix[i:i + nrows, j:j+ncols].
  *
  * @note The result sub-matrix have nrows x ncols dimension,
  *       and includes [i;i+nrow) x [j;j+ncols) cells of the input matrix.
