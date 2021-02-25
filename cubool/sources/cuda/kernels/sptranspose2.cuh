@@ -24,8 +24,8 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_SPREDUCE_CUH
-#define CUBOOL_MATRIX_CSR_SPREDUCE_CUH
+#ifndef CUBOOL_SPTRANSPOSE2_CUH
+#define CUBOOL_SPTRANSPOSE2_CUH
 
 #include <cuda/kernels/bin_search.cuh>
 #include <thrust/device_vector.h>
@@ -34,62 +34,75 @@
 namespace cubool {
     namespace kernels {
 
+        /**
+         * Transpose based on
+         *
+         * @tparam IndexType
+         * @tparam AllocType
+         */
         template <typename IndexType, typename AllocType>
-        class SpReduceFunctor {
+        class SpTranspose2Functor {
         public:
             template<typename T>
             using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
             using MatrixType = nsparse::matrix<bool, IndexType, AllocType>;
 
             /**
-             * evaluates r = sum(col for each col in a).
+             * evaluates r = a^T, were r equals transposed matrix a.
              *
              * @param a Csr matrix
-             * @param b Csr matrix
              *
-             * @return reduce(a)
+             * @return a^T
              */
             MatrixType operator()(const MatrixType& a) {
                 auto nrows = a.m_rows;
                 auto ncols = a.m_cols;
                 auto nvals = a.m_vals;
+                auto aRowIndex = a.m_row_index;
+                auto aColIndex = a.m_col_index;
 
-                ContainerType<IndexType> rowIndex(nrows + 1);
-                ContainerType<IndexType> tmpRowIndex(nrows + 1);
+                // Create row index and column index to store res matrix
+                // Note: transposed matrix has exact the same nnz
+                ContainerType<IndexType> rowIndices(nvals);
+                ContainerType<IndexType> colIndices(nvals);
+                ContainerType<IndexType> colOrder(nvals);
 
-                // Assign for each row 0 (empty)
-                thrust::fill(tmpRowIndex.begin(), tmpRowIndex.end(), (IndexType) 0);
+                // Copy col indices of a as row indices or aT
+                thrust::copy(aColIndex.begin(), aColIndex.end(), rowIndices.begin());
 
-                // For each value find row and set this row in 1
+                // Compute column indices of the aT for each value of a matrix
                 thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(nvals),
-                    [aRowIndex = a.m_row_index.data(),
-                     tmpRowIndex = tmpRowIndex.data(),
-                     nrows]
-                    __device__ (IndexType valuedIdx) {
-                        auto rowId = findNearestRowIdx(valuedIdx, nrows, aRowIndex);
-                        atomicOr((tmpRowIndex + rowId).get(), (IndexType) 1);
-                    }
-                );
+                    [aRowIndex = aRowIndex.data(), nrows,
+                     colIndices = colIndices.data()]
+                    __device__ (IndexType valueId){
+                        IndexType rowId = findNearestRowIdx<IndexType>(valueId, (IndexType) nrows, aRowIndex);
+                        colIndices[valueId] = rowId;
+                });
 
-                // Use prefix sum to evaluate row index offsets
-                thrust::exclusive_scan(tmpRowIndex.begin(), tmpRowIndex.end(), rowIndex.begin(), (IndexType) 0, thrust::plus<IndexType>());
+                // Sort row-col indices
+                thrust::sort_by_key(rowIndices.begin(), rowIndices.end(), colIndices.begin());
 
-                // Total number of nnz in the result
-                size_t resultNvals = rowIndex.back();
+                // Compute row offsets, based on row indices
+                ContainerType<IndexType> rowOffsetsTmp(ncols + 1);
+                ContainerType<IndexType> rowOffsets(ncols + 1);
 
-                // Fill the col index with 0 for each value, since the result is M x 1 dim vector
-                ContainerType<IndexType> colIndex(resultNvals);
-                thrust::fill(colIndex.begin(), colIndex.end(), (IndexType) 0);
+                thrust::fill(rowOffsets.begin(), rowOffsets.end(), (IndexType) 0);
+                thrust::for_each(rowIndices.begin(), rowIndices.end(), [rowOffsetsTmp = rowOffsetsTmp.data()]__device__(IndexType rowId) {
+                    atomicAdd((rowOffsetsTmp + rowId).get(), 1);
+                });
 
-                assert(colIndex.size() == resultNvals);
-                assert(rowIndex.size() == nrows + 1);
-                assert(rowIndex.back() == resultNvals);
+                // Compute actual offsets
+                thrust::exclusive_scan(rowOffsetsTmp.begin(), rowOffsetsTmp.end(), rowOffsets.begin(), 0, thrust::plus<IndexType>());
 
-                return MatrixType(std::move(colIndex), std::move(rowIndex), nrows, ncols, resultNvals);
+                assert(colIndices.size() == nvals);
+                assert(rowOffsets.size() == ncols + 1);
+                assert(rowOffsets.back() == colIndices.size());
+
+                return MatrixType(std::move(colIndices), std::move(rowOffsets), ncols, nrows, nvals);
             }
         };
 
     }
 }
 
-#endif //CUBOOL_MATRIX_CSR_SPREDUCE_CUH
+#endif //CUBOOL_SPTRANSPOSE2_CUH

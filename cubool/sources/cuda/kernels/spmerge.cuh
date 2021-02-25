@@ -24,8 +24,8 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_SPMERGE_CUH
-#define CUBOOL_MATRIX_CSR_SPMERGE_CUH
+#ifndef CUBOOL_SPMERGE_CUH
+#define CUBOOL_SPMERGE_CUH
 
 #include <core/config.hpp>
 #include <nsparse/matrix.h>
@@ -86,4 +86,4 @@ namespace cubool {
 
 
 
-#endif //CUBOOL_MATRIX_CSR_SPMERGE_CUH
+#endif //CUBOOL_SPMERGE_CUH

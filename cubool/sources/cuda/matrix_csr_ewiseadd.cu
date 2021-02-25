@@ -25,7 +25,7 @@
 /**********************************************************************************/
 
 #include <cuda/matrix_csr.hpp>
-#include <cuda/kernels/matrix_csr_spmerge.cuh>
+#include <cuda/kernels/spmerge.cuh>
 
 namespace cubool {
 

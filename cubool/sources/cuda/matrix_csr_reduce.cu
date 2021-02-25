@@ -25,7 +25,7 @@
 /**********************************************************************************/
 
 #include <cuda/matrix_csr.hpp>
-#include <cuda/kernels/matrix_csr_spreduce.cuh>
+#include <cuda/kernels/spreduce.cuh>
 
 namespace cubool {
 

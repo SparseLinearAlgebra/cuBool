@@ -26,7 +26,7 @@
 
 #include <cuda/matrix_dense.hpp>
 #include <cuda/instance.hpp>
-#include <cuda/kernels/matrix_dense_multiply_add.cuh>
+#include <cuda/kernels/dense_multiply_add.cuh>
 
 namespace cubool {
 

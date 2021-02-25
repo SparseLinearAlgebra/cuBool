@@ -73,11 +73,12 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/matrix_csr_extract_sub_matrix.cu
         sources/cuda/kernels/slow_sort.cuh
         sources/cuda/kernels/bin_search.cuh
-        sources/cuda/kernels/matrix_csr_sptranspose.cuh
-        sources/cuda/kernels/matrix_csr_spkron.cuh
-        sources/cuda/kernels/matrix_csr_spmerge.cuh
-        sources/cuda/kernels/matrix_csr_spreduce.cuh
-        sources/cuda/kernels/matrix_csr_spsubmatrix.cuh
+        sources/cuda/kernels/sptranspose.cuh
+        sources/cuda/kernels/sptranspose2.cuh
+        sources/cuda/kernels/spkron.cuh
+        sources/cuda/kernels/spmerge.cuh
+        sources/cuda/kernels/spreduce.cuh
+        sources/cuda/kernels/spsubmatrix.cuh
             )
 endif()
 

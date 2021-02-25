@@ -25,7 +25,7 @@
 /**********************************************************************************/
 
 #include <cuda/matrix_csr.hpp>
-#include <cuda/kernels/matrix_csr_spsubmatrix.cuh>
+#include <cuda/kernels/spsubmatrix.cuh>
 
 namespace cubool {
 

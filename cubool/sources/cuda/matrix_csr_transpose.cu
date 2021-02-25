@@ -25,7 +25,8 @@
 /**********************************************************************************/
 
 #include <cuda/matrix_csr.hpp>
-#include <cuda/kernels/matrix_csr_sptranspose.cuh>
+#include <cuda/kernels/sptranspose.cuh>
+#include <cuda/kernels/sptranspose2.cuh>
 
 namespace cubool {
 
@@ -40,8 +41,8 @@ namespace cubool {
         assert(this->getNrows() == N);
         assert(this->getNcols() == M);
 
-        kernels::SpTransposeFunctor<index, DeviceAlloc<index>> spTransposeFunctor;
-        auto result = spTransposeFunctor(other->mMatrixImpl);
+        kernels::SpTranspose2Functor<index, DeviceAlloc<index>> spTranspose2Functor;
+        auto result = spTranspose2Functor(other->mMatrixImpl);
 
         // Assign the actual impl result to this storage
         this->mMatrixImpl = std::move(result);

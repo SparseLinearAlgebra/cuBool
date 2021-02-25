@@ -24,8 +24,8 @@
 /*                                                                                */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_CSR_SPKRON_CUH
-#define CUBOOL_MATRIX_CSR_SPKRON_CUH
+#ifndef CUBOOL_SPKRON_CUH
+#define CUBOOL_SPKRON_CUH
 
 #include <cuda/kernels/bin_search.cuh>
 #include <thrust/device_vector.h>
@@ -129,4 +129,4 @@ namespace cubool {
     }
 }
 
-#endif //CUBOOL_MATRIX_CSR_SPKRON_CUH
+#endif //CUBOOL_SPKRON_CUH
