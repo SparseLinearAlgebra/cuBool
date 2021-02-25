@@ -36,7 +36,8 @@ class Matrix:
         ncols = shape[1]
 
         status = wrapper.loaded_dll.cuBool_Matrix_New(
-            ctypes.byref(hnd), ctypes.c_uint(nrows), ctypes.c_uint(ncols))
+            ctypes.byref(hnd), ctypes.c_uint(nrows), ctypes.c_uint(ncols)
+        )
 
         bridge.check(status)
 
@@ -58,16 +59,19 @@ class Matrix:
         out.build(rows, cols, is_sorted=is_sorted)
         return out
 
-    def build(self, rows, cols, nvals, is_sorted=False):
-        if len(rows) != len(cols) or len(rows) != nvals:
+    def build(self, rows, cols, is_sorted=False):
+        if len(rows) != len(cols):
             raise Exception("Size of rows and cols arrays must match the nval values")
 
+        nvals = len(rows)
         t_rows = (ctypes.c_uint * len(rows))(*rows)
         t_cols = (ctypes.c_uint * len(cols))(*cols)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Build(
-            self.hnd, t_rows, t_cols, ctypes.c_uint(nvals),
-            ctypes.c_uint(bridge.get_build_hints(is_sorted)))
+            self.hnd, t_rows, t_cols,
+            ctypes.c_uint(nvals),
+            ctypes.c_uint(bridge.get_build_hints(is_sorted))
+        )
 
         bridge.check(status)
 
@@ -75,7 +79,8 @@ class Matrix:
         hnd = ctypes.c_void_p(0)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Duplicate(
-            self.hnd, ctypes.byref(hnd))
+            self.hnd, ctypes.byref(hnd)
+        )
 
         bridge.check(status)
         return Matrix(hnd)
@@ -85,7 +90,8 @@ class Matrix:
         out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Transpose(
-            out.hnd, self.hnd)
+            out.hnd, self.hnd
+        )
 
         bridge.check(status)
         return out
@@ -95,7 +101,8 @@ class Matrix:
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Nrows(
-            self.hnd, ctypes.byref(result))
+            self.hnd, ctypes.byref(result)
+        )
 
         bridge.check(status)
         return int(result.value)
@@ -105,7 +112,8 @@ class Matrix:
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Ncols(
-            self.hnd, ctypes.byref(result))
+            self.hnd, ctypes.byref(result)
+        )
 
         bridge.check(status)
         return int(result.value)
@@ -115,7 +123,8 @@ class Matrix:
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Nvals(
-            self.hnd, ctypes.byref(result))
+            self.hnd, ctypes.byref(result)
+        )
 
         bridge.check(status)
         return int(result.value)
@@ -138,11 +147,59 @@ class Matrix:
         nvals = ctypes.c_uint(count)
 
         status = wrapper.loaded_dll.cuBool_Matrix_ExtractPairs(
-            self.hnd, rows, cols, ctypes.byref(nvals))
+            self.hnd, rows, cols, ctypes.byref(nvals)
+        )
 
         bridge.check(status)
 
         return rows, cols
+
+    def to_string(self, width=3):
+        """
+        Return a string representation of the matrix.
+
+        >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True)
+        >>> print(matrix)
+        `
+                0   1   2   3
+          0 |   1   .   .   . |   0
+          1 |   .   1   .   . |   1
+          2 |   .   .   1   . |   2
+          3 |   1   .   .   . |   3
+                0   1   2   3
+        `
+
+        :param width: Width of the field in chars where to put numbers of rows and columns
+        :return: Matrix string representation
+        """
+
+        nrows = self.nrows
+        ncols = self.ncols
+        nvals = self.nvals
+        rows, cols = self.to_lists()
+
+        cell_empty = "."
+        cell_filled = "1"
+        cell_sep = " "
+        format_str = "{:>%s}" % width
+
+        header = format_str.format("") + "  " + cell_sep + "".join(format_str.format(j) + cell_sep for j in range(ncols))
+        result = header + "\n"
+
+        v = 0
+        for i in range(nrows):
+            line = format_str.format(i) + " |" + cell_sep
+            for j in range(ncols):
+                if v < nvals and rows[v] == i and cols[v] == j:
+                    line += format_str.format(cell_filled) + cell_sep
+                    v += 1
+                else:
+                    line += format_str.format(cell_empty) + cell_sep
+            line += "| " + format_str.format(i) + "\n"
+            result += line
+
+        result += header
+        return result
 
     def extract_matrix(self, i, j, shape, out=None):
         """
@@ -159,7 +216,12 @@ class Matrix:
             out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_ExtractSubMatrix(
-            out.hnd, self.hnd, i, j, shape[0], shape[1], bridge.get_extract_hints()
+            out.hnd, self.hnd,
+            ctypes.c_uint(i),
+            ctypes.c_uint(j),
+            ctypes.c_uint(shape[0]),
+            ctypes.c_uint(shape[1]),
+            bridge.get_extract_hints()
         )
 
         bridge.check(status)
@@ -185,7 +247,8 @@ class Matrix:
 
         status = wrapper.loaded_dll.cuBool_MxM(
             out.hnd, self.hnd, other.hnd,
-            ctypes.c_uint(bridge.get_mxm_hints(accumulate)))
+            ctypes.c_uint(bridge.get_mxm_hints(accumulate))
+        )
 
         bridge.check(status)
         return out
@@ -203,7 +266,8 @@ class Matrix:
         out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Kronecker(
-            out.hnd, self.hnd, other.hnd)
+            out.hnd, self.hnd, other.hnd
+        )
 
         bridge.check(status)
         return out
@@ -221,7 +285,8 @@ class Matrix:
         out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_EWiseAdd(
-            out.hnd, self.hnd, other.hnd)
+            out.hnd, self.hnd, other.hnd
+        )
 
         bridge.check(status)
         return out
@@ -238,7 +303,52 @@ class Matrix:
         out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Reduce(
-            out.hnd, self.hnd)
+            out.hnd, self.hnd
+        )
 
         bridge.check(status)
         return out
+
+    def __str__(self):
+        return self.to_string()
+
+    def __getitem__(self, item):
+        """
+        Extract sub-matrix from `self`.
+        Supported only tuple `item` with two slices. Step in slices is not supported.
+
+        :param item: Tuple of two slices for rows and cols regions
+        :return: Extracted sub-matrix
+        """
+
+        if isinstance(item, tuple):
+            first = item[0]
+            second = item[1]
+
+            if isinstance(first, slice) and isinstance(second, slice):
+                i = first.start
+                iend = first.stop
+
+                j = second.start
+                jend = second.stop
+
+                assert first.step is None
+                assert second.step is None
+
+                if i is None:
+                    i = 0
+                if j is None:
+                    j = 0
+
+                assert 0 <= i < self.nrows
+                assert 0 <= j < self.ncols
+
+                if iend is None:
+                    iend = self.nrows
+                if jend is None:
+                    jend = self.ncols
+
+                shape = (iend - i, jend - j)
+                return self.extract_matrix(i, j, shape)
+
+        raise Exception("Invalid matrix slicing")
