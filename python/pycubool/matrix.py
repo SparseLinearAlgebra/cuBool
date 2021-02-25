@@ -160,14 +160,14 @@ class Matrix:
 
         >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True)
         >>> print(matrix)
-        `
+        '
                 0   1   2   3
           0 |   1   .   .   . |   0
           1 |   .   1   .   . |   1
           2 |   .   .   1   . |   2
           3 |   1   .   .   . |   3
                 0   1   2   3
-        `
+        '
 
         :param width: Width of the field in chars where to put numbers of rows and columns
         :return: Matrix string representation
@@ -312,10 +312,34 @@ class Matrix:
     def __str__(self):
         return self.to_string()
 
+    def __iter__(self):
+        """
+        Iterate over (i, j) tuples of the matrix values.
+
+        >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True)
+        >>> print(matrix)
+        '[(0, 0), (1, 1), (2, 2), (3, 0)]'
+
+        :return: Matrix tuples iterator
+        """
+
+        rows, cols = self.to_lists()
+        return zip(rows, cols)
+
     def __getitem__(self, item):
         """
         Extract sub-matrix from `self`.
         Supported only tuple `item` with two slices. Step in slices is not supported.
+
+        >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True)
+        >>> print(matrix[0:3, 1:])
+        '
+                0   1   2
+          0 |   .   .   . |   0
+          1 |   1   .   . |   1
+          2 |   .   1   . |   2
+                0   1   2
+        '
 
         :param item: Tuple of two slices for rows and cols regions
         :return: Extracted sub-matrix

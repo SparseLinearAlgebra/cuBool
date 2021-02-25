@@ -66,7 +66,7 @@ cols = [0, 1, 2, 0, 1, 2, 3]
 
 matrix = pycubool.Matrix.from_lists((4, 4), rows, cols, is_sorted=True)
 transposed = matrix.transpose()
-submatrix = matrix[1:, 1:]
+submatrix = matrix[0:3, 1:]
 rows, cols = transposed.to_lists()
 
 print([(rows[i], cols[i]) for i in range(transposed.nvals)])
@@ -74,4 +74,6 @@ print([(rows[i], cols[i]) for i in range(transposed.nvals)])
 print(matrix)
 print(transposed)
 print(submatrix)
+
+print(list(iter(matrix)))
 
