@@ -32,7 +32,7 @@ target_link_libraries(test_matrix_kronecker PUBLIC testing)
 add_executable(test_matrix_ewiseadd test_matrix_ewiseadd.cpp)
 target_link_libraries(test_matrix_ewiseadd PUBLIC testing)
 
-if (CUBOOL_WITH_NAIVE)
+if (CUBOOL_WITH_TESTS_NAIVE)
     add_executable(test_matrix_dense_vs_naive test_matrix_dense_vs_naive.cpp)
     target_link_libraries(test_matrix_dense_vs_naive PUBLIC testing)
     target_link_libraries(test_matrix_dense_vs_naive PUBLIC naive_gpu)

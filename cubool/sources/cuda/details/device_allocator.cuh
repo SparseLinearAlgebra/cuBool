@@ -61,7 +61,7 @@ namespace cubool {
             template <typename U>
             __host__ explicit DeviceAllocator(const DeviceAllocator<U> &other) : mInstanceRef(other.mInstance) { }
 
-            __host__ ~DeviceAllocator() = default;
+            ~DeviceAllocator() = default;
 
             __host__ bool operator!=(const DeviceAllocator<T> &other) const {
                 return &mInstanceRef != &other.mInstanceRef;
