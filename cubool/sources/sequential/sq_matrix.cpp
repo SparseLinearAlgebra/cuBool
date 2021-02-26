@@ -173,8 +173,8 @@ namespace cubool {
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        auto M = other->getNrows();
-        auto N = 1;
+        index M = other->getNrows();
+        index N = 1;
 
         assert(M == this->getNrows());
         assert(N == this->getNcols());

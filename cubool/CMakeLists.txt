@@ -120,6 +120,10 @@ target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_SUB=${CUBOOL_VERSION_SU
 
 target_compile_features(cubool PUBLIC cxx_std_14)
 
+target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CXX>: -Wall -Werror>)
+target_compile_options(cubool PRIVATE $<$<AND:$<BOOL:CUBOOL_RELEASE>,$<COMPILE_LANGUAGE:CXX>>: -O2>)
+target_compile_options(cubool PRIVATE $<$<AND:$<BOOL:CUBOOL_DEBUG>,$<COMPILE_LANGUAGE:CXX>>: -O0>)
+
 set_target_properties(cubool PROPERTIES CXX_STANDARD 17)
 set_target_properties(cubool PROPERTIES CXX_STANDARD_REQUIRED ON)
 
@@ -128,6 +132,20 @@ if (CUBOOL_WITH_CUDA)
     set_target_properties(cubool PROPERTIES CUDA_STANDARD 14)
     set_target_properties(cubool PROPERTIES CUDA_STANDARD_REQUIRED ON)
     set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+    # Settings: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+    target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+            -arch=sm_50
+             -gencode=arch=compute_50,code=sm_50
+             -gencode=arch=compute_52,code=sm_52
+             -gencode=arch=compute_60,code=sm_60
+             -gencode=arch=compute_61,code=sm_61
+             -gencode=arch=compute_70,code=sm_70
+             -gencode=arch=compute_75,code=sm_75
+             -gencode=arch=compute_75,code=compute_75>)
+
+    target_compile_options(cubool PRIVATE $<$<AND:$<BOOL:CUBOOL_RELEASE>,$<COMPILE_LANGUAGE:CUDA>>: -Xptxas -O2>)
+    target_compile_options(cubool PRIVATE $<$<AND:$<BOOL:CUBOOL_DEBUG>,$<COMPILE_LANGUAGE:CUDA>>: -Xptxas -O0>)
 
     target_compile_definitions(cubool PRIVATE CUBOOL_WITH_CUDA)
     target_link_libraries(cubool PRIVATE nsparse_um)
