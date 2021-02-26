@@ -70,18 +70,18 @@ void testRun(cuBool_Index m, cuBool_Index t, cuBool_Index n, cuBool_Hints setup)
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(MatrixCsr, MultiplyAddSmall) {
+TEST(cuBool_Matrix, MultiplyAddSmall) {
     cuBool_Index m = 60, t = 100, n = 80;
     testRun(m, t, n, CUBOOL_HINT_NO);
 }
 
-TEST(MatrixCsr, MultiplyAddMedium) {
+TEST(cuBool_Matrix, MultiplyAddMedium) {
     cuBool_Index m = 500, t = 1000, n = 800;
     testRun(m, t, n, CUBOOL_HINT_NO);
 
 }
 
-TEST(MatrixCsr, MultiplyAddLarge) {
+TEST(cuBool_Matrix, MultiplyAddLarge) {
     cuBool_Index m = 1000, t = 2000, n = 500;
     testRun(m, t, n, CUBOOL_HINT_NO);
 }

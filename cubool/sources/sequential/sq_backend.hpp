@@ -22,16 +22,28 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#ifndef CUBOOL_SQ_BACKEND_HPP
+#define CUBOOL_SQ_BACKEND_HPP
 
-cuBool_Status cuBool_Matrix_New(
-        cuBool_Matrix *matrix,
-        cuBool_Index nrows,
-        cuBool_Index ncols
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        *matrix = (cuBool_Matrix_t *) cubool::Library::createMatrix(nrows, ncols);
-    CUBOOL_END_BODY
+#include <backend/backend_base.hpp>
+
+namespace cubool {
+
+    /**
+     * Sequential backend for Cpu side computations (fallback).
+     */
+    class SqBackend final: public BackendBase {
+    public:
+        ~SqBackend() override = default;
+
+        void initialize(hints initHints) override;
+        void finalize() override;
+        bool isInitialized() const override;
+
+        MatrixBase *createMatrix(size_t nrows, size_t ncols) override;
+        void releaseMatrix(MatrixBase *matrixBase) override;
+    };
+
 }
+
+#endif //CUBOOL_SQ_BACKEND_HPP

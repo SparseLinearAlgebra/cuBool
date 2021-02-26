@@ -35,6 +35,6 @@ cuBool_Status cuBool_Matrix_Duplicate(
         auto m = (cubool::Matrix *) matrix;
         auto d = cubool::Library::createMatrix(m->getNrows(), m->getNcols());
         d->clone(*m);
-        *duplicated = (cuBoolMatrix_t *) d;
+        *duplicated = (cuBool_Matrix_t *) d;
     CUBOOL_END_BODY
 }

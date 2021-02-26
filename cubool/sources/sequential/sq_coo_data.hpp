@@ -22,16 +22,23 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#ifndef CUBOOL_SQ_COO_DATA_HPP
+#define CUBOOL_SQ_COO_DATA_HPP
 
-cuBool_Status cuBool_Matrix_New(
-        cuBool_Matrix *matrix,
-        cuBool_Index nrows,
-        cuBool_Index ncols
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        *matrix = (cuBool_Matrix_t *) cubool::Library::createMatrix(nrows, ncols);
-    CUBOOL_END_BODY
+#include <core/config.hpp>
+#include <vector>
+
+namespace cubool {
+
+    class CooData {
+    public:
+        std::vector<index> mRowIndices;
+        std::vector<index> mColIndices;
+        index mNrows = 0;
+        index mNcols = 0;
+        index mNvals = 0;
+    };
+
 }
+
+#endif //CUBOOL_SQ_COO_DATA_HPP

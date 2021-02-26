@@ -22,16 +22,37 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#include <sequential/sq_transpose.hpp>
 
-cuBool_Status cuBool_Matrix_New(
-        cuBool_Matrix *matrix,
-        cuBool_Index nrows,
-        cuBool_Index ncols
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        *matrix = (cuBool_Matrix_t *) cubool::Library::createMatrix(nrows, ncols);
-    CUBOOL_END_BODY
+namespace cubool {
+
+    void sq_transpose(const CooData& a, CooData& at) {
+        std::vector<index> offsets(a.mNcols + 1, 0);
+
+        for (size_t k = 0; k < a.mNvals; k++) {
+            offsets[a.mColIndices[k]]++;
+        }
+
+        index sum = 0;
+        for (unsigned int& offset: offsets) {
+            index next = offset + sum;
+            offset = sum;
+            sum = next;
+        }
+
+        at.mRowIndices.resize(a.mNvals);
+        at.mColIndices.resize(a.mNvals);
+        at.mNvals = a.mNvals;
+
+        for (size_t k = 0; k < a.mNvals; k++) {
+            auto i = a.mRowIndices[k];
+            auto j = a.mColIndices[k];
+
+            auto offset = offsets[j]++;
+
+            at.mRowIndices[offset] = j;
+            at.mColIndices[offset] = i;
+        }
+    }
+
 }

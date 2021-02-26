@@ -22,16 +22,29 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#include <sequential/sq_backend.hpp>
+#include <sequential/sq_matrix.hpp>
 
-cuBool_Status cuBool_Matrix_New(
-        cuBool_Matrix *matrix,
-        cuBool_Index nrows,
-        cuBool_Index ncols
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        *matrix = (cuBool_Matrix_t *) cubool::Library::createMatrix(nrows, ncols);
-    CUBOOL_END_BODY
+namespace cubool {
+
+    void SqBackend::initialize(hints initHints) {
+        // No special actions
+    }
+
+    void SqBackend::finalize() {
+        // No special actions
+    }
+
+    bool SqBackend::isInitialized() const {
+        return true;
+    }
+
+    MatrixBase *SqBackend::createMatrix(size_t nrows, size_t ncols) {
+        return new SqMatrix(nrows, ncols);
+    }
+
+    void SqBackend::releaseMatrix(MatrixBase *matrixBase) {
+        delete matrixBase;
+    }
+
 }

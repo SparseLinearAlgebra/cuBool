@@ -26,7 +26,7 @@
 #include <testing/testing.hpp>
 
 // Query library version info
-TEST(CuBoolVersion, Query) {
+TEST(cuBoolVersion, Query) {
     int major;
     int minor;
     int version;
@@ -41,7 +41,7 @@ TEST(CuBoolVersion, Query) {
 }
 
 // Test cubool library instance creation and destruction
-TEST(CuBoolInstance, Setup) {
+TEST(cuBoolInstance, Setup) {
     cuBool_Status error;
 
     error = cuBool_Initialize(CUBOOL_HINT_NO);
@@ -76,7 +76,7 @@ cuBool_Status TransitiveClosure(cuBool_Matrix A, cuBool_Matrix* T) {
     return CUBOOL_STATUS_SUCCESS;
 }
 
-TEST(CuBoolInstance, Example) {
+TEST(cuBoolInstance, Example) {
     cuBool_Matrix A = nullptr;
     cuBool_Matrix T = nullptr;
 

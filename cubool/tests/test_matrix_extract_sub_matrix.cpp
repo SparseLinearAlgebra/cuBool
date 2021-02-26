@@ -66,19 +66,19 @@ void testRun(cuBool_Index m, cuBool_Index n, float step, cuBool_Hints setup) {
     EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(MatrixCsr, SubMatrixExtractSmall) {
+TEST(cuBool_Matrix, SubMatrixExtractSmall) {
     cuBool_Index m = 100, n = 200;
     float step = 0.05f;
     testRun(m, n, step, CUBOOL_HINT_NO);
 }
 
-TEST(MatrixCsr, SubMatrixExtractMedium) {
+TEST(cuBool_Matrix, SubMatrixExtractMedium) {
     cuBool_Index m = 400, n = 700;
     float step = 0.05f;
     testRun(m, n, step, CUBOOL_HINT_NO);
 }
 
-TEST(MatrixCsr, SubMatrixExtractLarge) {
+TEST(cuBool_Matrix, SubMatrixExtractLarge) {
     cuBool_Index m = 2000, n = 4000;
     float step = 0.01f;
     testRun(m, n, step, CUBOOL_HINT_NO);

@@ -24,12 +24,12 @@
 
 #include <testing/testing.hpp>
 
-TEST(MatrixCsr, CreateDestroy) {
+TEST(cuBool_Matrix, CreateDestroy) {
     cuBool_Matrix matrix = nullptr;
 
     ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
 
-    ASSERT_EQ(cuBool_Matrix_New(&matrix, 0, 0), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_New(&matrix, 10, 10), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
 
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
@@ -61,20 +61,36 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(MatrixCsr, FillingSmall) {
+TEST(cuBool_Matrix, FillingSmall) {
     cuBool_Index m = 60, n = 100;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(MatrixCsr, FillingMedium) {
+TEST(cuBool_Matrix, FillingMedium) {
     cuBool_Index m = 500, n = 1000;
     testRun(m, n, CUBOOL_HINT_NO);
 
 }
 
-TEST(MatrixCsr, FillingLarge) {
+TEST(cuBool_Matrix, FillingLarge) {
     cuBool_Index m = 1000, n = 2000;
     testRun(m, n, CUBOOL_HINT_NO);
+}
+
+TEST(cuBool_Matrix, FillingSmallFallback) {
+    cuBool_Index m = 60, n = 100;
+    testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Matrix, FillingMediumFallback) {
+    cuBool_Index m = 500, n = 1000;
+    testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
+
+}
+
+TEST(cuBool_Matrix, FillingLargeFallback) {
+    cuBool_Index m = 1000, n = 2000;
+    testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
 CUBOOL_GTEST_MAIN

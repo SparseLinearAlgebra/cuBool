@@ -33,7 +33,8 @@
 #include <cuda/cuda_backend.hpp>
 #endif
 
-#ifdef CUBOOL_WITH_CPU
+#ifdef CUBOOL_WITH_SEQUENTIAL
+#include <sequential/sq_backend.hpp>
 #endif
 
 namespace cubool {
@@ -61,7 +62,17 @@ namespace cubool {
 #endif
         }
 
-#ifdef CUBOOL_WITH_CPU
+#ifdef CUBOOL_WITH_SEQUENTIAL
+        if (mBackend == nullptr) {
+            mBackend = new SqBackend();
+            mBackend->initialize(initHints);
+
+            // Failed somehow setup
+            if (!mBackend->isInitialized()) {
+                delete mBackend;
+                mBackend = nullptr;
+            }
+        }
 #endif
 
         CHECK_RAISE_ERROR(mBackend != nullptr, BackendError, "Failed to select backend");

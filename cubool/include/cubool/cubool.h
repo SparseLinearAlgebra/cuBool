@@ -93,7 +93,7 @@ typedef uint32_t cuBool_Hints;
 typedef uint32_t cuBool_Index;
 
 /** Cubool sparse boolean matrix handle */
-typedef struct cuBoolMatrix_t* cuBool_Matrix;
+typedef struct cuBool_Matrix_t* cuBool_Matrix;
 
 /** Cuda device capabilities */
 typedef struct CuBool_DeviceCaps {

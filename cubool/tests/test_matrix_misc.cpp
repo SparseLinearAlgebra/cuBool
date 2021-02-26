@@ -24,7 +24,7 @@
 
 #include <testing/testing.hpp>
 
-TEST(MatrixCsr, Duplicate) {
+TEST(cuBool_Matrix, Duplicate) {
     cuBool_Matrix matrix = nullptr, duplicated = nullptr;
     cuBool_Index m = 900, n = 600;
     float density = 0.31;
@@ -46,7 +46,7 @@ TEST(MatrixCsr, Duplicate) {
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(MatrixCsr, PropertyQuery) {
+TEST(cuBool_Matrix, PropertyQuery) {
     cuBool_Matrix matrix = nullptr;
     cuBool_Index m = 900, n = 600;
     float density = 0.21;
@@ -75,7 +75,7 @@ TEST(MatrixCsr, PropertyQuery) {
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(MatrixCsr, ExtractPairs) {
+TEST(cuBool_Matrix, ExtractPairs) {
     cuBool_Matrix matrix = nullptr;
     cuBool_Index m = 900, n = 600;
     float density = 0.21;

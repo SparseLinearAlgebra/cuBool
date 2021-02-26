@@ -22,16 +22,42 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#ifndef CUBOOL_SQ_MATRIX_HPP
+#define CUBOOL_SQ_MATRIX_HPP
 
-cuBool_Status cuBool_Matrix_New(
-        cuBool_Matrix *matrix,
-        cuBool_Index nrows,
-        cuBool_Index ncols
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        *matrix = (cuBool_Matrix_t *) cubool::Library::createMatrix(nrows, ncols);
-    CUBOOL_END_BODY
+#include <backend/matrix_base.hpp>
+#include <sequential/sq_coo_data.hpp>
+
+namespace cubool {
+
+    /**
+     * Coo matrix for Cpu side operations in sequential backend.
+     */
+    class SqMatrix final: public MatrixBase {
+    public:
+        SqMatrix(size_t nrows, size_t ncols);
+        ~SqMatrix() override = default;
+
+        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
+        void extract(index *rows, index *cols, size_t &nvals) override;
+        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols) override;
+
+        void clone(const MatrixBase &otherBase) override;
+        void transpose(const MatrixBase &otherBase) override;
+        void reduce(const MatrixBase &otherBase) override;
+
+        void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) override;
+        void kronecker(const MatrixBase &aBase, const MatrixBase &bBase) override;
+        void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase) override;
+
+        index getNrows() const override;
+        index getNcols() const override;
+        index getNvals() const override;
+
+    private:
+        CooData mData;
+    };
+
 }
+
+#endif //CUBOOL_SQ_MATRIX_HPP

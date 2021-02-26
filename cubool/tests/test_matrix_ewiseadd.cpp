@@ -67,17 +67,17 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(MatrixCsr, AddSmall) {
+TEST(cuBool_Matrix, AddSmall) {
     cuBool_Index m = 60, n = 80;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(MatrixCsr, AddMedium) {
+TEST(cuBool_Matrix, AddMedium) {
     cuBool_Index m = 500, n = 800;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(MatrixCsr, AddLarge) {
+TEST(cuBool_Matrix, AddLarge) {
     cuBool_Index m = 2500, n = 1500;
     testRun(m, n, CUBOOL_HINT_NO);
 }

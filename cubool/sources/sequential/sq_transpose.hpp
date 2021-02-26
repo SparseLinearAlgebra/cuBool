@@ -22,16 +22,20 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#ifndef CUBOOL_SQ_TRANSPOSE_HPP
+#define CUBOOL_SQ_TRANSPOSE_HPP
 
-cuBool_Status cuBool_Matrix_New(
-        cuBool_Matrix *matrix,
-        cuBool_Index nrows,
-        cuBool_Index ncols
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        *matrix = (cuBool_Matrix_t *) cubool::Library::createMatrix(nrows, ncols);
-    CUBOOL_END_BODY
+#include <sequential/sq_coo_data.hpp>
+
+namespace cubool {
+
+    /**
+     * Transpose coo matrix
+     * @param a Source
+     * @param at Result
+     */
+    void sq_transpose(const CooData& a, CooData& at);
+
 }
+
+#endif //CUBOOL_SQ_TRANSPOSE_HPP

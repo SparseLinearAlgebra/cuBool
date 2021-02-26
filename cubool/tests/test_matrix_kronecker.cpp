@@ -67,21 +67,21 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Index k, cuBool_Index t, flo
     EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(MatrixCsr, KroneckerSmall) {
+TEST(cuBool_Matrix, KroneckerSmall) {
     cuBool_Index m = 10, n = 20;
     cuBool_Index k = 5, t = 15;
     float step = 0.05f;
     testRun(m, n, k, t, step, CUBOOL_HINT_NO);
 }
 
-TEST(MatrixCsr, KroneckerMedium) {
+TEST(cuBool_Matrix, KroneckerMedium) {
     cuBool_Index m = 100, n = 40;
     cuBool_Index k = 30, t = 80;
     float step = 0.02f;
     testRun(m, n, k, t, step, CUBOOL_HINT_NO);
 }
 
-TEST(MatrixCsr, KroneckerLarge) {
+TEST(cuBool_Matrix, KroneckerLarge) {
     cuBool_Index m = 1000, n = 400;
     cuBool_Index k = 300, t = 800;
     float step = 0.001f;

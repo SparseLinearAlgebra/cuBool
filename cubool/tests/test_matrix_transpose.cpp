@@ -62,19 +62,34 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(MatrixCsr, TransposeSmall) {
+TEST(cuBool_Matrix, TransposeSmall) {
     cuBool_Index m = 60, n = 80;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(MatrixCsr, TransposeMedium) {
+TEST(cuBool_Matrix, TransposeMedium) {
     cuBool_Index m = 500, n = 800;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(MatrixCsr, TransposeLarge) {
+TEST(cuBool_Matrix, TransposeLarge) {
     cuBool_Index m = 2500, n = 1500;
     testRun(m, n, CUBOOL_HINT_NO);
+}
+
+TEST(cuBool_Matrix, TransposeSmallFallback) {
+    cuBool_Index m = 60, n = 80;
+    testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Matrix, TransposeMediumFallback) {
+    cuBool_Index m = 500, n = 800;
+    testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Matrix, TransposeLargeFallback) {
+    cuBool_Index m = 2500, n = 1500;
+    testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
 CUBOOL_GTEST_MAIN

@@ -7,14 +7,12 @@ else()
 endif()
 
 # Notify user about selected backend options
-if (CUBOOL_WITH_CPU)
-    message(STATUS "Add SuiteSparse based CPU backend as fallback")
+if (CUBOOL_WITH_SEQUENTIAL)
+    message(STATUS "Add CPU sequential fallback backend")
 endif()
 if (CUBOOL_WITH_CUDA)
     message(STATUS "Add CUDA backend for GPGPU computations")
 endif()
-
-set(CUBOOL_SOURCES)
 
 # Library sources
 set(CUBOOL_SOURCES
@@ -53,7 +51,7 @@ set(CUBOOL_BACKEND_SOURCES
     sources/backend/matrix_base.hpp)
 
 set(CUBOOL_CUDA_SOURCES)
-set(CUBOOL_CPU_SOURCES)
+set(CUBOOL_SEQUENTIAL_SOURCES)
 
 # Cuda backend sources
 if (CUBOOL_WITH_CUDA)
@@ -78,7 +76,29 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/kernels/spkron.cuh
         sources/cuda/kernels/spmerge.cuh
         sources/cuda/kernels/spreduce.cuh
-        sources/cuda/kernels/spsubmatrix.cuh
+        sources/cuda/kernels/spsubmatrix.cuh)
+endif()
+
+# Cpu sequential backend sources
+if (CUBOOL_WITH_SEQUENTIAL)
+    set(CUBOOL_SEQUENTIAL_SOURCES
+        sources/sequential/sq_backend.cpp
+        sources/sequential/sq_backend.hpp
+        sources/sequential/sq_matrix.cpp
+        sources/sequential/sq_matrix.hpp
+        sources/sequential/sq_coo_data.hpp
+        sources/sequential/sq_transpose.cpp
+        sources/sequential/sq_transpose.hpp
+        sources/sequential/sq_kronecker.cpp
+        sources/sequential/sq_kronecker.hpp
+        sources/sequential/sq_ewiseadd.cpp
+        sources/sequential/sq_ewiseadd.hpp
+        sources/sequential/sq_spgemm.cpp
+        sources/sequential/sq_spgemm.hpp
+        sources/sequential/sq_reduce.cpp
+        sources/sequential/sq_reduce.hpp
+        sources/sequential/sq_submatrix.cpp
+        sources/sequential/sq_submatrix.hpp
             )
 endif()
 
@@ -86,9 +106,9 @@ endif()
 add_library(cubool SHARED
     ${CUBOOL_SOURCES}
     ${CUBOOL_C_API_SOURCES}
+    ${CUBOOL_BACKEND_SOURCES}
     ${CUBOOL_CUDA_SOURCES}
-    ${CUBOOL_CPU_SOURCES}
-    ${CUBOOL_BACKEND_SOURCES})
+    ${CUBOOL_SEQUENTIAL_SOURCES})
 
 target_include_directories(cubool PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(cubool PRIVATE ${CMAKE_CURRENT_LIST_DIR}/sources)
@@ -112,9 +132,9 @@ if (CUBOOL_WITH_CUDA)
     target_link_libraries(cubool PRIVATE nsparse_um)
 endif()
 
-# SuiteSparse based backend
-if (CUBOOL_WITH_CPU)
-    target_compile_definitions(cubool PRIVATE CUBOOL_WITH_CPU)
+# Sequential Cpu based backend
+if (CUBOOL_WITH_SEQUENTIAL)
+    target_compile_definitions(cubool PRIVATE CUBOOL_WITH_SEQUENTIAL)
 endif()
 
 # If tests enabled, add tests sources to the build

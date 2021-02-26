@@ -33,7 +33,7 @@ namespace cubool {
     namespace kernels {
 
         /**
-         * Transpose based on
+         * Transpose based on key-value thrust sort for `nvals` level parallelism.
          *
          * @tparam IndexType
          * @tparam AllocType
