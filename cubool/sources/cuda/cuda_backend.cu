@@ -32,7 +32,7 @@ namespace cubool {
             mInstance = new Instance(initHints & CUBOOL_HINT_GPU_MEM_MANAGED);
         }
 
-        CHECK_RAISE_CRITICAL_ERROR(mInstance != nullptr, DeviceNotPresent, "No cuda compatible device in the system");
+        // No device. Cannot init this backend
     }
 
     void CudaBackend::finalize() {

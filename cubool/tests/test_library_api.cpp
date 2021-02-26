@@ -29,15 +29,15 @@
 TEST(cuBoolVersion, Query) {
     int major;
     int minor;
-    int version;
+    int sub;
 
-    cuBool_Version_Get(&major, &minor, &version);
+    cuBool_Version_Get(&major, &minor, &sub);
 
     std::cout << "Major: " << major << std::endl;
     std::cout << "Minor: " << minor << std::endl;
-    std::cout << "Version: " << version << std::endl;
+    std::cout << "Version: " << sub << std::endl;
 
-    EXPECT_NE(version, 0);
+    EXPECT_NE(major | minor | sub, 0);
 }
 
 // Test cubool library instance creation and destruction
