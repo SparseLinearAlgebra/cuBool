@@ -27,8 +27,8 @@
 void testMatrixAdd(cuBool_Index m, cuBool_Index n, float density) {
     cuBool_Matrix r, a, b;
 
-    testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
-    testing::Matrix tb = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
+    testing::Matrix ta = std::move(testing::Matrix::generateSparse(m, n, density));
+    testing::Matrix tb = std::move(testing::Matrix::generateSparse(m, n, density));
 
     // Allocate input matrices and resize to fill with input data
     ASSERT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
@@ -80,6 +80,21 @@ TEST(cuBool_Matrix, AddMedium) {
 TEST(cuBool_Matrix, AddLarge) {
     cuBool_Index m = 2500, n = 1500;
     testRun(m, n, CUBOOL_HINT_NO);
+}
+
+TEST(cuBool_Matrix, AddSmallFallback) {
+    cuBool_Index m = 60, n = 80;
+    testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Matrix, AddMediumFallback) {
+    cuBool_Index m = 500, n = 800;
+    testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Matrix, AddLargeFallback) {
+    cuBool_Index m = 2500, n = 1500;
+    testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
 CUBOOL_GTEST_MAIN

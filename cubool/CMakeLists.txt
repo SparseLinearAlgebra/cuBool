@@ -99,8 +99,7 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_reduce.hpp
         sources/sequential/sq_submatrix.cpp
         sources/sequential/sq_submatrix.hpp
-        sources/sequential/sq_exclusive_scan.hpp
-            )
+        sources/sequential/sq_exclusive_scan.hpp)
 endif()
 
 # Shared library object config

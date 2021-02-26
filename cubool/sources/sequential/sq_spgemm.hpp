@@ -25,7 +25,18 @@
 #ifndef CUBOOL_SQ_SPGEMM_HPP
 #define CUBOOL_SQ_SPGEMM_HPP
 
+#include <sequential/sq_csr_data.hpp>
+
 namespace cubool {
+
+    /**
+     * Matrix-matrix multiplication of `a` and `b`.
+     *
+     * @param a Input matrix
+     * @param b Input matrix
+     * @param[out] out Where to store result
+     */
+    void sq_spgemm(const CsrData& a, const CsrData& b, CsrData& out);
 
 }
 

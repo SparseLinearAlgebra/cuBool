@@ -43,7 +43,8 @@ namespace cubool {
         }
 
         sub.nvals = nvals;
-        sub.rowOffsets.resize(nrows + 1);
+        sub.rowOffsets.clear();
+        sub.rowOffsets.resize(nrows + 1, 0);
         sub.colIndices.resize(nvals);
 
         size_t idx = 0;

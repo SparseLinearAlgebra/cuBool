@@ -36,7 +36,8 @@ namespace cubool {
 
         sq_exclusive_scan(offsets.begin(), offsets.end(), 0);
 
-        at.rowOffsets.resize(a.ncols + 1);
+        at.rowOffsets.clear();
+        at.rowOffsets.resize(a.ncols + 1, 0);
         at.colIndices.resize(a.nvals);
         at.nvals = a.nvals;
 

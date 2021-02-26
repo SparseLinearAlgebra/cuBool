@@ -31,6 +31,7 @@ namespace cubool {
         auto other = dynamic_cast<const MatrixCsr*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belong to matrix csr class");
+        CHECK_RAISE_ERROR(other != this, InvalidArgument, "Matrices must differ");
 
         assert(nrows > 0);
         assert(ncols > 0);

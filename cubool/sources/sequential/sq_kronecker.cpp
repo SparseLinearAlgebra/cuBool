@@ -40,6 +40,7 @@ namespace cubool {
         size_t nvals = a.nvals * b.nvals;
 
         out.nvals = nvals;
+        out.rowOffsets.clear();
         out.rowOffsets.resize(a.nrows * b.nrows + 1, 0);
         out.colIndices.resize(nvals);
 

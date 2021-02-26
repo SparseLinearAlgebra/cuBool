@@ -25,7 +25,18 @@
 #ifndef CUBOOL_SQ_EWISEADD_HPP
 #define CUBOOL_SQ_EWISEADD_HPP
 
+#include <sequential/sq_csr_data.hpp>
+
 namespace cubool {
+
+    /**
+     * Element-wise addition of the matrices `a` and `b`.
+     *
+     * @param a Input matrix
+     * @param b Input matrix
+     * @param[out] out Where to store the result
+     */
+    void sq_ewiseadd(const CsrData& a, const CsrData& b, CsrData& out);
 
 }
 

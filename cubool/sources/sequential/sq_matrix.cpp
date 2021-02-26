@@ -26,6 +26,8 @@
 #include <sequential/sq_transpose.hpp>
 #include <sequential/sq_submatrix.hpp>
 #include <sequential/sq_kronecker.hpp>
+#include <sequential/sq_ewiseadd.hpp>
+#include <sequential/sq_spgemm.hpp>
 #include <sequential/sq_exclusive_scan.hpp>
 #include <core/error.hpp>
 #include <algorithm>
@@ -51,6 +53,7 @@ namespace cubool {
         auto nrows = mData.nrows;
         auto ncols = mData.ncols;
 
+        mData.rowOffsets.clear();
         mData.rowOffsets.resize(nrows + 1, 0);
         mData.colIndices.clear();
         mData.colIndices.reserve(nvals);
@@ -119,6 +122,7 @@ namespace cubool {
         auto other = dynamic_cast<const SqMatrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+        CHECK_RAISE_ERROR(other != this, InvalidArgument, "Matrices must differ");
 
         auto M = this->getNrows();
         auto N = this->getNcols();
@@ -133,6 +137,7 @@ namespace cubool {
         auto other = dynamic_cast<const SqMatrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+        CHECK_RAISE_ERROR(other != this, InvalidArgument, "Matrices must differ");
 
         auto M = other->getNrows();
         auto N = other->getNcols();
@@ -154,7 +159,12 @@ namespace cubool {
         assert(N == this->getNrows());
         assert(M == this->getNcols());
 
-        sq_transpose(other->mData, this->mData);
+        CsrData out;
+        out.nrows = this->getNrows();
+        out.ncols = this->getNcols();
+
+        sq_transpose(other->mData, out);
+        this->mData = std::move(out);
     }
 
     void SqMatrix::reduce(const MatrixBase &otherBase) {
@@ -167,7 +177,36 @@ namespace cubool {
     }
 
     void SqMatrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) {
+        auto a = dynamic_cast<const SqMatrix*>(&aBase);
+        auto b = dynamic_cast<const SqMatrix*>(&bBase);
 
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+
+        auto M = a->getNrows();
+        auto N = b->getNcols();
+
+        assert(a->getNcols() == b->getNrows());
+        assert(M == this->getNrows());
+        assert(N == this->getNcols());
+
+        CsrData out;
+        out.nrows = this->getNrows();
+        out.ncols = this->getNcols();
+
+        sq_spgemm(a->mData, b->mData, out);
+
+        if (accumulate) {
+            CsrData out2;
+            out2.nrows = this->getNrows();
+            out2.ncols = this->getNcols();
+
+            sq_ewiseadd(this->mData, out, out2);
+            this->mData = std::move(out2);
+        }
+        else {
+            this->mData = std::move(out);
+        }
     }
 
     void SqMatrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase) {
@@ -185,11 +224,35 @@ namespace cubool {
         assert(M * K == this->getNrows());
         assert(N * T == this->getNcols());
 
-        sq_kronecker(a->mData, b->mData, this->mData);
+        CsrData out;
+        out.nrows = this->getNrows();
+        out.ncols = this->getNcols();
+
+        sq_kronecker(a->mData, b->mData, out);
+        this->mData = std::move(out);
     }
 
     void SqMatrix::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase) {
+        auto a = dynamic_cast<const SqMatrix*>(&aBase);
+        auto b = dynamic_cast<const SqMatrix*>(&bBase);
 
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+
+        auto M = a->getNrows();
+        auto N = a->getNcols();
+
+        assert(M== this->getNrows());
+        assert(N== this->getNcols());
+        assert(M== b->getNrows());
+        assert(N== b->getNcols());
+
+        CsrData out;
+        out.nrows = this->getNrows();
+        out.ncols = this->getNcols();
+
+        sq_ewiseadd(a->mData, b->mData, out);
+        this->mData = std::move(out);
     }
 
     index SqMatrix::getNrows() const {

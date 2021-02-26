@@ -86,4 +86,20 @@ TEST(cuBool_Matrix, MultiplyAddLarge) {
     testRun(m, t, n, CUBOOL_HINT_NO);
 }
 
+TEST(cuBool_Matrix, MultiplyAddSmallFallback) {
+    cuBool_Index m = 60, t = 100, n = 80;
+    testRun(m, t, n, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Matrix, MultiplyAddMediumFallback) {
+    cuBool_Index m = 500, t = 1000, n = 800;
+    testRun(m, t, n, CUBOOL_HINT_CPU_BACKEND);
+
+}
+
+TEST(cuBool_Matrix, MultiplyAddLargeFallback) {
+    cuBool_Index m = 1000, t = 2000, n = 500;
+    testRun(m, t, n, CUBOOL_HINT_CPU_BACKEND);
+}
+
 CUBOOL_GTEST_MAIN

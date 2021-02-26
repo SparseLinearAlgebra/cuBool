@@ -31,7 +31,7 @@
 #include <testing/matrix.hpp>
 #include <testing/matrox_printing.hpp>
 #include <testing/matrix_generator.hpp>
-#include <testing/matrix_ewise_add.hpp>
+#include <testing/matrix_ewiseadd.hpp>
 #include <testing/matrix_mxm.hpp>
 #include <testing/matrix_kronecker.hpp>
 
