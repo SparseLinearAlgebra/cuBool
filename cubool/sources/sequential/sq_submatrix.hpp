@@ -25,7 +25,21 @@
 #ifndef CUBOOL_SQ_SUBMATRIX_HPP
 #define CUBOOL_SQ_SUBMATRIX_HPP
 
+#include <sequential/sq_coo_data.hpp>
+
 namespace cubool {
+
+    /**
+     * Extracts sub-matrix from matrix `a`
+     *
+     * @param a Source
+     * @param[out] sub Result
+     * @param i First sub-matrix row
+     * @param j First sub-matrix col
+     * @param nrows Sub-matrix size
+     * @param ncols Sub-matrix size
+     */
+    void sq_submatrix(const CooData& a, CooData& sub, index i, index j, index nrows, index ncols);
 
 }
 

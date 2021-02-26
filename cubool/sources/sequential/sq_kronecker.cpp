@@ -26,4 +26,55 @@
 
 namespace cubool {
 
+    void scan(std::vector<index> &v) {
+        index sum = 0;
+        for (auto& val: v) {
+            index next = sum + val;
+            val = sum;
+            sum = next;
+        }
+    }
+
+    void sq_kronecker(const CooData& a, const CooData& b, CooData& out) {
+        size_t nvals = a.mNvals * b.mNvals;
+
+        out.mNvals = nvals;
+        out.mRowIndices.resize(nvals);
+        out.mColIndices.resize(nvals);
+
+        std::vector<index> aoffsets(a.mNrows + 1, 0);
+        std::vector<index> boffsets(b.mNrows + 1, 0);
+
+        for (index k = 0; k < a.mNvals; k++) {
+            aoffsets[a.mRowIndices[k]]++;
+        }
+
+        for (index k = 0; k < b.mNvals; k++) {
+            boffsets[b.mRowIndices[k]]++;
+        }
+
+        scan(aoffsets);
+        scan(boffsets);
+
+        size_t id = 0;
+
+        for (index ai = 0; ai < a.mNrows; ai++) {
+            for (index bi = 0; bi < b.mNrows; bi++) {
+                index rowId = ai * b.mNrows + bi;
+
+                for (index k = aoffsets[ai]; k < aoffsets[ai + 1]; k++) {
+                    index colIdBase = a.mColIndices[k] * b.mNcols;
+
+                    for (index l = boffsets[bi]; l < boffsets[bi + 1]; l++) {
+                        index colId = colIdBase + b.mColIndices[l];
+
+                        out.mRowIndices[id] = rowId;
+                        out.mColIndices[id] = colId;
+                        id += 1;
+                    }
+                }
+            }
+        }
+    }
+
 }

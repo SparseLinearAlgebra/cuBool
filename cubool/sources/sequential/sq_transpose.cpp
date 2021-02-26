@@ -27,7 +27,7 @@
 namespace cubool {
 
     void sq_transpose(const CooData& a, CooData& at) {
-        std::vector<index> offsets(a.mNcols + 1, 0);
+        std::vector<index> offsets(a.mNcols, 0);
 
         for (size_t k = 0; k < a.mNvals; k++) {
             offsets[a.mColIndices[k]]++;

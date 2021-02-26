@@ -24,6 +24,8 @@
 
 #include <sequential/sq_matrix.hpp>
 #include <sequential/sq_transpose.hpp>
+#include <sequential/sq_submatrix.hpp>
+#include <sequential/sq_kronecker.hpp>
 #include <core/error.hpp>
 #include <algorithm>
 #include <cassert>
@@ -109,7 +111,17 @@ namespace cubool {
     }
 
     void SqMatrix::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols) {
+        auto other = dynamic_cast<const SqMatrix*>(&otherBase);
 
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+
+        auto M = this->getNrows();
+        auto N = this->getNcols();
+
+        assert(M == nrows);
+        assert(N == ncols);
+
+        sq_submatrix(other->mData, this->mData, i, j, nrows, ncols);
     }
 
     void SqMatrix::clone(const MatrixBase &otherBase) {
@@ -154,7 +166,21 @@ namespace cubool {
     }
 
     void SqMatrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase) {
+        auto a = dynamic_cast<const SqMatrix*>(&aBase);
+        auto b = dynamic_cast<const SqMatrix*>(&bBase);
 
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+
+        auto M = a->getNrows();
+        auto N = a->getNcols();
+        auto K = b->getNrows();
+        auto T = b->getNcols();
+
+        assert(M * K == this->getNrows());
+        assert(N * T == this->getNcols());
+
+        sq_kronecker(a->mData, b->mData, this->mData);
     }
 
     void SqMatrix::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase) {

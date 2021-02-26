@@ -26,4 +26,37 @@
 
 namespace cubool {
 
+    void sq_submatrix(const CooData& a, CooData& sub, index i, index j, index nrows, index ncols) {
+        index first = a.mNvals;
+        index last = 0;
+        size_t nvals = 0;
+
+        for (index k = 0; k < a.mNvals; k++) {
+            auto ai = a.mRowIndices[k];
+            auto aj = a.mColIndices[k];
+
+            if (i <= ai && ai < i + nrows && j <= aj && aj < j + ncols) {
+                first = std::min(first, k);
+                last = std::max(last, k);
+                nvals += 1;
+            }
+        }
+
+        sub.mNvals = nvals;
+        sub.mRowIndices.resize(nvals);
+        sub.mColIndices.resize(nvals);
+
+        size_t idx = 0;
+        for (index k = first; k <= last; k++) {
+            auto ai = a.mRowIndices[k];
+            auto aj = a.mColIndices[k];
+
+            if (i <= ai && ai < i + nrows && j <= aj && aj < j + ncols) {
+                sub.mRowIndices[idx] = ai - i;
+                sub.mColIndices[idx] = aj - j;
+                idx += 1;
+            }
+        }
+    }
+
 }

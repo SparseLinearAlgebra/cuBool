@@ -41,8 +41,8 @@ namespace cubool {
     }
 
     void Matrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted) {
-        CHECK_RAISE_ERROR(rows != nullptr, InvalidArgument, "Null ptr rows array");
-        CHECK_RAISE_ERROR(cols != nullptr, InvalidArgument, "Null ptr cols array");
+        CHECK_RAISE_ERROR(rows != nullptr || nvals == 0, InvalidArgument, "Null ptr rows array");
+        CHECK_RAISE_ERROR(cols != nullptr || nvals == 0, InvalidArgument, "Null ptr cols array");
 
         mHnd->build(rows, cols, nvals, isSorted);
     }
@@ -69,8 +69,8 @@ namespace cubool {
         CHECK_RAISE_ERROR(bI <= other->getNrows(), InvalidArgument, "Provided sub-matrix range must be within matrix bounds");
         CHECK_RAISE_ERROR(bJ <= other->getNcols(), InvalidArgument, "Provided sub-matrix range must be within matrix bounds");
 
-        CHECK_RAISE_ERROR(nrows <= this->getNrows(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
-        CHECK_RAISE_ERROR(ncols <= this->getNcols(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
+        CHECK_RAISE_ERROR(nrows == this->getNrows(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
+        CHECK_RAISE_ERROR(ncols == this->getNcols(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
 
         mHnd->extractSubMatrix(*other->mHnd, i, j, nrows, ncols);
     }

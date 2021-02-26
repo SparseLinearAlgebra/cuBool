@@ -30,16 +30,23 @@ void testMatrixExtractSubMatrix(cuBool_Index m, cuBool_Index n, cuBool_Index N, 
     auto ta = testing::Matrix::generateSparse(m, n, density);
 
     ASSERT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
-
     ASSERT_EQ(cuBool_Matrix_Build(a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+
+    testing::TimeQuery query;
 
     for (size_t i = 0; i < N; i++) {
         for (size_t j = 0; j < N; j++) {
             auto k = m / N;
             auto l = n / N;
 
+            testing::Timer t;
+
             ASSERT_EQ(cuBool_Matrix_New(&r, k, l), CUBOOL_STATUS_SUCCESS);
-            ASSERT_EQ(cuBool_Matrix_ExtractSubMatrix(r, a, i * k, j * l, k, l, CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
+
+            {
+                testing::TimeScope scope(query);
+                ASSERT_EQ(cuBool_Matrix_ExtractSubMatrix(r, a, i * k, j * l, k, l, CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
+            }
 
             auto tr = ta.subMatrix(i * k, j * l, k, l);
 
@@ -48,6 +55,7 @@ void testMatrixExtractSubMatrix(cuBool_Index m, cuBool_Index n, cuBool_Index N, 
         }
     }
 
+    std::cout << query.getAverageTimeMs() << "ms" << std::endl;
 
     ASSERT_EQ(cuBool_Matrix_Free(a), CUBOOL_STATUS_SUCCESS);
 }
@@ -82,6 +90,24 @@ TEST(cuBool_Matrix, SubMatrixExtractLarge) {
     cuBool_Index m = 2000, n = 4000;
     float step = 0.01f;
     testRun(m, n, step, CUBOOL_HINT_NO);
+}
+
+TEST(cuBool_Matrix, SubMatrixExtractSmallFallback) {
+    cuBool_Index m = 100, n = 200;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Matrix, SubMatrixExtractMediumFallback) {
+    cuBool_Index m = 400, n = 700;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Matrix, SubMatrixExtractLargeFallback) {
+    cuBool_Index m = 2000, n = 4000;
+    float step = 0.01f;
+    testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
 CUBOOL_GTEST_MAIN

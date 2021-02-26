@@ -29,13 +29,16 @@ as well as python high-level wrapper with automated resources management.
 - [X] CSR transpose
 - [X] CSR submatrix
 - [X] CSR matrix reduce
-- [ ] CSR slicing
+- [X] CSR slicing
+- [ ] Sequential fallback backend for CPU
 - [ ] IO matrix loading from mtx file
 - [ ] IO matrix saving into mtx file
 - [ ] IO matrix saving into gviz format
 - [ ] IO user-defined file logging
 - [X] Wrapper for Python API
-- [ ] Wrapper tests in Python 
+- [ ] Wrapper syntax sugar
+- [ ] Tests for Python wrapper
+- [ ] Code examples
 - [ ] User guide
 - [X] Unit Tests collection
 - [X] Dummy library implementation for testing

@@ -25,7 +25,17 @@
 #ifndef CUBOOL_SP_KRONECKER_HPP
 #define CUBOOL_SP_KRONECKER_HPP
 
+#include <sequential/sq_coo_data.hpp>
+
 namespace cubool {
+
+    /**
+     * Kronecker product of `a` and `b` matrices.
+     * @param a Input matrix
+     * @param b Input matrix
+     * @param[out] out Result matrix
+     */
+    void sq_kronecker(const CooData& a, const CooData& b, CooData& out);
 
 }
 

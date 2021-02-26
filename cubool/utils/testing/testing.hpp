@@ -27,6 +27,7 @@
 
 #include <gtest/gtest.h>
 #include <testing/pair.hpp>
+#include <testing/timer.hpp>
 #include <testing/matrix.hpp>
 #include <testing/matrox_printing.hpp>
 #include <testing/matrix_generator.hpp>
