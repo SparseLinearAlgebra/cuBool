@@ -253,10 +253,10 @@ namespace cubool {
         auto M = a->getNrows();
         auto N = a->getNcols();
 
-        assert(M== this->getNrows());
-        assert(N== this->getNcols());
-        assert(M== b->getNrows());
-        assert(N== b->getNcols());
+        assert(M == this->getNrows());
+        assert(N == this->getNcols());
+        assert(M == b->getNrows());
+        assert(N == b->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();

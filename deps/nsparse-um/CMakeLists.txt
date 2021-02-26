@@ -6,6 +6,6 @@ target_include_directories(nsparse_um INTERFACE include/)
 target_link_libraries(nsparse_um INTERFACE cub)
 target_compile_options(nsparse_um INTERFACE $<$<COMPILE_LANGUAGE:CUDA>: --expt-relaxed-constexpr --expt-extended-lambda>)
 
-if (CUBOOL_BUILD_TESTS)
+if (CUBOOL_BUILD_NSPARSE_TESTS)
     add_subdirectory(test)
 endif()

@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <cub/cub.cuh>
 #include <nsparse/detail/masked_mult.cuh>
 #include <nsparse/masked_spgemm.h>
 #include <nsparse/spgemm.h>

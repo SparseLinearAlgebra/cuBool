@@ -17,15 +17,16 @@ set(CUBOOL_VERSION_SUB 0)
 set(CUBOOL_DEBUG OFF)
 set(CUBOOL_RELEASE OFF)
 
-if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+if (${CMAKE_BUILD_TYPE} MATCHES Release)
     message(STATUS "Build cubool in release mode")
     set(CUBOOL_RELEASE ON)
-elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+elseif (${CMAKE_BUILD_TYPE} MATCHES Debug)
     message(STATUS "Build cubool in debug mode")
     set(CUBOOL_DEBUG ON)
 else()
     message(STATUS "Build cubool in release mode (default: was not specified)")
     set(CUBOOL_RELEASE ON)
+    set(CMAKE_BUILD_TYPE Release)
 endif()
 
 # Configure cuda dependencies

@@ -1,9 +1,8 @@
+project(cubool-cpp LANGUAGES CXX)
+
 if (CUBOOL_WITH_CUDA)
     # If Cuda backend is compiled, we must tell cmake, that we will use Cuda
-    project(cubool-cpp LANGUAGES CXX CUDA)
-else()
-    # Otherwise only C++
-    project(cubool-cpp LANGUAGES CXX)
+    enable_language(CUDA)
 endif()
 
 # Notify user about selected backend options
@@ -120,9 +119,9 @@ target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_SUB=${CUBOOL_VERSION_SU
 
 target_compile_features(cubool PUBLIC cxx_std_14)
 
-target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CXX>: -Wall -Werror>)
-target_compile_options(cubool PRIVATE $<$<AND:$<BOOL:CUBOOL_RELEASE>,$<COMPILE_LANGUAGE:CXX>>: -O2>)
-target_compile_options(cubool PRIVATE $<$<AND:$<BOOL:CUBOOL_DEBUG>,$<COMPILE_LANGUAGE:CXX>>: -O0>)
+target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CXX>: -Wall>)
+target_compile_options(cubool PRIVATE $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>: -O2>)
+target_compile_options(cubool PRIVATE $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>: -O0>)
 
 set_target_properties(cubool PROPERTIES CXX_STANDARD 17)
 set_target_properties(cubool PROPERTIES CXX_STANDARD_REQUIRED ON)
@@ -135,7 +134,7 @@ if (CUBOOL_WITH_CUDA)
 
     # Settings: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
     target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-            -arch=sm_50
+            -arch=sm_30
              -gencode=arch=compute_50,code=sm_50
              -gencode=arch=compute_52,code=sm_52
              -gencode=arch=compute_60,code=sm_60
@@ -144,8 +143,8 @@ if (CUBOOL_WITH_CUDA)
              -gencode=arch=compute_75,code=sm_75
              -gencode=arch=compute_75,code=compute_75>)
 
-    target_compile_options(cubool PRIVATE $<$<AND:$<BOOL:CUBOOL_RELEASE>,$<COMPILE_LANGUAGE:CUDA>>: -Xptxas -O2>)
-    target_compile_options(cubool PRIVATE $<$<AND:$<BOOL:CUBOOL_DEBUG>,$<COMPILE_LANGUAGE:CUDA>>: -Xptxas -O0>)
+    target_compile_options(cubool PRIVATE $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CUDA>>: -Xptxas -O2>)
+    target_compile_options(cubool PRIVATE $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CUDA>>: -Xptxas -O0>)
 
     target_compile_definitions(cubool PRIVATE CUBOOL_WITH_CUDA)
     target_link_libraries(cubool PRIVATE nsparse_um)
