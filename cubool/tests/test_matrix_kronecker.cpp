@@ -27,8 +27,8 @@
 void testMatrixKronecker(cuBool_Index m, cuBool_Index n, cuBool_Index k, cuBool_Index t, float density) {
     cuBool_Matrix r, a, b;
 
-    testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
-    testing::Matrix tb = std::move(testing::Matrix::generate(k, t, testing::Condition3(density)));
+    testing::Matrix ta = std::move(testing::Matrix::generateSparse(m, n, density));
+    testing::Matrix tb = std::move(testing::Matrix::generateSparse(k, t, density));
 
     // Allocate input matrices and resize to fill with input data
     EXPECT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
@@ -36,8 +36,8 @@ void testMatrixKronecker(cuBool_Index m, cuBool_Index n, cuBool_Index k, cuBool_
     EXPECT_EQ(cuBool_Matrix_New(&r, m * k, n * t), CUBOOL_STATUS_SUCCESS);
 
     // Transfer input data into input matrices
-    EXPECT_EQ(cuBool_Matrix_Build(a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
-    EXPECT_EQ(cuBool_Matrix_Build(b, tb.mRowsIndex.data(), tb.mColsIndex.data(), tb.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(cuBool_Matrix_Build(b, tb.rowsIndex.data(), tb.colsIndex.data(), tb.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a `kron` b
     EXPECT_EQ(cuBool_Kronecker(r, a, b), CUBOOL_STATUS_SUCCESS);

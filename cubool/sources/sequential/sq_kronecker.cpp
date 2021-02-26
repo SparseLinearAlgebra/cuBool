@@ -27,15 +27,6 @@
 
 namespace cubool {
 
-    void scan(std::vector<index> &v) {
-        index sum = 0;
-        for (auto& val: v) {
-            index next = sum + val;
-            val = sum;
-            sum = next;
-        }
-    }
-
     void sq_kronecker(const CsrData& a, const CsrData& b, CsrData& out) {
         size_t nvals = a.nvals * b.nvals;
 

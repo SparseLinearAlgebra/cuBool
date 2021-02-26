@@ -27,14 +27,14 @@
 void testMatrixTranspose(cuBool_Index m, cuBool_Index n, float density) {
     cuBool_Matrix r, a;
 
-    testing::Matrix ta = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
+    testing::Matrix ta = std::move(testing::Matrix::generateSparse(m, n, density));
 
     // Allocate input matrices and resize to fill with input data
     EXPECT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
     EXPECT_EQ(cuBool_Matrix_New(&r, n, m), CUBOOL_STATUS_SUCCESS);
 
     // Transfer input data into input matrices
-    EXPECT_EQ(cuBool_Matrix_Build(a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a ^ T
     EXPECT_EQ(cuBool_Matrix_Transpose(r, a), CUBOOL_STATUS_SUCCESS);

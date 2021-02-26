@@ -116,6 +116,7 @@ target_include_directories(cubool PRIVATE ${CMAKE_CURRENT_LIST_DIR}/sources)
 target_compile_definitions(cubool PRIVATE CUBOOL_EXPORTS)
 target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_MAJOR=${CUBOOL_VERSION_MAJOR})
 target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_MINOR=${CUBOOL_VERSION_MINOR})
+target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_SUB=${CUBOOL_VERSION_SUB})
 
 target_compile_features(cubool PUBLIC cxx_std_14)
 

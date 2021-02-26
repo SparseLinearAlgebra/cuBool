@@ -30,38 +30,118 @@
 namespace testing {
 
     struct MatrixEWiseAddFunctor {
-        Matrix operator()(const Matrix& ma, const Matrix& mb) {
-            auto m = ma.mNrows;
-            auto n = ma.mNcols;
+        Matrix operator()(const Matrix& a, const Matrix& b) {
+            assert(a.nrows == b.nrows);
+            assert(a.ncols == b.ncols);
 
-            assert(ma.mNrows == mb.mNrows);
-            assert(ma.mNcols == mb.mNcols);
+            a.computeRowOffsets();
+            b.computeRowOffsets();
 
-            std::vector<std::vector<uint8_t>> r(m, std::vector<uint8_t>(n, 0));
+            Matrix out;
+            out.nrows = a.nrows;
+            out.ncols = a.ncols;
 
-            for (size_t i = 0; i < ma.mNvals; i++) {
-                r[ma.mRowsIndex[i]][ma.mColsIndex[i]] = 1;
-            }
+            out.rowOffsets.resize(a.nrows + 1, 0);
 
-            for (size_t i = 0; i < mb.mNvals; i++) {
-                r[mb.mRowsIndex[i]][mb.mColsIndex[i]] = 1;
-            }
+            size_t nvals = 0;
 
-            Matrix result;
-            result.mNrows = m;
-            result.mNcols = n;
+            // Count nnz of the result matrix to allocate memory
+            for (cuBool_Index i = 0; i < a.nrows; i++) {
+                cuBool_Index ak = a.rowOffsets[i];
+                cuBool_Index bk = b.rowOffsets[i];
+                cuBool_Index asize = a.rowOffsets[i + 1] - ak;
+                cuBool_Index bsize = b.rowOffsets[i + 1] - bk;
 
-            for (size_t i = 0; i < m; i++) {
-                for (size_t j = 0; j < n; j++) {
-                    if (r[i][j] != 0) {
-                        result.mRowsIndex.push_back(i);
-                        result.mColsIndex.push_back(j);
-                        result.mNvals += 1;
+                const cuBool_Index* ar = &a.colsIndex[ak];
+                const cuBool_Index* br = &b.colsIndex[bk];
+                const cuBool_Index* arend = ar + asize;
+                const cuBool_Index* brend = br + bsize;
+
+                cuBool_Index nvalsInRow = 0;
+
+                while (ar != arend && br != brend) {
+                    if (*ar == *br) {
+                        nvalsInRow++;
+                        ar++;
+                        br++;
                     }
+                    else if (*ar < *br) {
+                        nvalsInRow++;
+                        ar++;
+                    }
+                    else {
+                        nvalsInRow++;
+                        br++;
+                    }
+                }
+
+                nvalsInRow += (size_t)(arend - ar);
+                nvalsInRow += (size_t)(brend - br);
+
+                nvals += nvalsInRow;
+                out.rowOffsets[i] = nvalsInRow;
+            }
+
+            // Eval row offsets
+            cuBool_Index sum = 0;
+            for (auto& rowOffset: out.rowOffsets) {
+                cuBool_Index next = sum + rowOffset;
+                rowOffset = sum;
+                sum = next;
+            }
+            out.hasRowOffsets = true;
+
+            // Allocate memory for values
+            out.nvals = nvals;
+            out.rowsIndex.resize(nvals);
+            out.colsIndex.resize(nvals);
+
+            // Fill sorted column indices
+            size_t k = 0;
+            for (cuBool_Index i = 0; i < a.nrows; i++) {
+                const cuBool_Index* ar = &a.colsIndex[a.rowOffsets[i]];
+                const cuBool_Index* br = &b.colsIndex[b.rowOffsets[i]];
+                const cuBool_Index* arend = &a.colsIndex[a.rowOffsets[i + 1]];
+                const cuBool_Index* brend = &b.colsIndex[b.rowOffsets[i + 1]];
+
+                while (ar != arend && br != brend) {
+                    if (*ar == *br) {
+                        out.rowsIndex[k] = i;
+                        out.colsIndex[k] = *ar;
+                        k++;
+                        ar++;
+                        br++;
+                    }
+                    else if (*ar < *br) {
+                        out.rowsIndex[k] = i;
+                        out.colsIndex[k] = *ar;
+                        k++;
+                        ar++;
+                    }
+                    else {
+                        out.rowsIndex[k] = i;
+                        out.colsIndex[k] = *br;
+                        k++;
+                        br++;
+                    }
+                }
+
+                while (ar != arend) {
+                    out.rowsIndex[k] = i;
+                    out.colsIndex[k] = *ar;
+                    k++;
+                    ar++;
+                }
+
+                while (br != brend) {
+                    out.rowsIndex[k] = i;
+                    out.colsIndex[k] = *br;
+                    k++;
+                    br++;
                 }
             }
 
-            return std::move(result);
+            return std::move(out);
         }
     };
 

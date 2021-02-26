@@ -28,9 +28,9 @@ void testMatrixMultiplyAdd(cuBool_Index m, cuBool_Index t, cuBool_Index n, float
     cuBool_Matrix a, b, r;
 
     // Generate test data with specified density
-    testing::Matrix ta = std::move(testing::Matrix::generate(m, t, testing::Condition3(density)));
-    testing::Matrix tb = std::move(testing::Matrix::generate(t, n, testing::Condition3(density)));
-    testing::Matrix tr = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
+    testing::Matrix ta = std::move(testing::Matrix::generateSparse(m, t, density));
+    testing::Matrix tb = std::move(testing::Matrix::generateSparse(t, n, density));
+    testing::Matrix tr = std::move(testing::Matrix::generateSparse(m, n, density));
 
     // Allocate input matrices and resize to fill with input data
     ASSERT_EQ(cuBool_Matrix_New(&a, m, t), CUBOOL_STATUS_SUCCESS);
@@ -38,16 +38,16 @@ void testMatrixMultiplyAdd(cuBool_Index m, cuBool_Index t, cuBool_Index n, float
     ASSERT_EQ(cuBool_Matrix_New(&r, m, n), CUBOOL_STATUS_SUCCESS);
 
     // Transfer input data into input matrices
-    ASSERT_EQ(cuBool_Matrix_Build(a, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_Build(b, tb.mRowsIndex.data(), tb.mColsIndex.data(), tb.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_Build(r, tr.mRowsIndex.data(), tr.mColsIndex.data(), tr.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(b, tb.rowsIndex.data(), tb.colsIndex.data(), tb.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(r, tr.rowsIndex.data(), tr.colsIndex.data(), tr.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r += a x b
     ASSERT_EQ(cuBool_MxM(r, a, b, CUBOOL_HINT_ACCUMULATE), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r += a x b on the cpu to compare results
     testing::MatrixMultiplyFunctor functor;
-    tr = std::move(functor(ta, tb, tr));
+    tr = std::move(functor(ta, tb, tr, true));
 
     // Compare results
     ASSERT_EQ(tr.areEqual(r), true);
@@ -78,7 +78,6 @@ TEST(cuBool_Matrix, MultiplyAddSmall) {
 TEST(cuBool_Matrix, MultiplyAddMedium) {
     cuBool_Index m = 500, t = 1000, n = 800;
     testRun(m, t, n, CUBOOL_HINT_NO);
-
 }
 
 TEST(cuBool_Matrix, MultiplyAddLarge) {

@@ -26,62 +26,101 @@
 #define CUBOOL_TESTING_MATRIXMXM_HPP
 
 #include <testing/matrix.hpp>
+#include <testing/matrix_ewiseadd.hpp>
+#include <algorithm>
+#include <limits>
 
 namespace testing {
 
     struct MatrixMultiplyFunctor {
-        Matrix operator()(const Matrix& ma, const Matrix& mb, const Matrix& mc) {
-            auto m = ma.mNrows;
-            auto t = ma.mNcols;
-            auto n = mb.mNcols;
+        Matrix operator()(const Matrix& a, const Matrix& b, const Matrix& c, bool accumulate) {
+            Matrix out;
+            out.nrows = a.nrows;
+            out.ncols = b.ncols;
 
-            assert(ma.mNcols == mb.mNrows);
-            assert(ma.mNrows == mc.mNrows);
-            assert(mb.mNcols == mc.mNcols);
+            assert(a.ncols == b.nrows);
+            assert(a.nrows == c.nrows);
+            assert(b.ncols == c.ncols);
 
-            std::vector<std::vector<uint8_t>> a(m, std::vector<uint8_t>(t, 0));
-            std::vector<std::vector<uint8_t>> b(n, std::vector<uint8_t>(t, 0));
-            std::vector<std::vector<uint8_t>> r(m, std::vector<uint8_t>(n, 0));
+            a.computeRowOffsets();
+            b.computeRowOffsets();
 
-            for (size_t i = 0; i < ma.mNvals; i++) {
-                a[ma.mRowsIndex[i]][ma.mColsIndex[i]] = 1;
-            }
+            cuBool_Index max = std::numeric_limits<cuBool_Index>::max();
 
-            for (size_t i = 0; i < mb.mNvals; i++) {
-                b[mb.mColsIndex[i]][mb.mRowsIndex[i]] = 1;
-            }
+            // Evaluate total nnz and nnz per row
+            size_t nvals = 0;
+            out.rowOffsets.resize(a.nrows + 1);
+            std::vector<cuBool_Index> mask(b.ncols, max);
 
-            for (size_t i = 0; i < m; i++) {
-                for (size_t j = 0; j < n; j++) {
-                    uint8_t v = 0;
+            for (cuBool_Index i = 0; i < a.nrows; i++) {
+                size_t nvalsInRow = 0;
 
-                    for (size_t k = 0; k < t; k++) {
-                        v |= a[i][k] & b[j][k] ? 1u: 0u;
-                    }
+                for (cuBool_Index ak = a.rowOffsets[i]; ak < a.rowOffsets[i + 1]; ak++) {
+                    cuBool_Index k = a.colsIndex[ak];
 
-                    r[i][j] = v;
-                }
-            }
+                    for (cuBool_Index bk = b.rowOffsets[k]; bk < b.rowOffsets[k + 1]; bk++) {
+                        cuBool_Index j = b.colsIndex[bk];
 
-            for (size_t i = 0; i < mc.mNvals; i++) {
-                r[mc.mRowsIndex[i]][mc.mColsIndex[i]] |= 1u;
-            }
-
-            Matrix result;
-            result.mNrows = m;
-            result.mNcols = n;
-
-            for (size_t i = 0; i < m; i++) {
-                for (size_t j = 0; j < n; j++) {
-                    if (r[i][j] != 0) {
-                        result.mRowsIndex.push_back(i);
-                        result.mColsIndex.push_back(j);
-                        result.mNvals += 1;
+                        // Do not compute col nnz twice
+                        if (mask[j] != i) {
+                            mask[j] = i;
+                            nvalsInRow += 1;
+                        }
                     }
                 }
+
+                nvals += nvalsInRow;
+                out.rowOffsets[i] = nvalsInRow;
             }
 
-            return std::move(result);
+            // Row offsets
+            cuBool_Index sum = 0;
+            for (auto& rowOffset: out.rowOffsets) {
+                cuBool_Index next = sum + rowOffset;
+                rowOffset = sum;
+                sum = next;
+            }
+            out.hasRowOffsets = true;
+
+            out.nvals = nvals;
+            out.rowsIndex.resize(nvals);
+            out.colsIndex.resize(nvals);
+
+            // Fill column indices per row and sort
+            mask.clear();
+            mask.resize(b.ncols, max);
+
+            for (cuBool_Index i = 0; i < a.nrows; i++) {
+                size_t id = 0;
+                size_t first = out.rowOffsets[i];
+                size_t last = out.rowOffsets[i + 1];
+
+                for (cuBool_Index ak = a.rowOffsets[i]; ak < a.rowOffsets[i + 1]; ak++) {
+                    cuBool_Index k = a.colsIndex[ak];
+
+                    for (cuBool_Index bk = b.rowOffsets[k]; bk < b.rowOffsets[k + 1]; bk++) {
+                        cuBool_Index j = b.colsIndex[bk];
+
+                        // Do not compute col nnz twice
+                        if (mask[j] != i) {
+                            mask[j] = i;
+                            out.rowsIndex[first + id] = i;
+                            out.colsIndex[first + id] = j;
+                            id += 1;
+                        }
+                    }
+                }
+
+                // Sort indices within row
+                std::sort(out.colsIndex.begin() + first, out.colsIndex.begin() + last);
+            }
+
+            if (accumulate) {
+                MatrixEWiseAddFunctor functor;
+                return functor(c, out);
+            }
+
+            return std::move(out);
         }
     };
 

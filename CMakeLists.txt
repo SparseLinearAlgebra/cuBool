@@ -12,6 +12,7 @@ option(CUBOOL_BUILD_TESTS     "Build project unit-tests with gtest" ON)
 
 set(CUBOOL_VERSION_MAJOR 1)
 set(CUBOOL_VERSION_MINOR 0)
+set(CUBOOL_VERSION_SUB 0)
 
 # Configure cuda dependencies
 if (CUBOOL_WITH_CUDA)

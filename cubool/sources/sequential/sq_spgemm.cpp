@@ -61,6 +61,7 @@ namespace cubool {
         // Row offsets
         sq_exclusive_scan(out.rowOffsets.begin(), out.rowOffsets.end(), 0);
 
+        out.nvals = nvals;
         out.colIndices.resize(nvals);
 
         // Fill column indices per row and sort

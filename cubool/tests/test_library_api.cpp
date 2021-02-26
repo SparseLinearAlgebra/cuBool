@@ -87,20 +87,20 @@ TEST(cuBoolInstance, Example) {
 
     testing::Matrix ta = testing::Matrix::generateSparse(n , n, 0.2);
 
-    cuBool_Matrix_Build(A, ta.mRowsIndex.data(), ta.mColsIndex.data(), ta.mNvals, CUBOOL_HINT_VALUES_SORTED);
+    cuBool_Matrix_Build(A, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED);
 
     TransitiveClosure(A, &T);
 
     testing::Matrix tr = ta;
-    size_t total = 0;
+    size_t total;
 
     do {
-        total = tr.mNvals;
+        total = tr.nvals;
 
         testing::MatrixMultiplyFunctor functor;
-        tr = std::move(functor(tr, tr, tr));
+        tr = std::move(functor(tr, tr, tr, true));
     }
-    while (tr.mNvals != total);
+    while (tr.nvals != total);
 
     ASSERT_TRUE(tr.areEqual(T));
 

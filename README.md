@@ -24,7 +24,7 @@ as well as python high-level wrapper with automated resources management.
 - [X] Library setup
 - [X] CSR matrix
 - [X] CSR multiplication
-- [X] CSR addition
+- [X] CSR element-wise addition
 - [X] CSR kronecker
 - [X] CSR transpose
 - [X] CSR submatrix
@@ -136,6 +136,7 @@ By default, the following cmake options will be automatically enabled:
 
 - `CUBOOL_WITH_CUDA` - build library with actual cuda backend
 - `CUBOOL_WITH_CPU` - build library witt cpu based backend
+- `CUBOOL_WITH_TESTS` - build library unit-tests collection
 
 > Note: in order to provide correct GCC version for CUDA sources compiling,
 > you will have to provide custom paths to the CC and CXX compilers before 

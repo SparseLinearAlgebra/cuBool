@@ -45,12 +45,6 @@ namespace cubool {
     }
 
     void SqMatrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted) {
-        if (nvals == 0)
-            return;
-
-        assert(rows);
-        assert(cols);
-
         auto nrows = mData.nrows;
         auto ncols = mData.ncols;
 
@@ -58,6 +52,12 @@ namespace cubool {
         mData.rowOffsets.resize(nrows + 1, 0);
         mData.colIndices.clear();
         mData.colIndices.reserve(nvals);
+
+        if (nvals == 0)
+            return;
+
+        assert(rows);
+        assert(cols);
 
         if (isSorted) {
             for (size_t k = 0; k < nvals; k++) {

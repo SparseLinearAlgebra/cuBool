@@ -131,14 +131,14 @@ CUBOOL_EXPORT CUBOOL_API const char* cuBool_LicenseInfo_Get(
  *
  * @param major Major version number part
  * @param minor Minor version number part
- * @param version Composite integer version
+ * @param sub Sub version number part
  *
  * @return Error if failed to query version info
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Version_Get(
     int* major,
     int* minor,
-    int* version
+    int* sub
 );
 
 /**

@@ -27,16 +27,20 @@
 cuBool_Status cuBool_Version_Get(
         int *major,
         int *minor,
-        int *version
+        int *sub
 ) {
+    auto MAJOR = (uint32_t)(CUBOOL_MAJOR);
+    auto MINOR = (uint32_t)(CUBOOL_MINOR);
+    auto SUB = (uint32_t)(CUBOOL_SUB);
+
     if (major)
-        *major = CUBOOL_MAJOR;
+        *major = MAJOR;
 
     if (minor)
-        *minor = CUBOOL_MINOR;
+        *minor = MINOR;
 
-    if (version)
-        *version = CUBOOL_VERSION;
+    if (sub)
+        *sub = SUB;
 
     return CUBOOL_STATUS_SUCCESS;
 }

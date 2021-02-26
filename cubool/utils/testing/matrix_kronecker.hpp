@@ -31,28 +31,28 @@ namespace testing {
 
     struct MatrixKroneckerFunctor {
         Matrix operator()(const Matrix& ma, const Matrix& mb) {
-            auto m = ma.mNrows;
-            auto n = ma.mNcols;
-            auto k = mb.mNrows;
-            auto t = mb.mNcols;
+            auto m = ma.nrows;
+            auto n = ma.ncols;
+            auto k = mb.nrows;
+            auto t = mb.ncols;
 
             Matrix result;
-            result.mNrows = m * k;
-            result.mNcols = n * t;
-            result.mNvals = ma.mNvals * mb.mNvals;
-            result.mRowsIndex.reserve(result.mNvals);
-            result.mColsIndex.reserve(result.mNvals);
+            result.nrows = m * k;
+            result.ncols = n * t;
+            result.nvals = ma.nvals * mb.nvals;
+            result.rowsIndex.reserve(result.nvals);
+            result.colsIndex.reserve(result.nvals);
 
             std::vector<Pair> vals;
-            vals.reserve(result.mNvals);
+            vals.reserve(result.nvals);
 
-            for (cuBool_Index i = 0; i < ma.mNvals; i++) {
-                auto blockI = ma.mRowsIndex[i];
-                auto blockJ = ma.mColsIndex[i];
+            for (cuBool_Index i = 0; i < ma.nvals; i++) {
+                auto blockI = ma.rowsIndex[i];
+                auto blockJ = ma.colsIndex[i];
 
-                for (cuBool_Index j = 0; j < mb.mNvals; j++) {
-                    auto valueI = mb.mRowsIndex[j];
-                    auto valueJ = mb.mColsIndex[j];
+                for (cuBool_Index j = 0; j < mb.nvals; j++) {
+                    auto valueI = mb.rowsIndex[j];
+                    auto valueJ = mb.colsIndex[j];
 
                     cuBool_Index idI = k * blockI + valueI;
                     cuBool_Index idJ = t * blockJ + valueJ;
@@ -64,8 +64,8 @@ namespace testing {
             std::sort(vals.begin(), vals.end(), PairCmp{});
 
             for (auto& p: vals) {
-                result.mRowsIndex.push_back(p.i);
-                result.mColsIndex.push_back(p.j);
+                result.rowsIndex.push_back(p.i);
+                result.colsIndex.push_back(p.j);
             }
 
             return std::move(result);

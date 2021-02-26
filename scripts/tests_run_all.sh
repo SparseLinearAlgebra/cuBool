@@ -1,6 +1,5 @@
 # Runs all tests executables
 # Invoke this script within build directory
-./cubool/tests/test_basic_cuda
 ./cubool/tests/test_library_api
 ./cubool/tests/test_matrix_ewiseadd
 ./cubool/tests/test_matrix_extract_sub_matrix

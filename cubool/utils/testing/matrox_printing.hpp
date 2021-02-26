@@ -96,7 +96,7 @@ namespace testing {
 
     template <typename Stream>
     Stream& operator <<(Stream& stream, const Matrix& a) {
-        printMatrix(stream, a.mRowsIndex.data(), a.mColsIndex.data(), a.mNrows, a.mNcols, a.mNvals);
+        printMatrix(stream, a.rowsIndex.data(), a.colsIndex.data(), a.nrows, a.ncols, a.nvals);
         return stream;
     }
     

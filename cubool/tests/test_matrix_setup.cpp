@@ -39,10 +39,10 @@ TEST(cuBool_Matrix, CreateDestroy) {
 void testMatrixFilling(cuBool_Index m, cuBool_Index n, float density) {
     cuBool_Matrix matrix = nullptr;
 
-    testing::Matrix tmatrix = std::move(testing::Matrix::generate(m, n, testing::Condition3(density)));
+    testing::Matrix tmatrix = std::move(testing::Matrix::generateSparse(m, n, density));
 
     ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_Build(matrix, tmatrix.mRowsIndex.data(), tmatrix.mColsIndex.data(), tmatrix.mNvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(matrix, tmatrix.rowsIndex.data(), tmatrix.colsIndex.data(), tmatrix.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Compare test matrix and library one
     ASSERT_EQ(tmatrix.areEqual(matrix), true);
@@ -69,7 +69,6 @@ TEST(cuBool_Matrix, FillingSmall) {
 TEST(cuBool_Matrix, FillingMedium) {
     cuBool_Index m = 500, n = 1000;
     testRun(m, n, CUBOOL_HINT_NO);
-
 }
 
 TEST(cuBool_Matrix, FillingLarge) {
