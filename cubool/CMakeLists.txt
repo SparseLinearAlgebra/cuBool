@@ -86,7 +86,7 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_backend.hpp
         sources/sequential/sq_matrix.cpp
         sources/sequential/sq_matrix.hpp
-        sources/sequential/sq_coo_data.hpp
+        sources/sequential/sq_csr_data.hpp
         sources/sequential/sq_transpose.cpp
         sources/sequential/sq_transpose.hpp
         sources/sequential/sq_kronecker.cpp
@@ -99,6 +99,7 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_reduce.hpp
         sources/sequential/sq_submatrix.cpp
         sources/sequential/sq_submatrix.hpp
+        sources/sequential/sq_exclusive_scan.hpp
             )
 endif()
 

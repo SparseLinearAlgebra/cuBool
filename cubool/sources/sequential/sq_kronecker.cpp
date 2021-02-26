@@ -23,6 +23,7 @@
 /**********************************************************************************/
 
 #include <sequential/sq_kronecker.hpp>
+#include <sequential/sq_exclusive_scan.hpp>
 
 namespace cubool {
 
@@ -35,46 +36,34 @@ namespace cubool {
         }
     }
 
-    void sq_kronecker(const CooData& a, const CooData& b, CooData& out) {
-        size_t nvals = a.mNvals * b.mNvals;
+    void sq_kronecker(const CsrData& a, const CsrData& b, CsrData& out) {
+        size_t nvals = a.nvals * b.nvals;
 
-        out.mNvals = nvals;
-        out.mRowIndices.resize(nvals);
-        out.mColIndices.resize(nvals);
-
-        std::vector<index> aoffsets(a.mNrows + 1, 0);
-        std::vector<index> boffsets(b.mNrows + 1, 0);
-
-        for (index k = 0; k < a.mNvals; k++) {
-            aoffsets[a.mRowIndices[k]]++;
-        }
-
-        for (index k = 0; k < b.mNvals; k++) {
-            boffsets[b.mRowIndices[k]]++;
-        }
-
-        scan(aoffsets);
-        scan(boffsets);
+        out.nvals = nvals;
+        out.rowOffsets.resize(a.nrows * b.nrows + 1, 0);
+        out.colIndices.resize(nvals);
 
         size_t id = 0;
 
-        for (index ai = 0; ai < a.mNrows; ai++) {
-            for (index bi = 0; bi < b.mNrows; bi++) {
-                index rowId = ai * b.mNrows + bi;
+        for (index ai = 0; ai < a.nrows; ai++) {
+            for (index bi = 0; bi < b.nrows; bi++) {
+                index rowId = ai * b.nrows + bi;
 
-                for (index k = aoffsets[ai]; k < aoffsets[ai + 1]; k++) {
-                    index colIdBase = a.mColIndices[k] * b.mNcols;
+                for (index k = a.rowOffsets[ai]; k < a.rowOffsets[ai + 1]; k++) {
+                    index colIdBase = a.colIndices[k] * b.ncols;
 
-                    for (index l = boffsets[bi]; l < boffsets[bi + 1]; l++) {
-                        index colId = colIdBase + b.mColIndices[l];
+                    for (index l = b.rowOffsets[bi]; l < b.rowOffsets[bi + 1]; l++) {
+                        index colId = colIdBase + b.colIndices[l];
 
-                        out.mRowIndices[id] = rowId;
-                        out.mColIndices[id] = colId;
+                        out.rowOffsets[rowId]++;
+                        out.colIndices[id] = colId;
                         id += 1;
                     }
                 }
             }
         }
+
+        sq_exclusive_scan(out.rowOffsets.begin(), out.rowOffsets.end(), 0);
     }
 
 }

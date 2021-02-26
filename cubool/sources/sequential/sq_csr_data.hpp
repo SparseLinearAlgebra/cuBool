@@ -22,48 +22,23 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <sequential/sq_submatrix.hpp>
-#include <sequential/sq_exclusive_scan.hpp>
+#ifndef CUBOOL_SQ_CSR_DATA_HPP
+#define CUBOOL_SQ_CSR_DATA_HPP
+
+#include <core/config.hpp>
+#include <vector>
 
 namespace cubool {
 
-    void sq_submatrix(const CsrData& a, CsrData& sub, index i, index j, index nrows, index ncols) {
-        index first = i;
-        index last = i + nrows;
-        size_t nvals = 0;
-
-        for (index ai = first; ai < last; ai++) {
-            for (index k = a.rowOffsets[ai]; k < a.rowOffsets[ai + 1]; k++) {
-                index aj = a.colIndices[k];
-
-                if (i <= ai && ai < i + nrows && j <= aj && aj < j + ncols) {
-                    nvals += 1;
-                }
-            }
-        }
-
-        sub.nvals = nvals;
-        sub.rowOffsets.resize(nrows + 1);
-        sub.colIndices.resize(nvals);
-
-        size_t idx = 0;
-        for (index ai = first; ai < last; ai++) {
-            for (index k = a.rowOffsets[ai]; k < a.rowOffsets[ai + 1]; k++) {
-                index aj = a.colIndices[k];
-
-                if (i <= ai && ai < i + nrows && j <= aj && aj < j + ncols) {
-                    index ri = ai - i;
-                    index rj = aj - j;
-
-                    sub.rowOffsets[ri] += 1;
-                    sub.colIndices[idx] = rj;
-
-                    idx += 1;
-                }
-            }
-        }
-
-        sq_exclusive_scan(sub.rowOffsets.begin(), sub.rowOffsets.end(), 0);
-    }
+    class CsrData {
+    public:
+        std::vector<index> rowOffsets;
+        std::vector<index> colIndices;
+        index nrows = 0;
+        index ncols = 0;
+        index nvals = 0;
+    };
 
 }
+
+#endif //CUBOOL_SQ_CSR_DATA_HPP

@@ -25,7 +25,7 @@
 #ifndef CUBOOL_SQ_TRANSPOSE_HPP
 #define CUBOOL_SQ_TRANSPOSE_HPP
 
-#include <sequential/sq_coo_data.hpp>
+#include <sequential/sq_csr_data.hpp>
 
 namespace cubool {
 
@@ -34,7 +34,7 @@ namespace cubool {
      * @param a Source
      * @param at Result
      */
-    void sq_transpose(const CooData& a, CooData& at);
+    void sq_transpose(const CsrData& a, CsrData& at);
 
 }
 

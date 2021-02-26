@@ -26,12 +26,12 @@
 #define CUBOOL_SQ_MATRIX_HPP
 
 #include <backend/matrix_base.hpp>
-#include <sequential/sq_coo_data.hpp>
+#include <sequential/sq_csr_data.hpp>
 
 namespace cubool {
 
     /**
-     * Coo matrix for Cpu side operations in sequential backend.
+     * Csr matrix for Cpu side operations in sequential backend.
      */
     class SqMatrix final: public MatrixBase {
     public:
@@ -55,7 +55,7 @@ namespace cubool {
         index getNvals() const override;
 
     private:
-        CooData mData;
+        CsrData mData;
     };
 
 }

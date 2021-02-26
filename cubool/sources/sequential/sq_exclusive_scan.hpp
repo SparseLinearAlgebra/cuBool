@@ -22,23 +22,23 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_SQ_COO_DATA_HPP
-#define CUBOOL_SQ_COO_DATA_HPP
-
-#include <core/config.hpp>
-#include <vector>
+#ifndef CUBOOL_SQ_EXCLUSIVE_SCAN_HPP
+#define CUBOOL_SQ_EXCLUSIVE_SCAN_HPP
 
 namespace cubool {
 
-    class CooData {
-    public:
-        std::vector<index> mRowIndices;
-        std::vector<index> mColIndices;
-        index mNrows = 0;
-        index mNcols = 0;
-        index mNvals = 0;
-    };
+    template <typename FirstT, typename LastT, typename T>
+    void sq_exclusive_scan(FirstT firstT, LastT lastT, T initial) {
+        T sum = initial;
+        while (firstT != lastT) {
+            T next = sum + *firstT;
+            *firstT = sum;
+            sum = next;
+
+            firstT++;
+        }
+    }
 
 }
 
-#endif //CUBOOL_SQ_COO_DATA_HPP
+#endif //CUBOOL_SQ_EXCLUSIVE_SCAN_HPP

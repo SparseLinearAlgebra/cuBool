@@ -25,7 +25,7 @@
 #ifndef CUBOOL_SP_KRONECKER_HPP
 #define CUBOOL_SP_KRONECKER_HPP
 
-#include <sequential/sq_coo_data.hpp>
+#include <sequential/sq_csr_data.hpp>
 
 namespace cubool {
 
@@ -35,7 +35,7 @@ namespace cubool {
      * @param b Input matrix
      * @param[out] out Result matrix
      */
-    void sq_kronecker(const CooData& a, const CooData& b, CooData& out);
+    void sq_kronecker(const CsrData& a, const CsrData& b, CsrData& out);
 
 }
 

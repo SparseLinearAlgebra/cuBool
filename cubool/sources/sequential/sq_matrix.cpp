@@ -26,6 +26,7 @@
 #include <sequential/sq_transpose.hpp>
 #include <sequential/sq_submatrix.hpp>
 #include <sequential/sq_kronecker.hpp>
+#include <sequential/sq_exclusive_scan.hpp>
 #include <core/error.hpp>
 #include <algorithm>
 #include <cassert>
@@ -36,8 +37,8 @@ namespace cubool {
         assert(nrows > 0);
         assert(ncols > 0);
 
-        mData.mNrows = nrows;
-        mData.mNcols = ncols;
+        mData.nrows = nrows;
+        mData.ncols = ncols;
     }
 
     void SqMatrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted) {
@@ -47,13 +48,12 @@ namespace cubool {
         assert(rows);
         assert(cols);
 
-        auto nrows = mData.mNrows;
-        auto ncols = mData.mNcols;
+        auto nrows = mData.nrows;
+        auto ncols = mData.ncols;
 
-        mData.mRowIndices.clear();
-        mData.mColIndices.clear();
-        mData.mRowIndices.reserve(nvals);
-        mData.mColIndices.reserve(nvals);
+        mData.rowOffsets.resize(nrows + 1, 0);
+        mData.colIndices.clear();
+        mData.colIndices.reserve(nvals);
 
         if (isSorted) {
             for (size_t k = 0; k < nvals; k++) {
@@ -63,8 +63,8 @@ namespace cubool {
                 CHECK_RAISE_ERROR(i < nrows, InvalidArgument, "Index out of matrix bound");
                 CHECK_RAISE_ERROR(j < ncols, InvalidArgument, "Index out of matrix bound");
 
-                mData.mRowIndices.push_back(i);
-                mData.mColIndices.push_back(j);
+                mData.rowOffsets[i]++;
+                mData.colIndices.push_back(j);
             }
         }
         else {
@@ -86,12 +86,13 @@ namespace cubool {
             });
 
             for (const auto& p: values) {
-                mData.mRowIndices.push_back(p.i);
-                mData.mColIndices.push_back(p.j);
+                mData.rowOffsets[p.i]++;
+                mData.colIndices.push_back(p.j);
             }
         }
 
-        mData.mNvals = nvals;
+        sq_exclusive_scan(mData.rowOffsets.begin(), mData.rowOffsets.end(), 0);
+        mData.nvals = nvals;
     }
 
     void SqMatrix::extract(index *rows, index *cols, size_t &nvals) {
@@ -103,9 +104,13 @@ namespace cubool {
             assert(rows);
             assert(cols);
 
-            for (size_t k = 0; k < getNvals(); k++) {
-                rows[k] = mData.mRowIndices[k];
-                cols[k] = mData.mColIndices[k];
+            size_t id = 0;
+            for (index i = 0; i < getNrows(); i++) {
+                for (index k = mData.rowOffsets[i]; k < mData.rowOffsets[i + 1]; k++) {
+                    rows[id] = i;
+                    cols[id] = mData.colIndices[k];
+                    id += 1;
+                }
             }
         }
     }
@@ -188,14 +193,14 @@ namespace cubool {
     }
 
     index SqMatrix::getNrows() const {
-        return mData.mNrows;
+        return mData.nrows;
     }
 
     index SqMatrix::getNcols() const {
-        return mData.mNcols;
+        return mData.ncols;
     }
 
     index SqMatrix::getNvals() const {
-        return mData.mNvals;
+        return mData.nvals;
     }
 }

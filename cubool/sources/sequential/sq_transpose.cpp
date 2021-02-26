@@ -23,36 +23,35 @@
 /**********************************************************************************/
 
 #include <sequential/sq_transpose.hpp>
+#include <sequential/sq_exclusive_scan.hpp>
 
 namespace cubool {
 
-    void sq_transpose(const CooData& a, CooData& at) {
-        std::vector<index> offsets(a.mNcols, 0);
+    void sq_transpose(const CsrData& a, CsrData& at) {
+        std::vector<index> offsets(a.ncols, 0);
 
-        for (size_t k = 0; k < a.mNvals; k++) {
-            offsets[a.mColIndices[k]]++;
+        for (size_t k = 0; k < a.nvals; k++) {
+            offsets[a.colIndices[k]]++;
         }
 
-        index sum = 0;
-        for (unsigned int& offset: offsets) {
-            index next = offset + sum;
-            offset = sum;
-            sum = next;
+        sq_exclusive_scan(offsets.begin(), offsets.end(), 0);
+
+        at.rowOffsets.resize(a.ncols + 1);
+        at.colIndices.resize(a.nvals);
+        at.nvals = a.nvals;
+
+        for (index i = 0; i < a.nrows; i++) {
+            for (size_t k = a.rowOffsets[i]; k < a.rowOffsets[i + 1]; k++) {
+                auto j = a.colIndices[k];
+
+                auto offset = offsets[j]++;
+
+                at.rowOffsets[j]++;
+                at.colIndices[offset] = i;
+            }
         }
 
-        at.mRowIndices.resize(a.mNvals);
-        at.mColIndices.resize(a.mNvals);
-        at.mNvals = a.mNvals;
-
-        for (size_t k = 0; k < a.mNvals; k++) {
-            auto i = a.mRowIndices[k];
-            auto j = a.mColIndices[k];
-
-            auto offset = offsets[j]++;
-
-            at.mRowIndices[offset] = j;
-            at.mColIndices[offset] = i;
-        }
+        sq_exclusive_scan(at.rowOffsets.begin(), at.rowOffsets.end(), 0);
     }
 
 }
