@@ -163,10 +163,10 @@ namespace cubool {
         index N = a->getNcols();
 
         CHECK_RAISE_ERROR(M == b->getNrows(), InvalidArgument, "Passed matrices have incompatible size");
-        CHECK_RAISE_ERROR(N == b->getNrows(), InvalidArgument, "Passed matrices have incompatible size");
+        CHECK_RAISE_ERROR(N == b->getNcols(), InvalidArgument, "Passed matrices have incompatible size");
 
         CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Matrix has incompatible size for operation result");
-        CHECK_RAISE_ERROR(N == this->getNrows(), InvalidArgument, "Matrix has incompatible size for operation result");
+        CHECK_RAISE_ERROR(N == this->getNcols(), InvalidArgument, "Matrix has incompatible size for operation result");
 
         mHnd->eWiseAdd(*a->mHnd, *b->mHnd);
     }

@@ -339,10 +339,10 @@ cuBool
 ├── cubool - library core source code
 │   ├── include - library public C API 
 │   ├── sources - source-code for implementation
-│   │   ├── backend - common interfaces
 │   │   ├── core - library core and state management
-│   │   ├── cpu - fallback cpu implementation
-│   │   └── cuda - cuda backend
+│   │   ├── backend - common interfaces
+│   │   ├── cuda - cuda backend
+│   │   └── sequential - fallback cpu backend
 │   ├── utils - testing utilities
 │   └── tests - gtest-based unit-tests collection
 ├── python - pycubool related source
