@@ -50,22 +50,16 @@ namespace cubool {
             MatrixType operator()(const MatrixType& a) {
                 auto nrows = a.m_rows;
                 auto ncols = a.m_cols;
-                auto nvals = a.m_vals;
 
                 ContainerType<IndexType> rowIndex(nrows + 1);
                 ContainerType<IndexType> tmpRowIndex(nrows + 1);
 
-                // Assign for each row 0 (empty)
-                thrust::fill(tmpRowIndex.begin(), tmpRowIndex.end(), (IndexType) 0);
-
-                // For each value find row and set this row in 1
-                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(nvals),
-                    [aRowIndex = a.m_row_index.data(),
-                     tmpRowIndex = tmpRowIndex.data(),
-                     nrows]
-                    __device__ (IndexType valuedIdx) {
-                        auto rowId = findNearestRowIdx(valuedIdx, nrows, aRowIndex);
-                        atomicOr((tmpRowIndex + rowId).get(), (IndexType) 1);
+                // For each row if not empty then row will have 1 value
+                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(nrows),
+                    [aRowIndex = a.m_row_index.data(), tmpRowIndex = tmpRowIndex.data()]
+                    __device__ (IndexType i) {
+                        auto nnz = aRowIndex[i + 1] - aRowIndex[i];
+                        tmpRowIndex[i] = nnz > 0? 1: 0;
                     }
                 );
 

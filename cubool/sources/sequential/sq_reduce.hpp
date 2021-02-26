@@ -25,7 +25,17 @@
 #ifndef CUBOOL_SP_REDUCE_HPP
 #define CUBOOL_SP_REDUCE_HPP
 
+#include <sequential/sq_csr_data.hpp>
+
 namespace cubool {
+
+    /**
+     * Reduce matrix `a` to column vector `out`
+     *
+     * @param a Input matrix
+     * @param[out] out Where to store result
+     */
+    void sq_reduce(const CsrData& a, CsrData& out);
 
 }
 

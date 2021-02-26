@@ -74,4 +74,22 @@ TEST(cuBool_Matrix, ReduceLarge) {
     testRun(m, n, step, CUBOOL_HINT_NO);
 }
 
+TEST(cuBool_Matrix, ReduceSmallFallback) {
+    cuBool_Index m = 100, n = 200;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Matrix, ReduceMediumFallback) {
+    cuBool_Index m = 400, n = 700;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Matrix, ReduceLargeFallback) {
+    cuBool_Index m = 2000, n = 4000;
+    float step = 0.01f;
+    testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
+}
+
 CUBOOL_GTEST_MAIN

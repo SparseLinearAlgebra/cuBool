@@ -30,7 +30,7 @@ as well as python high-level wrapper with automated resources management.
 - [X] CSR submatrix
 - [X] CSR matrix reduce
 - [X] CSR slicing
-- [ ] Sequential fallback backend for CPU
+- [X] Sequential fallback backend for CPU
 - [ ] IO matrix loading from mtx file
 - [ ] IO matrix saving into mtx file
 - [ ] IO matrix saving into gviz format

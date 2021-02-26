@@ -28,6 +28,7 @@
 #include <sequential/sq_kronecker.hpp>
 #include <sequential/sq_ewiseadd.hpp>
 #include <sequential/sq_spgemm.hpp>
+#include <sequential/sq_reduce.hpp>
 #include <sequential/sq_exclusive_scan.hpp>
 #include <core/error.hpp>
 #include <algorithm>
@@ -173,7 +174,17 @@ namespace cubool {
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
         auto M = other->getNrows();
-        auto N = other->getNcols();
+        auto N = 1;
+
+        assert(M == this->getNrows());
+        assert(N == this->getNcols());
+
+        CsrData out;
+        out.nrows = this->getNrows();
+        out.ncols = this->getNcols();
+
+        sq_reduce(other->mData, out);
+        this->mData = std::move(out);
     }
 
     void SqMatrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) {
