@@ -56,3 +56,8 @@ jobs:
       - name: Build library sources
         working-directory: ${{ env.build_dir }}
         run: cmake --build . --target all --verbose -j `nproc`
+
+      - name: Run unit-tests (sequential backend)
+        working-directory: ${{ env.build_dir }}
+        run: bash scripts/tests_run_all.sh
+        shell: bash
