@@ -1,6 +1,6 @@
-from python import pycubool
-from python.tests import test_example
 import random
+from python import pycubool
+from python.tests import test_transitive_closure
 
 
 def lists_to_pairs(rows, cols):
@@ -42,21 +42,21 @@ dim = (100, 100)
 to_gen = 500
 
 a, a_set = gen_matrix(dim, to_gen)
-r, r_set = gen_matrix(dim, to_gen)
+b, b_set = gen_matrix(dim, to_gen)
 
 print("Matrix a din:", a.shape, "values count:", a.nvals)
-print("Matrix r dim:", r.shape, "values count:", r.nvals)
+print("Matrix b dim:", b.shape, "values count:", b.nvals)
 
-pycubool.add(r, a)
+r = a.ewiseadd(b)
 
 print("Matrix r values count:", r.nvals)
 
 rows, cols = r.to_lists()
 res_set = lists_to_pairs(rows, cols)
 
-print(r_set.union(a_set) == res_set)
+print(b_set.union(a_set) == res_set)
 
-t = test_example.transitive_closure(a)
+t = test_transitive_closure.transitive_closure(a)
 
 print(a.nvals, a.shape)
 print(t.nvals, t.shape)
@@ -64,10 +64,16 @@ print(t.nvals, t.shape)
 rows = [0, 1, 2, 3, 3, 3, 3]
 cols = [0, 1, 2, 0, 1, 2, 3]
 
-matrix = pycubool.Matrix.empty((4, 4))
-matrix.build(rows, cols, nvals=7)
-
+matrix = pycubool.Matrix.from_lists((4, 4), rows, cols, is_sorted=True)
 transposed = matrix.transpose()
+submatrix = matrix[0:3, 1:]
 rows, cols = transposed.to_lists()
 
 print([(rows[i], cols[i]) for i in range(transposed.nvals)])
+
+print(matrix)
+print(transposed)
+print(submatrix)
+
+print(list(iter(matrix)))
+

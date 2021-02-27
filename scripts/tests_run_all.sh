@@ -1,7 +1,11 @@
 # Runs all tests executables
 # Invoke this script within build directory
-# (Maybe exists more elegant method to do this?)
-./tests/test_basic_cuda
-./tests/test_library_api
-./tests/test_matrix_dense
-./tests/test_matrix_csr
+./cubool/tests/test_library_api
+./cubool/tests/test_matrix_ewiseadd
+./cubool/tests/test_matrix_extract_sub_matrix
+./cubool/tests/test_matrix_kronecker
+./cubool/tests/test_matrix_misc
+./cubool/tests/test_matrix_mxm
+./cubool/tests/test_matrix_reduce
+./cubool/tests/test_matrix_setup
+./cubool/tests/test_matrix_transpose

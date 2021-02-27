@@ -5,7 +5,6 @@ from . import bridge
 __all__ = [
     "singleton",
     "loaded_dll",
-    "instance",
     "init_wrapper"
 ]
 
@@ -15,18 +14,13 @@ singleton = None
 # Exposed imported dll (owned by _lib_wrapper)
 loaded_dll = None
 
-# Exposed instance reference (owned by _lib_wrapper)
-instance = None
-
 
 def init_wrapper():
     global singleton
     global loaded_dll
-    global instance
 
     singleton = Wrapper()
     loaded_dll = singleton.loaded_dll
-    instance = singleton.instance
 
 
 class Wrapper:
@@ -36,36 +30,27 @@ class Wrapper:
 
      - Ctypes imported dll instance
      - Ctypes functions declarations
-     - Instance of the library
      - Import path
 
-    At exit global instance of the class in properly destroyed.
-    Instance of the cubool in released and the dll is closed.
+    At exit global instance of the class is properly destroyed.
+    Instance of the cubool library in released and the dll is closed.
     """
 
     def __init__(self):
-        self.instance = None
         self.loaded_dll = None
 
         self.load_path = os.environ["CUBOOL_PATH"]
         self.loaded_dll = bridge.load_and_configure(self.load_path)
-
-        self._setup_instance()
+        self._setup_library()
 
     def __del__(self):
-        self._release_instance()
+        self._release_library()
         pass
 
-    def _setup_instance(self):
-        self.instance = ctypes.c_void_p(None)
-        self._descInstance = bridge.configure_instance_desc()
-        self._descInstance.memoryType = 0
-
-        status = self.loaded_dll.CuBool_Instance_NewExt(ctypes.byref(self._descInstance),
-                                                        ctypes.byref(self.instance))
-
+    def _setup_library(self):
+        status = self.loaded_dll.cuBool_Initialize(ctypes.c_uint(bridge.get_init_hints(False)))
         bridge.check(status)
 
-    def _release_instance(self):
-        status = self.loaded_dll.CuBool_Instance_Free(self.instance)
+    def _release_library(self):
+        status = self.loaded_dll.cuBool_Finalize()
         bridge.check(status)
