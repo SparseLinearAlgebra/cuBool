@@ -21,7 +21,7 @@ element-wise addition, matrix-matrix multiplication and Kronecker product.
 
 **As a fallback** library provides sequential backend for mentioned above operations
 for computations on CPU side only. This backend is selected automatically
-if Cuda compatible is not presented in the system. This can be very quite handy for 
+if Cuda compatible device is not presented in the system. This can be quite handy for 
 prototyping algorithms on a local computer for later running on a powerful server.  
 
 ### Features
@@ -267,7 +267,7 @@ This project is licensed under MIT License. License text can be found in the
 
 ## Acknowledgments
 
-This is research project of the Programming Languages and Tools Laboratory
+This is a research project of the Programming Languages and Tools Laboratory
 at JetBrains Research company. Laboratory website [link](https://research.jetbrains.org/groups/plt_lab/).
 
 ## Also
