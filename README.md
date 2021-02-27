@@ -1,22 +1,28 @@
 ![Project logo](https://github.com/JetBrains-Research/cuBool/blob/master/docs/logo/cubool_logo_trsp.png?raw=true)
 
-# CUBOOL
+# cuBool
 
 [![JB Research](https://jb.gg/badges/research-flat-square.svg)](https://research.jetbrains.org/)
 [![Ubuntu](https://github.com/JetBrains-Research/cuBool/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/JetBrains-Research/cuBool/actions)
 [![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE)
 
-CuBool is a linear boolean algebra library primitives and operations for 
-work with dense and sparse matrices written on the NVIDIA CUDA platform. The primary 
+**cuBool** is a linear Boolean algebra library primitives and operations for 
+work with sparse matrices written on the NVIDIA CUDA platform. The primary 
 goal of the library is implementation, testing and profiling algorithms for
 solving *formal-language-constrained problems*, such as *context-free* 
 and *regular* path queries with various semantics for graph databases.
 The library provides C-compatible API, written in the GraphBLAS style,
-as well as python high-level wrapper with automated resources management.
+as well as python high-level wrapper with automated resources management and fancy syntax sugar.
 
-> The name of the library is formed by a combination of words *Cuda* and *Boolean*,
-> what literally means *Cuda with Boolean* and sounds very similar to the name of 
-> the programming language *COBOL*.
+**The primary library primitive** is a sparse boolean matrix. The library provides 
+the most popular operations for matrix manipulation, such as construction from
+values, transpose, sub-matrix extraction, matrix-to-vector reduce, matrix-matrix
+element-wise addition, matrix-matrix multiplication and Kronecker product.  
+
+**As a fallback** library provides sequential backend for mentioned above operations
+for computations on CPU side only. This backend is selected automatically
+if Cuda compatible is not presented in the system. This can be very quite handy for 
+prototyping algorithms on a local computer for later running on a powerful server.  
 
 ### Features
 
@@ -55,9 +61,12 @@ as well as python high-level wrapper with automated resources management.
 - GCC Compiler 
 - NVIDIA CUDA toolkit
 - Python 3 (for `pycubool` library)
-- Git
+- Git (to get source code)
 
-### Setup
+### Cuda & Compiler Setup
+
+> Skip thia section if you want to build library with only sequential backend
+> without cuda backend support.
 
 Before the CUDA setup process, validate your system NVIDIA driver with `nvidia-smi`
 command. if it is need, install required driver via `ubuntu-drivers devices` and 
@@ -129,7 +138,7 @@ Configure build in Release mode with tests and run actual compilation process:
 ```shell script
 $ cmake .. -DCMAKE_BUILD_TYPE=Release -DCUBOOL_BUILD_TESTS=ON
 $ cmake --build . --target all -j `nproc`
-$ sh ./scripts/tests_run_all.sh
+$ bash ./scripts/tests_run_all.sh
 ```
 
 By default, the following cmake options will be automatically enabled:
@@ -158,8 +167,6 @@ which uses this variable in order to located library object.
 
 
 ## Usage 
-
-### Brief Example
 
 The following C++ code snipped demonstrates, how library functions and
 primitives can be used for the transitive closure evaluation of the directed
@@ -219,117 +226,6 @@ def transitive_closure(a: pycubool.Matrix):
     return t
 ```
 
-### Detailed Example
-
-The following code snippet demonstrates, how to create basic cubool based application
-for sparse matrix-matrix multiplication and matrix-matrix element-wise addition
-with cubool C API usage.
-
-```c++
-/************************************************/
-/* Evaluate transitive closure for some graph G */
-/************************************************/
-
-/* Actual cubool C API */
-#include <cubool/cubool.h>
-#include <stdio.h>
-
-/* Macro to check result of the function call */
-#define CHECK(f) { cuBool_Status s = f; if (s != CUBOOL_STATUS_SUCCESS) return s; }
-
-int main() {
-    cuBool_Matrix A;
-    cuBool_Matrix TC;
-
-    /* System may not provide Cuda compatible device */
-    CHECK(cuBool_Initialize(CUBOOL_HINT_NO));
-
-    /* Input graph G */
-
-    /*  -> (1) ->           */
-    /*  |       |           */
-    /* (0) --> (2) <--> (3) */
-
-    /* Adjacency matrix in sparse format  */
-    cuBool_Index n = 4;
-    cuBool_Index e = 5;
-    cuBool_Index rows[] = { 0, 0, 1, 2, 3 };
-    cuBool_Index cols[] = { 1, 2, 2, 3, 2 };
-
-    /* Create matrix */
-    CHECK(cuBool_Matrix_New(&A, n, n));
-
-    /* Fill the data */
-    CHECK(cuBool_Matrix_Build(A, rows, cols, e, CUBOOL_HINT_VALUES_SORTED));
-
-    /* Now we have created the following matrix */
-
-    /*    [0][1][2][3]
-    /* [0] .  1  1  .  */
-    /* [1] .  .  1  .  */
-    /* [2] .  .  .  1  */
-    /* [3] .  .  1  .  */
-
-    /* Create result matrix from source as copy */
-    CHECK(cuBool_Matrix_Duplicate(A, &TC));
-
-    /* Query current number on non-zero elements */
-    cuBool_Index total = 0;
-    cuBool_Index current;
-    CHECK(cuBool_Matrix_Nvals(TC, &current));
-
-    /* Loop while values are added */
-    while (current != total) {
-        total = current;
-
-        /** Transitive closure step */
-        CHECK(cuBool_MxM(TC, TC, TC, CUBOOL_HINT_ACCUMULATE));
-        CHECK(cuBool_Matrix_Nvals(TC, &current));
-    }
-
-    /** Get result */
-    cuBool_Index tc_rows[16], tc_cols[16];
-    CHECK(cuBool_Matrix_ExtractPairs(TC, tc_rows, tc_cols, &total));
-
-    /** Now tc_rows and tc_cols contain (i,j) pairs of the result G_tc graph */
-
-    /*    [0][1][2][3]
-    /* [0] .  1  1  1  */
-    /* [1] .  .  1  1  */
-    /* [2] .  .  1  1  */
-    /* [3] .  .  1  1  */
-
-    /* Output result size */
-    printf("Nnz(tc)=%lli\n", (unsigned long long) total);
-
-    for (cuBool_Index i = 0; i < total; i++)
-        printf("(%u,%u) ", tc_rows[i], tc_cols[i]);
-
-    /* Release resources */
-    CHECK(cuBool_Matrix_Free(A));
-    CHECK(cuBool_Matrix_Free(TC));
-
-    /* Release library */
-    return cuBool_Finalize() != CUBOOL_STATUS_SUCCESS;
-}
-```
-
-Export path to library cubool, compile the file and run with the following
-command (assuming, that source code is placed into tc.cpp file):
-
-```shell script
-$ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:path/to/folder/with/libcubool/"
-$ gcc tc.cpp -o tc -I/path/to/cubool/include/dir/ -L/path/to/folder/with/libcubool/ -lcubool
-$ ./tc 
-```
-
-The program will print the following output:
-
-```
-Nnz(tc)=9
-(0,1) (0,2) (0,3) (1,2) (1,3) (2,2) (2,3) (3,2) (3,3)
-```
-
 ## Directory structure
 
 ```
@@ -372,4 +268,10 @@ This project is licensed under MIT License. License text can be found in the
 ## Acknowledgments
 
 This is research project of the Programming Languages and Tools Laboratory
-at Jet-Brains Research company. Laboratory website [link](https://research.jetbrains.org/groups/plt_lab/projects/).
+at JetBrains Research company. Laboratory website [link](https://research.jetbrains.org/groups/plt_lab/).
+
+## Also
+
+The name of the library is formed by a combination of words *Cuda* and *Boolean*,
+what literally means *Cuda with Boolean* and sounds very similar to the name of 
+the programming language *COBOL*.
