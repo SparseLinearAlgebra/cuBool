@@ -7,11 +7,11 @@ class TestMatrixKronecker(unittest.TestCase):
         """
         Unit test for kronecker product of two matrices
         """
-        first_matrix = test_utils.build_matrix_from_file("/matrices/kronecker_4.txt")
-        second_matrix = test_utils.build_matrix_from_file("/matrices/kronecker_5.txt")
+        first_matrix = test_utils.build_matrix_from_file("matrices/kronecker_4.txt")
+        second_matrix = test_utils.build_matrix_from_file("matrices/kronecker_5.txt")
 
         actual_matrix = first_matrix.kronecker(second_matrix)
-        expected_matrix = test_utils.build_matrix_from_file("/matrices/kronecker_result.txt")
+        expected_matrix = test_utils.build_matrix_from_file("matrices/kronecker_result.txt")
 
         self.assertTrue(test_utils.compare_matrix(expected_matrix, actual_matrix))
 

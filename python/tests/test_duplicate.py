@@ -7,7 +7,7 @@ class TestMatrixDuplicate(unittest.TestCase):
         """
         Unit test for duplicate of matrix
         """
-        first_matrix = test_utils.build_matrix_from_file("/matrices/duplicate.txt")
+        first_matrix = test_utils.build_matrix_from_file("matrices/duplicate.txt")
 
         actual_matrix = first_matrix.dup()
 

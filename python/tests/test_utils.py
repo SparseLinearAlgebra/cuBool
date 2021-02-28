@@ -5,11 +5,10 @@ def _read_matrix(path: str):
     """
     Read matrix from file
     """
-
-    file = open(path, "r")
-    n, m = map(int, file.readline().split())
-    rows = list(map(int, file.readline().split()))
-    cols = list(map(int, file.readline().split()))
+    with open(path, 'r') as file:
+        n, m = map(int, file.readline().split())
+        rows = list(map(int, file.readline().split()))
+        cols = list(map(int, file.readline().split()))
     return n, m, [rows, cols]
 
 

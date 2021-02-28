@@ -5,7 +5,7 @@ import test_utils
 class TestMatrixMethods(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.matrix = test_utils.build_matrix_from_file("/matrices/property.txt")
+        self.matrix = test_utils.build_matrix_from_file("matrices/property.txt")
         self.result_property = list()
         with open("/matrices/property_result.txt", 'r') as _file:
             line = list(map(int, _file.readline().split()))
