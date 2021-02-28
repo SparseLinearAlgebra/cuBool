@@ -1,19 +1,23 @@
 import pycubool
 
 
-def _read_matrix(path: str):
+def _read_matrix_mtx(path: str):
     """
     Read matrix from file
     """
     with open(path, 'r') as file:
-        n, m = map(int, file.readline().split())
-        rows = list(map(int, file.readline().split()))
-        cols = list(map(int, file.readline().split()))
+        n, m, nvals = map(int, file.readline().split())
+        rows = list()
+        cols = list()
+        for k in range(nvals):
+            i, j = map(int, file.readline().split())
+            rows.append(i)
+            cols.append(j)
     return n, m, [rows, cols]
 
 
 def build_matrix_from_file(path: str) -> pycubool.Matrix:
-    n, m, matrix = _read_matrix(path)
+    n, m, matrix = _read_matrix_mtx(path)
     nvals = len(matrix[0])
     result = pycubool.Matrix.empty([n, m])
     result.build(matrix[0], matrix[1], nvals)

@@ -7,10 +7,10 @@ class TestMatrixReduce(unittest.TestCase):
         """
         Unit test for reduce of matrix
         """
-        first_matrix = test_utils.build_matrix_from_file("matrices/reduce.txt")
+        first_matrix = test_utils.build_matrix_from_file("../data/reduce.mtx")
 
         actual_matrix = first_matrix.reduce()
-        expected_matrix = test_utils.build_matrix_from_file("matrices/reduce_result.txt")
+        expected_matrix = test_utils.build_matrix_from_file("../data/reduce_result.mtx")
 
         self.assertTrue(test_utils.compare_matrix(expected_matrix, actual_matrix))
 
