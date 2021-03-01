@@ -44,10 +44,10 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [X] Wrapper for Python API
 - [ ] Wrapper syntax sugar
 - [ ] Tests for Python wrapper
+- [ ] Pip package
 - [ ] Code examples
 - [ ] User guide
 - [X] Unit Tests collection
-- [X] Dummy library implementation for testing
 - [ ] Publish built artifacts and shared libs
 - [ ] Publish stable source code archives
 
@@ -65,7 +65,7 @@ prototyping algorithms on a local computer for later running on a powerful serve
 
 ### Cuda & Compiler Setup
 
-> Skip thia section if you want to build library with only sequential backend
+> Skip this section if you want to build library with only sequential backend
 > without cuda backend support.
 
 Before the CUDA setup process, validate your system NVIDIA driver with `nvidia-smi`
@@ -216,8 +216,8 @@ def transitive_closure(a: pycubool.Matrix):
     :return: The transitive closure adjacency matrix
     """
 
-    t = a.dup()                       # Duplicate matrix where to store result
-    total = 0                         # Current number of values
+    t = a.dup()                           # Duplicate matrix where to store result
+    total = 0                             # Current number of values
 
     while total != t.nvals:
         total = t.nvals
@@ -263,7 +263,7 @@ cuBool
 ## License
 
 This project is licensed under MIT License. License text can be found in the 
-[license file](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE).
+[license file](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE.md).
 
 ## Acknowledgments
 

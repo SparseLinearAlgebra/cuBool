@@ -165,3 +165,15 @@ if (CUBOOL_BUILD_TESTS)
     message(STATUS "Add unit tests directory to the project")
     add_subdirectory(tests)
 endif()
+
+# todo: Different platforms has specific naming conventions
+set(LIBRARY_FILE_NAME "libcubool.so")
+
+# Copy cubool library after build
+add_custom_command(
+    TARGET cubool POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E
+    copy
+    "${CMAKE_BINARY_DIR}/cubool/${LIBRARY_FILE_NAME}"
+    "${CMAKE_BINARY_DIR}/python/pycubool"
+    COMMENT "Copy cubool lib into python folder")

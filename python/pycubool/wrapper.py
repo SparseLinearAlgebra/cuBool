@@ -1,5 +1,6 @@
 import os
 import ctypes
+import pathlib
 from . import bridge
 
 __all__ = [
@@ -39,7 +40,14 @@ class Wrapper:
     def __init__(self):
         self.loaded_dll = None
 
-        self.load_path = os.environ["CUBOOL_PATH"]
+        try:
+            # Try from config if present
+            self.load_path = os.environ["CUBOOL_PATH"]
+        except KeyError:
+            # Fallback to package directory
+            source_path = pathlib.Path(__file__).resolve()
+            self.load_path = str(source_path.parent / "libcubool.so")
+
         self.loaded_dll = bridge.load_and_configure(self.load_path)
         self._setup_library()
 
