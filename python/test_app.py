@@ -76,4 +76,3 @@ print(transposed)
 print(submatrix)
 
 print(list(iter(matrix)))
-help(pycubool)

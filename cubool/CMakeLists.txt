@@ -21,7 +21,9 @@ set(CUBOOL_SOURCES
     sources/core/library.cpp
     sources/core/library.hpp
     sources/core/matrix.cpp
-    sources/core/matrix.hpp)
+    sources/core/matrix.hpp
+    sources/io/logger.cpp
+    sources/io/logger.hpp)
 
 set(CUBOOL_C_API_SOURCES
     include/cubool/cubool.h
@@ -30,6 +32,7 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_LicenseInfo_Get.cpp
     sources/cuBool_Initialize.cpp
     sources/cuBool_Finalize.cpp
+    sources/cuBool_SetupLogger.cpp
     sources/cuBool_Matrix_New.cpp
     sources/cuBool_Matrix_Build.cpp
     sources/cuBool_Matrix_ExtractPairs.cpp

@@ -15,6 +15,22 @@ _hint_gpu_mem_managed = 0x2
 _hint_values_sorted = 0x4
 _hint_accumulate = 0x8
 _hint_relaxed_release = 0x16
+_hint_log_error = 0x32
+_hint_log_warning = 0x64
+_hint_log_all = 0x128
+
+
+def get_log_hints(default=True, error=False, warning=False):
+    hints = _hint_no
+
+    if default:
+        hints |= _hint_log_all
+    if error:
+        hints |= _hint_log_error
+    if warning:
+        hints |= _hint_log_warning
+
+    return hints
 
 
 def get_init_hints(is_gpu_mem_managed):
@@ -41,6 +57,12 @@ def load_and_configure(cubool_lib_path: str):
     hints_t = ctypes.c_uint
     matrix_p = ctypes.c_void_p
     p_to_matrix_p = ctypes.POINTER(matrix_p)
+
+    lib.cuBool_SetupLogging.restype = status_t
+    lib.cuBool_SetupLogging.argtypes = [
+        ctypes.POINTER(ctypes.c_char),
+        hints_t
+    ]
 
     lib.cuBool_Initialize.restype = status_t
     lib.cuBool_Initialize.argtypes = [

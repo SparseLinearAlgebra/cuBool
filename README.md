@@ -268,7 +268,7 @@ This project is licensed under MIT License. License text can be found in the
 ## Acknowledgments
 
 This is a research project of the Programming Languages and Tools Laboratory
-at JetBrains Research company. Laboratory website [link](https://research.jetbrains.org/groups/plt_lab/).
+at JetBrains-Research. Laboratory website [link](https://research.jetbrains.org/groups/plt_lab/).
 
 ## Also
 

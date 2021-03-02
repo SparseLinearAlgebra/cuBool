@@ -27,7 +27,12 @@
 #include <core/matrix.hpp>
 #include <backend/backend_base.hpp>
 #include <backend/matrix_base.hpp>
+#include <io/logger.hpp>
+
+#include <fstream>
 #include <iostream>
+#include <memory>
+#include <iomanip>
 
 #ifdef CUBOOL_WITH_CUDA
 #include <cuda/cuda_backend.hpp>
@@ -41,6 +46,7 @@ namespace cubool {
 
     std::unordered_set<class MatrixBase*> Library::mAllocated;
     BackendBase* Library::mBackend = nullptr;
+    std::shared_ptr<class Logger>  Library::mLogger = std::make_shared<DummyLogger>();
     bool Library::mRelaxedRelease = false;
 
     void Library::initialize(hints initHints) {
@@ -58,6 +64,8 @@ namespace cubool {
             if (!mBackend->isInitialized()) {
                 delete mBackend;
                 mBackend = nullptr;
+
+                mLogger->logWarning("Failed to initialize Cuda backend");
             }
 #endif
         }
@@ -71,6 +79,8 @@ namespace cubool {
             if (!mBackend->isInitialized()) {
                 delete mBackend;
                 mBackend = nullptr;
+
+                mLogger->logWarning("Failed to initialize Cpu fallback backend");
             }
         }
 #endif
@@ -101,6 +111,62 @@ namespace cubool {
         CHECK_RAISE_CRITICAL_ERROR(mBackend != nullptr || mRelaxedRelease, InvalidState, "Library is not initialized");
     }
 
+    void Library::setupLogging(const char *logFileName, cuBool_Hints hints) {
+        CHECK_RAISE_ERROR(logFileName != nullptr, InvalidArgument, "Null file name is not allowed");
+
+        auto lofFile = std::make_shared<std::ofstream>();
+
+        lofFile->open(logFileName, std::ios::out);
+
+        if (!lofFile->is_open()) {
+            RAISE_ERROR(InvalidArgument, "Failed to create logging file");
+        }
+
+        // Create logger and setup filters && post-actions
+        auto textLogger = std::make_shared<TextLogger>();
+
+        textLogger->addFilter([=](Logger::Level level, const std::string& message) -> bool {
+            bool all = hints == 0x0 || (hints & CUBOOL_HINT_LOG_ALL);
+            bool error = hints & CUBOOL_HINT_LOG_ERROR;
+            bool warning = hints & CUBOOL_HINT_LOG_WARNING;
+
+            return all ||
+                    (error && level == Logger::Level::Error) ||
+                    (warning && level == Logger::Level::Warning);
+        });
+
+        textLogger->addOnLoggerAction([=](size_t id, Logger::Level level, const std::string& message) {
+            auto& file = *lofFile;
+
+            const auto idSize = 10;
+            const auto levelSize = 20;
+
+            file << "[" << std::setw(idSize) << id << std::setw(-1) << "]";
+            file << "[" << std::setw(levelSize);
+            switch (level) {
+                case Logger::Level::Info:
+                    file << "Level::Info";
+                    break;
+                case Logger::Level::Warning:
+                    file << "Level::Warning";
+                    break;
+                case Logger::Level::Error:
+                    file << "Level::Error";
+                    break;
+                default:
+                    file << "Level::Always";
+            }
+            file << std::setw(-1) << "] ";
+            file << message << std::endl <<  std::endl;
+        });
+
+        // Assign new text logger
+        mLogger = textLogger;
+
+        // Initial message
+        mLogger->logInfo("*** cuBool::Logger file ***");
+    }
+
     MatrixBase *Library::createMatrix(size_t nrows, size_t ncols) {
         CHECK_RAISE_ERROR(nrows > 0, InvalidArgument, "Cannot create matrix with zero dimension");
         CHECK_RAISE_ERROR(ncols > 0, InvalidArgument, "Cannot create matrix with zero dimension");
@@ -118,7 +184,11 @@ namespace cubool {
     }
 
     void Library::handleError(const std::exception& error) {
-        std::cerr << "cuBool:Error: " << error.what() << std::endl;
+        mLogger->log(Logger::Level::Error, error.what());
+    }
+
+    class Logger * Library::getLogger() {
+        return mLogger.get();
     }
 
 }

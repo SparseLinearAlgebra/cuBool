@@ -22,34 +22,72 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_LIBRARY_HPP
-#define CUBOOL_LIBRARY_HPP
-
-#include <core/config.hpp>
-#include <core/error.hpp>
-#include <memory>
-#include <unordered_set>
+#include <io/logger.hpp>
 
 namespace cubool {
 
-    class Library {
-    public:
-        static void initialize(hints initHints);
-        static void finalize();
-        static void validate();
-        static void setupLogging(const char* logFileName, cuBool_Hints hints);
-        static class MatrixBase *createMatrix(size_t nrows, size_t ncols);
-        static void releaseMatrix(class MatrixBase *matrixBase);
-        static void handleError(const std::exception& error);
-        static class Logger* getLogger();
+    void Logger::logInfo(const std::string &message) {
+        this->log(Level::Info, message);
+    }
 
-    private:
-        static std::unordered_set<class MatrixBase*> mAllocated;
-        static class BackendBase* mBackend;
-        static std::shared_ptr<class Logger> mLogger;
-        static bool mRelaxedRelease;
-    };
+    void Logger::logWarning(const std::string &message) {
+        this->log(Level::Warning, message);
+    }
 
+    void Logger::logError(const std::string &message) {
+        this->log(Level::Error, message);
+    }
+
+    void TextLogger::log(Logger::Level level, const std::string &message) {
+        bool pass = true;
+
+        // If pass all filters
+        for (const auto& filter: mFilters) {
+            pass = pass && filter(level, message);
+        }
+
+        if (pass || level == Level::Always) {
+            auto id = mNextMessageId++;
+
+            Entry entry;
+            entry.message = message;
+            entry.level = level;
+            entry.id = id;
+
+            mEntries.emplace_back(std::move(entry));
+
+            // Notify listeners
+            for (const auto& action: mOnLogged) {
+                action(id, level, message);
+            }
+        }
+    }
+
+    size_t TextLogger::getMessagesCount() const {
+        return mEntries.size();
+    }
+
+    void TextLogger::addFilter(Filter filter) {
+        mFilters.emplace_back(std::move(filter));
+    }
+
+    void TextLogger::removeAllFilters() {
+        mFilters.clear();
+    }
+
+    void TextLogger::addOnLoggerAction(OnLogged onLogged) {
+        mOnLogged.emplace_back(std::move(onLogged));
+    }
+
+    void TextLogger::removeAllOnLoggedActions() {
+        mOnLogged.clear();
+    }
+
+    void DummyLogger::log(Logger::Level level, const std::string &message) {
+        // no op.
+    }
+
+    size_t DummyLogger::getMessagesCount() const {
+        return 0;
+    }
 }
-
-#endif //CUBOOL_LIBRARY_HPP

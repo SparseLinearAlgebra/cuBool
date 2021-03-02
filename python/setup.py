@@ -5,7 +5,8 @@ import setuptools
 HERE = pathlib.Path(__file__).parent
 
 # The text of the README file
-README = (HERE / "README.md").read_text()
+with open(HERE / "README.md", "r", encoding="utf-8") as fh:
+    README = fh.read()
 
 setuptools.setup(
     name="pycubool",

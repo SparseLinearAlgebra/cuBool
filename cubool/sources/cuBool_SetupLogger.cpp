@@ -22,34 +22,13 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_LIBRARY_HPP
-#define CUBOOL_LIBRARY_HPP
+#include <cuBool_Common.hpp>
 
-#include <core/config.hpp>
-#include <core/error.hpp>
-#include <memory>
-#include <unordered_set>
-
-namespace cubool {
-
-    class Library {
-    public:
-        static void initialize(hints initHints);
-        static void finalize();
-        static void validate();
-        static void setupLogging(const char* logFileName, cuBool_Hints hints);
-        static class MatrixBase *createMatrix(size_t nrows, size_t ncols);
-        static void releaseMatrix(class MatrixBase *matrixBase);
-        static void handleError(const std::exception& error);
-        static class Logger* getLogger();
-
-    private:
-        static std::unordered_set<class MatrixBase*> mAllocated;
-        static class BackendBase* mBackend;
-        static std::shared_ptr<class Logger> mLogger;
-        static bool mRelaxedRelease;
-    };
-
+cuBool_Status cuBool_SetupLogging(
+        const char* logFileName,
+        cuBool_Hints hints
+) {
+    CUBOOL_BEGIN_BODY
+        cubool::Library::setupLogging(logFileName, hints);
+    CUBOOL_END_BODY
 }
-
-#endif //CUBOOL_LIBRARY_HPP

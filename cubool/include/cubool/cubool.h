@@ -83,7 +83,13 @@ typedef enum cuBool_Hint {
     /** Accumulate result of the operation in the result matrix */
     CUBOOL_HINT_ACCUMULATE = 0x8,
     /** Finalize library state, even if not all resources were explicitly released */
-    CUBOOL_HINT_RELAXED_FINALIZE = 0x16
+    CUBOOL_HINT_RELAXED_FINALIZE = 0x16,
+    /** Logging hint: log error message */
+    CUBOOL_HINT_LOG_ERROR = 0x32,
+    /** Logging hint: log warning message */
+    CUBOOL_HINT_LOG_WARNING = 0x64,
+    /** Logging hint: log all messages */
+    CUBOOL_HINT_LOG_ALL = 0x128,
 } cuBool_Hint;
 
 /** Hit mask */
@@ -142,6 +148,26 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Version_Get(
 );
 
 /**
+ * Allows to setup logging file for all operations, invoked after this function call.
+ * Empty hints field is interpreted as `CUBOOL_HINT_LOG_ALL` by default.
+ *
+ * @note It is safe to call this function before the library is initialized.
+ *
+ * @note Pass `CUBOOL_HINT_LOG_ERROR` to include error messages into log
+ * @note Pass `CUBOOL_HINT_LOG_WARNING` to include warning messages into log
+ * @note Pass `CUBOOL_HINT_LOG_ALL` to include all messages into log
+ *
+ * @param logFileName File name in the encoding of the target platform.
+ * @param hints Logging hints to filter messages.
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_SetupLogging(
+    const char* logFileName,
+    cuBool_Hints hints
+);
+
+/**
  * Initialize library instance object, which provides context to all library operations and primitives.
  * This function must be called before any other library function is called,
  * except first get-info functions.
@@ -171,13 +197,13 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Finalize(
 /**
  * Query device capabilities/properties if cuda compatible device is present.
  *
- * @note This function must be called only for cuda backend.
+ * @note This function returns no actual info if cuda backend is not presented.
  * @param deviceCaps Pointer to device caps structure to store result
  *
  * @return Error if cuda device not present or if failed to query capabilities
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_DeviceCaps_Get(
-        CuBool_DeviceCaps* deviceCaps
+    CuBool_DeviceCaps* deviceCaps
 );
 
 /**

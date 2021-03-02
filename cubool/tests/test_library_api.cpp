@@ -41,7 +41,7 @@ TEST(cuBoolVersion, Query) {
 }
 
 // Test cubool library instance creation and destruction
-TEST(cuBoolInstance, Setup) {
+TEST(cuBool, Setup) {
     cuBool_Status error;
 
     error = cuBool_Initialize(CUBOOL_HINT_NO);
@@ -76,7 +76,7 @@ cuBool_Status TransitiveClosure(cuBool_Matrix A, cuBool_Matrix* T) {
     return CUBOOL_STATUS_SUCCESS;
 }
 
-TEST(cuBoolInstance, Example) {
+TEST(cuBool, Example) {
     cuBool_Matrix A = nullptr;
     cuBool_Matrix T = nullptr;
 
@@ -107,6 +107,18 @@ TEST(cuBoolInstance, Example) {
     cuBool_Matrix_Free(A);
     cuBool_Matrix_Free(T);
     cuBool_Finalize();
+}
+
+TEST(cuBool, Logger) {
+    const char* logFileName = "testLog.txt";
+
+    ASSERT_EQ(cuBool_SetupLogging(logFileName, CUBOOL_HINT_LOG_ALL), CUBOOL_STATUS_SUCCESS);
+
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_RELAXED_FINALIZE), CUBOOL_STATUS_SUCCESS);
+    cuBool_Matrix_New(nullptr, 0, 0);
+    cuBool_Matrix_New((cuBool_Matrix*) 0xffff, 0, 0);
+    cuBool_MxM((cuBool_Matrix) 0xffff, (cuBool_Matrix) 0xffff, (cuBool_Matrix) nullptr, 0x0);
+    ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
 CUBOOL_GTEST_MAIN
