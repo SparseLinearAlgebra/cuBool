@@ -47,4 +47,8 @@ namespace cubool {
         delete matrixBase;
     }
 
+    void SqBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
+        caps.cudaSupported = false;
+    }
+
 }

@@ -31,11 +31,11 @@ TEST(cuBoolVersion, Query) {
     int minor;
     int sub;
 
-    cuBool_Version_Get(&major, &minor, &sub);
+    cuBool_GetVersion(&major, &minor, &sub);
 
     std::cout << "Major: " << major << std::endl;
     std::cout << "Minor: " << minor << std::endl;
-    std::cout << "Version: " << sub << std::endl;
+    std::cout << "Sub: " << sub << std::endl;
 
     EXPECT_NE(major | minor | sub, 0);
 }
@@ -118,6 +118,21 @@ TEST(cuBool, Logger) {
     cuBool_Matrix_New(nullptr, 0, 0);
     cuBool_Matrix_New((cuBool_Matrix*) 0xffff, 0, 0);
     cuBool_MxM((cuBool_Matrix) 0xffff, (cuBool_Matrix) 0xffff, (cuBool_Matrix) nullptr, 0x0);
+    ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(cuBool, DeviceCaps) {
+    cuBool_DeviceCaps caps;
+
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_RELAXED_FINALIZE), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_GetDeviceCaps(&caps), CUBOOL_STATUS_SUCCESS);
+
+    std::cout
+        << "name: " << caps.name << std::endl
+        << "major: " << caps.major << std::endl
+        << "minor: " << caps.minor << std::endl
+        << "cuda supported: " << caps.cudaSupported << std::endl;
+
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 

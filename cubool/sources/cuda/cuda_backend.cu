@@ -54,6 +54,10 @@ namespace cubool {
         delete matrixBase;
     }
 
+    void CudaBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
+        Instance::queryDeviceCapabilities(caps);
+    }
+
     Instance & CudaBackend::getInstance() {
         return *mInstance;
     }

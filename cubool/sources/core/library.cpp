@@ -87,6 +87,28 @@ namespace cubool {
 
         CHECK_RAISE_ERROR(mBackend != nullptr, BackendError, "Failed to select backend");
         mRelaxedRelease = initHints & CUBOOL_HINT_RELAXED_FINALIZE;
+
+        // Log device caps
+        cuBool_DeviceCaps caps;
+        queryCapabilities(caps);
+
+        std::stringstream ss;
+
+        if (caps.cudaSupported) {
+            ss << "Cuda device capabilities" << std::endl
+               << " name: " << caps.name << std::endl
+               << " major: " << caps.major << std::endl
+               << " minor: " << caps.minor << std::endl
+               << " warp size: " << caps.warp << std::endl
+               << " globalMemoryKiBs: " << caps.globalMemoryKiBs << std::endl
+               << " sharedMemoryPerMultiProcKiBs: " << caps.sharedMemoryPerMultiProcKiBs << std::endl
+               << " sharedMemoryPerBlockKiBs: " << caps.sharedMemoryPerBlockKiBs << std::endl;
+        }
+        else {
+            ss << "Cuda device is not presented";
+        }
+
+        mLogger->logInfo(ss.str());
     }
 
     void Library::finalize() {
@@ -185,6 +207,19 @@ namespace cubool {
 
     void Library::handleError(const std::exception& error) {
         mLogger->log(Logger::Level::Error, error.what());
+    }
+
+    void Library::queryCapabilities(cuBool_DeviceCaps &caps) {
+        caps.name[0] = '\0';
+        caps.cudaSupported = false;
+        caps.major = 0;
+        caps.minor = 0;
+        caps.warp = 0;
+        caps.globalMemoryKiBs = 0;
+        caps.sharedMemoryPerBlockKiBs = 0;
+        caps.sharedMemoryPerMultiProcKiBs = 0;
+
+        mBackend->queryCapabilities(caps);
     }
 
     class Logger * Library::getLogger() {

@@ -24,7 +24,7 @@
 
 #include <cuBool_Common.hpp>
 
-const char* cuBool_About_Get() {
+const char* cuBool_GetAbout() {
     static const char about[] =
         "CuBool is a linear boolean algebra library primitives and operations for \n"
         "work with dense and sparse matrices written on the NVIDIA CUDA platform. The primary \n"

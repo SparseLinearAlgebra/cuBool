@@ -27,9 +27,10 @@ set(CUBOOL_SOURCES
 
 set(CUBOOL_C_API_SOURCES
     include/cubool/cubool.h
-    sources/cuBool_Version_Get.cpp
-    sources/cuBool_About_Get.cpp
-    sources/cuBool_LicenseInfo_Get.cpp
+    sources/cuBool_GetAbout.cpp
+    sources/cuBool_GetVersion.cpp
+    sources/cuBool_GetLicenseInfo.cpp
+    sources/cuBool_GetDeviceCaps.cpp
     sources/cuBool_Initialize.cpp
     sources/cuBool_Finalize.cpp
     sources/cuBool_SetupLogger.cpp

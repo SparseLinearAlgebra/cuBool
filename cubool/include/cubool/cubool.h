@@ -102,16 +102,16 @@ typedef uint32_t cuBool_Index;
 typedef struct cuBool_Matrix_t* cuBool_Matrix;
 
 /** Cuda device capabilities */
-typedef struct CuBool_DeviceCaps {
+typedef struct cuBool_DeviceCaps {
     char name[256];
+    bool cudaSupported;
     int major;
     int minor;
     int warp;
-    bool cudaSupported;
-    cuBool_Index globalMemoryKiBs;
-    cuBool_Index sharedMemoryPerMultiProcKiBs;
-    cuBool_Index sharedMemoryPerBlockKiBs;
-} CuBool_DeviceCaps;
+    int globalMemoryKiBs;
+    int sharedMemoryPerMultiProcKiBs;
+    int sharedMemoryPerBlockKiBs;
+} cuBool_DeviceCaps;
 
 /**
  * Query human-readable text info about the project implementation
@@ -119,7 +119,7 @@ typedef struct CuBool_DeviceCaps {
  *
  * @return Read-only library about info
  */
-CUBOOL_EXPORT CUBOOL_API const char* cuBool_About_Get(
+CUBOOL_EXPORT CUBOOL_API const char* cuBool_GetAbout(
 );
 
 /**
@@ -128,7 +128,7 @@ CUBOOL_EXPORT CUBOOL_API const char* cuBool_About_Get(
 
  * @return Read-only library license info
  */
-CUBOOL_EXPORT CUBOOL_API const char* cuBool_LicenseInfo_Get(
+CUBOOL_EXPORT CUBOOL_API const char* cuBool_GetLicenseInfo(
 );
 
 /**
@@ -141,7 +141,7 @@ CUBOOL_EXPORT CUBOOL_API const char* cuBool_LicenseInfo_Get(
  *
  * @return Error if failed to query version info
  */
-CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Version_Get(
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_GetVersion(
     int* major,
     int* minor,
     int* sub
@@ -202,8 +202,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Finalize(
  *
  * @return Error if cuda device not present or if failed to query capabilities
  */
-CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_DeviceCaps_Get(
-    CuBool_DeviceCaps* deviceCaps
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_GetDeviceCaps(
+    cuBool_DeviceCaps* deviceCaps
 );
 
 /**

@@ -22,35 +22,31 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_LIBRARY_HPP
-#define CUBOOL_LIBRARY_HPP
+#include <cuBool_Common.hpp>
 
-#include <core/config.hpp>
-#include <core/error.hpp>
-#include <unordered_set>
-#include <memory>
+const char* cuBool_GetLicenseInfo() {
+    static const char license[] =
+        "MIT License\n"
+        "\n"
+        "Copyright (c) 2020 JetBrains-Research\n"
+        "\n"
+        "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
+        "of this software and associated documentation files (the \"Software\"), to deal\n"
+        "in the Software without restriction, including without limitation the rights\n"
+        "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
+        "copies of the Software, and to permit persons to whom the Software is\n"
+        "furnished to do so, subject to the following conditions:\n"
+        "\n"
+        "The above copyright notice and this permission notice shall be included in all\n"
+        "copies or substantial portions of the Software.\n"
+        "\n"
+        "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
+        "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
+        "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
+        "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
+        "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
+        "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
+        "SOFTWARE.";
 
-namespace cubool {
-
-    class Library {
-    public:
-        static void initialize(hints initHints);
-        static void finalize();
-        static void validate();
-        static void setupLogging(const char* logFileName, cuBool_Hints hints);
-        static class MatrixBase *createMatrix(size_t nrows, size_t ncols);
-        static void releaseMatrix(class MatrixBase *matrixBase);
-        static void handleError(const std::exception& error);
-        static void queryCapabilities(cuBool_DeviceCaps& caps);
-        static class Logger* getLogger();
-
-    private:
-        static std::unordered_set<class MatrixBase*> mAllocated;
-        static class BackendBase* mBackend;
-        static std::shared_ptr<class Logger> mLogger;
-        static bool mRelaxedRelease;
-    };
-
+    return license;
 }
-
-#endif //CUBOOL_LIBRARY_HPP

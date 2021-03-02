@@ -37,10 +37,11 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [X] CSR matrix reduce
 - [X] CSR slicing
 - [X] Sequential fallback backend for CPU
+- [X] Device capabilities query
 - [ ] IO matrix loading from mtx file
 - [ ] IO matrix saving into mtx file
 - [ ] IO matrix saving into gviz format
-- [ ] IO user-defined file logging
+- [X] IO user-defined file logging
 - [X] Wrapper for Python API
 - [ ] Wrapper syntax sugar
 - [ ] Tests for Python wrapper

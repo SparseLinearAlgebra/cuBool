@@ -38,6 +38,7 @@ namespace cubool {
         virtual bool isInitialized() const = 0;
         virtual MatrixBase* createMatrix(size_t nrows, size_t ncols) = 0;
         virtual void releaseMatrix(MatrixBase* matrixBase) = 0;
+        virtual void queryCapabilities(cuBool_DeviceCaps& caps) = 0;
     };
 
 }

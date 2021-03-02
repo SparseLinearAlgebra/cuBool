@@ -54,7 +54,7 @@ namespace cubool {
     void Instance::printDeviceCapabilities() const {
         static const size_t BUFFER_SIZE = 1024;
 
-        CuBool_DeviceCaps deviceCaps;
+        cuBool_DeviceCaps deviceCaps;
         queryDeviceCapabilities(deviceCaps);
 
         char deviceInfo[BUFFER_SIZE];

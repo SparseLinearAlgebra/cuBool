@@ -24,23 +24,12 @@
 
 #include <cuBool_Common.hpp>
 
-cuBool_Status cuBool_Version_Get(
-        int *major,
-        int *minor,
-        int *sub
+cuBool_Status cuBool_GetDeviceCaps(
+        cuBool_DeviceCaps* deviceCaps
 ) {
-    auto MAJOR = (uint32_t)(CUBOOL_MAJOR);
-    auto MINOR = (uint32_t)(CUBOOL_MINOR);
-    auto SUB = (uint32_t)(CUBOOL_SUB);
-
-    if (major)
-        *major = MAJOR;
-
-    if (minor)
-        *minor = MINOR;
-
-    if (sub)
-        *sub = SUB;
-
-    return CUBOOL_STATUS_SUCCESS;
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(deviceCaps)
+        cubool::Library::queryCapabilities(*deviceCaps);
+    CUBOOL_END_BODY
 }
