@@ -92,6 +92,7 @@ namespace cubool {
      */
     class DummyLogger final: public Logger {
     public:
+        DummyLogger() noexcept = default;
         ~DummyLogger() override = default;
         void log(Level level, const std::string &message) override;
         size_t getMessagesCount() const override;

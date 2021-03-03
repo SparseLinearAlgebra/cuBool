@@ -45,7 +45,7 @@
 namespace cubool {
 
     std::unordered_set<class MatrixBase*> Library::mAllocated;
-    BackendBase* Library::mBackend = nullptr;
+    std::shared_ptr<class BackendBase> Library::mBackend = nullptr;
     std::shared_ptr<class Logger>  Library::mLogger = std::make_shared<DummyLogger>();
     bool Library::mRelaxedRelease = false;
 
@@ -57,14 +57,12 @@ namespace cubool {
         // If user do not force the cpu backend usage
         if (!preferCpu) {
 #ifdef CUBOOL_WITH_CUDA
-            mBackend = new CudaBackend();
+            mBackend = std::make_shared<CudaBackend>();
             mBackend->initialize(initHints);
 
             // Failed to setup cuda, release backend and go to try cpu
             if (!mBackend->isInitialized()) {
-                delete mBackend;
                 mBackend = nullptr;
-
                 mLogger->logWarning("Failed to initialize Cuda backend");
             }
 #endif
@@ -72,43 +70,22 @@ namespace cubool {
 
 #ifdef CUBOOL_WITH_SEQUENTIAL
         if (mBackend == nullptr) {
-            mBackend = new SqBackend();
+            mBackend = std::make_shared<SqBackend>();
             mBackend->initialize(initHints);
 
             // Failed somehow setup
             if (!mBackend->isInitialized()) {
-                delete mBackend;
                 mBackend = nullptr;
-
                 mLogger->logWarning("Failed to initialize Cpu fallback backend");
             }
         }
 #endif
 
         CHECK_RAISE_ERROR(mBackend != nullptr, BackendError, "Failed to select backend");
+
+        // If initialized, post-init actions
         mRelaxedRelease = initHints & CUBOOL_HINT_RELAXED_FINALIZE;
-
-        // Log device caps
-        cuBool_DeviceCaps caps;
-        queryCapabilities(caps);
-
-        std::stringstream ss;
-
-        if (caps.cudaSupported) {
-            ss << "Cuda device capabilities" << std::endl
-               << " name: " << caps.name << std::endl
-               << " major: " << caps.major << std::endl
-               << " minor: " << caps.minor << std::endl
-               << " warp size: " << caps.warp << std::endl
-               << " globalMemoryKiBs: " << caps.globalMemoryKiBs << std::endl
-               << " sharedMemoryPerMultiProcKiBs: " << caps.sharedMemoryPerMultiProcKiBs << std::endl
-               << " sharedMemoryPerBlockKiBs: " << caps.sharedMemoryPerBlockKiBs << std::endl;
-        }
-        else {
-            ss << "Cuda device is not presented";
-        }
-
-        mLogger->logInfo(ss.str());
+        logDeviceInfo();
     }
 
     void Library::finalize() {
@@ -116,16 +93,25 @@ namespace cubool {
             // Release all allocated resources implicitly
             if (mRelaxedRelease) {
                 for (auto m: mAllocated) {
+                    std::stringstream s;
+                    s << "Implicitly release matrix instance " << m;
+
+                    mLogger->logWarning(s.str());
                     delete m;
                 }
 
                 mAllocated.clear();
             }
 
+            // Some final message
+            mLogger->logInfo("** cuBool:Finalize backend **");
+
             // Remember to finalize backend
             mBackend->finalize();
-            delete mBackend;
             mBackend = nullptr;
+
+            // Release (possibly setup text logger) logger, reassign dummy
+            mLogger = std::make_shared<DummyLogger>();
         }
     }
 
@@ -179,7 +165,7 @@ namespace cubool {
                     file << "Level::Always";
             }
             file << std::setw(-1) << "] ";
-            file << message << std::endl <<  std::endl;
+            file << message << std::endl;
         });
 
         // Assign new text logger
@@ -187,6 +173,10 @@ namespace cubool {
 
         // Initial message
         mLogger->logInfo("*** cuBool::Logger file ***");
+
+        // Also log device capabilities
+        if (isBackedInitialized())
+            logDeviceInfo();
     }
 
     MatrixBase *Library::createMatrix(size_t nrows, size_t ncols) {
@@ -220,6 +210,34 @@ namespace cubool {
         caps.sharedMemoryPerMultiProcKiBs = 0;
 
         mBackend->queryCapabilities(caps);
+    }
+
+    void Library::logDeviceInfo() {
+        // Log device caps
+        cuBool_DeviceCaps caps;
+        queryCapabilities(caps);
+
+        std::stringstream ss;
+
+        if (caps.cudaSupported) {
+            ss << "Cuda device capabilities" << std::endl
+               << " name: " << caps.name << std::endl
+               << " major: " << caps.major << std::endl
+               << " minor: " << caps.minor << std::endl
+               << " warp size: " << caps.warp << std::endl
+               << " globalMemoryKiBs: " << caps.globalMemoryKiBs << std::endl
+               << " sharedMemoryPerMultiProcKiBs: " << caps.sharedMemoryPerMultiProcKiBs << std::endl
+               << " sharedMemoryPerBlockKiBs: " << caps.sharedMemoryPerBlockKiBs << std::endl;
+        }
+        else {
+            ss << "Cuda device is not presented";
+        }
+
+        mLogger->logInfo(ss.str());
+    }
+
+    bool Library::isBackedInitialized() {
+        return mBackend != nullptr;
     }
 
     class Logger * Library::getLogger() {

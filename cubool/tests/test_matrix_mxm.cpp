@@ -38,16 +38,16 @@ void testMatrixMultiplyAdd(cuBool_Index m, cuBool_Index t, cuBool_Index n, float
     ASSERT_EQ(cuBool_Matrix_New(&r, m, n), CUBOOL_STATUS_SUCCESS);
 
     // Transfer input data into input matrices
-    ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_Build(b, tb.rowsIndex.data(), tb.colsIndex.data(), tb.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_Build(r, tr.rowsIndex.data(), tr.colsIndex.data(), tr.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
-
-    // Evaluate r += a x b
-    ASSERT_EQ(cuBool_MxM(r, a, b, CUBOOL_HINT_ACCUMULATE), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED & CUBOOL_HINT_NO_DUPLICATES), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(b, tb.rowsIndex.data(), tb.colsIndex.data(), tb.nvals, CUBOOL_HINT_VALUES_SORTED & CUBOOL_HINT_NO_DUPLICATES), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(r, tr.rowsIndex.data(), tr.colsIndex.data(), tr.nvals, CUBOOL_HINT_VALUES_SORTED & CUBOOL_HINT_NO_DUPLICATES), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r += a x b on the cpu to compare results
     testing::MatrixMultiplyFunctor functor;
     tr = std::move(functor(ta, tb, tr, true));
+
+    // Evaluate r += a x b
+    ASSERT_EQ(cuBool_MxM(r, a, b, CUBOOL_HINT_ACCUMULATE), CUBOOL_STATUS_SUCCESS);
 
     // Compare results
     ASSERT_EQ(tr.areEqual(r), true);

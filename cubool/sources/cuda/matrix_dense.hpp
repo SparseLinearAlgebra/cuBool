@@ -54,7 +54,7 @@ namespace cubool {
         MatrixDense(MatrixDense&& other) noexcept = delete;
         ~MatrixDense() override = default;
 
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
+        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool hasDuplicates) override;
         void extract(index* rows, index* cols, size_t& nvals) override;
 
         void clone(const MatrixBase& other) override;

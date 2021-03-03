@@ -90,6 +90,8 @@ typedef enum cuBool_Hint {
     CUBOOL_HINT_LOG_WARNING = 0x64,
     /** Logging hint: log all messages */
     CUBOOL_HINT_LOG_ALL = 0x128,
+    /** No duplicates in the build data */
+    CUBOOL_HINT_NO_DUPLICATES = 0x256
 } cuBool_Hint;
 
 /** Hit mask */
@@ -225,7 +227,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_New(
  * Build sparse matrix from provided pairs array. Pairs are supposed to be stored
  * as (rows[i],cols[i]) for pair with i-th index.
  *
+ * @note This function automatically reduces duplicates
  * @note Pass CUBOOL_HINT_VALUES_SORTED if values already in the row-col order.
+ * @note Pass CUBOOL_HINT_NO_DUPLICATES if values has no duplicates
  *
  * @param matrix Matrix handle to perform operation on
  * @param rows Array of pairs row indices
@@ -241,6 +245,23 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Build(
     const cuBool_Index* cols,
     cuBool_Index nvals,
     cuBool_Hints hints
+);
+
+/**
+ * Sets specified (i, j) value of the matrix to True.
+ *
+ * @note This function automatically reduces duplicates
+ *
+ * @param matrix Matrix handle to perform operation on
+ * @param i Row index
+ * @param j Column Index
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_SetElement(
+    cuBool_Matrix matrix,
+    cuBool_Index i,
+    cuBool_Index j
 );
 
 /**

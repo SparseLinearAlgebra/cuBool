@@ -22,23 +22,22 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_SQ_EXCLUSIVE_SCAN_HPP
-#define CUBOOL_SQ_EXCLUSIVE_SCAN_HPP
+#ifndef CUBOOL_EXCLUSIVE_SCAN_HPP
+#define CUBOOL_EXCLUSIVE_SCAN_HPP
 
 namespace cubool {
 
     template <typename FirstT, typename LastT, typename T>
-    void sq_exclusive_scan(FirstT firstT, LastT lastT, T initial) {
+    void exclusive_scan(FirstT firstT, LastT lastT, T initial) {
         T sum = initial;
         while (firstT != lastT) {
             T next = sum + *firstT;
             *firstT = sum;
             sum = next;
-
             firstT++;
         }
     }
 
 }
 
-#endif //CUBOOL_SQ_EXCLUSIVE_SCAN_HPP
+#endif //CUBOOL_EXCLUSIVE_SCAN_HPP

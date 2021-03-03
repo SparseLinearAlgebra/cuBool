@@ -5,6 +5,7 @@
 [![JB Research](https://jb.gg/badges/research-flat-square.svg)](https://research.jetbrains.org/)
 [![Ubuntu](https://github.com/JetBrains-Research/cuBool/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/JetBrains-Research/cuBool/actions)
 [![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE)
+[![Package](https://img.shields.io/badge/pip-cybool-%233776ab)](https://test.pypi.org/project/pycubool/)
 
 **cuBool** is a linear Boolean algebra library primitives and operations for 
 work with sparse matrices written on the NVIDIA CUDA platform. The primary 
@@ -36,6 +37,7 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [X] CSR submatrix
 - [X] CSR matrix reduce
 - [X] CSR slicing
+- [ ] Matrix cached filling
 - [X] Sequential fallback backend for CPU
 - [X] Device capabilities query
 - [ ] IO matrix loading from mtx file
@@ -206,7 +208,7 @@ wrapper can be used to compute the same transitive closure problem for the
 directed graph within python environment:
 
 ```python
-from python import pycubool
+import pycubool
 
 def transitive_closure(a: pycubool.Matrix):
     """

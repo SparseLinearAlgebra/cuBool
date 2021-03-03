@@ -18,6 +18,7 @@ _hint_relaxed_release = 0x16
 _hint_log_error = 0x32
 _hint_log_warning = 0x64
 _hint_log_all = 0x128
+_hint_no_duplicates = 0x256
 
 
 def get_log_hints(default=True, error=False, warning=False):
@@ -45,8 +46,15 @@ def get_mxm_hints(is_accumulated):
     return _hint_accumulate if is_accumulated else _hint_no
 
 
-def get_build_hints(is_sorted):
-    return _hint_values_sorted if is_sorted else _hint_no
+def get_build_hints(is_sorted, no_duplicates):
+    hints = _hint_no
+
+    if is_sorted:
+        hints |= _hint_values_sorted
+    if no_duplicates:
+        hints |= _hint_no_duplicates
+
+    return hints
 
 
 def load_and_configure(cubool_lib_path: str):
@@ -91,6 +99,13 @@ def load_and_configure(cubool_lib_path: str):
         ctypes.POINTER(ctypes.c_uint),
         ctypes.c_uint,
         hints_t
+    ]
+
+    lib.cuBool_Matrix_SetElement.restype = status_t
+    lib.cuBool_Matrix_SetElement.argtypes = [
+        matrix_p,
+        ctypes.c_uint,
+        ctypes.c_uint
     ]
 
     lib.cuBool_Matrix_ExtractPairs.restype = status_t

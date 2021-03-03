@@ -73,13 +73,11 @@ namespace nsparse {
                 return {std::move(col_index), std::move(res.row_index), rows, cols, (index_type) vals};
             }
 
-
             constexpr auto config_merge =
                     make_bin_seq<
-                            bin_info_t<merge_conf_t<128>, 64, max>,
-                            bin_info_t<merge_conf_t<64>, 32, 64>,
-                            bin_info_t<merge_conf_t<32>, 0, 32>
-                    >;
+                        bin_info_t<merge_conf_t<128>, 64, max>,
+                        bin_info_t<merge_conf_t<64>, 32, 64>,
+                        bin_info_t<merge_conf_t<32>, 0, 32>>;
 
             auto merge_res = unique_merge_functor(res.row_index, col_index, c.m_row_index, c.m_col_index, config_merge);
 

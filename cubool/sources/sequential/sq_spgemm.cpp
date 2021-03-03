@@ -23,7 +23,7 @@
 /**********************************************************************************/
 
 #include <sequential/sq_spgemm.hpp>
-#include <sequential/sq_exclusive_scan.hpp>
+#include <utils/exclusive_scan.hpp>
 #include <algorithm>
 #include <limits>
 
@@ -59,7 +59,7 @@ namespace cubool {
         }
 
         // Row offsets
-        sq_exclusive_scan(out.rowOffsets.begin(), out.rowOffsets.end(), 0);
+        exclusive_scan(out.rowOffsets.begin(), out.rowOffsets.end(), 0);
 
         out.nvals = nvals;
         out.colIndices.resize(nvals);

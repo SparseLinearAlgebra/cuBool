@@ -11,6 +11,9 @@ target_link_libraries(test_library_api PUBLIC testing)
 add_executable(test_matrix_setup test_matrix_setup.cpp)
 target_link_libraries(test_matrix_setup PUBLIC testing)
 
+add_executable(test_matrix_element test_matrix_element.cpp)
+target_link_libraries(test_matrix_element PUBLIC testing)
+
 add_executable(test_matrix_misc test_matrix_misc.cpp)
 target_link_libraries(test_matrix_misc PUBLIC testing)
 

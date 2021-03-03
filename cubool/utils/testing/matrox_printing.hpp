@@ -30,7 +30,7 @@
 namespace testing {
 
     template <typename Stream>
-    void PrintMatrix(Stream& stream, const cuBool_Index* rowsIndex, const cuBool_Index* colsIndex, cuBool_Index nrows, cuBool_Index ncols, cuBool_Index nvals) {
+    void printMatrix(Stream& stream, const cuBool_Index* rowsIndex, const cuBool_Index* colsIndex, cuBool_Index nrows, cuBool_Index ncols, cuBool_Index nvals) {
         cuBool_Index currentRow = 0;
         cuBool_Index currentCol = 0;
         cuBool_Index currentId = 0;

@@ -44,24 +44,58 @@ class Matrix:
         return Matrix(hnd)
 
     @classmethod
-    def from_lists(cls, shape, rows, cols, is_sorted=False):
+    def from_lists(cls, shape, rows, cols, is_sorted=False, no_duplicates=False):
         """
         Build matrix from provided `shape` and non-zero values data.
+
+        >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True, no_duplicates=True)
+        >>> print(matrix)
+        '
+                0   1   2   3
+          0 |   1   .   .   . |   0
+          1 |   .   1   .   . |   1
+          2 |   .   .   1   . |   2
+          3 |   1   .   .   . |   3
+                0   1   2   3
+        '
 
         :param shape: Matrix shape
         :param rows: List with row indices
         :param cols: List with column indices
         :param is_sorted: True if values are sorted in row-col order
+        :param no_duplicates: True if provided values has no duplicates
         :return: Created matrix filled with data
         """
 
         out = cls.empty(shape)
-        out.build(rows, cols, is_sorted=is_sorted)
+        out.build(rows, cols, is_sorted=is_sorted, no_duplicates=no_duplicates)
         return out
 
-    def build(self, rows, cols, is_sorted=False):
+    def build(self, rows, cols, is_sorted=False, no_duplicates=False):
+        """
+        Build sparse matrix of boolean values from provided arrays of non-zero rows and columns.
+
+        >>> matrix = Matrix.empty(shape=(4,4))
+        >>> matrix.build([0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True, no_duplicates=True)
+        >>> print(matrix)
+        '
+                0   1   2   3
+          0 |   1   .   .   . |   0
+          1 |   .   1   .   . |   1
+          2 |   .   .   1   . |   2
+          3 |   1   .   .   . |   3
+                0   1   2   3
+        '
+
+        :param rows: Array of values rows indices
+        :param cols: Array of values column indices
+        :param is_sorted: True if values are sorted in row-col order
+        :param no_duplicates: True if provided values has no duplicates
+        :return:
+        """
+
         if len(rows) != len(cols):
-            raise Exception("Size of rows and cols arrays must match the nval values")
+            raise Exception("Rows and cols arrays must have equal size")
 
         nvals = len(rows)
         t_rows = (ctypes.c_uint * len(rows))(*rows)
@@ -70,7 +104,7 @@ class Matrix:
         status = wrapper.loaded_dll.cuBool_Matrix_Build(
             self.hnd, t_rows, t_cols,
             ctypes.c_uint(nvals),
-            ctypes.c_uint(bridge.get_build_hints(is_sorted))
+            ctypes.c_uint(bridge.get_build_hints(is_sorted, no_duplicates))
         )
 
         bridge.check(status)
@@ -158,7 +192,7 @@ class Matrix:
         """
         Return a string representation of the matrix.
 
-        >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True)
+        >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True, no_duplicates=True)
         >>> print(matrix)
         '
                 0   1   2   3
@@ -205,6 +239,16 @@ class Matrix:
         """
         Extract a sub-matrix.
 
+        >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True)
+        >>> print(matrix.extract_matrix(0, 1, shape=(3, 3)))
+        '
+                0   1   2
+          0 |   .   .   . |   0
+          1 |   1   .   . |   1
+          2 |   .   1   . |   2
+                0   1   2
+        '
+
         :param i: First row index to extract
         :param j: First column index to extract
         :param shape: Shape of the sub-matrix
@@ -235,6 +279,18 @@ class Matrix:
         Pass optional `out` matrix to store result.
         Pass `accumulate`=True to sum the multiplication result with `out` matrix.
 
+        >>> a = Matrix.from_lists((4, 4), [0, 1, 2], [2, 3, 0])
+        >>> b = Matrix.from_lists((4, 4), [0, 1, 3], [2, 3, 0])
+        >>> print(a.mxm(b, out=a, accumulate=True))
+        '
+                0   1   2   3
+          0 |   .   .   1   . |   0
+          1 |   1   .   .   1 |   1
+          2 |   1   .   1   . |   2
+          3 |   .   .   .   . |   3
+                0   1   2   3
+        '
+
         :param other: Input matrix for multiplication
         :param out: Optional out matrix to store result
         :param accumulate: Set in true to accumulate the result with `out` matrix
@@ -258,6 +314,23 @@ class Matrix:
         Matrix-matrix kronecker product with boolean "x = and" operation.
         Returns kronecker product of `self` and `other` matrices.
 
+        >>> a = Matrix.from_lists((3, 3), [0, 0, 1, 2, 2], [0, 2, 1, 0, 2])
+        >>> b = Matrix.from_lists((3, 3), [0, 1, 1, 2], [1, 0, 2, 1])
+        >>> print(a.kronecker(b))
+        '
+                0   1   2   3   4   5   6   7   8
+          0 |   .   1   .   .   .   .   .   1   . |   0
+          1 |   1   .   1   .   .   .   1   .   1 |   1
+          2 |   .   1   .   .   .   .   .   1   . |   2
+          3 |   .   .   .   .   1   .   .   .   . |   3
+          4 |   .   .   .   1   .   1   .   .   . |   4
+          5 |   .   .   .   .   1   .   .   .   . |   5
+          6 |   .   1   .   .   .   .   .   1   . |   6
+          7 |   1   .   1   .   .   .   1   .   1 |   7
+          8 |   .   1   .   .   .   .   .   1   . |   8
+                0   1   2   3   4   5   6   7   8
+        '
+
         :param other: Input matrix
         :return: Matrices kronecker product matrix
         """
@@ -277,6 +350,18 @@ class Matrix:
         Element-wise matrix-matrix addition with boolean "+ = or" operation.
         Returns element-wise sum of `self` and `other` matrix.
 
+        >>> a = Matrix.from_lists((4, 4), [0, 1, 2], [2, 3, 0])
+        >>> b = Matrix.from_lists((4, 4), [0, 1, 3], [2, 3, 0])
+        >>> print(a.ewiseadd(b))
+        '
+                0   1   2   3
+          0 |   .   .   1   . |   0
+          1 |   .   .   .   1 |   1
+          2 |   1   .   .   . |   2
+          3 |   1   .   .   . |   3
+                0   1   2   3
+        '
+
         :param other: Input matrix to sum
         :return: Element-wise matrix-matrix sum
         """
@@ -295,6 +380,17 @@ class Matrix:
         """
         Reduce matrix to vector with boolean "+ = or" operation.
         Return `self` reduced matrix.
+
+        >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 2], [0, 1, 0, 2])
+        >>> print(matrix.reduce())
+        '
+                0
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   1 |   2
+          3 |   . |   3
+                0
+        '
 
         :return: Reduced matrix (matrix with M x 1 shape)
         """
@@ -317,7 +413,7 @@ class Matrix:
         Iterate over (i, j) tuples of the matrix values.
 
         >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True)
-        >>> print(matrix)
+        >>> print(list(iter(matrix)))
         '[(0, 0), (1, 1), (2, 2), (3, 0)]'
 
         :return: Matrix tuples iterator
@@ -376,3 +472,45 @@ class Matrix:
                 return self.extract_matrix(i, j, shape)
 
         raise Exception("Invalid matrix slicing")
+
+    def __setitem__(self, key, value):
+        """
+        Sets Sets specified `key` = (i, j) value of the matrix to True.
+
+        >>> matrix = Matrix.empty(shape=(4, 4))
+        >>> matrix[0, 0] = True
+        >>> matrix[1, 1] = True
+        >>> matrix[2, 3] = True
+        >>> matrix[3, 1] = True
+        >>> print(matrix)
+        '
+                0   1   2   3
+          0 |   1   .   .   . |   0
+          1 |   .   1   .   . |   1
+          2 |   .   .   .   1 |   2
+          3 |   .   1   .   . |   3
+                0   1   2   3
+        '
+
+        :param key: (i, j) pair to set matrix element in True
+        :param value: Must be True always
+        :return:
+        """
+
+        assert value is True
+
+        if isinstance(key, tuple):
+            i = key[0]
+            j = key[1]
+
+            status = wrapper.loaded_dll.cuBool_Matrix_SetElement(
+                self.hnd,
+                ctypes.c_uint(i),
+                ctypes.c_uint(j)
+            )
+
+            bridge.check(status)
+            return
+
+        raise Exception("Invalid item assignment")
+

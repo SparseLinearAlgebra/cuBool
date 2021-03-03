@@ -37,7 +37,8 @@ namespace cubool {
     public:
         virtual ~MatrixBase() = default;
 
-        virtual void build(const index *rows, const index *cols, size_t nvals, bool isSorted) = 0;
+        virtual void setElement(index i, index j) = 0;
+        virtual void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool hasDuplicates) = 0;
         virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
         virtual void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols) = 0;
 

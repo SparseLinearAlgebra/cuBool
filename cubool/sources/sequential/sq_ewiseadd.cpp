@@ -23,7 +23,7 @@
 /**********************************************************************************/
 
 #include <sequential/sq_ewiseadd.hpp>
-#include <sequential/sq_exclusive_scan.hpp>
+#include <utils/exclusive_scan.hpp>
 
 namespace cubool {
 
@@ -70,7 +70,7 @@ namespace cubool {
         }
 
         // Eval row offsets
-        sq_exclusive_scan(out.rowOffsets.begin(), out.rowOffsets.end(), 0);
+        exclusive_scan(out.rowOffsets.begin(), out.rowOffsets.end(), 0);
 
         // Allocate memory for values
         out.nvals = nvals;

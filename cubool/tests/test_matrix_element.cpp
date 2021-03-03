@@ -24,76 +24,81 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixAdd(cuBool_Index m, cuBool_Index n, float density) {
-    cuBool_Matrix r, a, b;
+// Fills sparse matrix with random data and tests whether the transfer works correctly
+void testMatrixSetElement(cuBool_Index m, cuBool_Index n, float density) {
+    cuBool_Matrix matrix = nullptr;
 
-    testing::Matrix ta = std::move(testing::Matrix::generateSparse(m, n, density));
-    testing::Matrix tb = std::move(testing::Matrix::generateSparse(m, n, density));
+    testing::Matrix tmatrix = std::move(testing::Matrix::generateSparse(m, n, density));
 
-    // Allocate input matrices and resize to fill with input data
-    ASSERT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_New(&b, m, n), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_New(&r, m, n), CUBOOL_STATUS_SUCCESS);
+    auto I = tmatrix.rowsIndex;
+    auto J = tmatrix.colsIndex;
+    size_t nvals = tmatrix.nvals;
+    size_t dups = nvals * 0.10;
 
-    // Transfer input data into input matrices
-    ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, 0), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_Build(b, tb.rowsIndex.data(), tb.colsIndex.data(), tb.nvals, 0), CUBOOL_STATUS_SUCCESS);
+    std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
+    auto dist = std::uniform_real_distribution<float>(0.0, 1.0);
 
-    // Evaluate r = a + b
-    ASSERT_EQ(cuBool_Matrix_EWiseAdd(r, a, b), CUBOOL_STATUS_SUCCESS);
+    if (nvals > 0) {
+        for (size_t k = 0; k < dups; k++) {
+            size_t id = std::min<size_t>(dist(engine) * nvals, nvals - 1);
+            auto i = I[id], j = J[id];
+            I.push_back(i);
+            J.push_back(j);
+        }
+    }
 
-    // Evaluate naive r += a on the cpu to compare results
-    testing::MatrixEWiseAddFunctor functor;
-    auto tr = std::move(functor(ta, tb));
+    ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
 
-    // Compare results
-    ASSERT_EQ(tr.areEqual(r), true);
+    nvals = I.size();
+    for (size_t i = 0; i < nvals; i++) {
+        ASSERT_EQ(cuBool_Matrix_SetElement(matrix, I[i], J[i]), CUBOOL_STATUS_SUCCESS);
+    }
 
-    // Deallocate matrices
-    ASSERT_EQ(cuBool_Matrix_Free(a), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_Free(b), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_Free(r), CUBOOL_STATUS_SUCCESS);
+    // Compare test matrix and library one
+    ASSERT_TRUE(tmatrix.areEqual(matrix));
+
+    // Remember to release resources
+    ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
 }
 
 void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
-    // Setup library
     ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
-    for (size_t i = 0; i < 5; i++) {
-        testMatrixAdd(m, n, 0.1f + (0.05f) * ((float) i));
+    for (size_t i = 0; i < 10; i++) {
+        testMatrixSetElement(m, n, 0.001f + (0.05f) * ((float) i));
     }
 
-    // Finalize library
-    EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(cuBool_Matrix, AddSmall) {
-    cuBool_Index m = 60, n = 80;
+TEST(cuBool_Matrix, SetElementSmall) {
+    cuBool_Index m = 60, n = 100;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, AddMedium) {
-    cuBool_Index m = 500, n = 800;
+TEST(cuBool_Matrix, SetElementMedium) {
+    cuBool_Index m = 500, n = 1000;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, AddLarge) {
-    cuBool_Index m = 2500, n = 1500;
+TEST(cuBool_Matrix, SetElementLarge) {
+    cuBool_Index m = 1000, n = 2000;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, AddSmallFallback) {
-    cuBool_Index m = 60, n = 80;
+TEST(cuBool_Matrix, SetElementSmallFallback) {
+    cuBool_Index m = 60, n = 100;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
-TEST(cuBool_Matrix, AddMediumFallback) {
-    cuBool_Index m = 500, n = 800;
+TEST(cuBool_Matrix, SetElementMediumFallback) {
+    cuBool_Index m = 500, n = 1000;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
+
 }
 
-TEST(cuBool_Matrix, AddLargeFallback) {
-    cuBool_Index m = 2500, n = 1500;
+TEST(cuBool_Matrix, SetElementLargeFallback) {
+    cuBool_Index m = 1000, n = 2000;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 

@@ -38,7 +38,8 @@ namespace cubool {
         SqMatrix(size_t nrows, size_t ncols);
         ~SqMatrix() override = default;
 
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
+        void setElement(index i, index j) override;
+        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool hasDuplicates) override;
         void extract(index *rows, index *cols, size_t &nvals) override;
         void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols) override;
 
@@ -55,7 +56,10 @@ namespace cubool {
         index getNvals() const override;
 
     private:
-        CsrData mData;
+
+        void allocateStorage() const;
+
+        mutable CsrData mData;
     };
 
 }

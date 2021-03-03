@@ -22,27 +22,17 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <sequential/sq_reduce.hpp>
-#include <utils/exclusive_scan.hpp>
+#include <cuBool_Common.hpp>
 
-namespace cubool {
-
-    void sq_reduce(const CsrData& a, CsrData& out) {
-        out.rowOffsets.resize(a.nrows + 1);
-
-        for (index i = 0; i < a.nrows; i++) {
-            index nnz = a.rowOffsets[i + 1] - a.rowOffsets[i];
-
-            if (nnz > 0) {
-                out.rowOffsets[i] = 1;
-            }
-        }
-
-        exclusive_scan(out.rowOffsets.begin(), out.rowOffsets.end(), 0);
-
-        out.nvals = out.rowOffsets.back();
-        out.colIndices.clear();
-        out.colIndices.resize(out.nvals, 0);
-    }
-
+cuBool_Status cuBool_Matrix_SetElement(
+        cuBool_Matrix matrix,
+        cuBool_Index i,
+        cuBool_Index j
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(matrix)
+        auto m = (cubool::Matrix*) matrix;
+        m->setElement(i, j);
+    CUBOOL_END_BODY
 }

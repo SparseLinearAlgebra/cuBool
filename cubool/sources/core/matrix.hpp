@@ -25,8 +25,10 @@
 #ifndef CUBOOL_MATRIX_HPP
 #define CUBOOL_MATRIX_HPP
 
+#include <core/config.hpp>
 #include <backend/matrix_base.hpp>
 #include <backend/backend_base.hpp>
+#include <vector>
 
 namespace cubool {
 
@@ -35,7 +37,8 @@ namespace cubool {
         Matrix(size_t nrows, size_t ncols, BackendBase& backend);
         ~Matrix() override;
 
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
+        void setElement(index i, index j) override;
+        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool hasDuplicates) override;
         void extract(index *rows, index *cols, size_t &nvals) override;
         void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols) override;
 
@@ -53,7 +56,14 @@ namespace cubool {
 
     private:
 
-        // To reference matrix api
+        void releaseCache() const;
+        void commitCache() const;
+
+        // Cached values by the set functions
+        mutable std::vector<index> mCachedI;
+        mutable std::vector<index> mCachedJ;
+
+        // Implementation handle references
         MatrixBase* mHnd = nullptr;
         BackendBase* mProvider = nullptr;
     };

@@ -23,7 +23,9 @@ set(CUBOOL_SOURCES
     sources/core/matrix.cpp
     sources/core/matrix.hpp
     sources/io/logger.cpp
-    sources/io/logger.hpp)
+    sources/io/logger.hpp
+    sources/utils/exclusive_scan.hpp
+        )
 
 set(CUBOOL_C_API_SOURCES
     include/cubool/cubool.h
@@ -36,6 +38,7 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_SetupLogger.cpp
     sources/cuBool_Matrix_New.cpp
     sources/cuBool_Matrix_Build.cpp
+    sources/cuBool_Matrix_SetElement.cpp
     sources/cuBool_Matrix_ExtractPairs.cpp
     sources/cuBool_Matrix_ExtractSubMatrix.cpp
     sources/cuBool_Matrix_Duplicate.cpp
@@ -101,8 +104,7 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_reduce.cpp
         sources/sequential/sq_reduce.hpp
         sources/sequential/sq_submatrix.cpp
-        sources/sequential/sq_submatrix.hpp
-        sources/sequential/sq_exclusive_scan.hpp)
+        sources/sequential/sq_submatrix.hpp)
 endif()
 
 # Shared library object config
