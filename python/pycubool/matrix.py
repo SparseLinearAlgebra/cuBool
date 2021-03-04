@@ -110,6 +110,31 @@ class Matrix:
         bridge.check(status)
 
     def dup(self):
+        """
+        Creates new matrix instance, the exact copy of the `self`
+
+        >>> a = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True, no_duplicates=True)
+        >>> b = a.dup()
+        >>> b[3, 3] = True
+        >>> print(a, b, sep="")
+        '
+                0   1   2   3
+          0 |   1   .   .   . |   0
+          1 |   .   1   .   . |   1
+          2 |   .   .   1   . |   2
+          3 |   1   .   .   . |   3
+                0   1   2   3
+                0   1   2   3
+          0 |   1   .   .   . |   0
+          1 |   .   1   .   . |   1
+          2 |   .   .   1   . |   2
+          3 |   1   .   .   1 |   3
+                0   1   2   3
+        '
+
+        :return: New matrix instance with `self` copied data
+        """
+
         hnd = ctypes.c_void_p(0)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Duplicate(
@@ -120,6 +145,30 @@ class Matrix:
         return Matrix(hnd)
 
     def transpose(self):
+        """
+        Creates new transposed `self` matrix.
+
+        >>> a = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True, no_duplicates=True)
+        >>> b = a.transpose()
+        >>> print(a, b, sep="")
+        '
+                0   1   2   3
+          0 |   1   .   .   . |   0
+          1 |   .   1   .   . |   1
+          2 |   .   .   1   . |   2
+          3 |   1   .   .   . |   3
+                0   1   2   3
+                0   1   2   3
+          0 |   1   .   .   1 |   0
+          1 |   .   1   .   . |   1
+          2 |   .   .   1   . |   2
+          3 |   .   .   .   . |   3
+                0   1   2   3
+        '
+
+        :return: New matrix instance with `self` transposed data
+        """
+
         shape = (self.ncols, self.nrows)
         out = Matrix.empty(shape)
 
@@ -132,6 +181,11 @@ class Matrix:
 
     @property
     def nrows(self) -> int:
+        """
+        Query number of rows of the `self` matrix.
+        :return: Number of rows
+        """
+
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Nrows(
@@ -143,6 +197,11 @@ class Matrix:
 
     @property
     def ncols(self) -> int:
+        """
+        Query number of columns of the `self` matrix.
+        :return: Number of columns
+        """
+
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Ncols(
@@ -154,6 +213,11 @@ class Matrix:
 
     @property
     def nvals(self) -> int:
+        """
+        Query number of non-zero values of the `self` matrix.
+        :return: Number of non-zero values
+        """
+
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Nvals(
@@ -165,11 +229,25 @@ class Matrix:
 
     @property
     def shape(self) -> (int, int):
+        """
+        Query shape of `self` matrix as (nrows, ncols) tuple.
+        :return: Return tuple of (nrows, ncols)
+        """
+
         return self.nrows, self.ncols
 
     def to_lists(self):
         """
         Read matrix data as lists of `rows` and `clos` indices.
+
+        >>> a = Matrix.empty(shape=(4, 4))
+        >>> a[0, 0] = True
+        >>> a[1, 3] = True
+        >>> a[1, 0] = True
+        >>> a[2, 2] = True
+        >>> rows, cols = a.to_lists()
+        >>> print(list(rows), list(cols))
+        '[0, 1, 1, 2] [0, 0, 3, 2]'
 
         :return: Pair with `rows` and `cols` lists
         """
@@ -187,6 +265,25 @@ class Matrix:
         bridge.check(status)
 
         return rows, cols
+
+    def to_list(self):
+        """
+        Read matrix values as list of (i,j) pairs.
+
+        >>> a = Matrix.empty(shape=(4, 4))
+        >>> a[0, 0] = True
+        >>> a[1, 3] = True
+        >>> a[1, 0] = True
+        >>> a[2, 2] = True
+        >>> vals = a.to_list()
+        >>> print(vals)
+        '[(0, 0), (1, 0), (1, 3), (2, 2)]'
+
+        :return: List of (i, j) pairs
+        """
+
+        I, J = self.to_lists()
+        return list(zip(I, J))
 
     def to_string(self, width=3):
         """
@@ -232,7 +329,7 @@ class Matrix:
             line += "| " + format_str.format(i) + "\n"
             result += line
 
-        result += header
+        result += header + "\n"
         return result
 
     def extract_matrix(self, i, j, shape, out=None):

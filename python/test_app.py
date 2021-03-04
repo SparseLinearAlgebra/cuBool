@@ -98,3 +98,12 @@ a = a.ewiseadd(a.transpose())
 print(a)
 a[3, 3] = True
 print(a)
+
+a = pycubool.Matrix.empty(shape=(4, 4))
+a[0, 0] = True
+a[1, 3] = True
+a[1, 0] = True
+a[2, 2] = True
+vals = a.to_list()
+print(vals)
+
