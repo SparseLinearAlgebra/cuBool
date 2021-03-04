@@ -143,8 +143,8 @@ namespace testing {
             if (cuBool_Matrix_Nvals(matrix, &extNvals) != CUBOOL_STATUS_SUCCESS)
                 return false;
 
-//            if (extNvals != nvals)
-//                return false;
+            if (extNvals != nvals)
+                return false;
 
             std::vector<cuBool_Index> extRows(extNvals);
             std::vector<cuBool_Index> extCols(extNvals);
@@ -157,24 +157,11 @@ namespace testing {
 
             for (cuBool_Index idx = 0; idx < extNvals; idx++) {
                 extracted[idx] = Pair{extRows[idx], extCols[idx]};
-            }
-
-            for (cuBool_Index idx = 0; idx < nvals; idx++) {
-                 reference[idx] = Pair{rowsIndex[idx], colsIndex[idx]};
+                reference[idx] = Pair{rowsIndex[idx], colsIndex[idx]};
             }
 
             std::sort(extracted.begin(), extracted.end(), PairCmp());
             std::sort(reference.begin(), reference.end(), PairCmp());
-
-            for (auto i = 0; i < nvals; i++ ) {
-                std::cout << extracted[i].i << " " << extracted[i].j << " "
-                             << reference[i].i << " " << reference[i].j << std::endl;
-
-                if (! (extracted[i] == reference[i])) {
-                    std::cout << "!!!!!" << std::endl;
-                }
-            }
-
 
             return extracted == reference;
         }

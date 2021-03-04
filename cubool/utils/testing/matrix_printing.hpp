@@ -72,8 +72,13 @@ namespace testing {
         }
     }
 
+    struct Print {
+        cuBool_Matrix matrix;
+    };
+
     template <typename Stream>
-    Stream& operator <<(Stream& stream, cuBool_Matrix matrix) {
+    Stream& operator <<(Stream& stream, Print p) {
+        cuBool_Matrix matrix = p.matrix;
         assert(matrix);
 
         cuBool_Index nrows;
@@ -83,13 +88,13 @@ namespace testing {
         // Query matrix data
         cuBool_Matrix_Nrows(matrix, &nrows);
         cuBool_Matrix_Ncols(matrix, &ncols);
-        cuBool_Matrix_Ncols(matrix, &nvals);
+        cuBool_Matrix_Nvals(matrix, &nvals);
 
         std::vector<cuBool_Index> rowIndex(nvals);
         std::vector<cuBool_Index> colIndex(nvals);
 
         cuBool_Matrix_ExtractPairs(matrix, rowIndex.data(), colIndex.data(), &nvals);
-        printMatrix(stream, rowIndex, colIndex, nrows, ncols, nvals);
+        printMatrix(stream, rowIndex.data(), colIndex.data(), nrows, ncols, nvals);
 
         return stream;
     }
