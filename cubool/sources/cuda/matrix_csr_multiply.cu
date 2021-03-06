@@ -27,7 +27,7 @@
 
 namespace cubool {
 
-    void MatrixCsr::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) {
+    void MatrixCsr::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) {
         auto a = dynamic_cast<const MatrixCsr*>(&aBase);
         auto b = dynamic_cast<const MatrixCsr*>(&bBase);
 

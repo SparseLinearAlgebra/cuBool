@@ -3,9 +3,13 @@ import ctypes
 __all__ = [
     "load_and_configure",
     "get_init_hints",
-    "get_extract_hints",
     "get_build_hints",
+    "get_sub_matrix_hints",
+    "get_transpose_hints",
+    "get_reduce_hints",
+    "get_kronecker_hints",
     "get_mxm_hints",
+    "get_ewiseadd_hints",
     "check"
 ]
 
@@ -19,6 +23,7 @@ _hint_log_error = 0x32
 _hint_log_warning = 0x64
 _hint_log_all = 0x128
 _hint_no_duplicates = 0x256
+_hint_time_check = 0x512
 
 
 def get_log_hints(default=True, error=False, warning=False):
@@ -38,12 +43,60 @@ def get_init_hints(is_gpu_mem_managed):
     return _hint_relaxed_release | (_hint_gpu_mem_managed if is_gpu_mem_managed else _hint_no)
 
 
-def get_extract_hints():
-    return _hint_no
+def get_sub_matrix_hints(time_check):
+    hints = _hint_no
+
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
 
 
-def get_mxm_hints(is_accumulated):
-    return _hint_accumulate if is_accumulated else _hint_no
+def get_transpose_hints(time_check):
+    hints = _hint_no
+
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
+def get_reduce_hints(time_check):
+    hints = _hint_no
+
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
+def get_kronecker_hints(time_check):
+    hints = _hint_no
+
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
+def get_mxm_hints(is_accumulated, time_check):
+    hints = _hint_no
+
+    if is_accumulated:
+        hints |= _hint_accumulate
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
+def get_ewiseadd_hints(time_check):
+    hints = _hint_no
+
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
 
 
 def get_build_hints(is_sorted, no_duplicates):
@@ -149,7 +202,8 @@ def load_and_configure(cubool_lib_path: str):
     lib.cuBool_Matrix_Transpose.restype = status_t
     lib.cuBool_Matrix_Transpose.argtypes = [
         matrix_p,
-        matrix_p
+        matrix_p,
+        hints_t
     ]
 
     lib.cuBool_Matrix_Nrows.restype = status_t
@@ -173,14 +227,16 @@ def load_and_configure(cubool_lib_path: str):
     lib.cuBool_Matrix_Reduce.restype = status_t
     lib.cuBool_Matrix_Reduce.argtype = [
         matrix_p,
-        matrix_p
+        matrix_p,
+        hints_t
     ]
 
     lib.cuBool_Matrix_EWiseAdd.restype = status_t
     lib.cuBool_Matrix_EWiseAdd.argtypes = [
         matrix_p,
         matrix_p,
-        matrix_p
+        matrix_p,
+        hints_t
     ]
 
     lib.cuBool_MxM.restype = status_t
@@ -195,7 +251,8 @@ def load_and_configure(cubool_lib_path: str):
     lib.cuBool_Kronecker.argtypes = [
         matrix_p,
         matrix_p,
-        matrix_p
+        matrix_p,
+        hints_t
     ]
 
     return lib

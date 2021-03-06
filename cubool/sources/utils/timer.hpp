@@ -22,47 +22,40 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_SQ_MATRIX_HPP
-#define CUBOOL_SQ_MATRIX_HPP
+#ifndef CUBOOL_TIMER_HPP
+#define CUBOOL_TIMER_HPP
 
-#include <backend/matrix_base.hpp>
-#include <sequential/sq_csr_data.hpp>
+#include <chrono>
 
 namespace cubool {
 
-    /**
-     * Csr matrix for Cpu side operations in sequential backend.
-     */
-    class SqMatrix final: public MatrixBase {
+    class Timer {
     public:
-        SqMatrix(size_t nrows, size_t ncols);
-        ~SqMatrix() override = default;
+        void start() {
+            mStart = mEnd = clock::now();
+        }
 
-        void setElement(index i, index j) override;
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) override;
-        void extract(index *rows, index *cols, size_t &nvals) override;
-        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
-                              bool checkTime) override;
+        void end() {
+            mEnd = clock::now();
+        }
 
-        void clone(const MatrixBase &otherBase) override;
-        void transpose(const MatrixBase &otherBase, bool checkTime) override;
-        void reduce(const MatrixBase &otherBase, bool checkTime) override;
+        double getElapsedTimeMs() const {
+            using namespace std::chrono;
+            return (double) duration_cast<nanoseconds>(mEnd - mStart).count() / (double) 1.0e6;
+        }
 
-        void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) override;
-        void kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
-        void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
-
-        index getNrows() const override;
-        index getNcols() const override;
-        index getNvals() const override;
+        double getElapsedTimeSec() const {
+            using namespace std::chrono;
+            return (double) duration_cast<nanoseconds>(mEnd - mStart).count() / (double) 1.0e9;
+        }
 
     private:
-
-        void allocateStorage() const;
-
-        mutable CsrData mData;
+        using clock = std::chrono::high_resolution_clock;
+        using timepoint = clock::time_point;
+        timepoint mStart;
+        timepoint mEnd;
     };
 
 }
 
-#endif //CUBOOL_SQ_MATRIX_HPP
+#endif //CUBOOL_TIMER_HPP

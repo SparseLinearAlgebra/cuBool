@@ -27,7 +27,8 @@
 
 namespace cubool {
 
-    void MatrixCsr::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols) {
+    void MatrixCsr::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
+                                     bool checkTime) {
         auto other = dynamic_cast<const MatrixCsr*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belong to matrix csr class");

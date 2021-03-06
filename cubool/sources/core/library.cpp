@@ -228,23 +228,24 @@ namespace cubool {
         cuBool_DeviceCaps caps;
         queryCapabilities(caps);
 
-        std::stringstream ss;
+        LogStream stream(*getLogger());
+        stream << Logger::Level::Info;
 
         if (caps.cudaSupported) {
-            ss << "Cuda device capabilities" << std::endl
-               << " name: " << caps.name << std::endl
-               << " major: " << caps.major << std::endl
-               << " minor: " << caps.minor << std::endl
-               << " warp size: " << caps.warp << std::endl
-               << " globalMemoryKiBs: " << caps.globalMemoryKiBs << std::endl
-               << " sharedMemoryPerMultiProcKiBs: " << caps.sharedMemoryPerMultiProcKiBs << std::endl
-               << " sharedMemoryPerBlockKiBs: " << caps.sharedMemoryPerBlockKiBs;
+            stream << "Cuda device capabilities:"
+                   << " name: " << caps.name << ","
+                   << " major: " << caps.major << ","
+                   << " minor: " << caps.minor << ","
+                   << " warp size: " << caps.warp << ","
+                   << " globalMemoryKiBs: " << caps.globalMemoryKiBs << ","
+                   << " sharedMemoryPerMultiProcKiBs: " << caps.sharedMemoryPerMultiProcKiBs << ","
+                   << " sharedMemoryPerBlockKiBs: " << caps.sharedMemoryPerBlockKiBs;
         }
         else {
-            ss << "Cuda device is not presented";
+            stream << "Cuda device is not presented";
         }
 
-        mLogger->logInfo(ss.str());
+        stream << LogStream::cmt;
     }
 
     bool Library::isBackedInitialized() {

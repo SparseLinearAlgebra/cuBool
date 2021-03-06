@@ -25,6 +25,7 @@ set(CUBOOL_SOURCES
     sources/io/logger.cpp
     sources/io/logger.hpp
     sources/utils/exclusive_scan.hpp
+    sources/utils/timer.hpp
         )
 
 set(CUBOOL_C_API_SOURCES

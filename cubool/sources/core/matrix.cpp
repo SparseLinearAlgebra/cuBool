@@ -24,9 +24,16 @@
 
 #include <core/matrix.hpp>
 #include <core/error.hpp>
+#include <core/library.hpp>
+#include <io/logger.hpp>
+#include <utils/timer.hpp>
 #include <cassert>
-#include <algorithm>
-#include <limits>
+
+#define TIMER_ACTION(timer, action)              \
+    Timer timer;                                 \
+    timer.start();                               \
+    action;                                      \
+    timer.end()
 
 namespace cubool {
 
@@ -74,7 +81,7 @@ namespace cubool {
         mHnd->extract(rows, cols, nvals);
     }
 
-    void Matrix::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols) {
+    void Matrix::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols, bool checkTime) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
@@ -92,7 +99,22 @@ namespace cubool {
         CHECK_RAISE_ERROR(ncols == this->getNcols(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
 
         this->commitCache();
-        mHnd->extractSubMatrix(*other->mHnd, i, j, nrows, ncols);
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->extractSubMatrix(*other->mHnd, i, j, nrows, ncols, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Matrix::extractSubMatrix: "
+                   << this->getDebugMarker() << " =submatrix( "
+                   << i << "," << j << ", shape=(" << nrows << "," << ncols << ") "
+                   << other->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->extractSubMatrix(*other->mHnd, i, j, nrows, ncols, false);
     }
 
     void Matrix::clone(const MatrixBase &otherBase) {
@@ -110,7 +132,7 @@ namespace cubool {
         mHnd->clone(*other->mHnd);
     }
 
-    void Matrix::transpose(const MatrixBase &otherBase) {
+    void Matrix::transpose(const MatrixBase &otherBase, bool checkTime) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
@@ -122,10 +144,24 @@ namespace cubool {
         CHECK_RAISE_ERROR(N == this->getNrows(), InvalidArgument, "Transposed matrix has incompatible size");
 
         this->commitCache();
-        mHnd->transpose(*other->mHnd);
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->transpose(*other->mHnd, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Matrix::transpose: "
+                   << this->getDebugMarker() << " =transposed "
+                   << other->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->transpose(*other->mHnd, false);
     }
 
-    void Matrix::reduce(const MatrixBase &otherBase) {
+    void Matrix::reduce(const MatrixBase &otherBase, bool checkTime) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
@@ -136,10 +172,24 @@ namespace cubool {
         CHECK_RAISE_ERROR(1 == this->getNcols(), InvalidArgument, "Matrix has incompatible size");
 
         this->commitCache();
-        mHnd->reduce(*other->mHnd);
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->reduce(*other->mHnd, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Matrix::reduce: "
+                   << this->getDebugMarker() << " =reduce "
+                   << other->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->reduce(*other->mHnd, false);
     }
 
-    void Matrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) {
+    void Matrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
@@ -155,10 +205,25 @@ namespace cubool {
         CHECK_RAISE_ERROR(T == b->getNrows(), InvalidArgument, "Cannot multiply passed matrices");
 
         this->commitCache();
-        mHnd->multiply(*a->mHnd, *b->mHnd, accumulate);
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->multiply(*a->mHnd, *b->mHnd, accumulate, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Matrix::multiply: "
+                   << this->getDebugMarker() << (accumulate? " += ": " = ")
+                   << a->getDebugMarker() << " x "
+                   << b->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->multiply(*a->mHnd, *b->mHnd, accumulate, false);
     }
 
-    void Matrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase) {
+    void Matrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
@@ -174,10 +239,25 @@ namespace cubool {
         CHECK_RAISE_ERROR(N * T == this->getNcols(), InvalidArgument, "Matrix has incompatible size for operation result");
 
         this->commitCache();
-        mHnd->kronecker(*a->mHnd, *b->mHnd);
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->kronecker(*a->mHnd, *b->mHnd, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Matrix::kronecker: "
+                   << this->getDebugMarker() << " = "
+                   << a->getDebugMarker() << " (x) "
+                   << b->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->kronecker(*a->mHnd, *b->mHnd, false);
     }
 
-    void Matrix::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase) {
+    void Matrix::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
@@ -194,7 +274,22 @@ namespace cubool {
         CHECK_RAISE_ERROR(N == this->getNcols(), InvalidArgument, "Matrix has incompatible size for operation result");
 
         this->commitCache();
-        mHnd->eWiseAdd(*a->mHnd, *b->mHnd);
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->eWiseAdd(*a->mHnd, *b->mHnd, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Matrix::eWiseAdd: "
+                   << this->getDebugMarker() << " = "
+                   << a->getDebugMarker() << " + "
+                   << b->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->eWiseAdd(*a->mHnd, *b->mHnd, false);
     }
 
     index Matrix::getNrows() const {
@@ -251,7 +346,7 @@ namespace cubool {
             tmp->build(mCachedI.data(), mCachedJ.data(), cachedNvals, isSorted, noDuplicates);
 
             // Add new values to current matrix content
-            mHnd->eWiseAdd(*mHnd, *tmp);
+            mHnd->eWiseAdd(*mHnd, *tmp, false);
         }
         // Otherwise, new values are used to build matrix content
         else {

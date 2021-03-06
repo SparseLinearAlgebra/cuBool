@@ -47,7 +47,7 @@ b, b_set = gen_matrix(dim, to_gen)
 print("Matrix a din:", a.shape, "values count:", a.nvals)
 print("Matrix b dim:", b.shape, "values count:", b.nvals)
 
-r = a.ewiseadd(b)
+r = a.ewiseadd(b, time_check=True)
 
 print("Matrix r values count:", r.nvals)
 
@@ -99,13 +99,7 @@ print(a)
 a[3, 3] = True
 print(a)
 
-pycubool.setup_logger(pycubool.get_default_log_name())
-
 a = pycubool.Matrix.empty(shape=(4, 4))
-print(a.marker)
-a.set_marker("meow")
-print(a.marker)
-
 a[0, 0] = True
 a[1, 3] = True
 a[1, 0] = True

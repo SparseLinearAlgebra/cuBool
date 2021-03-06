@@ -38,6 +38,6 @@ cuBool_Status cuBool_MxM(
         auto resultM = (cubool::Matrix *) result;
         auto leftM = (cubool::Matrix *) left;
         auto rightM = (cubool::Matrix *) right;
-        resultM->multiply(*leftM, *rightM, hints & CUBOOL_HINT_ACCUMULATE);
+        resultM->multiply(*leftM, *rightM, hints & CUBOOL_HINT_ACCUMULATE, hints & CUBOOL_HINT_TIME_CHECK);
     CUBOOL_END_BODY
 }

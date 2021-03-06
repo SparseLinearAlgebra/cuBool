@@ -144,7 +144,7 @@ class Matrix:
         bridge.check(status)
         return Matrix(hnd)
 
-    def transpose(self):
+    def transpose(self, time_check=False):
         """
         Creates new transposed `self` matrix.
 
@@ -166,6 +166,7 @@ class Matrix:
                 0   1   2   3
         '
 
+        :param time_check: Pass True to measure and log elapsed time of the operation
         :return: New matrix instance with `self` transposed data
         """
 
@@ -173,7 +174,9 @@ class Matrix:
         out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Transpose(
-            out.hnd, self.hnd
+            out.hnd,
+            self.hnd,
+            ctypes.c_uint(bridge.get_transpose_hints(time_check=time_check))
         )
 
         bridge.check(status)
@@ -387,7 +390,7 @@ class Matrix:
         result += header + "\n"
         return result
 
-    def extract_matrix(self, i, j, shape, out=None):
+    def extract_matrix(self, i, j, shape, out=None, time_check=False):
         """
         Extract a sub-matrix.
 
@@ -405,6 +408,7 @@ class Matrix:
         :param j: First column index to extract
         :param shape: Shape of the sub-matrix
         :param out: Optional matrix where to store result
+        :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Sub-matrix
         """
 
@@ -417,13 +421,13 @@ class Matrix:
             ctypes.c_uint(j),
             ctypes.c_uint(shape[0]),
             ctypes.c_uint(shape[1]),
-            bridge.get_extract_hints()
+            ctypes.c_uint(bridge.get_sub_matrix_hints(time_check=time_check))
         )
 
         bridge.check(status)
         return out
 
-    def mxm(self, other, out=None, accumulate=True):
+    def mxm(self, other, out=None, accumulate=True, time_check=False):
         """
         Matrix-matrix multiplication in boolean semiring with "x = and" and "+ = or" operations.
         Returns `self` multiplied to `other` matrix.
@@ -446,6 +450,7 @@ class Matrix:
         :param other: Input matrix for multiplication
         :param out: Optional out matrix to store result
         :param accumulate: Set in true to accumulate the result with `out` matrix
+        :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Matrix-matrix multiplication result (with possible accumulation to `out` if provided)
         """
 
@@ -454,14 +459,16 @@ class Matrix:
             out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_MxM(
-            out.hnd, self.hnd, other.hnd,
-            ctypes.c_uint(bridge.get_mxm_hints(accumulate))
+            out.hnd,
+            self.hnd,
+            other.hnd,
+            ctypes.c_uint(bridge.get_mxm_hints(is_accumulated=accumulate, time_check=time_check))
         )
 
         bridge.check(status)
         return out
 
-    def kronecker(self, other):
+    def kronecker(self, other, time_check=False):
         """
         Matrix-matrix kronecker product with boolean "x = and" operation.
         Returns kronecker product of `self` and `other` matrices.
@@ -484,6 +491,7 @@ class Matrix:
         '
 
         :param other: Input matrix
+        :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Matrices kronecker product matrix
         """
 
@@ -491,13 +499,16 @@ class Matrix:
         out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Kronecker(
-            out.hnd, self.hnd, other.hnd
+            out.hnd,
+            self.hnd,
+            other.hnd,
+            ctypes.c_uint(bridge.get_kronecker_hints(time_check=time_check))
         )
 
         bridge.check(status)
         return out
 
-    def ewiseadd(self, other):
+    def ewiseadd(self, other, time_check=False):
         """
         Element-wise matrix-matrix addition with boolean "+ = or" operation.
         Returns element-wise sum of `self` and `other` matrix.
@@ -515,6 +526,7 @@ class Matrix:
         '
 
         :param other: Input matrix to sum
+        :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Element-wise matrix-matrix sum
         """
 
@@ -522,13 +534,16 @@ class Matrix:
         out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_EWiseAdd(
-            out.hnd, self.hnd, other.hnd
+            out.hnd,
+            self.hnd,
+            other.hnd,
+            ctypes.c_uint(bridge.get_ewiseadd_hints(time_check=time_check))
         )
 
         bridge.check(status)
         return out
 
-    def reduce(self):
+    def reduce(self, time_check=False):
         """
         Reduce matrix to vector with boolean "+ = or" operation.
         Return `self` reduced matrix.
@@ -536,14 +551,15 @@ class Matrix:
         >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 2], [0, 1, 0, 2])
         >>> print(matrix.reduce())
         '
-                0
-          0 |   1 |   0
-          1 |   1 |   1
-          2 |   1 |   2
-          3 |   . |   3
-                0
+                  0
+            0 |   1 |   0
+            1 |   1 |   1
+            2 |   1 |   2
+            3 |   . |   3
+                  0
         '
 
+        :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Reduced matrix (matrix with M x 1 shape)
         """
 
@@ -551,7 +567,9 @@ class Matrix:
         out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Reduce(
-            out.hnd, self.hnd
+            out.hnd,
+            self.hnd,
+            ctypes.c_uint(bridge.get_reduce_hints(time_check=time_check))
         )
 
         bridge.check(status)

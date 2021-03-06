@@ -26,7 +26,8 @@
 
 cuBool_Status cuBool_Matrix_Transpose(
         cuBool_Matrix result,
-        cuBool_Matrix matrix
+        cuBool_Matrix matrix,
+        cuBool_Hints hints
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
@@ -34,6 +35,6 @@ cuBool_Status cuBool_Matrix_Transpose(
         CUBOOL_ARG_NOT_NULL(matrix)
         auto r = (cubool::Matrix *) result;
         auto m = (cubool::Matrix *) matrix;
-        r->transpose(*m);
+        r->transpose(*m, hints & CUBOOL_HINT_TIME_CHECK);
     CUBOOL_END_BODY
 }

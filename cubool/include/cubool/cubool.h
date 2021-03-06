@@ -176,7 +176,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_SetupLogging(
  * This function must be called before any other library function is called,
  * except first get-info functions.
  *
- * @note Pass CUBOOL_HINT_RELAXED_FINALIZE for library setup within python.
+ * @note Pass `CUBOOL_HINT_RELAXED_FINALIZE` for library setup within python.
  *
  * @param hints Init hints.
  *
@@ -190,7 +190,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Initialize(
  * Finalize library state and all objects, which were created on this library context.
  * This function always must be called as the last library function in the application.
  *
- * @note Pass CUBOOL_HINT_RELAXED_FINALIZE for library init call, if relaxed finalize is required.
+ * @note Pass `CUBOOL_HINT_RELAXED_FINALIZE` for library init call, if relaxed finalize is required.
  * @note Invalidates all handle to the resources, created within this library instance
  *
  * @return Error code on this operation
@@ -230,8 +230,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_New(
  * as (rows[i],cols[i]) for pair with i-th index.
  *
  * @note This function automatically reduces duplicates
- * @note Pass CUBOOL_HINT_VALUES_SORTED if values already in the row-col order.
- * @note Pass CUBOOL_HINT_NO_DUPLICATES if values has no duplicates
+ * @note Pass `CUBOOL_HINT_VALUES_SORTED` if values already in the row-col order.
+ * @note Pass `CUBOOL_HINT_NO_DUPLICATES` if values has no duplicates
  *
  * @param matrix Matrix handle to perform operation on
  * @param rows Array of pairs row indices
@@ -329,13 +329,15 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractPairs(
  *
  * @note Provided sub-matrix region must be within the input matrix.
  *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
  * @param result[out] Matrix handle where to store result of the operation
  * @param matrix Input matrix to extract values from
  * @param i First row id to extract
  * @param j First column id to extract
  * @param nrows Number of rows to extract
  * @param ncols Number of columns to extract
- * @param hints Optional hints, pass CUBOOL_HINT_NO
+ * @param hints Hints for the operation
  *
  * @return Error code on this operation
  */
@@ -366,14 +368,18 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Duplicate(
  * Transpose source matrix and store result of this operation in result matrix.
  * Formally: result = matrix ^ T.
  *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
  * @param result[out] Matrix handle to store result of the operation
  * @param matrix The source matrix
+ * @param hints Hints for the operation
  *
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Transpose(
     cuBool_Matrix result,
-    cuBool_Matrix matrix
+    cuBool_Matrix matrix,
+    cuBool_Hints hints
 );
 
 /**
@@ -434,14 +440,18 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Free(
  *          dim(matrix) = M x N
  *          dim(result) = M x 1
  *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
  * @param result[out] Matrix hnd where to store result
  * @param matrix Source matrix to reduce
+ * @param hints Hints for the operation
  *
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
     cuBool_Matrix result,
-    cuBool_Matrix matrix
+    cuBool_Matrix matrix,
+    cuBool_Hints hints
 );
 
 /**
@@ -452,16 +462,20 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
  *          dim(left) = M x N
  *          dim(right) = M x N
  *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
  * @param result[out] Destination matrix for add-and-assign operation
  * @param left Source matrix to be added
  * @param right Source matrix to be added
+ * @param hints Hints for the operation
  *
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
     cuBool_Matrix result,
     cuBool_Matrix left,
-    cuBool_Matrix right
+    cuBool_Matrix right,
+    cuBool_Hints hints
 );
 
 /**
@@ -473,12 +487,13 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
  *          dim(right) = T x N
  *          dim(result) = M x N
  *
- * @note Pass CUBOOL_HINT_ACCUMULATE hint to add result of the left x right operation.
+ * @note Pass `CUBOOL_HINT_ACCUMULATE` hint to add result of the left x right operation.
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
  *
  * @param result[out] Matrix handle where to store operation result
  * @param left Input left matrix
  * @param right Input right matrix
- * @param hints Hints for the operation.
+ * @param hints Hints for the operation
  *
  * @return Error code on this operation
  */
@@ -497,16 +512,20 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxM(
  *          dim(right) = K x T
  *          dim(result) = MK x NT
  *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
  * @param result[out] Matrix handle where to store operation result
  * @param left Input left matrix
  * @param right Input right matrix
+ * @param hints Hints for the operation
  *
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Kronecker(
     cuBool_Matrix result,
     cuBool_Matrix left,
-    cuBool_Matrix right
+    cuBool_Matrix right,
+    cuBool_Hint hints
 );
 
 #endif //CUBOOL_CUBOOL_H

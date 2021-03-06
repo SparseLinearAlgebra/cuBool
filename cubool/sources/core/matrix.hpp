@@ -44,15 +44,16 @@ namespace cubool {
         void setElement(index i, index j) override;
         void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) override;
         void extract(index *rows, index *cols, size_t &nvals) override;
-        void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols) override;
+        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
+                              bool checkTime) override;
 
         void clone(const MatrixBase &otherBase) override;
-        void transpose(const MatrixBase &otherBase) override;
-        void reduce(const MatrixBase& otherBase) override;
+        void transpose(const MatrixBase &otherBase, bool checkTime) override;
+        void reduce(const MatrixBase &otherBase, bool checkTime) override;
 
-        void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) override;
-        void kronecker(const MatrixBase &aBase, const MatrixBase &bBase) override;
-        void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase) override;
+        void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) override;
+        void kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
+        void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
 
         index getNrows() const override;
         index getNcols() const override;

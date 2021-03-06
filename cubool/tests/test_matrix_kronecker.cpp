@@ -24,7 +24,7 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixKronecker(cuBool_Index m, cuBool_Index n, cuBool_Index k, cuBool_Index t, float density) {
+void testMatrixKronecker(cuBool_Index m, cuBool_Index n, cuBool_Index k, cuBool_Index t, float density, cuBool_Hints flags) {
     cuBool_Matrix r, a, b;
 
     testing::Matrix ta = std::move(testing::Matrix::generateSparse(m, n, density));
@@ -40,7 +40,7 @@ void testMatrixKronecker(cuBool_Index m, cuBool_Index n, cuBool_Index k, cuBool_
     EXPECT_EQ(cuBool_Matrix_Build(b, tb.rowsIndex.data(), tb.colsIndex.data(), tb.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a `kron` b
-    EXPECT_EQ(cuBool_Kronecker(r, a, b), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(cuBool_Kronecker(r, a, b, flags), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r = a `kron` b on the cpu to compare results
     testing::MatrixKroneckerFunctor functor;
@@ -60,7 +60,7 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Index k, cuBool_Index t, flo
     EXPECT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 10; i++) {
-        testMatrixKronecker(m, n, k, t, 0.01f + step * ((float) i));
+        testMatrixKronecker(m, n, k, t, 0.01f + step * ((float) i), CUBOOL_HINT_NO);
     }
 
     // Finalize library

@@ -24,7 +24,7 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixTranspose(cuBool_Index m, cuBool_Index n, float density) {
+void testMatrixTranspose(cuBool_Index m, cuBool_Index n, float density, cuBool_Hints flags) {
     cuBool_Matrix r, a;
 
     testing::Matrix ta = std::move(testing::Matrix::generateSparse(m, n, density));
@@ -37,7 +37,7 @@ void testMatrixTranspose(cuBool_Index m, cuBool_Index n, float density) {
     EXPECT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a ^ T
-    EXPECT_EQ(cuBool_Matrix_Transpose(r, a), CUBOOL_STATUS_SUCCESS);
+    EXPECT_EQ(cuBool_Matrix_Transpose(r, a, flags), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r = a ^ T on the cpu to compare results
     testing::Matrix tr = ta.transpose();
@@ -55,7 +55,7 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     EXPECT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 5; i++) {
-        testMatrixTranspose(m, n, 0.1f + (0.05f) * ((float) i));
+        testMatrixTranspose(m, n, 0.1f + (0.05f) * ((float) i), CUBOOL_HINT_NO);
     }
 
     // Finalize library

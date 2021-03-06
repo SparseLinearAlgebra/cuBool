@@ -24,7 +24,7 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixMultiplyAdd(cuBool_Index m, cuBool_Index t, cuBool_Index n, float density) {
+void testMatrixMultiplyAdd(cuBool_Index m, cuBool_Index t, cuBool_Index n, float density, cuBool_Hints flags) {
     cuBool_Matrix a, b, r;
 
     // Generate test data with specified density
@@ -47,7 +47,7 @@ void testMatrixMultiplyAdd(cuBool_Index m, cuBool_Index t, cuBool_Index n, float
     tr = std::move(functor(ta, tb, tr, true));
 
     // Evaluate r += a x b
-    ASSERT_EQ(cuBool_MxM(r, a, b, CUBOOL_HINT_ACCUMULATE), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_MxM(r, a, b, CUBOOL_HINT_ACCUMULATE | flags), CUBOOL_STATUS_SUCCESS);
 
     // Compare results
     ASSERT_EQ(tr.areEqual(r), true);
@@ -63,7 +63,7 @@ void testRun(cuBool_Index m, cuBool_Index t, cuBool_Index n, cuBool_Hints setup)
     ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 5; i++) {
-        testMatrixMultiplyAdd(m, t, n, 0.1f + (0.05f) * ((float) i));
+        testMatrixMultiplyAdd(m, t, n, 0.1f + (0.05f) * ((float) i), CUBOOL_HINT_NO);
     }
 
     // Finalize library
