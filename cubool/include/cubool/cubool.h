@@ -91,7 +91,9 @@ typedef enum cuBool_Hint {
     /** Logging hint: log includes all types of messages */
     CUBOOL_HINT_LOG_ALL = 0x128,
     /** No duplicates in the build data */
-    CUBOOL_HINT_NO_DUPLICATES = 0x256
+    CUBOOL_HINT_NO_DUPLICATES = 0x256,
+    /** Performs time measurement and logs elapsed operation time */
+    CUBOOL_HINT_TIME_CHECK = 0x512
 } cuBool_Hint;
 
 /** Hit mask */
