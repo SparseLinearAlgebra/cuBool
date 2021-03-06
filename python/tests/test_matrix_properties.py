@@ -1,15 +1,20 @@
 import unittest
-import test_utils
+import utils.io_file
 
 
 class TestMatrixMethods(unittest.TestCase):
-
     def setUp(self) -> None:
-        self.matrix = test_utils.build_matrix_from_file("../data/property.mtx")
+        self.input_matrices = [["matrix_1.mtx"], ["matrix_2.mtx"]]
+        self.result_matrices = ["property_res_1.mtx", "property_res_2.mtx"]
+
+        self.matrices = list()
         self.result_property = list()
-        with open("/matrices/property_result.mtx", 'r') as _file:
-            line = list(map(int, _file.readline().split()))
-            self.result_property.append(line)
+        for i in range(len(self.input_matrices)):
+            for matrix in self.input_matrices[i]:
+                self.matrices.append(utils.io_file.build_matrix_by_name(matrix))
+
+        for i in range(len(self.result_matrices)):
+            self.result_property.append(utils.io_file.build_matrix_by_name(self.result_matrices[i]))
 
     def tearDown(self) -> None:
         """
@@ -20,16 +25,20 @@ class TestMatrixMethods(unittest.TestCase):
         pass
 
     def test_nrows(self):
-        self.assertEqual(self.result_property[0][0], self.matrix.nrows)
+        for i in range(len(self.matrices)):
+            self.assertEqual(self.result_property[i].nrows, self.matrices[i].nrows)
 
     def test_ncols(self):
-        self.assertEqual(self.result_property[1][0], self.matrix.ncols)
+        for i in range(len(self.matrices)):
+            self.assertEqual(self.result_property[i].ncols, self.matrices[i].ncols)
 
     def test_nvals(self):
-        self.assertEqual(self.result_property[2][0], self.matrix.nvals)
+        for i in range(len(self.matrices)):
+            self.assertEqual(self.result_property[i].nvals, self.matrices[i].nvals)
 
     def test_shape(self):
-        self.assertEqual(self.result_property[0], self.matrix.shape)
+        for i in range(len(self.matrices)):
+            self.assertEqual(self.result_property[i].shape, self.matrices[i].shape)
 
 
 if __name__ == "__main__":
