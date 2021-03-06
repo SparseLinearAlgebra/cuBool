@@ -25,7 +25,7 @@
 #include <cuBool_Common.hpp>
 #include <cstring>
 
-cuBool_Status cuBool_Matrix_GetMarker(
+cuBool_Status cuBool_Matrix_Marker(
         cuBool_Matrix matrix,
         char* marker,
         cuBool_Index* size

@@ -290,7 +290,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_SetMarker(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_GetMarker(
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Marker(
     cuBool_Matrix matrix,
     char* marker,
     cuBool_Index* size

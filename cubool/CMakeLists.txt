@@ -40,7 +40,7 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Matrix_Build.cpp
     sources/cuBool_Matrix_SetElement.cpp
     sources/cuBool_Matrix_SetMarker.cpp
-    sources/cuBool_Matrix_GetMarker.cpp
+    sources/cuBool_Matrix_Marker.cpp
     sources/cuBool_Matrix_ExtractPairs.cpp
     sources/cuBool_Matrix_ExtractSubMatrix.cpp
     sources/cuBool_Matrix_Duplicate.cpp

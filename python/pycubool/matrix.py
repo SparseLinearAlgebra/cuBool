@@ -220,14 +220,14 @@ class Matrix:
         """
 
         size = ctypes.c_uint(0)
-        status = wrapper.loaded_dll.cuBool_Matrix_GetMarker(
+        status = wrapper.loaded_dll.cuBool_Matrix_Marker(
             self.hnd, ctypes.POINTER(ctypes.c_char)(), ctypes.byref(size)
         )
 
         bridge.check(status)
 
         c_buffer = (ctypes.c_char * int(size.value))()
-        status = wrapper.loaded_dll.cuBool_Matrix_GetMarker(
+        status = wrapper.loaded_dll.cuBool_Matrix_Marker(
             self.hnd, c_buffer, ctypes.byref(size)
         )
 
