@@ -10,7 +10,7 @@ __all__ = [
 
 class Matrix:
     """
-    Wrapper for CuBool Sparse boolean matrix type.
+    Wrapper for cuBool Sparse boolean matrix type.
     """
 
     __slots__ = ["hnd"]
@@ -178,6 +178,61 @@ class Matrix:
 
         bridge.check(status)
         return out
+
+    def set_marker(self, marker: str):
+        """
+        Sets to the matrix specific debug string marker.
+        This marker will appear in the log messages as string identifier of the matrix.
+
+        >>> a = Matrix.empty(shape=(4, 4))
+        >>> print(a.marker)
+        '0x1a767b0'
+        >>> a.set_marker("meow")
+        >>> print(a.marker)
+        'meow (0x1a767b0)'
+
+        :param marker: String marker to set
+        :return: None
+        """
+
+        assert marker is not None
+
+        status = wrapper.loaded_dll.cuBool_Matrix_SetMarker(
+            self.hnd, marker.encode("utf-8")
+        )
+
+        bridge.check(status)
+        return None
+
+    @property
+    def marker(self):
+        """
+        Allows to get matrix debug string marker.
+
+        >>> a = Matrix.empty(shape=(4, 4))
+        >>> print(a.marker)
+        '0x1a767b0'
+        >>> a.set_marker("meow")
+        >>> print(a.marker)
+        'meow (0x1a767b0)'
+
+        :return: String matrix marker.
+        """
+
+        size = ctypes.c_uint(0)
+        status = wrapper.loaded_dll.cuBool_Matrix_GetMarker(
+            self.hnd, ctypes.POINTER(ctypes.c_char)(), ctypes.byref(size)
+        )
+
+        bridge.check(status)
+
+        c_buffer = (ctypes.c_char * int(size.value))()
+        status = wrapper.loaded_dll.cuBool_Matrix_GetMarker(
+            self.hnd, c_buffer, ctypes.byref(size)
+        )
+
+        bridge.check(status)
+        return c_buffer.value.decode("utf-8")
 
     @property
     def nrows(self) -> int:

@@ -108,6 +108,19 @@ def load_and_configure(cubool_lib_path: str):
         ctypes.c_uint
     ]
 
+    lib.cuBool_Matrix_SetMarker.restype = status_t
+    lib.cuBool_Matrix_SetMarker.argtypes = [
+        matrix_p,
+        ctypes.POINTER(ctypes.c_char)
+    ]
+
+    lib.cuBool_Matrix_GetMarker.restype = status_t
+    lib.cuBool_Matrix_GetMarker.argtypes = [
+        matrix_p,
+        ctypes.POINTER(ctypes.c_char),
+        ctypes.POINTER(ctypes.c_uint)
+    ]
+
     lib.cuBool_Matrix_ExtractPairs.restype = status_t
     lib.cuBool_Matrix_ExtractPairs.argtypes = [
         matrix_p,

@@ -29,15 +29,15 @@ prototyping algorithms on a local computer for later running on a powerful serve
 
 - [X] Library C interface
 - [X] Library setup
-- [X] CSR matrix
-- [X] CSR multiplication
-- [X] CSR element-wise addition
-- [X] CSR kronecker
-- [X] CSR transpose
-- [X] CSR submatrix
-- [X] CSR matrix reduce
-- [X] CSR slicing
-- [ ] Matrix cached filling
+- [X] Sparse matrix
+- [X] Sparse matrix multiplication
+- [X] Sparse matrix element-wise addition
+- [X] Sparse matrix kronecker
+- [X] Sparse matrix transpose
+- [X] Sparse matrix submatrix
+- [X] Sparse matrix reduce
+- [X] Sparse matrix slicing
+- [X] Matrix cached filling
 - [X] Sequential fallback backend for CPU
 - [X] Device capabilities query
 - [ ] IO matrix loading from mtx file
@@ -45,9 +45,9 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [ ] IO matrix saving into gviz format
 - [X] IO user-defined file logging
 - [X] Wrapper for Python API
-- [ ] Wrapper syntax sugar
+- [X] Wrapper syntax sugar
 - [ ] Tests for Python wrapper
-- [ ] Pip package
+- [X] Pip package
 - [ ] Code examples
 - [ ] User guide
 - [X] Unit Tests collection

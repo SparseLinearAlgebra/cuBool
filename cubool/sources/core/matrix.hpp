@@ -32,6 +32,10 @@
 
 namespace cubool {
 
+    /**
+     * Proxy matrix for the actual backend matrix implementation.
+     * Behaves as validation/auxiliary layer.
+     */
     class Matrix final: public MatrixBase {
     public:
         Matrix(size_t nrows, size_t ncols, BackendBase& backend);
@@ -56,6 +60,7 @@ namespace cubool {
 
         void setDebugMarker(const char* marker);
         const char* getDebugMarker() const;
+        index getDebugMarkerSizeWithNullT() const;
 
     private:
 

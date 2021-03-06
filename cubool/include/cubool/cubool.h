@@ -159,7 +159,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_GetVersion(
  * @note Pass `CUBOOL_HINT_LOG_WARNING` to include warning messages into log
  * @note Pass `CUBOOL_HINT_LOG_ALL` to include all messages into log
  *
- * @param logFileName UTF-8 encoded file name and path.
+ * @param logFileName UTF-8 encoded null-terminated file name and path string.
  * @param hints Logging hints to filter messages.
  *
  * @return Error code on this operation
@@ -262,6 +262,38 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_SetElement(
     cuBool_Matrix matrix,
     cuBool_Index i,
     cuBool_Index j
+);
+
+/**
+ * Sets to the matrix specific debug string marker.
+ * This marker will appear in the log messages as string identifier of the matrix.
+ *
+ * @param matrix Matrix handle to perform operation on
+ * @param marker UTF-8 encoded null-terminated string marker name.
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_SetMarker(
+    cuBool_Matrix matrix,
+    const char* marker
+);
+
+/**
+ * Allows to get matrix debug string marker.
+ *
+ * @note Pass null marker if you want to retrieve only the required marker buffer size.
+ * @note After the function call the actual size of the marker is stored in the size variable.
+ *
+ * @param matrix Matrix handle to perform operation on
+ * @param[in,out] marker Where to store null-terminated UTF-8 encoded marker string.
+ * @param[in,out] size Size of the provided buffer in bytes to save marker string.
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_GetMarker(
+    cuBool_Matrix matrix,
+    char* marker,
+    cuBool_Index* size
 );
 
 /**

@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <sstream>
 
 namespace cubool {
 
@@ -96,6 +97,47 @@ namespace cubool {
         ~DummyLogger() override = default;
         void log(Level level, const std::string &message) override;
         size_t getMessagesCount() const override;
+    };
+
+    /**
+     * Utility to build and log fancy messages.
+     */
+    class LogStream {
+    public:
+        struct Commit {};
+        constexpr static const Commit cmt = Commit{};
+
+        explicit LogStream(Logger& logger)
+            : mLogger(logger), mLevel(Logger::Level::Info) {
+        };
+        LogStream(LogStream&& other) noexcept = default;
+        ~LogStream() = default;
+
+        void commit() {
+            mLogger.log(mLevel, mStream.str());
+            mStream.str(std::string());
+        }
+
+        friend LogStream& operator<<(LogStream& stream, Logger::Level level) {
+            stream.mLevel = level;
+            return stream;
+        }
+
+        friend LogStream& operator<<(LogStream& stream, Commit commit) {
+            stream.commit();
+            return stream;
+        }
+
+        template<typename T>
+        friend LogStream& operator<<(LogStream& stream, T&& t) {
+            stream.mStream << std::forward<T>(t);
+            return stream;
+        }
+
+    private:
+        Logger& mLogger;
+        Logger::Level mLevel;
+        std::stringstream mStream;
     };
 
 }

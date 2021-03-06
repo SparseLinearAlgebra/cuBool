@@ -33,6 +33,11 @@ namespace cubool {
     Matrix::Matrix(size_t nrows, size_t ncols, BackendBase &backend) {
         mHnd = backend.createMatrix(nrows, ncols);
         mProvider = &backend;
+
+        // By default marker is the address of the matrix
+        std::stringstream s;
+        s << this;
+        mMarker = s.str();
     }
 
     Matrix::~Matrix() {
@@ -207,11 +212,19 @@ namespace cubool {
 
     void Matrix::setDebugMarker(const char *marker) {
         CHECK_RAISE_ERROR(marker, InvalidArgument, "Null pointer marker string");
-        mMarker = marker;
+
+        // Marker = "$marker (address)"
+        std::stringstream s;
+        s << marker << " (" << this << ")";
+        mMarker = s.str();
     }
 
     const char * Matrix::getDebugMarker() const {
         return mMarker.c_str();
+    }
+
+    index Matrix::getDebugMarkerSizeWithNullT() const {
+        return mMarker.length() + 1;
     }
 
     void Matrix::releaseCache() const {

@@ -44,7 +44,7 @@
 
 namespace cubool {
 
-    std::unordered_set<class MatrixBase*> Library::mAllocated;
+    std::unordered_set<class Matrix*> Library::mAllocated;
     std::shared_ptr<class BackendBase> Library::mBackend = nullptr;
     std::shared_ptr<class Logger>  Library::mLogger = std::make_shared<DummyLogger>();
     bool Library::mRelaxedRelease = false;
@@ -92,11 +92,11 @@ namespace cubool {
         if (mBackend) {
             // Release all allocated resources implicitly
             if (mRelaxedRelease) {
-                for (auto m: mAllocated) {
-                    std::stringstream s;
-                    s << "Implicitly release matrix instance " << m;
+                LogStream stream(*getLogger());
+                stream << Logger::Level::Info << "Enabled relaxed library finalize" << LogStream::cmt;
 
-                    mLogger->logWarning(s.str());
+                for (auto m: mAllocated) {
+                    stream << Logger::Level::Warning << "Implicitly release matrix " << m->getDebugMarker() << LogStream::cmt;
                     delete m;
                 }
 
@@ -185,14 +185,25 @@ namespace cubool {
 
         auto m = new Matrix(nrows, ncols, *mBackend);
         mAllocated.emplace(m);
+
+        LogStream stream(*getLogger());
+        stream << Logger::Level::Info << "Create Matrix " << m->getDebugMarker()
+               << " (" << nrows << "," << ncols << ")" << LogStream::cmt;
+
         return m;
     }
 
     void Library::releaseMatrix(MatrixBase *matrixBase) {
         if (mRelaxedRelease && !mBackend) return;
 
-        mAllocated.erase(matrixBase);
-        delete matrixBase;
+        auto m = (Matrix*)(matrixBase);
+        CHECK_RAISE_ERROR(mAllocated.find(m) != mAllocated.end(), InvalidArgument, "No such matrix was allocated");
+
+        LogStream stream(*getLogger());
+        stream << Logger::Level::Info << "Release Matrix " << m->getDebugMarker() << LogStream::cmt;
+
+        mAllocated.erase(m);
+        delete m;
     }
 
     void Library::handleError(const std::exception& error) {
@@ -227,7 +238,7 @@ namespace cubool {
                << " warp size: " << caps.warp << std::endl
                << " globalMemoryKiBs: " << caps.globalMemoryKiBs << std::endl
                << " sharedMemoryPerMultiProcKiBs: " << caps.sharedMemoryPerMultiProcKiBs << std::endl
-               << " sharedMemoryPerBlockKiBs: " << caps.sharedMemoryPerBlockKiBs << std::endl;
+               << " sharedMemoryPerBlockKiBs: " << caps.sharedMemoryPerBlockKiBs;
         }
         else {
             ss << "Cuda device is not presented";
