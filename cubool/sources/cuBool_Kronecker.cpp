@@ -28,7 +28,7 @@ cuBool_Status cuBool_Kronecker(
         cuBool_Matrix result,
         cuBool_Matrix left,
         cuBool_Matrix right,
-        cuBool_Hint hints
+        cuBool_Hints hints
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
