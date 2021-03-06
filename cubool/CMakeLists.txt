@@ -140,6 +140,7 @@ if (CUBOOL_WITH_CUDA)
 
     # Settings: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
     target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+        -arch=sm_30
         -gencode=arch=compute_30,code=sm_30
         -gencode=arch=compute_35,code=sm_35
         -gencode=arch=compute_50,code=sm_50

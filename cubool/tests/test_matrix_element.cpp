@@ -61,11 +61,52 @@ void testMatrixSetElement(cuBool_Index m, cuBool_Index n, float density) {
     ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
 }
 
+void testMatrixAppendElement(cuBool_Index m, cuBool_Index n, float density) {
+    cuBool_Matrix matrix = nullptr;
+
+    testing::Matrix tmatrix = std::move(testing::Matrix::generateSparse(m, n, density));
+
+    ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(matrix, tmatrix.rowsIndex.data(), tmatrix.colsIndex.data(), (cuBool_Index) tmatrix.nvals, CUBOOL_HINT_VALUES_SORTED | CUBOOL_HINT_NO_DUPLICATES), CUBOOL_STATUS_SUCCESS);
+
+    std::vector<cuBool_Index> I;
+    std::vector<cuBool_Index> J;
+    size_t nvals = tmatrix.nvals;
+    size_t dups = nvals * 0.20;
+
+    std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
+    auto dist = std::uniform_real_distribution<float>(0.0, 1.0);
+
+    if (nvals > 0) {
+        for (size_t k = 0; k < dups; k++) {
+            size_t id = std::min<size_t>(dist(engine) * nvals, nvals - 1);
+            auto i = tmatrix.rowsIndex[id], j = tmatrix.colsIndex[id];
+            I.push_back(i);
+            J.push_back(j);
+        }
+    }
+
+    nvals = I.size();
+    for (size_t i = 0; i < nvals; i++) {
+        ASSERT_EQ(cuBool_Matrix_SetElement(matrix, I[i], J[i]), CUBOOL_STATUS_SUCCESS);
+    }
+
+    // Compare test matrix and library one
+    ASSERT_TRUE(tmatrix.areEqual(matrix));
+
+    // Remember to release resources
+    ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
+}
+
 void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 10; i++) {
         testMatrixSetElement(m, n, 0.001f + (0.05f) * ((float) i));
+    }
+
+    for (size_t i = 0; i < 10; i++) {
+        testMatrixAppendElement(m, n, 0.001f + (0.05f) * ((float) i));
     }
 
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);

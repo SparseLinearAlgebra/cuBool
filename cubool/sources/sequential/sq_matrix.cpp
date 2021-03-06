@@ -50,7 +50,7 @@ namespace cubool {
         RAISE_ERROR(NotImplemented, "This function is not supported for this matrix class");
     }
 
-    void SqMatrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool hasDuplicates) {
+    void SqMatrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
         auto nrows = mData.nrows;
         auto ncols = mData.ncols;
 
@@ -98,7 +98,7 @@ namespace cubool {
             }
         }
 
-        if (hasDuplicates) {
+        if (!noDuplicates) {
             size_t unique = 0;
             for (size_t i = 0; i < getNrows(); i++) {
                 index prev = std::numeric_limits<index>::max();

@@ -35,6 +35,6 @@ cuBool_Status cuBool_Matrix_Build(
         CUBOOL_VALIDATE_LIBRARY
         CUBOOL_ARG_NOT_NULL(matrix)
         auto m = (cubool::Matrix *) matrix;
-        m->build(rows, cols, nvals, hints & CUBOOL_HINT_VALUES_SORTED, !(hints & CUBOOL_HINT_NO_DUPLICATES));
+        m->build(rows, cols, nvals, hints & CUBOOL_HINT_VALUES_SORTED, hints & CUBOOL_HINT_NO_DUPLICATES);
     CUBOOL_END_BODY
 }

@@ -52,12 +52,12 @@ namespace cubool {
         mCachedJ.push_back(j);
     }
 
-    void Matrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool hasDuplicates) {
+    void Matrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
         CHECK_RAISE_ERROR(rows != nullptr || nvals == 0, InvalidArgument, "Null ptr rows array");
         CHECK_RAISE_ERROR(cols != nullptr || nvals == 0, InvalidArgument, "Null ptr cols array");
 
         this->releaseCache();
-        mHnd->build(rows, cols, nvals, isSorted, hasDuplicates);
+        mHnd->build(rows, cols, nvals, isSorted, noDuplicates);
     }
 
     void Matrix::extract(index *rows, index *cols, size_t &nvals) {
@@ -205,6 +205,15 @@ namespace cubool {
         return mHnd->getNvals();
     }
 
+    void Matrix::setDebugMarker(const char *marker) {
+        CHECK_RAISE_ERROR(marker, InvalidArgument, "Null pointer marker string");
+        mMarker = marker;
+    }
+
+    const char * Matrix::getDebugMarker() const {
+        return mMarker.c_str();
+    }
+
     void Matrix::releaseCache() const {
         mCachedI.clear();
         mCachedJ.clear();
@@ -219,17 +228,22 @@ namespace cubool {
         if (cachedNvals == 0)
             return;
 
-        size_t currentNvals = mHnd->getNvals();
+        bool isSorted = false;
+        bool noDuplicates = false;
 
-        // Read values from backend matrix and join
-        if (currentNvals > 0) {
-            mCachedI.resize(cachedNvals + currentNvals);
-            mCachedJ.resize(cachedNvals + currentNvals);
-            mHnd->extract(mCachedI.data() + cachedNvals, mCachedJ.data() + cachedNvals, currentNvals);
+        // We will have to join old and new values
+        if (mHnd->getNvals() > 0) {
+            // Build tmp matrix with new values
+            MatrixBase* tmp = mProvider->createMatrix(getNrows(), getNcols());
+            tmp->build(mCachedI.data(), mCachedJ.data(), cachedNvals, isSorted, noDuplicates);
+
+            // Add new values to current matrix content
+            mHnd->eWiseAdd(*mHnd, *tmp);
         }
-
-        // Build matrix
-        mHnd->build(mCachedI.data(), mCachedJ.data(), cachedNvals + currentNvals, false, true);
+        // Otherwise, new values are used to build matrix content
+        else {
+            mHnd->build(mCachedI.data(), mCachedJ.data(), cachedNvals, isSorted, noDuplicates);
+        }
 
         // Clear arrays
         releaseCache();

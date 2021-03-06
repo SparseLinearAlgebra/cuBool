@@ -38,7 +38,7 @@ namespace cubool {
         ~Matrix() override;
 
         void setElement(index i, index j) override;
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool hasDuplicates) override;
+        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) override;
         void extract(index *rows, index *cols, size_t &nvals) override;
         void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols) override;
 
@@ -54,6 +54,9 @@ namespace cubool {
         index getNcols() const override;
         index getNvals() const override;
 
+        void setDebugMarker(const char* marker);
+        const char* getDebugMarker() const;
+
     private:
 
         void releaseCache() const;
@@ -62,6 +65,9 @@ namespace cubool {
         // Cached values by the set functions
         mutable std::vector<index> mCachedI;
         mutable std::vector<index> mCachedJ;
+
+        // Marker for debugging
+        std::string mMarker;
 
         // Implementation handle references
         MatrixBase* mHnd = nullptr;

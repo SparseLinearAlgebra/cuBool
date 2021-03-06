@@ -84,11 +84,11 @@ typedef enum cuBool_Hint {
     CUBOOL_HINT_ACCUMULATE = 0x8,
     /** Finalize library state, even if not all resources were explicitly released */
     CUBOOL_HINT_RELAXED_FINALIZE = 0x16,
-    /** Logging hint: log error message */
+    /** Logging hint: log includes error message */
     CUBOOL_HINT_LOG_ERROR = 0x32,
-    /** Logging hint: log warning message */
+    /** Logging hint: log includes warning message */
     CUBOOL_HINT_LOG_WARNING = 0x64,
-    /** Logging hint: log all messages */
+    /** Logging hint: log includes all types of messages */
     CUBOOL_HINT_LOG_ALL = 0x128,
     /** No duplicates in the build data */
     CUBOOL_HINT_NO_DUPLICATES = 0x256
@@ -159,7 +159,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_GetVersion(
  * @note Pass `CUBOOL_HINT_LOG_WARNING` to include warning messages into log
  * @note Pass `CUBOOL_HINT_LOG_ALL` to include all messages into log
  *
- * @param logFileName File name in the encoding of the target platform.
+ * @param logFileName UTF-8 encoded file name and path.
  * @param hints Logging hints to filter messages.
  *
  * @return Error code on this operation

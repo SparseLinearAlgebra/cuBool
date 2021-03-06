@@ -38,7 +38,7 @@ namespace cubool {
         RAISE_ERROR(NotImplemented, "This function is not supported for this matrix class");
     }
 
-    void MatrixCsr::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool hasDuplicates) {
+    void MatrixCsr::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
         if (nvals == 0) {
             mMatrixImpl.zero_dim();  // no content, empty matrix
             return;
@@ -87,7 +87,7 @@ namespace cubool {
         }
 
         // Reduce duplicated values
-        if (hasDuplicates) {
+        if (!noDuplicates) {
             size_t unique = 0;
             for (size_t i = 0; i < getNrows(); i++) {
                 index prev = std::numeric_limits<index>::max();
