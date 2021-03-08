@@ -12,8 +12,11 @@ work with sparse matrices written on the NVIDIA CUDA platform. The primary
 goal of the library is implementation, testing and profiling algorithms for
 solving *formal-language-constrained problems*, such as *context-free* 
 and *regular* path queries with various semantics for graph databases.
-The library provides C-compatible API, written in the GraphBLAS style,
-as well as python high-level wrapper with automated resources management and fancy syntax sugar.
+The library provides C-compatible API, written in the GraphBLAS style.
+
+**The library** is shipped with python package **pycubool** - wrapper for
+cuBool library C API. This package exports library features and primitives 
+in high-level format with automated resources management and fancy syntax sugar.
 
 **The primary library primitive** is a sparse boolean matrix. The library provides 
 the most popular operations for matrix manipulation, such as construction from
@@ -34,7 +37,7 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [X] Sparse matrix element-wise addition
 - [X] Sparse matrix kronecker
 - [X] Sparse matrix transpose
-- [X] Sparse matrix submatrix
+- [X] Sparse matrix extract sub-matrix
 - [X] Sparse matrix reduce
 - [X] Sparse matrix slicing
 - [X] Matrix cached filling
@@ -53,6 +56,13 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [X] Unit Tests collection
 - [ ] Publish built artifacts and shared libs
 - [ ] Publish stable source code archives
+
+## Installation
+
+If you running OS **Ubuntu 20.04** or higher you can download the official
+PyPI **pycubool** python package, which includes compiled CPP library source
+with Cuda and Sequential computations supports. Installation process 
+requires only `python3` to be installed on your machine. 
 
 ## Getting Started
 
@@ -257,7 +267,8 @@ cuBool
 │   └── tests - gtest-based unit-tests collection
 ├── python - pycubool related source
 │   ├── pycubool - cubool library wrapper for python (similar to pygraphblas)
-│   └── tests - tests for python wrapper
+│   ├── tests - regression tests for python wrapper
+│   └── data - generate data for pycubool regression tests
 ├── deps - project dependencies
 │   ├── cub - cuda utility, required for nsparse
 │   ├── gtest - google test framework for unit testing
@@ -272,6 +283,18 @@ cuBool
 - Egor Orachyov (Github: [EgorOrachyov](https://github.com/EgorOrachyov))
 - Pavel Alimov (Github : [Krekep](https://github.com/Krekep))
 - Semyon Grigorev (Github: [gsvgit](https://github.com/gsvgit))
+
+## Citation 
+
+```ignorelang
+@online{cuBool,
+  author = {Orachyov, Egor and Alimov, Pavel and Grigorev, Semyon},
+  title = {cuBool: sparse Boolean linear algebra for Nvidia Cuda},
+  year = 2020,
+  url = {https://github.com/JetBrains-Research/cuBool},
+  note = {Version Alpha}
+}
+```
 
 ## License
 

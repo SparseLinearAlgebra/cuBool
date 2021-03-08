@@ -1,3 +1,15 @@
+"""
+cuBool C API Python bridge.
+
+Wraps native C API details for accessing
+this functionality via Python CTypes library.
+
+Functionality:
+- Flags wrapping
+- Functions definitions
+- Error checking
+"""
+
 import ctypes
 
 __all__ = [

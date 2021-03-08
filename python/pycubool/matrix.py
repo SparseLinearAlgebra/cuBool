@@ -1,3 +1,7 @@
+"""
+Matrix primitive.
+"""
+
 import ctypes
 import random
 
