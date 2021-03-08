@@ -73,32 +73,32 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(cuBool_Matrix, AddSmall) {
+TEST(cuBool_Matrix, EWiseAddSmall) {
     cuBool_Index m = 60, n = 80;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, AddMedium) {
+TEST(cuBool_Matrix, EWiseAddMedium) {
     cuBool_Index m = 500, n = 800;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, AddLarge) {
+TEST(cuBool_Matrix, EWiseAddLarge) {
     cuBool_Index m = 2500, n = 1500;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, AddSmallFallback) {
+TEST(cuBool_Matrix, EWiseAddSmallFallback) {
     cuBool_Index m = 60, n = 80;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
-TEST(cuBool_Matrix, AddMediumFallback) {
+TEST(cuBool_Matrix, EWiseAddMediumFallback) {
     cuBool_Index m = 500, n = 800;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
-TEST(cuBool_Matrix, AddLargeFallback) {
+TEST(cuBool_Matrix, EWiseAddLargeFallback) {
     cuBool_Index m = 2500, n = 1500;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }

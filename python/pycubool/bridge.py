@@ -13,17 +13,17 @@ __all__ = [
     "check"
 ]
 
-_hint_no = 0x0
-_hint_cpu_backend = 0x1
-_hint_gpu_mem_managed = 0x2
-_hint_values_sorted = 0x4
-_hint_accumulate = 0x8
-_hint_relaxed_release = 0x16
-_hint_log_error = 0x32
-_hint_log_warning = 0x64
-_hint_log_all = 0x128
-_hint_no_duplicates = 0x256
-_hint_time_check = 0x512
+_hint_no = 0
+_hint_cpu_backend = 1
+_hint_gpu_mem_managed = 2
+_hint_values_sorted = 4
+_hint_accumulate = 8
+_hint_relaxed_release = 16
+_hint_log_error = 32
+_hint_log_warning = 64
+_hint_log_all = 128
+_hint_no_duplicates = 256
+_hint_time_check = 512
 
 
 def get_log_hints(default=True, error=False, warning=False):

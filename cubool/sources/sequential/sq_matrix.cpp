@@ -34,8 +34,6 @@
 #include <algorithm>
 #include <cassert>
 
-#include <iostream>
-
 namespace cubool {
 
     SqMatrix::SqMatrix(size_t nrows, size_t ncols) {

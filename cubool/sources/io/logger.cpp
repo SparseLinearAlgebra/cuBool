@@ -67,6 +67,10 @@ namespace cubool {
         return mEntries.size();
     }
 
+    bool TextLogger::isDummy() const {
+        return false;
+    }
+
     void TextLogger::addFilter(Filter filter) {
         mFilters.emplace_back(std::move(filter));
     }
@@ -89,5 +93,9 @@ namespace cubool {
 
     size_t DummyLogger::getMessagesCount() const {
         return 0;
+    }
+
+    bool DummyLogger::isDummy() const {
+        return true;
     }
 }

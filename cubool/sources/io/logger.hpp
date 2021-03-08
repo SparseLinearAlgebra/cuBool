@@ -49,6 +49,7 @@ namespace cubool {
         virtual void logInfo(const std::string &message);
         virtual void logWarning(const std::string &message);
         virtual void logError(const std::string &message);
+        virtual bool isDummy() const = 0;
         virtual size_t getMessagesCount() const = 0;
     };
 
@@ -69,6 +70,7 @@ namespace cubool {
         ~TextLogger() override = default;
         void log(Level level, const std::string &message) override;
         size_t getMessagesCount() const override;
+        bool isDummy() const override;
 
         void addFilter(Filter filter);
         void removeAllFilters();
@@ -97,6 +99,7 @@ namespace cubool {
         ~DummyLogger() override = default;
         void log(Level level, const std::string &message) override;
         size_t getMessagesCount() const override;
+        bool isDummy() const override;
     };
 
     /**
@@ -110,27 +113,39 @@ namespace cubool {
         explicit LogStream(Logger& logger)
             : mLogger(logger), mLevel(Logger::Level::Info) {
         };
+
         LogStream(LogStream&& other) noexcept = default;
         ~LogStream() = default;
 
         void commit() {
-            mLogger.log(mLevel, mStream.str());
-            mStream.str(std::string());
+            if (!mLogger.isDummy()) {
+                mLogger.log(mLevel, mStream.str());
+                mStream.str(std::string());
+            }
         }
 
         friend LogStream& operator<<(LogStream& stream, Logger::Level level) {
-            stream.mLevel = level;
+            if (!stream.mLogger.isDummy()) {
+                stream.mLevel = level;
+            }
+
             return stream;
         }
 
         friend LogStream& operator<<(LogStream& stream, Commit commit) {
-            stream.commit();
+            if (!stream.mLogger.isDummy()) {
+                stream.commit();
+            }
+
             return stream;
         }
 
         template<typename T>
         friend LogStream& operator<<(LogStream& stream, T&& t) {
-            stream.mStream << std::forward<T>(t);
+            if (!stream.mLogger.isDummy()) {
+                stream.mStream << std::forward<T>(t);
+            }
+
             return stream;
         }
 

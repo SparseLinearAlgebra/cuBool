@@ -69,6 +69,13 @@ namespace cubool {
         CHECK_RAISE_ERROR(cols != nullptr || nvals == 0, InvalidArgument, "Null ptr cols array");
 
         this->releaseCache();
+
+        LogStream stream(*Library::getLogger());
+        stream << Logger::Level::Info
+               << "Matrix:build:" << this->getDebugMarker() << " "
+               << "isSorted=" << isSorted << ", "
+               << "noDuplicates=" << noDuplicates << LogStream::cmt;
+
         mHnd->build(rows, cols, nvals, isSorted, noDuplicates);
     }
 
