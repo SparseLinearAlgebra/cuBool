@@ -39,8 +39,15 @@ def get_log_hints(default=True, error=False, warning=False):
     return hints
 
 
-def get_init_hints(is_gpu_mem_managed):
-    return _hint_relaxed_release | (_hint_gpu_mem_managed if is_gpu_mem_managed else _hint_no)
+def get_init_hints(force_cpu_backend, is_gpu_mem_managed):
+    hints = _hint_relaxed_release
+
+    if force_cpu_backend:
+        hints |= _hint_cpu_backend
+    if is_gpu_mem_managed:
+        hints |= _hint_gpu_mem_managed
+
+    return hints
 
 
 def get_sub_matrix_hints(time_check):

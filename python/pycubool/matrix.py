@@ -1,4 +1,5 @@
 import ctypes
+import random
 
 from . import wrapper
 from . import bridge
@@ -70,6 +71,40 @@ class Matrix:
         out = cls.empty(shape)
         out.build(rows, cols, is_sorted=is_sorted, no_duplicates=no_duplicates)
         return out
+
+    @classmethod
+    def generate(cls, shape, density: float):
+        """
+        Generate matrix of the specified shape with desired values density.
+
+        >>> matrix = Matrix.generate(shape=(4, 4), density=0.5)
+        >>> print(matrix)
+        '
+                0   1   2   3
+          0 |   .   1   .   . |   0
+          1 |   .   .   1   1 |   1
+          2 |   1   1   .   . |   2
+          3 |   .   1   .   . |   3
+                0   1   2   3
+        '
+
+        :param shape: Matrix shape to generate
+        :param density: Matrix values density, must be within [0, 1] bounds
+        :return: Generated matrix
+        """
+
+        density = min(1.0, max(density, 0.0))
+        nvals_max = shape[0] * shape[1]
+        nvals_to_gen = int(nvals_max * density)
+
+        m, n = shape
+        rows, cols = list(), list()
+
+        for i in range(nvals_to_gen):
+            rows.append(random.randrange(0, m))
+            cols.append(random.randrange(0, n))
+
+        return Matrix.from_lists(shape=shape, rows=rows, cols=cols, is_sorted=False, no_duplicates=False)
 
     def build(self, rows, cols, is_sorted=False, no_duplicates=False):
         """
@@ -427,7 +462,7 @@ class Matrix:
         bridge.check(status)
         return out
 
-    def mxm(self, other, out=None, accumulate=True, time_check=False):
+    def mxm(self, other, out=None, accumulate=False, time_check=False):
         """
         Matrix-matrix multiplication in boolean semiring with "x = and" and "+ = or" operations.
         Returns `self` multiplied to `other` matrix.
@@ -574,6 +609,32 @@ class Matrix:
 
         bridge.check(status)
         return out
+
+    def equals(self, other) -> bool:
+        """
+        Compare two matrices. Returns true if they are equal.
+        todo: Add this method into C API
+
+        :param other: Other matrix to compare
+        :return: True if matrices are equal
+        """
+
+        if not self.shape == other.shape:
+            return False
+        if not self.nvals == other.nvals:
+            return False
+
+        self_rows, self_cols = self.to_lists()
+        other_rows, other_cols = other.to_lists()
+
+        for i in range(len(self_rows)):
+            if self_rows[i] != other_rows[i]:
+                return False
+        for i in range(len(self_cols)):
+            if self_cols[i] != other_cols[i]:
+                return False
+
+        return True
 
     def __str__(self):
         return self.to_string()

@@ -218,6 +218,13 @@ namespace testing {
             return std::move(matrix);
         }
 
+        static Matrix empty(size_t nrows, size_t ncols) {
+            Matrix out;
+            out.nrows = nrows;
+            out.ncols = ncols;
+            return std::move(out);
+        }
+
     };
     
 }

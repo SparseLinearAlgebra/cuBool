@@ -40,13 +40,13 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [X] Matrix cached filling
 - [X] Sequential fallback backend for CPU
 - [X] Device capabilities query
-- [ ] IO matrix loading from mtx file
-- [ ] IO matrix saving into mtx file
+- [X] IO matrix loading from mtx file
+- [X] IO matrix saving into mtx file
 - [ ] IO matrix saving into gviz format
 - [X] IO user-defined file logging
 - [X] Wrapper for Python API
 - [X] Wrapper syntax sugar
-- [ ] Tests for Python wrapper
+- [X] Tests for Python wrapper
 - [X] Pip package
 - [ ] Code examples
 - [ ] User guide
@@ -162,12 +162,22 @@ By default, the following cmake options will be automatically enabled:
 
 ### Python Wrapper
 
-After the build process, the shared library object `libcubool.so` is placed
-inside the build directory. Export into the environment or add into bash
-profile the variable `CUBOOL_PATH=/path/to/the/libcubool.so` with appropriate
-path to your setup. Then you will be able to use `pycubool` python wrapper,
-which uses this variable in order to located library object.
+**Export** env variable `PYTHONPATH="/build_dir_path/python/:$PYTHONPATH"` if
+you want to use `pycubool` without installation into default python packages dir.
+This variable will help python find package if you import it as `import pycubool` in your python scripts.
 
+**To run regression tests** within your build directory, open folder `/build_dir_path/python` and
+run the following command:
+
+```shell script
+$ export PYTHONPATH="`pwd`:$PYTHONPATH"
+$ cd tests
+$ python3 -m unittest discover -v
+```
+
+**Note:** after the build process, the shared library object `libcubool.so` will be placed
+inside the build directory in the folder with python wrapper `python/pycubool/`. 
+So, the wrapper will be able to automatically locate required lib file.
 
 ## Usage 
 

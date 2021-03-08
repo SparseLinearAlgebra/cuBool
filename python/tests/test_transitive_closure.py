@@ -1,4 +1,4 @@
-from python import pycubool
+import pycubool
 
 
 def transitive_closure(a: pycubool.Matrix):
@@ -10,8 +10,8 @@ def transitive_closure(a: pycubool.Matrix):
     :return: The transitive closure adjacency matrix
     """
 
-    t = a.dup()                       # Duplicate matrix where to store result
-    total = 0                         # Current number of values
+    t = a.dup()                           # Duplicate matrix where to store result
+    total = 0                             # Current number of values
 
     while total != t.nvals:
         total = t.nvals

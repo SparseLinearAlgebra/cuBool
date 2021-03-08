@@ -106,4 +106,7 @@ a[1, 0] = True
 a[2, 2] = True
 vals = a.to_list()
 print(vals)
+print(a.equals(a))
 
+matrix = pycubool.Matrix.generate(shape=(4, 4), density=0.5)
+print(matrix)

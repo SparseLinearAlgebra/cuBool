@@ -28,6 +28,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
 
       - name: Install CUDA
         env:
@@ -60,4 +63,13 @@ jobs:
       - name: Run unit-tests (sequential backend)
         working-directory: ${{ env.build_dir }}
         run: bash scripts/tests_run_fallback.sh
+        shell: bash
+
+      - name: Run regression-tests (sequential backend)
+        working-directory: ${{ env.build_dir }}
+        run: |
+          cd python
+          export PYTHONPATH="`pwd`:$PYTHONPATH"
+          cd tests
+          python3 -m unittest discover -v
         shell: bash

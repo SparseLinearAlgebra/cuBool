@@ -57,7 +57,7 @@ class Wrapper:
         pass
 
     def _setup_library(self):
-        status = self.loaded_dll.cuBool_Initialize(ctypes.c_uint(bridge.get_init_hints(False)))
+        status = self.loaded_dll.cuBool_Initialize(ctypes.c_uint(bridge.get_init_hints(False, False)))
         bridge.check(status)
 
     def _release_library(self):
