@@ -1,15 +1,18 @@
-add_executable(test_basic_cuda test_basic_cuda.cu)
-target_link_libraries(test_basic_cuda PUBLIC testing)
-target_compile_features(test_basic_cuda PUBLIC cxx_std_11)
-set_target_properties(test_basic_cuda PROPERTIES CXX_STANDARD 11)
-set_target_properties(test_basic_cuda PROPERTIES CXX_STANDARD_REQUIRED YES)
-set_target_properties(test_basic_cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+# add_executable(test_basic_cuda test_basic_cuda.cu)
+# target_link_libraries(test_basic_cuda PUBLIC testing)
+# target_compile_features(test_basic_cuda PUBLIC cxx_std_11)
+# set_target_properties(test_basic_cuda PROPERTIES CXX_STANDARD 11)
+# set_target_properties(test_basic_cuda PROPERTIES CXX_STANDARD_REQUIRED YES)
+# set_target_properties(test_basic_cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 add_executable(test_library_api test_library_api.cpp)
 target_link_libraries(test_library_api PUBLIC testing)
 
 add_executable(test_matrix_setup test_matrix_setup.cpp)
 target_link_libraries(test_matrix_setup PUBLIC testing)
+
+add_executable(test_matrix_element test_matrix_element.cpp)
+target_link_libraries(test_matrix_element PUBLIC testing)
 
 add_executable(test_matrix_misc test_matrix_misc.cpp)
 target_link_libraries(test_matrix_misc PUBLIC testing)

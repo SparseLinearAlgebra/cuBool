@@ -24,6 +24,7 @@
 
 #include <cuda/matrix_csr.hpp>
 #include <core/error.hpp>
+#include <utils/exclusive_scan.hpp>
 #include <algorithm>
 
 namespace cubool {
@@ -33,72 +34,106 @@ namespace cubool {
         mNcols = ncols;
     }
 
-    void MatrixCsr::build(const index *rows, const index *cols, size_t nvals, bool isSorted) {
+    void MatrixCsr::setElement(index i, index j) {
+        RAISE_ERROR(NotImplemented, "This function is not supported for this matrix class");
+    }
+
+    void MatrixCsr::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
         if (nvals == 0) {
             mMatrixImpl.zero_dim();  // no content, empty matrix
             return;
         }
 
-        thrust::host_vector<index, HostAlloc<index>> rowsVec;
-        rowsVec.resize(getNrows() + 1, 0);
+        thrust::host_vector<index, HostAlloc<index>> rowOffsets;
+        rowOffsets.resize(getNrows() + 1, 0);
 
-        thrust::host_vector<index, HostAlloc<index>> colsVec;
-        colsVec.reserve(nvals);
+        thrust::host_vector<index, HostAlloc<index>> colIndices;
+        colIndices.resize(nvals);
 
-        if (isSorted) {
-            // Assign cols indices and count num nnz per each row
-            for (size_t idx = 0; idx < nvals; idx++) {
-                index i = rows[idx];
-                index j = cols[idx];
+        // Compute nnz per row
+        for (size_t idx = 0; idx < nvals; idx++) {
+            index i = rows[idx];
+            index j = cols[idx];
 
-                CHECK_RAISE_ERROR(i < getNrows() && j < getNcols(), InvalidArgument, "Out of matrix bounds value");
+            CHECK_RAISE_ERROR(i < getNrows() && j < getNcols(), InvalidArgument, "Out of matrix bounds value");
 
-                rowsVec[i] += 1;
-                colsVec.push_back(j);
-            }
-        }
-        else {
-            // Create tmp buffer and pack indices into pairs
-            using CuBoolPairAlloc = details::HostAllocator<Pair>;
-
-            std::vector<Pair, CuBoolPairAlloc> values;
-            values.reserve(nvals);
-
-            for (size_t idx = 0; idx < nvals; idx++) {
-                index i = rows[idx];
-                index j = cols[idx];
-
-                CHECK_RAISE_ERROR(i < getNrows() && j < getNcols(), InvalidArgument, "Out of matrix bounds value");
-
-                values.push_back({i, j});
-            }
-
-            // Sort pairs to ensure that data are in the proper format
-            std::sort(values.begin(), values.end(), [](const Pair& a, const Pair& b) {
-                return a.i < b.i || (a.i == b.i && a.j < b.j);
-            });
-
-            // Assign cols indices and count num nnz per each row
-            for (const auto& p: values) {
-                rowsVec[p.i] += 1;
-                colsVec.push_back(p.j);
-            }
+            rowOffsets[i] += 1;
         }
 
         // Exclusive scan to eval rows offsets
-        index sum = 0;
-        for (size_t i = 0; i < rowsVec.size(); i++) {
-            index prevSum = sum;
-            sum += rowsVec[i];
-            rowsVec[i] = prevSum;
+        ::cubool::exclusive_scan(rowOffsets.begin(), rowOffsets.end(), 0);
+
+        // Write offsets for cols
+        std::vector<size_t> writeOffsets(getNrows(), 0);
+
+        for (size_t idx = 0; idx < nvals; idx++) {
+            index i = rows[idx];
+            index j = cols[idx];
+
+            colIndices[rowOffsets[i] + writeOffsets[i]] = j;
+            writeOffsets[i] += 1;
+        }
+
+        if (!isSorted) {
+            for (size_t i = 0; i < getNrows(); i++) {
+                auto begin = rowOffsets[i];
+                auto end = rowOffsets[i + 1];
+
+                // Sort col values within row
+                thrust::sort(colIndices.begin() + begin, colIndices.begin() + end, [](const index& a, const index& b) {
+                    return a < b;
+                });
+            }
+        }
+
+        // Reduce duplicated values
+        if (!noDuplicates) {
+            size_t unique = 0;
+            for (size_t i = 0; i < getNrows(); i++) {
+                index prev = std::numeric_limits<index>::max();
+
+                for (size_t k = rowOffsets[i]; k < rowOffsets[i + 1]; k++) {
+                    if (prev != colIndices[k]) {
+                        unique += 1;
+                    }
+
+                    prev = colIndices[k];
+                }
+            }
+
+            thrust::host_vector<index, HostAlloc<index>> rowOffsetsReduced;
+            rowOffsetsReduced.resize(getNrows() + 1, 0);
+
+            thrust::host_vector<index, HostAlloc<index>> colIndicesReduced;
+            colIndicesReduced.reserve(unique);
+
+            for (size_t i = 0; i < getNrows(); i++) {
+                index prev = std::numeric_limits<index>::max();
+
+                for (size_t k = rowOffsets[i]; k < rowOffsets[i + 1]; k++) {
+                    if (prev != colIndices[k]) {
+                        rowOffsetsReduced[i] += 1;
+                        colIndicesReduced.push_back(colIndices[k]);
+                    }
+
+                    prev = colIndices[k];
+                }
+            }
+
+            // Exclusive scan to eval rows offsets
+            ::cubool::exclusive_scan(rowOffsetsReduced.begin(), rowOffsetsReduced.end(), 0);
+
+            // Now result in respective place
+            std::swap(rowOffsets, rowOffsetsReduced);
+            std::swap(colIndices, colIndicesReduced);
         }
 
         // Create device buffers and copy data from the cpu side
-        thrust::device_vector<index, DeviceAlloc<index>> rowsDeviceVec = rowsVec;
-        thrust::device_vector<index, DeviceAlloc<index>> colsDeviceVec = colsVec;
+        thrust::device_vector<index, DeviceAlloc<index>> rowsDeviceVec = rowOffsets;
+        thrust::device_vector<index, DeviceAlloc<index>> colsDeviceVec = colIndices;
 
         // Move actual data to the matrix implementation
-        mMatrixImpl = std::move(MatrixImplType(std::move(colsDeviceVec), std::move(rowsDeviceVec), getNrows(), getNcols(), nvals));
+        mMatrixImpl = std::move(MatrixImplType(std::move(colsDeviceVec), std::move(rowsDeviceVec), getNrows(), getNcols(), colIndices.size()));
     }
 
     void MatrixCsr::extract(index *rows, index *cols, size_t &nvals) {

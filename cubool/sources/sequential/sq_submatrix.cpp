@@ -23,7 +23,7 @@
 /**********************************************************************************/
 
 #include <sequential/sq_submatrix.hpp>
-#include <sequential/sq_exclusive_scan.hpp>
+#include <utils/exclusive_scan.hpp>
 
 namespace cubool {
 
@@ -64,7 +64,7 @@ namespace cubool {
             }
         }
 
-        sq_exclusive_scan(sub.rowOffsets.begin(), sub.rowOffsets.end(), 0);
+        exclusive_scan(sub.rowOffsets.begin(), sub.rowOffsets.end(), 0);
     }
 
 }

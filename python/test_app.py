@@ -47,7 +47,7 @@ b, b_set = gen_matrix(dim, to_gen)
 print("Matrix a din:", a.shape, "values count:", a.nvals)
 print("Matrix b dim:", b.shape, "values count:", b.nvals)
 
-r = a.ewiseadd(b)
+r = a.ewiseadd(b, time_check=True)
 
 print("Matrix r values count:", r.nvals)
 
@@ -77,3 +77,36 @@ print(submatrix)
 
 print(list(iter(matrix)))
 
+matrix = pycubool.Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True)
+print(matrix.extract_matrix(0, 1, shape=(3, 3)))
+
+matrix = pycubool.Matrix.empty(shape=(4, 4))
+matrix[0, 0] = True
+matrix[1, 1] = True
+matrix[2, 3] = True
+matrix[3, 1] = True
+print(matrix)
+
+matrix = pycubool.Matrix.from_lists((4, 4), [0, 1, 2, 2], [0, 1, 0, 2])
+print(matrix.reduce())
+
+a = pycubool.Matrix.empty(shape=(4, 4))
+a[0, 0] = True
+a[0, 3] = True
+print(a)
+a = a.ewiseadd(a.transpose())
+print(a)
+a[3, 3] = True
+print(a)
+
+a = pycubool.Matrix.empty(shape=(4, 4))
+a[0, 0] = True
+a[1, 3] = True
+a[1, 0] = True
+a[2, 2] = True
+vals = a.to_list()
+print(vals)
+print(a.equals(a))
+
+matrix = pycubool.Matrix.generate(shape=(4, 4), density=0.5)
+print(matrix)

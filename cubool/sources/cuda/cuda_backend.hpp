@@ -43,6 +43,7 @@ namespace cubool {
 
         MatrixBase *createMatrix(size_t nrows, size_t ncols) override;
         void releaseMatrix(MatrixBase *matrixBase) override;
+        void queryCapabilities(cuBool_DeviceCaps& caps) override;
 
         Instance& getInstance();
 

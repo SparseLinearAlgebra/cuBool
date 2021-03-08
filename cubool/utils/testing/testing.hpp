@@ -29,7 +29,7 @@
 #include <testing/pair.hpp>
 #include <testing/timer.hpp>
 #include <testing/matrix.hpp>
-#include <testing/matrox_printing.hpp>
+#include <testing/matrix_printing.hpp>
 #include <testing/matrix_generator.hpp>
 #include <testing/matrix_ewiseadd.hpp>
 #include <testing/matrix_mxm.hpp>

@@ -23,7 +23,7 @@
 /**********************************************************************************/
 
 #include <sequential/sq_transpose.hpp>
-#include <sequential/sq_exclusive_scan.hpp>
+#include <utils/exclusive_scan.hpp>
 
 namespace cubool {
 
@@ -34,7 +34,7 @@ namespace cubool {
             offsets[a.colIndices[k]]++;
         }
 
-        sq_exclusive_scan(offsets.begin(), offsets.end(), 0);
+        exclusive_scan(offsets.begin(), offsets.end(), 0);
 
         at.rowOffsets.clear();
         at.rowOffsets.resize(a.ncols + 1, 0);
@@ -52,7 +52,7 @@ namespace cubool {
             }
         }
 
-        sq_exclusive_scan(at.rowOffsets.begin(), at.rowOffsets.end(), 0);
+        exclusive_scan(at.rowOffsets.begin(), at.rowOffsets.end(), 0);
     }
 
 }

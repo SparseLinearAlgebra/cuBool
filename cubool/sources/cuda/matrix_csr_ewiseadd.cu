@@ -27,7 +27,7 @@
 
 namespace cubool {
 
-    void MatrixCsr::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase) {
+    void MatrixCsr::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
         auto a = dynamic_cast<const MatrixCsr*>(&aBase);
         auto b = dynamic_cast<const MatrixCsr*>(&bBase);
 

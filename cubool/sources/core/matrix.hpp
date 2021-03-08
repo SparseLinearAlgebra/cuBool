@@ -25,35 +25,57 @@
 #ifndef CUBOOL_MATRIX_HPP
 #define CUBOOL_MATRIX_HPP
 
+#include <core/config.hpp>
 #include <backend/matrix_base.hpp>
 #include <backend/backend_base.hpp>
+#include <vector>
 
 namespace cubool {
 
+    /**
+     * Proxy matrix for the actual backend matrix implementation.
+     * Behaves as validation/auxiliary layer.
+     */
     class Matrix final: public MatrixBase {
     public:
         Matrix(size_t nrows, size_t ncols, BackendBase& backend);
         ~Matrix() override;
 
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
+        void setElement(index i, index j) override;
+        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) override;
         void extract(index *rows, index *cols, size_t &nvals) override;
-        void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols) override;
+        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
+                              bool checkTime) override;
 
         void clone(const MatrixBase &otherBase) override;
-        void transpose(const MatrixBase &otherBase) override;
-        void reduce(const MatrixBase& otherBase) override;
+        void transpose(const MatrixBase &otherBase, bool checkTime) override;
+        void reduce(const MatrixBase &otherBase, bool checkTime) override;
 
-        void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) override;
-        void kronecker(const MatrixBase &aBase, const MatrixBase &bBase) override;
-        void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase) override;
+        void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) override;
+        void kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
+        void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
 
         index getNrows() const override;
         index getNcols() const override;
         index getNvals() const override;
 
+        void setDebugMarker(const char* marker);
+        const char* getDebugMarker() const;
+        index getDebugMarkerSizeWithNullT() const;
+
     private:
 
-        // To reference matrix api
+        void releaseCache() const;
+        void commitCache() const;
+
+        // Cached values by the set functions
+        mutable std::vector<index> mCachedI;
+        mutable std::vector<index> mCachedJ;
+
+        // Marker for debugging
+        std::string mMarker;
+
+        // Implementation handle references
         MatrixBase* mHnd = nullptr;
         BackendBase* mProvider = nullptr;
     };

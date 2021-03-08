@@ -24,7 +24,7 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixExtractSubMatrix(cuBool_Index m, cuBool_Index n, cuBool_Index N, float density) {
+void testMatrixExtractSubMatrix(cuBool_Index m, cuBool_Index n, cuBool_Index N, float density, cuBool_Hints flags) {
     cuBool_Matrix r, a;
 
     auto ta = testing::Matrix::generateSparse(m, n, density);
@@ -32,21 +32,13 @@ void testMatrixExtractSubMatrix(cuBool_Index m, cuBool_Index n, cuBool_Index N, 
     ASSERT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-    testing::TimeQuery query;
-
     for (size_t i = 0; i < N; i++) {
         for (size_t j = 0; j < N; j++) {
             auto k = m / N;
             auto l = n / N;
 
-            testing::Timer t;
-
             ASSERT_EQ(cuBool_Matrix_New(&r, k, l), CUBOOL_STATUS_SUCCESS);
-
-            {
-                testing::TimeScope scope(query);
-                ASSERT_EQ(cuBool_Matrix_ExtractSubMatrix(r, a, i * k, j * l, k, l, CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
-            }
+            ASSERT_EQ(cuBool_Matrix_ExtractSubMatrix(r, a, i * k, j * l, k, l, flags), CUBOOL_STATUS_SUCCESS);
 
             auto tr = ta.subMatrix(i * k, j * l, k, l);
 
@@ -54,8 +46,6 @@ void testMatrixExtractSubMatrix(cuBool_Index m, cuBool_Index n, cuBool_Index N, 
             ASSERT_EQ(cuBool_Matrix_Free(r), CUBOOL_STATUS_SUCCESS);
         }
     }
-
-    std::cout << query.getAverageTimeMs() << "ms" << std::endl;
 
     ASSERT_EQ(cuBool_Matrix_Free(a), CUBOOL_STATUS_SUCCESS);
 }
@@ -67,7 +57,7 @@ void testRun(cuBool_Index m, cuBool_Index n, float step, cuBool_Hints setup) {
     auto N = 10;
 
     for (size_t i = 0; i < N; i++) {
-        testMatrixExtractSubMatrix(m, n, N, 0.01f + step * ((float) i));
+        testMatrixExtractSubMatrix(m, n, N, 0.01f + step * ((float) i), CUBOOL_HINT_NO);
     }
 
     // Finalize library

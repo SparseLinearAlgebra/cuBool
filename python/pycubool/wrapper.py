@@ -1,5 +1,6 @@
 import os
 import ctypes
+import pathlib
 from . import bridge
 
 __all__ = [
@@ -32,14 +33,22 @@ class Wrapper:
      - Ctypes functions declarations
      - Import path
 
-    At exit global instance of the class is properly destroyed.
-    Instance of the cubool library in released and the dll is closed.
+    At exit the library is properly finalized.
+    Instance of the cubool library in released and the shared library is closed.
     """
 
     def __init__(self):
         self.loaded_dll = None
+        self.lib_object_name = "libcubool.so"
 
-        self.load_path = os.environ["CUBOOL_PATH"]
+        try:
+            # Try from config if present
+            self.load_path = os.environ["CUBOOL_PATH"]
+        except KeyError:
+            # Fallback to package directory
+            source_path = pathlib.Path(__file__).resolve()
+            self.load_path = str(source_path.parent / self.lib_object_name)
+
         self.loaded_dll = bridge.load_and_configure(self.load_path)
         self._setup_library()
 
@@ -48,7 +57,7 @@ class Wrapper:
         pass
 
     def _setup_library(self):
-        status = self.loaded_dll.cuBool_Initialize(ctypes.c_uint(bridge.get_init_hints(False)))
+        status = self.loaded_dll.cuBool_Initialize(ctypes.c_uint(bridge.get_init_hints(False, False)))
         bridge.check(status)
 
     def _release_library(self):

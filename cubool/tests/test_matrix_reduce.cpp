@@ -24,7 +24,7 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixReduce(cuBool_Index m, cuBool_Index n, float density) {
+void testMatrixReduce(cuBool_Index m, cuBool_Index n, float density, cuBool_Hints flags) {
     cuBool_Matrix r, a;
 
     auto ta = testing::Matrix::generateSparse(m, n, density);
@@ -34,7 +34,7 @@ void testMatrixReduce(cuBool_Index m, cuBool_Index n, float density) {
 
     ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-    ASSERT_EQ(cuBool_Matrix_Reduce(r, a), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Reduce(r, a, flags), CUBOOL_STATUS_SUCCESS);
 
     auto tr = ta.reduce();
 
@@ -49,7 +49,7 @@ void testRun(cuBool_Index m, cuBool_Index n, float step, cuBool_Hints setup) {
     EXPECT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 10; i++) {
-        testMatrixReduce(m, n, 0.01f + step * ((float) i));
+        testMatrixReduce(m, n, 0.01f + step * ((float) i), CUBOOL_HINT_NO);
     }
 
     // Finalize library

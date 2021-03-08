@@ -39,6 +39,6 @@ cuBool_Status cuBool_Matrix_ExtractSubMatrix(
         CUBOOL_ARG_NOT_NULL(matrix)
         auto r = (cubool::Matrix*) result;
         auto m = (cubool::Matrix*) matrix;
-        r->extractSubMatrix(*m, i, j, nrows, ncols);
+        r->extractSubMatrix(*m, i, j, nrows, ncols, hints & CUBOOL_HINT_TIME_CHECK);
     CUBOOL_END_BODY
 }

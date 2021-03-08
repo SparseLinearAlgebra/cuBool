@@ -59,10 +59,10 @@ namespace testing {
                     sum = next;
                 }
 
-                assert(nvals == rowOffsets.back());
-
                 hasRowOffsets = true;
             }
+
+            assert(nvals == rowOffsets.back());
         }
 
         Matrix transpose() const {
@@ -152,10 +152,10 @@ namespace testing {
             if (cuBool_Matrix_ExtractPairs(matrix, extRows.data(), extCols.data(), &extNvals) != CUBOOL_STATUS_SUCCESS)
                 return false;
 
-            std::vector<Pair> extracted(nvals);
+            std::vector<Pair> extracted(extNvals);
             std::vector<Pair> reference(nvals);
 
-            for (cuBool_Index idx = 0; idx < nvals; idx++) {
+            for (cuBool_Index idx = 0; idx < extNvals; idx++) {
                 extracted[idx] = Pair{extRows[idx], extCols[idx]};
                 reference[idx] = Pair{rowsIndex[idx], colsIndex[idx]};
             }
@@ -216,6 +216,13 @@ namespace testing {
             }
 
             return std::move(matrix);
+        }
+
+        static Matrix empty(size_t nrows, size_t ncols) {
+            Matrix out;
+            out.nrows = nrows;
+            out.ncols = ncols;
+            return std::move(out);
         }
 
     };

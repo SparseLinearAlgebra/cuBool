@@ -27,7 +27,8 @@
 cuBool_Status cuBool_Matrix_EWiseAdd(
         cuBool_Matrix result,
         cuBool_Matrix left,
-        cuBool_Matrix right
+        cuBool_Matrix right,
+        cuBool_Hints hints
 ) {
     CUBOOL_BEGIN_BODY
         CUBOOL_VALIDATE_LIBRARY
@@ -37,6 +38,6 @@ cuBool_Status cuBool_Matrix_EWiseAdd(
         auto resultM = (cubool::Matrix *) result;
         auto leftM = (cubool::Matrix *) left;
         auto rightM = (cubool::Matrix *) right;
-        resultM->eWiseAdd(*leftM, *rightM);
+        resultM->eWiseAdd(*leftM, *rightM, hints & CUBOOL_HINT_TIME_CHECK);
     CUBOOL_END_BODY
 }

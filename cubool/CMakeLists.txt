@@ -21,17 +21,27 @@ set(CUBOOL_SOURCES
     sources/core/library.cpp
     sources/core/library.hpp
     sources/core/matrix.cpp
-    sources/core/matrix.hpp)
+    sources/core/matrix.hpp
+    sources/io/logger.cpp
+    sources/io/logger.hpp
+    sources/utils/exclusive_scan.hpp
+    sources/utils/timer.hpp
+        )
 
 set(CUBOOL_C_API_SOURCES
     include/cubool/cubool.h
-    sources/cuBool_Version_Get.cpp
-    sources/cuBool_About_Get.cpp
-    sources/cuBool_LicenseInfo_Get.cpp
+    sources/cuBool_GetAbout.cpp
+    sources/cuBool_GetVersion.cpp
+    sources/cuBool_GetLicenseInfo.cpp
+    sources/cuBool_GetDeviceCaps.cpp
     sources/cuBool_Initialize.cpp
     sources/cuBool_Finalize.cpp
+    sources/cuBool_SetupLogger.cpp
     sources/cuBool_Matrix_New.cpp
     sources/cuBool_Matrix_Build.cpp
+    sources/cuBool_Matrix_SetElement.cpp
+    sources/cuBool_Matrix_SetMarker.cpp
+    sources/cuBool_Matrix_Marker.cpp
     sources/cuBool_Matrix_ExtractPairs.cpp
     sources/cuBool_Matrix_ExtractSubMatrix.cpp
     sources/cuBool_Matrix_Duplicate.cpp
@@ -97,8 +107,7 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_reduce.cpp
         sources/sequential/sq_reduce.hpp
         sources/sequential/sq_submatrix.cpp
-        sources/sequential/sq_submatrix.hpp
-        sources/sequential/sq_exclusive_scan.hpp)
+        sources/sequential/sq_submatrix.hpp)
 endif()
 
 # Shared library object config
@@ -134,17 +143,14 @@ if (CUBOOL_WITH_CUDA)
 
     # Settings: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
     target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-            -arch=sm_30
-             -gencode=arch=compute_50,code=sm_50
-             -gencode=arch=compute_52,code=sm_52
-             -gencode=arch=compute_60,code=sm_60
-             -gencode=arch=compute_61,code=sm_61
-             -gencode=arch=compute_70,code=sm_70
-             -gencode=arch=compute_75,code=sm_75
-             -gencode=arch=compute_75,code=compute_75>)
+        -arch=sm_30
+        -gencode=arch=compute_30,code=sm_30
+        -gencode=arch=compute_35,code=sm_35
+        -gencode=arch=compute_50,code=sm_50
+        -gencode=arch=compute_52,code=sm_52
+        -gencode=arch=compute_52,code=compute_52>)
 
-    target_compile_options(cubool PRIVATE $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CUDA>>: -Xptxas -O2>)
-    target_compile_options(cubool PRIVATE $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CUDA>>: -Xptxas -O0>)
+    target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>: -use_fast_math -Xptxas -O2>)
 
     target_compile_definitions(cubool PRIVATE CUBOOL_WITH_CUDA)
     target_link_libraries(cubool PRIVATE nsparse_um)
@@ -165,3 +171,15 @@ if (CUBOOL_BUILD_TESTS)
     message(STATUS "Add unit tests directory to the project")
     add_subdirectory(tests)
 endif()
+
+# todo: Different platforms has specific naming conventions
+set(LIBRARY_FILE_NAME "libcubool.so")
+
+# Copy cubool library after build
+add_custom_command(
+    TARGET cubool POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E
+    copy
+    "${CMAKE_BINARY_DIR}/cubool/${LIBRARY_FILE_NAME}"
+    "${CMAKE_BINARY_DIR}/python/pycubool"
+    COMMENT "Copy cubool lib into python folder")

@@ -27,7 +27,12 @@
 #include <core/matrix.hpp>
 #include <backend/backend_base.hpp>
 #include <backend/matrix_base.hpp>
+#include <io/logger.hpp>
+
+#include <fstream>
 #include <iostream>
+#include <memory>
+#include <iomanip>
 
 #ifdef CUBOOL_WITH_CUDA
 #include <cuda/cuda_backend.hpp>
@@ -39,8 +44,9 @@
 
 namespace cubool {
 
-    std::unordered_set<class MatrixBase*> Library::mAllocated;
-    BackendBase* Library::mBackend = nullptr;
+    std::unordered_set<class Matrix*> Library::mAllocated;
+    std::shared_ptr<class BackendBase> Library::mBackend = nullptr;
+    std::shared_ptr<class Logger>  Library::mLogger = std::make_shared<DummyLogger>();
     bool Library::mRelaxedRelease = false;
 
     void Library::initialize(hints initHints) {
@@ -51,54 +57,126 @@ namespace cubool {
         // If user do not force the cpu backend usage
         if (!preferCpu) {
 #ifdef CUBOOL_WITH_CUDA
-            mBackend = new CudaBackend();
+            mBackend = std::make_shared<CudaBackend>();
             mBackend->initialize(initHints);
 
             // Failed to setup cuda, release backend and go to try cpu
             if (!mBackend->isInitialized()) {
-                delete mBackend;
                 mBackend = nullptr;
+                mLogger->logWarning("Failed to initialize Cuda backend");
             }
 #endif
         }
 
 #ifdef CUBOOL_WITH_SEQUENTIAL
         if (mBackend == nullptr) {
-            mBackend = new SqBackend();
+            mBackend = std::make_shared<SqBackend>();
             mBackend->initialize(initHints);
 
             // Failed somehow setup
             if (!mBackend->isInitialized()) {
-                delete mBackend;
                 mBackend = nullptr;
+                mLogger->logWarning("Failed to initialize Cpu fallback backend");
             }
         }
 #endif
 
         CHECK_RAISE_ERROR(mBackend != nullptr, BackendError, "Failed to select backend");
+
+        // If initialized, post-init actions
         mRelaxedRelease = initHints & CUBOOL_HINT_RELAXED_FINALIZE;
+        logDeviceInfo();
     }
 
     void Library::finalize() {
         if (mBackend) {
             // Release all allocated resources implicitly
             if (mRelaxedRelease) {
+                LogStream stream(*getLogger());
+                stream << Logger::Level::Info << "Enabled relaxed library finalize" << LogStream::cmt;
+
                 for (auto m: mAllocated) {
+                    stream << Logger::Level::Warning << "Implicitly release matrix " << m->getDebugMarker() << LogStream::cmt;
                     delete m;
                 }
 
                 mAllocated.clear();
             }
 
+            // Some final message
+            mLogger->logInfo("** cuBool:Finalize backend **");
+
             // Remember to finalize backend
             mBackend->finalize();
-            delete mBackend;
             mBackend = nullptr;
+
+            // Release (possibly setup text logger) logger, reassign dummy
+            mLogger = std::make_shared<DummyLogger>();
         }
     }
 
     void Library::validate() {
         CHECK_RAISE_CRITICAL_ERROR(mBackend != nullptr || mRelaxedRelease, InvalidState, "Library is not initialized");
+    }
+
+    void Library::setupLogging(const char *logFileName, cuBool_Hints hints) {
+        CHECK_RAISE_ERROR(logFileName != nullptr, InvalidArgument, "Null file name is not allowed");
+
+        auto lofFile = std::make_shared<std::ofstream>();
+
+        lofFile->open(logFileName, std::ios::out);
+
+        if (!lofFile->is_open()) {
+            RAISE_ERROR(InvalidArgument, "Failed to create logging file");
+        }
+
+        // Create logger and setup filters && post-actions
+        auto textLogger = std::make_shared<TextLogger>();
+
+        textLogger->addFilter([=](Logger::Level level, const std::string& message) -> bool {
+            bool all = hints == 0x0 || (hints & CUBOOL_HINT_LOG_ALL);
+            bool error = hints & CUBOOL_HINT_LOG_ERROR;
+            bool warning = hints & CUBOOL_HINT_LOG_WARNING;
+
+            return all ||
+                    (error && level == Logger::Level::Error) ||
+                    (warning && level == Logger::Level::Warning);
+        });
+
+        textLogger->addOnLoggerAction([=](size_t id, Logger::Level level, const std::string& message) {
+            auto& file = *lofFile;
+
+            const auto idSize = 10;
+            const auto levelSize = 20;
+
+            file << "[" << std::setw(idSize) << id << std::setw(-1) << "]";
+            file << "[" << std::setw(levelSize);
+            switch (level) {
+                case Logger::Level::Info:
+                    file << "Level::Info";
+                    break;
+                case Logger::Level::Warning:
+                    file << "Level::Warning";
+                    break;
+                case Logger::Level::Error:
+                    file << "Level::Error";
+                    break;
+                default:
+                    file << "Level::Always";
+            }
+            file << std::setw(-1) << "] ";
+            file << message << std::endl;
+        });
+
+        // Assign new text logger
+        mLogger = textLogger;
+
+        // Initial message
+        mLogger->logInfo("*** cuBool::Logger file ***");
+
+        // Also log device capabilities
+        if (isBackedInitialized())
+            logDeviceInfo();
     }
 
     MatrixBase *Library::createMatrix(size_t nrows, size_t ncols) {
@@ -107,18 +185,75 @@ namespace cubool {
 
         auto m = new Matrix(nrows, ncols, *mBackend);
         mAllocated.emplace(m);
+
+        LogStream stream(*getLogger());
+        stream << Logger::Level::Info << "Create Matrix " << m->getDebugMarker()
+               << " (" << nrows << "," << ncols << ")" << LogStream::cmt;
+
         return m;
     }
 
     void Library::releaseMatrix(MatrixBase *matrixBase) {
         if (mRelaxedRelease && !mBackend) return;
 
-        mAllocated.erase(matrixBase);
-        delete matrixBase;
+        auto m = (Matrix*)(matrixBase);
+        CHECK_RAISE_ERROR(mAllocated.find(m) != mAllocated.end(), InvalidArgument, "No such matrix was allocated");
+
+        LogStream stream(*getLogger());
+        stream << Logger::Level::Info << "Release Matrix " << m->getDebugMarker() << LogStream::cmt;
+
+        mAllocated.erase(m);
+        delete m;
     }
 
     void Library::handleError(const std::exception& error) {
-        std::cerr << "cuBool:Error: " << error.what() << std::endl;
+        mLogger->log(Logger::Level::Error, error.what());
+    }
+
+    void Library::queryCapabilities(cuBool_DeviceCaps &caps) {
+        caps.name[0] = '\0';
+        caps.cudaSupported = false;
+        caps.major = 0;
+        caps.minor = 0;
+        caps.warp = 0;
+        caps.globalMemoryKiBs = 0;
+        caps.sharedMemoryPerBlockKiBs = 0;
+        caps.sharedMemoryPerMultiProcKiBs = 0;
+
+        mBackend->queryCapabilities(caps);
+    }
+
+    void Library::logDeviceInfo() {
+        // Log device caps
+        cuBool_DeviceCaps caps;
+        queryCapabilities(caps);
+
+        LogStream stream(*getLogger());
+        stream << Logger::Level::Info;
+
+        if (caps.cudaSupported) {
+            stream << "Cuda device capabilities:"
+                   << " name: " << caps.name << ","
+                   << " major: " << caps.major << ","
+                   << " minor: " << caps.minor << ","
+                   << " warp size: " << caps.warp << ","
+                   << " globalMemoryKiBs: " << caps.globalMemoryKiBs << ","
+                   << " sharedMemoryPerMultiProcKiBs: " << caps.sharedMemoryPerMultiProcKiBs << ","
+                   << " sharedMemoryPerBlockKiBs: " << caps.sharedMemoryPerBlockKiBs;
+        }
+        else {
+            stream << "Cuda device is not presented";
+        }
+
+        stream << LogStream::cmt;
+    }
+
+    bool Library::isBackedInitialized() {
+        return mBackend != nullptr;
+    }
+
+    class Logger * Library::getLogger() {
+        return mLogger.get();
     }
 
 }

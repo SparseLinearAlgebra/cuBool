@@ -23,7 +23,7 @@
 /**********************************************************************************/
 
 #include <sequential/sq_reduce.hpp>
-#include <sequential/sq_exclusive_scan.hpp>
+#include <utils/exclusive_scan.hpp>
 
 namespace cubool {
 
@@ -38,7 +38,7 @@ namespace cubool {
             }
         }
 
-        sq_exclusive_scan(out.rowOffsets.begin(), out.rowOffsets.end(), 0);
+        exclusive_scan(out.rowOffsets.begin(), out.rowOffsets.end(), 0);
 
         out.nvals = out.rowOffsets.back();
         out.colIndices.clear();

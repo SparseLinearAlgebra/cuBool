@@ -27,7 +27,7 @@
 
 namespace cubool {
 
-    void MatrixCsr::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate) {
+    void MatrixCsr::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) {
         auto a = dynamic_cast<const MatrixCsr*>(&aBase);
         auto b = dynamic_cast<const MatrixCsr*>(&bBase);
 
@@ -40,26 +40,27 @@ namespace cubool {
         assert(this->getNrows() == M);
         assert(this->getNcols() == N);
 
+        if (!accumulate) {
+            // Clear all values
+            this->mMatrixImpl.zero_dim();
+        }
+
         if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
-            // A or B has no values
+            // Return empty matrix
             return;
         }
 
-        CHECK_RAISE_ERROR(accumulate, NotImplemented, "Supported only accumulated multiplication");
+        // Ensure csr proper csr format even if empty
+        a->resizeStorageToDim();
+        b->resizeStorageToDim();
+        this->resizeStorageToDim();
 
-        if (accumulate) {
-            // Ensure csr proper csr format even if empty
-            a->resizeStorageToDim();
-            b->resizeStorageToDim();
-            this->resizeStorageToDim();
+        // Call backend r = c + a * b implementation, as C this is passed
+        nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
+        auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
 
-            // Call backend r = c + a * b implementation, as C this is passed
-            nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
-            auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
-
-            // Assign result to this
-            this->mMatrixImpl = std::move(result);
-        }
+        // Assign result to this
+        this->mMatrixImpl = std::move(result);
     }
 
 }

@@ -28,7 +28,7 @@
 
 namespace cubool {
 
-    void MatrixCsr::transpose(const MatrixBase &otherBase) {
+    void MatrixCsr::transpose(const MatrixBase &otherBase, bool checkTime) {
         auto other = dynamic_cast<const MatrixCsr*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");

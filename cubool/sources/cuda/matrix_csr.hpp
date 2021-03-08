@@ -43,17 +43,19 @@ namespace cubool {
         explicit MatrixCsr(size_t nrows, size_t ncols, Instance& instance);
         ~MatrixCsr() override = default;
 
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted) override;
+        void setElement(index i, index j) override;
+        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) override;
         void extract(index* rows, index* cols, size_t &nvals) override;
-        void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols) override;
+        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
+                              bool checkTime) override;
 
         void clone(const MatrixBase &other) override;
-        void transpose(const MatrixBase &other) override;
-        void reduce(const MatrixBase& other) override;
+        void transpose(const MatrixBase &other, bool checkTime) override;
+        void reduce(const MatrixBase &other, bool checkTime) override;
 
-        void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate) override;
-        void kronecker(const MatrixBase& a, const MatrixBase& b) override;
-        void eWiseAdd(const MatrixBase& a, const MatrixBase& b) override;
+        void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate, bool checkTime) override;
+        void kronecker(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
+        void eWiseAdd(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
 
         index getNrows() const override;
         index getNcols() const override;

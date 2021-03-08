@@ -24,7 +24,7 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixAdd(cuBool_Index m, cuBool_Index n, float density) {
+void testMatrixAdd(cuBool_Index m, cuBool_Index n, float density, cuBool_Hints flags) {
     cuBool_Matrix r, a, b;
 
     testing::Matrix ta = std::move(testing::Matrix::generateSparse(m, n, density));
@@ -36,11 +36,11 @@ void testMatrixAdd(cuBool_Index m, cuBool_Index n, float density) {
     ASSERT_EQ(cuBool_Matrix_New(&r, m, n), CUBOOL_STATUS_SUCCESS);
 
     // Transfer input data into input matrices
-    ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
-    ASSERT_EQ(cuBool_Matrix_Build(b, tb.rowsIndex.data(), tb.colsIndex.data(), tb.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, 0), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Build(b, tb.rowsIndex.data(), tb.colsIndex.data(), tb.nvals, 0), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate r = a + b
-    ASSERT_EQ(cuBool_Matrix_EWiseAdd(r, a, b), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_EWiseAdd(r, a, b, flags), CUBOOL_STATUS_SUCCESS);
 
     // Evaluate naive r += a on the cpu to compare results
     testing::MatrixEWiseAddFunctor functor;
@@ -60,7 +60,13 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 5; i++) {
-        testMatrixAdd(m, n, 0.1f + (0.05f) * ((float) i));
+        testMatrixAdd(m, n, 0.1f + (0.05f) * ((float) i), CUBOOL_HINT_NO);
+    }
+
+    cuBool_SetupLogging("log.txt", 0);
+
+    for (size_t i = 0; i < 5; i++) {
+        testMatrixAdd(m, n, 0.1f + (0.05f) * ((float) i), CUBOOL_HINT_TIME_CHECK);
     }
 
     // Finalize library

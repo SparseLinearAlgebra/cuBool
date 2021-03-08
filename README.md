@@ -5,6 +5,7 @@
 [![JB Research](https://jb.gg/badges/research-flat-square.svg)](https://research.jetbrains.org/)
 [![Ubuntu](https://github.com/JetBrains-Research/cuBool/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/JetBrains-Research/cuBool/actions)
 [![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE)
+[![Package](https://img.shields.io/badge/pypi%20package-alpha-%233776ab)](https://test.pypi.org/project/pycubool/)
 
 **cuBool** is a linear Boolean algebra library primitives and operations for 
 work with sparse matrices written on the NVIDIA CUDA platform. The primary 
@@ -28,26 +29,28 @@ prototyping algorithms on a local computer for later running on a powerful serve
 
 - [X] Library C interface
 - [X] Library setup
-- [X] CSR matrix
-- [X] CSR multiplication
-- [X] CSR element-wise addition
-- [X] CSR kronecker
-- [X] CSR transpose
-- [X] CSR submatrix
-- [X] CSR matrix reduce
-- [X] CSR slicing
+- [X] Sparse matrix
+- [X] Sparse matrix multiplication
+- [X] Sparse matrix element-wise addition
+- [X] Sparse matrix kronecker
+- [X] Sparse matrix transpose
+- [X] Sparse matrix submatrix
+- [X] Sparse matrix reduce
+- [X] Sparse matrix slicing
+- [X] Matrix cached filling
 - [X] Sequential fallback backend for CPU
-- [ ] IO matrix loading from mtx file
-- [ ] IO matrix saving into mtx file
+- [X] Device capabilities query
+- [X] IO matrix loading from mtx file
+- [X] IO matrix saving into mtx file
 - [ ] IO matrix saving into gviz format
-- [ ] IO user-defined file logging
+- [X] IO user-defined file logging
 - [X] Wrapper for Python API
-- [ ] Wrapper syntax sugar
-- [ ] Tests for Python wrapper
+- [X] Wrapper syntax sugar
+- [X] Tests for Python wrapper
+- [X] Pip package
 - [ ] Code examples
 - [ ] User guide
 - [X] Unit Tests collection
-- [X] Dummy library implementation for testing
 - [ ] Publish built artifacts and shared libs
 - [ ] Publish stable source code archives
 
@@ -65,7 +68,7 @@ prototyping algorithms on a local computer for later running on a powerful serve
 
 ### Cuda & Compiler Setup
 
-> Skip thia section if you want to build library with only sequential backend
+> Skip this section if you want to build library with only sequential backend
 > without cuda backend support.
 
 Before the CUDA setup process, validate your system NVIDIA driver with `nvidia-smi`
@@ -159,12 +162,22 @@ By default, the following cmake options will be automatically enabled:
 
 ### Python Wrapper
 
-After the build process, the shared library object `libcubool.so` is placed
-inside the build directory. Export into the environment or add into bash
-profile the variable `CUBOOL_PATH=/path/to/the/libcubool.so` with appropriate
-path to your setup. Then you will be able to use `pycubool` python wrapper,
-which uses this variable in order to located library object.
+**Export** env variable `PYTHONPATH="/build_dir_path/python/:$PYTHONPATH"` if
+you want to use `pycubool` without installation into default python packages dir.
+This variable will help python find package if you import it as `import pycubool` in your python scripts.
 
+**To run regression tests** within your build directory, open folder `/build_dir_path/python` and
+run the following command:
+
+```shell script
+$ export PYTHONPATH="`pwd`:$PYTHONPATH"
+$ cd tests
+$ python3 -m unittest discover -v
+```
+
+**Note:** after the build process, the shared library object `libcubool.so` will be placed
+inside the build directory in the folder with python wrapper `python/pycubool/`. 
+So, the wrapper will be able to automatically locate required lib file.
 
 ## Usage 
 
@@ -205,7 +218,7 @@ wrapper can be used to compute the same transitive closure problem for the
 directed graph within python environment:
 
 ```python
-from python import pycubool
+import pycubool
 
 def transitive_closure(a: pycubool.Matrix):
     """
@@ -216,8 +229,8 @@ def transitive_closure(a: pycubool.Matrix):
     :return: The transitive closure adjacency matrix
     """
 
-    t = a.dup()                       # Duplicate matrix where to store result
-    total = 0                         # Current number of values
+    t = a.dup()                           # Duplicate matrix where to store result
+    total = 0                             # Current number of values
 
     while total != t.nvals:
         total = t.nvals
@@ -263,12 +276,12 @@ cuBool
 ## License
 
 This project is licensed under MIT License. License text can be found in the 
-[license file](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE).
+[license file](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE.md).
 
 ## Acknowledgments
 
 This is a research project of the Programming Languages and Tools Laboratory
-at JetBrains Research company. Laboratory website [link](https://research.jetbrains.org/groups/plt_lab/).
+at JetBrains-Research. Laboratory website [link](https://research.jetbrains.org/groups/plt_lab/).
 
 ## Also
 
