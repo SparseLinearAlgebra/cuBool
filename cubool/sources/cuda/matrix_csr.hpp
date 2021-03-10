@@ -63,11 +63,15 @@ namespace cubool {
 
     private:
         void resizeStorageToDim() const;
+        void clearAndResizeStorageToDim() const;
         bool isStorageEmpty() const;
         bool isMatrixEmpty() const;
+        void transferToDevice(const std::vector<index> &rowOffsets, const std::vector<index> &colIndices);
+        void transferFromDevice(std::vector<index> &rowOffsets, std::vector<index> &colIndices) const;
 
         // Uses nsparse csr matrix implementation as a backend
         mutable MatrixImplType mMatrixImpl;
+
         size_t mNrows = 0;
         size_t mNcols = 0;
         Instance& mInstance;

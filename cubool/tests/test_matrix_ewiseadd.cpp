@@ -63,12 +63,6 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
         testMatrixAdd(m, n, 0.1f + (0.05f) * ((float) i), CUBOOL_HINT_NO);
     }
 
-    cuBool_SetupLogging("log.txt", 0);
-
-    for (size_t i = 0; i < 5; i++) {
-        testMatrixAdd(m, n, 0.1f + (0.05f) * ((float) i), CUBOOL_HINT_TIME_CHECK);
-    }
-
     // Finalize library
     EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }

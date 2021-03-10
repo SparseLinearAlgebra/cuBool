@@ -167,11 +167,8 @@ namespace cubool {
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
         CHECK_RAISE_ERROR(other != this, InvalidArgument, "Matrices must differ");
 
-        auto M = this->getNrows();
-        auto N = this->getNcols();
-
-        assert(M == nrows);
-        assert(N == ncols);
+        assert(this->getNrows() == nrows);
+        assert(this->getNcols() == ncols);
 
         this->allocateStorage();
         other->allocateStorage();
@@ -184,11 +181,8 @@ namespace cubool {
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
         CHECK_RAISE_ERROR(other != this, InvalidArgument, "Matrices must differ");
 
-        auto M = other->getNrows();
-        auto N = other->getNcols();
-
-        assert(M == this->getNrows());
-        assert(N == this->getNcols());
+        assert(other->getNrows() == this->getNrows());
+        assert(other->getNcols() == this->getNcols());
 
         this->mData = other->mData;
     }
@@ -198,11 +192,8 @@ namespace cubool {
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        auto M = other->getNrows();
-        auto N = other->getNcols();
-
-        assert(N == this->getNrows());
-        assert(M == this->getNcols());
+        assert(other->getNcols() == this->getNrows());
+        assert(other->getNrows() == this->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();
@@ -220,11 +211,8 @@ namespace cubool {
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        index M = other->getNrows();
-        index N = 1;
-
-        assert(M == this->getNrows());
-        assert(N == this->getNcols());
+        assert(other->getNrows() == this->getNrows());
+        assert(1 == this->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();
@@ -244,12 +232,9 @@ namespace cubool {
         CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
         CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        auto M = a->getNrows();
-        auto N = b->getNcols();
-
         assert(a->getNcols() == b->getNrows());
-        assert(M == this->getNrows());
-        assert(N == this->getNcols());
+        assert(a->getNrows() == this->getNrows());
+        assert(b->getNcols() == this->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();
@@ -280,13 +265,8 @@ namespace cubool {
         CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
         CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        auto M = a->getNrows();
-        auto N = a->getNcols();
-        auto K = b->getNrows();
-        auto T = b->getNcols();
-
-        assert(M * K == this->getNrows());
-        assert(N * T == this->getNcols());
+        assert(a->getNrows() * b->getNrows() == this->getNrows());
+        assert(a->getNcols() * b->getNcols() == this->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();
@@ -306,13 +286,10 @@ namespace cubool {
         CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
         CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        auto M = a->getNrows();
-        auto N = a->getNcols();
-
-        assert(M == this->getNrows());
-        assert(N == this->getNcols());
-        assert(M == b->getNrows());
-        assert(N == b->getNcols());
+        assert(a->getNrows() == this->getNrows());
+        assert(a->getNcols() == this->getNcols());
+        assert(a->getNrows() == b->getNrows());
+        assert(a->getNcols() == b->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();

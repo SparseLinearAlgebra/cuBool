@@ -84,7 +84,6 @@ TEST(cuBool_Matrix, FillingSmallFallback) {
 TEST(cuBool_Matrix, FillingMediumFallback) {
     cuBool_Index m = 500, n = 1000;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
-
 }
 
 TEST(cuBool_Matrix, FillingLargeFallback) {

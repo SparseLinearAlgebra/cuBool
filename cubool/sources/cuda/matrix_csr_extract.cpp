@@ -22,37 +22,35 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_LIBRARY_HPP
-#define CUBOOL_LIBRARY_HPP
-
-#include <core/config.hpp>
-#include <core/error.hpp>
-#include <unordered_set>
-#include <memory>
+#include <cuda/matrix_csr.hpp>
+#include <vector>
 
 namespace cubool {
 
-    class Library {
-    public:
-        static void initialize(hints initHints);
-        static void finalize();
-        static void validate();
-        static void setupLogging(const char* logFileName, cuBool_Hints hints);
-        static class Matrix *createMatrix(size_t nrows, size_t ncols);
-        static void releaseMatrix(class Matrix *matrix);
-        static void handleError(const std::exception& error);
-        static void queryCapabilities(cuBool_DeviceCaps& caps);
-        static void logDeviceInfo();
-        static bool isBackedInitialized();
-        static class Logger* getLogger();
+    void MatrixCsr::extract(index *rows, index *cols, size_t &nvals) {
+        assert(nvals >= getNvals());
 
-    private:
-        static std::unordered_set<class Matrix*> mAllocated;
-        static std::shared_ptr<class BackendBase> mBackend;
-        static std::shared_ptr<class Logger> mLogger;
-        static bool mRelaxedRelease;
-    };
+        // Set nvals to the exact number of nnz values
+        nvals = getNvals();
+
+        if (nvals > 0) {
+            // Copy data to the host
+            std::vector<index> rowOffsets;
+            std::vector<index> colIndices;
+
+            this->transferFromDevice(rowOffsets, colIndices);
+
+            // Iterate over csr formatted data
+            size_t idx = 0;
+            for (index i = 0; i < getNrows(); i++) {
+                for (index j = rowOffsets[i]; j < rowOffsets[i + 1]; j++) {
+                    rows[idx] = i;
+                    cols[idx] = colIndices[j];
+
+                    idx += 1;
+                }
+            }
+        }
+    }
 
 }
-
-#endif //CUBOOL_LIBRARY_HPP

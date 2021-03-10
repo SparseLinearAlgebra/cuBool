@@ -105,7 +105,8 @@ namespace cubool {
         CHECK_RAISE_ERROR(nrows == this->getNrows(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
         CHECK_RAISE_ERROR(ncols == this->getNcols(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
 
-        this->commitCache();
+        other->commitCache();
+        this->releaseCache(); // Values of this matrix won't be used any more
 
         if (checkTime) {
             TIMER_ACTION(timer, mHnd->extractSubMatrix(*other->mHnd, i, j, nrows, ncols, false));
@@ -129,13 +130,18 @@ namespace cubool {
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
 
+        if (this == other)
+            return;
+
         auto M = other->getNrows();
         auto N = other->getNcols();
 
         CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Cloned matrix has incompatible size");
         CHECK_RAISE_ERROR(N == this->getNcols(), InvalidArgument, "Cloned matrix has incompatible size");
 
-        this->commitCache();
+        other->commitCache();
+        this->releaseCache(); // Values of this matrix won't be used any more
+
         mHnd->clone(*other->mHnd);
     }
 
@@ -151,6 +157,7 @@ namespace cubool {
         CHECK_RAISE_ERROR(N == this->getNrows(), InvalidArgument, "Transposed matrix has incompatible size");
 
         this->commitCache();
+        this->releaseCache(); // Values of this matrix won't be used any more
 
         if (checkTime) {
             TIMER_ACTION(timer, mHnd->transpose(*other->mHnd, false));
@@ -178,7 +185,8 @@ namespace cubool {
         CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Matrix has incompatible size");
         CHECK_RAISE_ERROR(1 == this->getNcols(), InvalidArgument, "Matrix has incompatible size");
 
-        this->commitCache();
+        other->commitCache();
+        this->releaseCache(); // Values of this matrix won't be used any more
 
         if (checkTime) {
             TIMER_ACTION(timer, mHnd->reduce(*other->mHnd, false));
@@ -211,7 +219,13 @@ namespace cubool {
         CHECK_RAISE_ERROR(N == this->getNcols(), InvalidArgument, "Matrix has incompatible size for operation result");
         CHECK_RAISE_ERROR(T == b->getNrows(), InvalidArgument, "Cannot multiply passed matrices");
 
-        this->commitCache();
+        a->commitCache();
+        b->commitCache();
+
+        if (accumulate)
+            this->commitCache();
+        else
+            this->releaseCache();
 
         if (checkTime) {
             TIMER_ACTION(timer, mHnd->multiply(*a->mHnd, *b->mHnd, accumulate, false));
@@ -245,7 +259,9 @@ namespace cubool {
         CHECK_RAISE_ERROR(M * K == this->getNrows(), InvalidArgument, "Matrix has incompatible size for operation result");
         CHECK_RAISE_ERROR(N * T == this->getNcols(), InvalidArgument, "Matrix has incompatible size for operation result");
 
-        this->commitCache();
+        a->commitCache();
+        b->commitCache();
+        this->releaseCache();
 
         if (checkTime) {
             TIMER_ACTION(timer, mHnd->kronecker(*a->mHnd, *b->mHnd, false));
@@ -280,7 +296,9 @@ namespace cubool {
         CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Matrix has incompatible size for operation result");
         CHECK_RAISE_ERROR(N == this->getNcols(), InvalidArgument, "Matrix has incompatible size for operation result");
 
-        this->commitCache();
+        a->commitCache();
+        b->commitCache();
+        this->releaseCache();
 
         if (checkTime) {
             TIMER_ACTION(timer, mHnd->eWiseAdd(*a->mHnd, *b->mHnd, false));
