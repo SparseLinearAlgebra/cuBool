@@ -22,51 +22,53 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/matrix_csr.hpp>
+#include <utils/csr_utils.hpp>
 #include <utils/exclusive_scan.hpp>
-#include <vector>
+#include <core/error.hpp>
 #include <algorithm>
+#include <cassert>
 
 namespace cubool {
 
-    void MatrixCsr::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
-        if (nvals == 0) {
-            mMatrixImpl.zero_dim();  // no content, empty matrix
-            return;
-        }
+    void CsrUtils::buildFromData(size_t nrows, size_t ncols,
+                                 const index *rows, const index *cols, size_t nvals,
+                                 std::vector<index> &rowOffsets, std::vector<index> &colIndices,
+                                 bool isSorted, bool noDuplicates) {
 
-        std::vector<index> rowOffsets;
-        rowOffsets.resize(getNrows() + 1, 0);
-
-        std::vector<index> colIndices;
+        rowOffsets.resize(nrows + 1, 0);
         colIndices.resize(nvals);
 
-        // Compute nnz per row
-        for (size_t idx = 0; idx < nvals; idx++) {
-            index i = rows[idx];
-            index j = cols[idx];
+        std::fill(rowOffsets.begin(), rowOffsets.end(), 0);
 
-            CHECK_RAISE_ERROR(i < getNrows() && j < getNcols(), InvalidArgument, "Out of matrix bounds value");
+        if (nvals == 0)
+            return;
 
-            rowOffsets[i] += 1;
+        assert(rows);
+        assert(cols);
+
+        for (size_t k = 0; k < nvals; k++) {
+            auto i = rows[k];
+            auto j = cols[k];
+
+            CHECK_RAISE_ERROR(i < nrows, InvalidArgument, "Index out of matrix bounds");
+            CHECK_RAISE_ERROR(j < ncols, InvalidArgument, "Index out of matrix bounds");
+
+            rowOffsets[i]++;
         }
 
-        // Exclusive scan to eval rows offsets
-        ::cubool::exclusive_scan(rowOffsets.begin(), rowOffsets.end(), 0);
+        exclusive_scan(rowOffsets.begin(), rowOffsets.end(), 0);
 
-        // Write offsets for cols
-        std::vector<size_t> writeOffsets(getNrows(), 0);
+        std::vector<size_t> writeOffset(nrows, 0);
+        for (size_t k = 0; k < nvals; k++) {
+            auto i = rows[k];
+            auto j = cols[k];
 
-        for (size_t idx = 0; idx < nvals; idx++) {
-            index i = rows[idx];
-            index j = cols[idx];
-
-            colIndices[rowOffsets[i] + writeOffsets[i]] = j;
-            writeOffsets[i] += 1;
+            colIndices[rowOffsets[i] + writeOffset[i]] = j;
+            writeOffset[i] += 1;
         }
 
         if (!isSorted) {
-            for (size_t i = 0; i < getNrows(); i++) {
+            for (size_t i = 0; i < nrows; i++) {
                 auto begin = rowOffsets[i];
                 auto end = rowOffsets[i + 1];
 
@@ -77,10 +79,9 @@ namespace cubool {
             }
         }
 
-        // Reduce duplicated values
         if (!noDuplicates) {
             size_t unique = 0;
-            for (size_t i = 0; i < getNrows(); i++) {
+            for (size_t i = 0; i < nrows; i++) {
                 index prev = std::numeric_limits<index>::max();
 
                 for (size_t k = rowOffsets[i]; k < rowOffsets[i + 1]; k++) {
@@ -93,12 +94,12 @@ namespace cubool {
             }
 
             std::vector<index> rowOffsetsReduced;
-            rowOffsetsReduced.resize(getNrows() + 1, 0);
+            rowOffsetsReduced.resize(nrows + 1, 0);
 
             std::vector<index> colIndicesReduced;
             colIndicesReduced.reserve(unique);
 
-            for (size_t i = 0; i < getNrows(); i++) {
+            for (size_t i = 0; i < nrows; i++) {
                 index prev = std::numeric_limits<index>::max();
 
                 for (size_t k = rowOffsets[i]; k < rowOffsets[i + 1]; k++) {
@@ -112,15 +113,28 @@ namespace cubool {
             }
 
             // Exclusive scan to eval rows offsets
-            ::cubool::exclusive_scan(rowOffsetsReduced.begin(), rowOffsetsReduced.end(), 0);
+            exclusive_scan(rowOffsetsReduced.begin(), rowOffsetsReduced.end(), 0);
 
             // Now result in respective place
             std::swap(rowOffsets, rowOffsetsReduced);
             std::swap(colIndices, colIndicesReduced);
         }
+    }
 
-        // Move actual data to the matrix implementation
-        this->transferToDevice(rowOffsets, colIndices);
+    void CsrUtils::extractData(size_t nrows, size_t ncols,
+                               index *rows, index *cols, size_t nvals,
+                               const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) {
+        assert(rows);
+        assert(cols);
+
+        size_t id = 0;
+        for (index i = 0; i < nrows; i++) {
+            for (index k = rowOffsets[i]; k < rowOffsets[i + 1]; k++) {
+                rows[id] = i;
+                cols[id] = colIndices[k];
+                id += 1;
+            }
+        }
     }
 
 }

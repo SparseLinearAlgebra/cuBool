@@ -59,13 +59,13 @@ prototyping algorithms on a local computer for later running on a powerful serve
 
 ## Installation
 
-If you running OS **Ubuntu 20.04** or higher you can download the official
-PyPI **pycubool** python package, which includes compiled library source
+If you are running OS **Ubuntu 20.04** or higher you can download the official
+PyPI **pycubool** python package, which includes compiled library source code
 with Cuda and Sequential computations support. Installation process 
 requires only `python3` to be installed on your machine. Python can be installed 
 as follows [link](https://phoenixnap.com/kb/how-to-install-python-3-ubuntu).
 
-If all requirements satisfied, run the following command to install PyPI package:
+If all requirements are satisfied, run the following command to install PyPI package:
 ```shell script
 $ python3 -m pip install -i https://test.pypi.org/simple/ pycubool
 ``` 
@@ -274,7 +274,7 @@ cuBool
 │   │   └── sequential - fallback cpu backend
 │   ├── utils - testing utilities
 │   └── tests - gtest-based unit-tests collection
-├── python - pycubool related source
+├── python - pycubool related sources
 │   ├── pycubool - cubool library wrapper for python (similar to pygraphblas)
 │   ├── tests - regression tests for python wrapper
 │   └── data - generate data for pycubool regression tests

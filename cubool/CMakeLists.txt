@@ -26,6 +26,8 @@ set(CUBOOL_SOURCES
     sources/io/logger.hpp
     sources/utils/exclusive_scan.hpp
     sources/utils/timer.hpp
+    sources/utils/csr_utils.cpp
+    sources/utils/csr_utils.hpp
         )
 
 set(CUBOOL_C_API_SOURCES
@@ -72,8 +74,8 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/instance.cpp
         sources/cuda/matrix_csr.hpp
         sources/cuda/matrix_csr.cu
-        sources/cuda/matrix_csr_build.cpp
-        sources/cuda/matrix_csr_extract.cpp
+        sources/cuda/matrix_csr_build.cu
+        sources/cuda/matrix_csr_extract.cu
         sources/cuda/matrix_csr_ewiseadd.cu
         sources/cuda/matrix_csr_kronecker.cu
         sources/cuda/matrix_csr_multiply.cu

@@ -23,34 +23,24 @@
 /**********************************************************************************/
 
 #include <cuda/matrix_csr.hpp>
-#include <vector>
+#include <utils/csr_utils.hpp>
 
 namespace cubool {
 
-    void MatrixCsr::extract(index *rows, index *cols, size_t &nvals) {
-        assert(nvals >= getNvals());
-
-        // Set nvals to the exact number of nnz values
-        nvals = getNvals();
-
-        if (nvals > 0) {
-            // Copy data to the host
-            std::vector<index> rowOffsets;
-            std::vector<index> colIndices;
-
-            this->transferFromDevice(rowOffsets, colIndices);
-
-            // Iterate over csr formatted data
-            size_t idx = 0;
-            for (index i = 0; i < getNrows(); i++) {
-                for (index j = rowOffsets[i]; j < rowOffsets[i + 1]; j++) {
-                    rows[idx] = i;
-                    cols[idx] = colIndices[j];
-
-                    idx += 1;
-                }
-            }
+    void MatrixCsr::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
+        if (nvals == 0) {
+            mMatrixImpl.zero_dim();  // no content, empty matrix
+            return;
         }
+
+        // Build csr structure and store on cpu side
+        std::vector<index> rowOffsets;
+        std::vector<index> colIndices;
+
+        CsrUtils::buildFromData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices, isSorted, noDuplicates);
+
+        // Move actual data to the matrix implementation
+        this->transferToDevice(rowOffsets, colIndices);
     }
 
 }

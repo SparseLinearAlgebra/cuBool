@@ -46,8 +46,7 @@ namespace cubool {
         void setElement(index i, index j) override;
         void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) override;
         void extract(index* rows, index* cols, size_t &nvals) override;
-        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
-                              bool checkTime) override;
+        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols, bool checkTime) override;
 
         void clone(const MatrixBase &other) override;
         void transpose(const MatrixBase &other, bool checkTime) override;

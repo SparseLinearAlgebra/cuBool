@@ -29,9 +29,8 @@
 #include <sequential/sq_ewiseadd.hpp>
 #include <sequential/sq_spgemm.hpp>
 #include <sequential/sq_reduce.hpp>
-#include <utils/exclusive_scan.hpp>
+#include <utils/csr_utils.hpp>
 #include <core/error.hpp>
-#include <algorithm>
 #include <cassert>
 
 namespace cubool {
@@ -53,110 +52,20 @@ namespace cubool {
         auto ncols = mData.ncols;
 
         mData.rowOffsets.clear();
-        mData.rowOffsets.resize(nrows + 1, 0);
         mData.colIndices.clear();
-        mData.colIndices.resize(nvals);
 
-        if (nvals == 0)
-            return;
-
-        assert(rows);
-        assert(cols);
-
-        for (size_t k = 0; k < nvals; k++) {
-            auto i = rows[k];
-            auto j = cols[k];
-
-            CHECK_RAISE_ERROR(i < nrows, InvalidArgument, "Index out of matrix bound");
-            CHECK_RAISE_ERROR(j < ncols, InvalidArgument, "Index out of matrix bound");
-
-            mData.rowOffsets[i]++;
-        }
-
-        exclusive_scan(mData.rowOffsets.begin(), mData.rowOffsets.end(), 0);
-
-        std::vector<size_t> writeOffset(nrows, 0);
-        for (size_t k = 0; k < nvals; k++) {
-            auto i = rows[k];
-            auto j = cols[k];
-
-            mData.colIndices[mData.rowOffsets[i] + writeOffset[i]] = j;
-            writeOffset[i] += 1;
-        }
-
-        if (!isSorted) {
-            for (size_t i = 0; i < getNrows(); i++) {
-                auto begin = mData.rowOffsets[i];
-                auto end = mData.rowOffsets[i + 1];
-
-                // Sort col values within row
-                std::sort(mData.colIndices.begin() + begin, mData.colIndices.begin() + end, [](const index& a, const index& b) {
-                    return a < b;
-                });
-            }
-        }
-
-        if (!noDuplicates) {
-            size_t unique = 0;
-            for (size_t i = 0; i < getNrows(); i++) {
-                index prev = std::numeric_limits<index>::max();
-
-                for (size_t k = mData.rowOffsets[i]; k < mData.rowOffsets[i + 1]; k++) {
-                    if (prev != mData.colIndices[k]) {
-                        unique += 1;
-                    }
-
-                    prev = mData.colIndices[k];
-                }
-            }
-
-            std::vector<index> rowOffsetsReduced;
-            rowOffsetsReduced.resize(getNrows() + 1, 0);
-
-            std::vector<index> colIndicesReduced;
-            colIndicesReduced.reserve(unique);
-
-            for (size_t i = 0; i < getNrows(); i++) {
-                index prev = std::numeric_limits<index>::max();
-
-                for (size_t k = mData.rowOffsets[i]; k < mData.rowOffsets[i + 1]; k++) {
-                    if (prev != mData.colIndices[k]) {
-                        rowOffsetsReduced[i] += 1;
-                        colIndicesReduced.push_back(mData.colIndices[k]);
-                    }
-
-                    prev = mData.colIndices[k];
-                }
-            }
-
-            // Exclusive scan to eval rows offsets
-            exclusive_scan(rowOffsetsReduced.begin(), rowOffsetsReduced.end(), 0);
-
-            // Now result in respective place
-            std::swap(mData.rowOffsets, rowOffsetsReduced);
-            std::swap(mData.colIndices, colIndicesReduced);
-        }
+        // Call utility to build csr row offsets and column indices and store in mData vectors
+        CsrUtils::buildFromData(nrows, ncols, rows, cols, nvals, mData.rowOffsets, mData.colIndices, isSorted, noDuplicates);
 
         mData.nvals = mData.colIndices.size();
     }
 
     void SqMatrix::extract(index *rows, index *cols, size_t &nvals) {
         assert(nvals >= getNvals());
-
         nvals = getNvals();
 
         if (nvals > 0) {
-            assert(rows);
-            assert(cols);
-
-            size_t id = 0;
-            for (index i = 0; i < getNrows(); i++) {
-                for (index k = mData.rowOffsets[i]; k < mData.rowOffsets[i + 1]; k++) {
-                    rows[id] = i;
-                    cols[id] = mData.colIndices[k];
-                    id += 1;
-                }
-            }
+            CsrUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, mData.rowOffsets, mData.colIndices);
         }
     }
 
