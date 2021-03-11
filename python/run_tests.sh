@@ -1,4 +1,4 @@
-export PYTHONPATH=":`pwd`$PYTHONPATH"
+export PYTHONPATH="`pwd`:$PYTHONPATH"
 cd tests
-python3 -m unittests discover -v
+python3 -m unittest discover -v
 cd ..

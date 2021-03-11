@@ -160,7 +160,7 @@ Configure build in Release mode with tests and run actual compilation process:
 ```shell script
 $ cmake .. -DCMAKE_BUILD_TYPE=Release -DCUBOOL_BUILD_TESTS=ON
 $ cmake --build . --target all -j `nproc`
-$ bash ./scripts/tests_run_all.sh
+$ bash ./scripts/run_tests_all.sh
 ```
 
 By default, the following cmake options will be automatically enabled:
