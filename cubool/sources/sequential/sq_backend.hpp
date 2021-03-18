@@ -44,6 +44,9 @@ namespace cubool {
         void releaseMatrix(MatrixBase *matrixBase) override;
 
         void queryCapabilities(cuBool_DeviceCaps& caps) override;
+
+    private:
+        size_t mMatCount = 0;
     };
 
 }

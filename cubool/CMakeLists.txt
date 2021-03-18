@@ -146,15 +146,15 @@ if (CUBOOL_WITH_CUDA)
     set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     # Settings: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
-    target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-        # todo: fix this flag later -arch=sm_30 ?
-        # todo: can we omit arch flag?
-        -gencode=arch=compute_30,code=sm_30
-        -gencode=arch=compute_50,code=sm_50
-        -gencode=arch=compute_52,code=sm_52
-        -gencode=arch=compute_60,code=sm_60
-        -gencode=arch=compute_61,code=sm_61
-        -gencode=arch=compute_61,code=compute_61>)
+    #target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+    #    # todo: fix this flag later -arch=sm_30 ?
+    #    # todo: can we omit arch flag?
+    #    -gencode=arch=compute_30,code=sm_30
+    #    -gencode=arch=compute_50,code=sm_50
+    #    -gencode=arch=compute_52,code=sm_52
+    #    -gencode=arch=compute_60,code=sm_60
+    #    -gencode=arch=compute_61,code=sm_61
+    #    -gencode=arch=compute_61,code=compute_61>)
 
     target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>: -use_fast_math -Xptxas -O2>)
 

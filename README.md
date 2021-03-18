@@ -78,7 +78,7 @@ These steps are required if you want to build library for your specific platform
 ### Requirements
 
 - Linux Ubuntu (tested on 20.04)
-- CMake Version 3.17 or higher
+- CMake Version 3.15 or higher
 - CUDA Compatible GPU device
 - GCC Compiler 
 - NVIDIA CUDA toolkit

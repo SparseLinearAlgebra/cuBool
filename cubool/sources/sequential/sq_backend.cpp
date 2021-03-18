@@ -24,6 +24,10 @@
 
 #include <sequential/sq_backend.hpp>
 #include <sequential/sq_matrix.hpp>
+#include <core/library.hpp>
+#include <io/logger.hpp>
+#include <cassert>
+
 
 namespace cubool {
 
@@ -32,7 +36,13 @@ namespace cubool {
     }
 
     void SqBackend::finalize() {
-        // No special actions
+        assert(mMatCount == 0);
+
+        if (mMatCount > 0) {
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Error
+                   << "Lost some (" << mMatCount << ") matrix objects" << LogStream::cmt;
+        }
     }
 
     bool SqBackend::isInitialized() const {
@@ -40,10 +50,12 @@ namespace cubool {
     }
 
     MatrixBase *SqBackend::createMatrix(size_t nrows, size_t ncols) {
+        mMatCount++;
         return new SqMatrix(nrows, ncols);
     }
 
     void SqBackend::releaseMatrix(MatrixBase *matrixBase) {
+        mMatCount--;
         delete matrixBase;
     }
 

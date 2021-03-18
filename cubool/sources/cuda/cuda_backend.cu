@@ -24,6 +24,8 @@
 
 #include <cuda/cuda_backend.hpp>
 #include <cuda/matrix_csr.hpp>
+#include <core/library.hpp>
+#include <io/logger.hpp>
 
 namespace cubool {
 
@@ -36,6 +38,14 @@ namespace cubool {
     }
 
     void CudaBackend::finalize() {
+        assert(mMatCount == 0);
+
+        if (mMatCount > 0) {
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Error
+                   << "Lost some (" << mMatCount << ") matrix objects" << LogStream::cmt;
+        }
+
         if (mInstance) {
             delete mInstance;
             mInstance = nullptr;
@@ -47,10 +57,12 @@ namespace cubool {
     }
 
     MatrixBase *CudaBackend::createMatrix(size_t nrows, size_t ncols) {
+        mMatCount++;
         return new MatrixCsr(nrows, ncols, getInstance());
     }
 
     void CudaBackend::releaseMatrix(MatrixBase *matrixBase) {
+        mMatCount--;
         delete matrixBase;
     }
 

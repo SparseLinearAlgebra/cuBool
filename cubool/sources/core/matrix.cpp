@@ -364,17 +364,17 @@ namespace cubool {
         bool isSorted = false;
         bool noDuplicates = false;
 
-        // We will have to join old and new values
         if (mHnd->getNvals() > 0) {
-            // Build tmp matrix with new values
+            // We will have to join old and new values
+            // Create tmp matrix and merge values
+
             MatrixBase* tmp = mProvider->createMatrix(getNrows(), getNcols());
             tmp->build(mCachedI.data(), mCachedJ.data(), cachedNvals, isSorted, noDuplicates);
-
-            // Add new values to current matrix content
             mHnd->eWiseAdd(*mHnd, *tmp, false);
+            mProvider->releaseMatrix(tmp);
         }
-        // Otherwise, new values are used to build matrix content
         else {
+            // Otherwise, new values are used to build matrix content
             mHnd->build(mCachedI.data(), mCachedJ.data(), cachedNvals, isSorted, noDuplicates);
         }
 
