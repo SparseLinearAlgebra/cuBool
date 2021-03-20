@@ -10,8 +10,7 @@ def matrix_data_to_gviz(shape, rows, cols, **kwargs):
     label = "" if _label is None else _label
     base_vertex = 0 if _base_vertex is None else _base_vertex
 
-    n = shape[0]
-    m = shape[1]
+    n = max(shape[0], shape[1])
 
     if not (graph_name is None):
         result += f'graph [label={graph_name}];\n'
