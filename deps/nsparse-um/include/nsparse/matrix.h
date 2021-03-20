@@ -68,6 +68,8 @@ namespace nsparse {
             return m_rows == 0;
         }
 
+
+
     public:
         thrust::device_vector<index_type, alloc_type> m_col_index;
         thrust::device_vector<index_type, alloc_type> m_row_index;

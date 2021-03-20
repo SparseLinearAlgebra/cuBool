@@ -22,45 +22,26 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <sequential/sq_backend.hpp>
-#include <sequential/sq_matrix.hpp>
-#include <core/library.hpp>
-#include <io/logger.hpp>
-#include <cassert>
-
+#include <cuda/matrix_csr.hpp>
+#include <utils/csr_utils.hpp>
 
 namespace cubool {
 
-    void SqBackend::initialize(hints initHints) {
-        // No special actions
-    }
+    void MatrixCsr::extract(index *rows, index *cols, size_t &nvals) {
+        assert(nvals >= getNvals());
 
-    void SqBackend::finalize() {
-        assert(mMatCount == 0);
+        // Set nvals to the exact number of nnz values
+        nvals = getNvals();
 
-        if (mMatCount > 0) {
-            LogStream stream(*Library::getLogger());
-            stream << Logger::Level::Error
-                   << "Lost some (" << mMatCount << ") matrix objects" << LogStream::cmt;
+        if (nvals > 0) {
+            // Copy data to the host
+            std::vector<index> rowOffsets;
+            std::vector<index> colIndices;
+
+            this->transferFromDevice(rowOffsets, colIndices);
+
+            CsrUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices);
         }
-    }
-
-    bool SqBackend::isInitialized() const {
-        return true;
-    }
-
-    MatrixBase *SqBackend::createMatrix(size_t nrows, size_t ncols) {
-        mMatCount++;
-        return new SqMatrix(nrows, ncols);
-    }
-
-    void SqBackend::releaseMatrix(MatrixBase *matrixBase) {
-        mMatCount--;
-        delete matrixBase;
-    }
-
-    void SqBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
-        caps.cudaSupported = false;
     }
 
 }

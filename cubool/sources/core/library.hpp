@@ -38,8 +38,8 @@ namespace cubool {
         static void finalize();
         static void validate();
         static void setupLogging(const char* logFileName, cuBool_Hints hints);
-        static class MatrixBase *createMatrix(size_t nrows, size_t ncols);
-        static void releaseMatrix(class MatrixBase *matrixBase);
+        static class Matrix *createMatrix(size_t nrows, size_t ncols);
+        static void releaseMatrix(class Matrix *matrix);
         static void handleError(const std::exception& error);
         static void queryCapabilities(cuBool_DeviceCaps& caps);
         static void logDeviceInfo();

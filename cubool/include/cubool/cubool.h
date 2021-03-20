@@ -73,27 +73,27 @@ typedef enum cuBool_Status {
 /** Generic lib hits for matrix processing */
 typedef enum cuBool_Hint {
     /** No hints passed */
-    CUBOOL_HINT_NO = 0x0,
+    CUBOOL_HINT_NO = 0,
     /** Force Cpu based backend usage */
-    CUBOOL_HINT_CPU_BACKEND = 0x1,
+    CUBOOL_HINT_CPU_BACKEND = 1,
     /** Use managed gpu memory type instead of default (device) memory */
-    CUBOOL_HINT_GPU_MEM_MANAGED = 0x2,
+    CUBOOL_HINT_GPU_MEM_MANAGED = 2,
     /** Mark input data as row-col sorted */
-    CUBOOL_HINT_VALUES_SORTED = 0x4,
+    CUBOOL_HINT_VALUES_SORTED = 4,
     /** Accumulate result of the operation in the result matrix */
-    CUBOOL_HINT_ACCUMULATE = 0x8,
+    CUBOOL_HINT_ACCUMULATE = 8,
     /** Finalize library state, even if not all resources were explicitly released */
-    CUBOOL_HINT_RELAXED_FINALIZE = 0x16,
+    CUBOOL_HINT_RELAXED_FINALIZE = 16,
     /** Logging hint: log includes error message */
-    CUBOOL_HINT_LOG_ERROR = 0x32,
+    CUBOOL_HINT_LOG_ERROR = 32,
     /** Logging hint: log includes warning message */
-    CUBOOL_HINT_LOG_WARNING = 0x64,
+    CUBOOL_HINT_LOG_WARNING = 64,
     /** Logging hint: log includes all types of messages */
-    CUBOOL_HINT_LOG_ALL = 0x128,
+    CUBOOL_HINT_LOG_ALL = 128,
     /** No duplicates in the build data */
-    CUBOOL_HINT_NO_DUPLICATES = 0x256,
+    CUBOOL_HINT_NO_DUPLICATES = 256,
     /** Performs time measurement and logs elapsed operation time */
-    CUBOOL_HINT_TIME_CHECK = 0x512
+    CUBOOL_HINT_TIME_CHECK = 512
 } cuBool_Hint;
 
 /** Hit mask */

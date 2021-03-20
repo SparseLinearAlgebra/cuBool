@@ -62,14 +62,10 @@ jobs:
 
       - name: Run unit-tests (sequential backend)
         working-directory: ${{ env.build_dir }}
-        run: bash scripts/tests_run_fallback.sh
+        run: bash scripts/run_tests_fallback.sh
         shell: bash
 
       - name: Run regression-tests (sequential backend)
-        working-directory: ${{ env.build_dir }}
-        run: |
-          cd python
-          export PYTHONPATH="`pwd`:$PYTHONPATH"
-          cd tests
-          python3 -m unittest discover -v
+        working-directory: ${{ env.build_dir }}/python
+        run: bash run_tests.sh
         shell: bash

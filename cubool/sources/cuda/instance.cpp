@@ -44,35 +44,13 @@ namespace cubool {
     void Instance::allocate(void* &ptr, size_t size) const {
         ptr = malloc(size);
         CHECK_RAISE_ERROR(ptr != nullptr, MemOpFailed, "Failed to allocate memory on the CPU");
+        mHostAllocCount++;
     }
 
     void Instance::deallocate(void* ptr) const {
         CHECK_RAISE_ERROR(ptr != nullptr, InvalidArgument, "Passed null ptr to free");
         free(ptr);
-    }
-
-    void Instance::printDeviceCapabilities() const {
-        static const size_t BUFFER_SIZE = 1024;
-
-        cuBool_DeviceCaps deviceCaps;
-        queryDeviceCapabilities(deviceCaps);
-
-        char deviceInfo[BUFFER_SIZE];
-        snprintf(deviceInfo, BUFFER_SIZE, "Device name: %s version: %i.%i",
-                 deviceCaps.name, deviceCaps.major, deviceCaps.major);
-
-        char memoryInfo[BUFFER_SIZE];
-        snprintf(memoryInfo, BUFFER_SIZE, "Global memory: %llu KiB",
-                 (unsigned long long) deviceCaps.globalMemoryKiBs);
-
-        char sharedMemoryInfo[BUFFER_SIZE];
-        snprintf(sharedMemoryInfo, BUFFER_SIZE, "Shared memory: multi-proc %llu KiB block %llu KiB",
-                 (unsigned long long) deviceCaps.sharedMemoryPerMultiProcKiBs, (unsigned long long) deviceCaps.sharedMemoryPerBlockKiBs);
-
-        char structInfo[BUFFER_SIZE];
-        snprintf(structInfo, BUFFER_SIZE, "Kernel: warp %llu", (unsigned long long) deviceCaps.warp);
-
-        // todo
+        mHostAllocCount--;
     }
 
     Instance& Instance::getInstanceRef() {

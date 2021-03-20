@@ -42,7 +42,7 @@ namespace cubool {
 
         if (!accumulate) {
             // Clear all values
-            this->mMatrixImpl.zero_dim();
+            this->clearAndResizeStorageToDim();
         }
 
         if (a->isMatrixEmpty() || b->isMatrixEmpty()) {

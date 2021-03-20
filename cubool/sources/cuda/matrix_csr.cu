@@ -25,6 +25,7 @@
 #include <cuda/matrix_csr.hpp>
 #include <core/error.hpp>
 #include <utils/exclusive_scan.hpp>
+#include <utils/timer.hpp>
 #include <algorithm>
 
 namespace cubool {
@@ -36,131 +37,6 @@ namespace cubool {
 
     void MatrixCsr::setElement(index i, index j) {
         RAISE_ERROR(NotImplemented, "This function is not supported for this matrix class");
-    }
-
-    void MatrixCsr::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
-        if (nvals == 0) {
-            mMatrixImpl.zero_dim();  // no content, empty matrix
-            return;
-        }
-
-        thrust::host_vector<index, HostAlloc<index>> rowOffsets;
-        rowOffsets.resize(getNrows() + 1, 0);
-
-        thrust::host_vector<index, HostAlloc<index>> colIndices;
-        colIndices.resize(nvals);
-
-        // Compute nnz per row
-        for (size_t idx = 0; idx < nvals; idx++) {
-            index i = rows[idx];
-            index j = cols[idx];
-
-            CHECK_RAISE_ERROR(i < getNrows() && j < getNcols(), InvalidArgument, "Out of matrix bounds value");
-
-            rowOffsets[i] += 1;
-        }
-
-        // Exclusive scan to eval rows offsets
-        ::cubool::exclusive_scan(rowOffsets.begin(), rowOffsets.end(), 0);
-
-        // Write offsets for cols
-        std::vector<size_t> writeOffsets(getNrows(), 0);
-
-        for (size_t idx = 0; idx < nvals; idx++) {
-            index i = rows[idx];
-            index j = cols[idx];
-
-            colIndices[rowOffsets[i] + writeOffsets[i]] = j;
-            writeOffsets[i] += 1;
-        }
-
-        if (!isSorted) {
-            for (size_t i = 0; i < getNrows(); i++) {
-                auto begin = rowOffsets[i];
-                auto end = rowOffsets[i + 1];
-
-                // Sort col values within row
-                thrust::sort(colIndices.begin() + begin, colIndices.begin() + end, [](const index& a, const index& b) {
-                    return a < b;
-                });
-            }
-        }
-
-        // Reduce duplicated values
-        if (!noDuplicates) {
-            size_t unique = 0;
-            for (size_t i = 0; i < getNrows(); i++) {
-                index prev = std::numeric_limits<index>::max();
-
-                for (size_t k = rowOffsets[i]; k < rowOffsets[i + 1]; k++) {
-                    if (prev != colIndices[k]) {
-                        unique += 1;
-                    }
-
-                    prev = colIndices[k];
-                }
-            }
-
-            thrust::host_vector<index, HostAlloc<index>> rowOffsetsReduced;
-            rowOffsetsReduced.resize(getNrows() + 1, 0);
-
-            thrust::host_vector<index, HostAlloc<index>> colIndicesReduced;
-            colIndicesReduced.reserve(unique);
-
-            for (size_t i = 0; i < getNrows(); i++) {
-                index prev = std::numeric_limits<index>::max();
-
-                for (size_t k = rowOffsets[i]; k < rowOffsets[i + 1]; k++) {
-                    if (prev != colIndices[k]) {
-                        rowOffsetsReduced[i] += 1;
-                        colIndicesReduced.push_back(colIndices[k]);
-                    }
-
-                    prev = colIndices[k];
-                }
-            }
-
-            // Exclusive scan to eval rows offsets
-            ::cubool::exclusive_scan(rowOffsetsReduced.begin(), rowOffsetsReduced.end(), 0);
-
-            // Now result in respective place
-            std::swap(rowOffsets, rowOffsetsReduced);
-            std::swap(colIndices, colIndicesReduced);
-        }
-
-        // Create device buffers and copy data from the cpu side
-        thrust::device_vector<index, DeviceAlloc<index>> rowsDeviceVec = rowOffsets;
-        thrust::device_vector<index, DeviceAlloc<index>> colsDeviceVec = colIndices;
-
-        // Move actual data to the matrix implementation
-        mMatrixImpl = std::move(MatrixImplType(std::move(colsDeviceVec), std::move(rowsDeviceVec), getNrows(), getNcols(), colIndices.size()));
-    }
-
-    void MatrixCsr::extract(index *rows, index *cols, size_t &nvals) {
-        assert(nvals >= getNvals());
-
-        // Set nvals to the exact number of nnz values
-        nvals = getNvals();
-
-        if (nvals > 0) {
-            auto& rowsDeviceVec = mMatrixImpl.m_row_index;
-            auto& colsDeviceVec = mMatrixImpl.m_col_index;
-
-            // Copy data to the host
-            thrust::host_vector<index, HostAlloc<index>> rowsVec = rowsDeviceVec;
-            thrust::host_vector<index, HostAlloc<index>> colsVec = colsDeviceVec;
-
-            // Iterate over csr formatted data
-            size_t idx = 0;
-            for (index i = 0; i < getNrows(); i++) {
-                for (index j = rowsVec[i]; j < rowsVec[i + 1]; j++) {
-                    rows[idx] = i;
-                    cols[idx] = colsVec[j];
-
-                    idx += 1;
-                }
-            }
-        }
     }
 
     void MatrixCsr::clone(const MatrixBase &otherBase) {
@@ -190,6 +66,16 @@ namespace cubool {
         }
     }
 
+    void MatrixCsr::clearAndResizeStorageToDim() const {
+        if (mMatrixImpl.m_vals > 0) {
+            // Release only if have some nnz values
+            mMatrixImpl.zero_dim();
+        }
+
+        // Normally resize if no storage is actually allocated
+        this->resizeStorageToDim();
+    }
+
     index MatrixCsr::getNrows() const {
         return mNrows;
     }
@@ -208,6 +94,26 @@ namespace cubool {
 
     bool MatrixCsr::isMatrixEmpty() const {
         return mMatrixImpl.m_vals == 0;
+    }
+
+    void MatrixCsr::transferToDevice(const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) {
+        // Create device buffers and copy data from the cpu side
+        thrust::device_vector<index, DeviceAlloc<index>> rowsDeviceVec(rowOffsets.size());
+        thrust::device_vector<index, DeviceAlloc<index>> colsDeviceVec(colIndices.size());
+
+        thrust::copy(rowOffsets.begin(), rowOffsets.end(), rowsDeviceVec.begin());
+        thrust::copy(colIndices.begin(), colIndices.end(), colsDeviceVec.begin());
+
+        // Move actual data to the matrix implementation
+        mMatrixImpl = std::move(MatrixImplType(std::move(colsDeviceVec), std::move(rowsDeviceVec), getNrows(), getNcols(), colIndices.size()));
+    }
+
+    void MatrixCsr::transferFromDevice(std::vector<index> &rowOffsets, std::vector<index> &colIndices) const {
+        rowOffsets.resize(mMatrixImpl.m_row_index.size());
+        colIndices.resize(mMatrixImpl.m_col_index.size());
+
+        thrust::copy(mMatrixImpl.m_row_index.begin(), mMatrixImpl.m_row_index.end(), rowOffsets.begin());
+        thrust::copy(mMatrixImpl.m_col_index.begin(), mMatrixImpl.m_col_index.end(), colIndices.begin());
     }
 
 }

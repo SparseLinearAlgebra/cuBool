@@ -1,6 +1,6 @@
 import random
-from python import pycubool
-from python.tests import test_transitive_closure
+import pycubool
+from tests import test_transitive_closure
 
 
 def lists_to_pairs(rows, cols):
@@ -34,13 +34,14 @@ def gen_matrix_data(size, seed):
 def gen_matrix(size, seed):
     rows, cols, nvals = gen_matrix_data(size, seed)
     mat = pycubool.Matrix.empty(size)
-    mat.build(rows, cols, nvals)
+    mat.build(rows, cols, no_duplicates=True)
     return mat, lists_to_pairs(rows, cols)
 
 
-dim = (100, 100)
-to_gen = 500
+dim = (10, 10)
+to_gen = 50
 
+# pycubool.setup_logger(pycubool.get_default_log_name())
 a, a_set = gen_matrix(dim, to_gen)
 b, b_set = gen_matrix(dim, to_gen)
 
@@ -48,6 +49,8 @@ print("Matrix a din:", a.shape, "values count:", a.nvals)
 print("Matrix b dim:", b.shape, "values count:", b.nvals)
 
 r = a.ewiseadd(b, time_check=True)
+c = a.mxm(b, accumulate=True)
+print(a, b, c, sep="\n")
 
 print("Matrix r values count:", r.nvals)
 

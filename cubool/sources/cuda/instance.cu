@@ -31,6 +31,9 @@
 namespace cubool {
 
     Instance::~Instance() {
+        assert(mHostAllocCount == 0);
+        assert(mDeviceAllocCount == 0);
+
         gInstance = nullptr;
     }
 
@@ -53,13 +56,7 @@ namespace cubool {
             RAISE_ERROR(MemOpFailed, message);
         }
 
-#if 0
-        {
-            char buffer[2000];
-            snprintf(buffer, 2000, "============> allocate on gpu %llu", (long long unsigned) size);
-            this->sendMessage(CUBOOL_STATUS_SUCCESS, buffer);
-        }
-#endif
+        mDeviceAllocCount++;
     }
 
     void Instance::deallocateOnGpu(void* ptr) const {
@@ -69,6 +66,8 @@ namespace cubool {
             std::string message = std::string{"Failed to deallocate Gpu memory: "} + cudaGetErrorString(error);
             RAISE_ERROR(MemOpFailed, message);
         }
+
+        mDeviceAllocCount--;
     }
 
     void Instance::syncHostDevice() const {

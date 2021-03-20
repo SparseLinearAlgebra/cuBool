@@ -26,6 +26,8 @@ set(CUBOOL_SOURCES
     sources/io/logger.hpp
     sources/utils/exclusive_scan.hpp
     sources/utils/timer.hpp
+    sources/utils/csr_utils.cpp
+    sources/utils/csr_utils.hpp
         )
 
 set(CUBOOL_C_API_SOURCES
@@ -72,6 +74,8 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/instance.cpp
         sources/cuda/matrix_csr.hpp
         sources/cuda/matrix_csr.cu
+        sources/cuda/matrix_csr_build.cu
+        sources/cuda/matrix_csr_extract.cu
         sources/cuda/matrix_csr_ewiseadd.cu
         sources/cuda/matrix_csr_kronecker.cu
         sources/cuda/matrix_csr_multiply.cu
@@ -142,13 +146,15 @@ if (CUBOOL_WITH_CUDA)
     set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     # Settings: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
-    target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-        -arch=sm_30
-        -gencode=arch=compute_30,code=sm_30
-        -gencode=arch=compute_35,code=sm_35
-        -gencode=arch=compute_50,code=sm_50
-        -gencode=arch=compute_52,code=sm_52
-        -gencode=arch=compute_52,code=compute_52>)
+    #target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+    #    # todo: fix this flag later -arch=sm_30 ?
+    #    # todo: can we omit arch flag?
+    #    -gencode=arch=compute_30,code=sm_30
+    #    -gencode=arch=compute_50,code=sm_50
+    #    -gencode=arch=compute_52,code=sm_52
+    #    -gencode=arch=compute_60,code=sm_60
+    #    -gencode=arch=compute_61,code=sm_61
+    #    -gencode=arch=compute_61,code=compute_61>)
 
     target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>: -use_fast_math -Xptxas -O2>)
 

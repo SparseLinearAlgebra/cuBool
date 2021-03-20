@@ -1,8 +1,13 @@
+"""
+Matrix primitive.
+"""
+
 import ctypes
 import random
 
 from . import wrapper
 from . import bridge
+
 
 __all__ = [
     "Matrix"
@@ -12,6 +17,30 @@ __all__ = [
 class Matrix:
     """
     Wrapper for cuBool Sparse boolean matrix type.
+
+    Matrix class supports all cuBool C API Matrix functions.
+    Also Matrix class provides additional fancy functions/operators for better user experience.
+
+    Matrix creation:
+    - empty
+    - from lists data
+    - random generated
+
+    Matrix operations:
+    - mxm
+    - ewiseadd
+    - kronecker
+    - reduce
+    - transpose
+    - matrix extraction
+
+    Matrix functions:
+    - to string
+    - values iterating
+    - equality check
+
+    Debug features:
+    - String markers
     """
 
     __slots__ = ["hnd"]
@@ -492,6 +521,7 @@ class Matrix:
         if out is None:
             shape = (self.nrows, other.ncols)
             out = Matrix.empty(shape)
+            accumulate = False
 
         status = wrapper.loaded_dll.cuBool_MxM(
             out.hnd,
