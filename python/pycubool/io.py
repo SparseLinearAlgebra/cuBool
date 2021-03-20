@@ -1,3 +1,8 @@
+"""
+IO operations for exporting/importing mtx data.
+Provides features to import/export data or pycubool matrix in mtx format.
+"""
+
 from . import Matrix
 
 

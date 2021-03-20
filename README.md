@@ -12,8 +12,11 @@ work with sparse matrices written on the NVIDIA CUDA platform. The primary
 goal of the library is implementation, testing and profiling algorithms for
 solving *formal-language-constrained problems*, such as *context-free* 
 and *regular* path queries with various semantics for graph databases.
-The library provides C-compatible API, written in the GraphBLAS style,
-as well as python high-level wrapper with automated resources management and fancy syntax sugar.
+The library provides C-compatible API, written in the GraphBLAS style.
+
+**The library** is shipped with python package **pycubool** - wrapper for
+cuBool library C API. This package exports library features and primitives 
+in high-level format with automated resources management and fancy syntax sugar.
 
 **The primary library primitive** is a sparse boolean matrix. The library provides 
 the most popular operations for matrix manipulation, such as construction from
@@ -34,7 +37,7 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [X] Sparse matrix element-wise addition
 - [X] Sparse matrix kronecker
 - [X] Sparse matrix transpose
-- [X] Sparse matrix submatrix
+- [X] Sparse matrix extract sub-matrix
 - [X] Sparse matrix reduce
 - [X] Sparse matrix slicing
 - [X] Matrix cached filling
@@ -54,12 +57,28 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [ ] Publish built artifacts and shared libs
 - [ ] Publish stable source code archives
 
+## Installation
+
+If you are running OS **Ubuntu 20.04** or higher you can download the official
+PyPI **pycubool** python package, which includes compiled library source code
+with Cuda and Sequential computations support. Installation process 
+requires only `python3` to be installed on your machine. Python can be installed 
+as follows [link](https://phoenixnap.com/kb/how-to-install-python-3-ubuntu).
+
+If all requirements are satisfied, run the following command to install PyPI package:
+```shell script
+$ python3 -m pip install -i https://test.pypi.org/simple/ pycubool
+``` 
+
 ## Getting Started
+
+This section gives instructions to build the library from sources.
+These steps are required if you want to build library for your specific platform with custom build settings.
 
 ### Requirements
 
 - Linux Ubuntu (tested on 20.04)
-- CMake Version 3.17 or higher
+- CMake Version 3.15 or higher
 - CUDA Compatible GPU device
 - GCC Compiler 
 - NVIDIA CUDA toolkit
@@ -141,7 +160,7 @@ Configure build in Release mode with tests and run actual compilation process:
 ```shell script
 $ cmake .. -DCMAKE_BUILD_TYPE=Release -DCUBOOL_BUILD_TESTS=ON
 $ cmake --build . --target all -j `nproc`
-$ bash ./scripts/tests_run_all.sh
+$ bash ./scripts/run_tests_all.sh
 ```
 
 By default, the following cmake options will be automatically enabled:
@@ -255,9 +274,10 @@ cuBool
 │   │   └── sequential - fallback cpu backend
 │   ├── utils - testing utilities
 │   └── tests - gtest-based unit-tests collection
-├── python - pycubool related source
+├── python - pycubool related sources
 │   ├── pycubool - cubool library wrapper for python (similar to pygraphblas)
-│   └── tests - tests for python wrapper
+│   ├── tests - regression tests for python wrapper
+│   └── data - generate data for pycubool regression tests
 ├── deps - project dependencies
 │   ├── cub - cuda utility, required for nsparse
 │   ├── gtest - google test framework for unit testing
@@ -272,6 +292,18 @@ cuBool
 - Egor Orachyov (Github: [EgorOrachyov](https://github.com/EgorOrachyov))
 - Pavel Alimov (Github : [Krekep](https://github.com/Krekep))
 - Semyon Grigorev (Github: [gsvgit](https://github.com/gsvgit))
+
+## Citation 
+
+```ignorelang
+@online{cuBool,
+  author = {Orachyov, Egor and Alimov, Pavel and Grigorev, Semyon},
+  title = {cuBool: sparse Boolean linear algebra for Nvidia Cuda},
+  year = 2020,
+  url = {https://github.com/JetBrains-Research/cuBool},
+  note = {Version Alpha}
+}
+```
 
 ## License
 

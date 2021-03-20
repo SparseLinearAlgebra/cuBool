@@ -49,6 +49,7 @@ namespace cubool {
 
     private:
         Instance* mInstance;
+        size_t mMatCount = 0;
     };
 
 }

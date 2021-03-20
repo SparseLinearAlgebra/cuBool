@@ -1,3 +1,8 @@
+"""
+cuBool library state wrapper.
+Provides global access points and initialization logic for library API.
+"""
+
 import os
 import ctypes
 import pathlib

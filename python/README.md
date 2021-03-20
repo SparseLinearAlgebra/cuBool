@@ -13,8 +13,11 @@ work with sparse matrices written on the NVIDIA CUDA platform. The primary
 goal of the library is implementation, testing and profiling algorithms for
 solving *formal-language-constrained problems*, such as *context-free* 
 and *regular* path queries with various semantics for graph databases.
-The library provides C-compatible API, written in the GraphBLAS style,
-as well as python high-level wrapper with automated resources management and fancy syntax sugar.
+The library provides C-compatible API, written in the GraphBLAS style.
+
+**The library** is shipped with python package **pycubool** - wrapper for
+cuBool library C API. This package exports library features and primitives 
+in high-level format with automated resources management and fancy syntax sugar.
 
 **The primary library primitive** is a sparse boolean matrix. The library provides 
 the most popular operations for matrix manipulation, such as construction from
@@ -24,7 +27,17 @@ element-wise addition, matrix-matrix multiplication and Kronecker product.
 **As a fallback** library provides sequential backend for mentioned above operations
 for computations on CPU side only. This backend is selected automatically
 if Cuda compatible device is not presented in the system. This can be quite handy for 
-prototyping algorithms on a local computer for later running on a powerful server.  
+prototyping algorithms on a local computer for later running on a powerful server.   
+
+## Sparse Boolean Matrix Features
+
+- Matrix creation (empty, from data, with random data)
+- Matrix-matrix operations (multiplication, element-wise addition, kronecker product)
+- Matrix operations (equality, transpose, reduce to vector, extract sub-matrix)
+- Matrix data extraction (as lists, as list of pairs)
+- Matrix syntax sugar (pretty string printing, slicing, iterating through non-zero values)
+- IO (import/export matrix from/to `.mtx` file format)
+- Debug (matrix string debug markers, logging)
 
 ## Example
 
@@ -59,6 +72,18 @@ def transitive_closure(a: pycubool.Matrix):
 - Egor Orachyov (Github: [EgorOrachyov](https://github.com/EgorOrachyov))
 - Pavel Alimov (Github : [Krekep](https://github.com/Krekep))
 - Semyon Grigorev (Github: [gsvgit](https://github.com/gsvgit))
+
+## Citation 
+
+```ignorelang
+@online{cuBool,
+  author = {Orachyov, Egor and Alimov, Pavel and Grigorev, Semyon},
+  title = {cuBool: sparse Boolean linear algebra for Nvidia Cuda},
+  year = 2020,
+  url = {https://github.com/JetBrains-Research/cuBool},
+  note = {Version Alpha}
+}
+```
 
 ## License
 

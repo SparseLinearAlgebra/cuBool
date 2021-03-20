@@ -52,7 +52,6 @@ namespace cubool {
         void deallocateOnGpu(void* ptr) const;
 
         void syncHostDevice() const;
-        void printDeviceCapabilities() const;
 
         static bool isCudaDeviceSupported();
         static void queryDeviceCapabilities(cuBool_DeviceCaps& deviceCaps);
@@ -62,6 +61,8 @@ namespace cubool {
 
     private:
         MemType mMemoryType = Default;
+        mutable size_t mHostAllocCount = 0;
+        mutable size_t mDeviceAllocCount = 0;
 
         static volatile Instance* gInstance;
     };

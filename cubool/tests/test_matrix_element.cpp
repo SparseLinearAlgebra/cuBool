@@ -98,6 +98,28 @@ void testMatrixAppendElement(cuBool_Index m, cuBool_Index n, float density) {
     ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
 }
 
+void testMatrixPostAppendElement(cuBool_Index m, cuBool_Index n, float density) {
+    cuBool_Matrix matrix = nullptr;
+    cuBool_Matrix duplicated = nullptr;
+
+    testing::Matrix tmatrix = std::move(testing::Matrix::generateSparse(m, n, density));
+
+    ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
+
+    for (size_t i = 0; i < tmatrix.nvals; i++) {
+        ASSERT_EQ(cuBool_Matrix_SetElement(matrix, tmatrix.rowsIndex[i], tmatrix.colsIndex[i]), CUBOOL_STATUS_SUCCESS);
+    }
+
+    ASSERT_EQ(cuBool_Matrix_Duplicate(matrix, &duplicated), CUBOOL_STATUS_SUCCESS);
+
+    // Compare test matrix and library one
+    ASSERT_TRUE(tmatrix.areEqual(duplicated));
+
+    // Remember to release resources
+    ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Free(duplicated), CUBOOL_STATUS_SUCCESS);
+}
+
 void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
@@ -107,6 +129,10 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
 
     for (size_t i = 0; i < 10; i++) {
         testMatrixAppendElement(m, n, 0.001f + (0.05f) * ((float) i));
+    }
+
+    for (size_t i = 0; i < 10; i++) {
+        testMatrixPostAppendElement(m, n, 0.001f + (0.05f) * ((float) i));
     }
 
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
@@ -135,7 +161,6 @@ TEST(cuBool_Matrix, SetElementSmallFallback) {
 TEST(cuBool_Matrix, SetElementMediumFallback) {
     cuBool_Index m = 500, n = 1000;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
-
 }
 
 TEST(cuBool_Matrix, SetElementLargeFallback) {

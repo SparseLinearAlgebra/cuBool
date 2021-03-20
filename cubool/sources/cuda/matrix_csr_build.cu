@@ -22,45 +22,25 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <sequential/sq_backend.hpp>
-#include <sequential/sq_matrix.hpp>
-#include <core/library.hpp>
-#include <io/logger.hpp>
-#include <cassert>
-
+#include <cuda/matrix_csr.hpp>
+#include <utils/csr_utils.hpp>
 
 namespace cubool {
 
-    void SqBackend::initialize(hints initHints) {
-        // No special actions
-    }
-
-    void SqBackend::finalize() {
-        assert(mMatCount == 0);
-
-        if (mMatCount > 0) {
-            LogStream stream(*Library::getLogger());
-            stream << Logger::Level::Error
-                   << "Lost some (" << mMatCount << ") matrix objects" << LogStream::cmt;
+    void MatrixCsr::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
+        if (nvals == 0) {
+            mMatrixImpl.zero_dim();  // no content, empty matrix
+            return;
         }
-    }
 
-    bool SqBackend::isInitialized() const {
-        return true;
-    }
+        // Build csr structure and store on cpu side
+        std::vector<index> rowOffsets;
+        std::vector<index> colIndices;
 
-    MatrixBase *SqBackend::createMatrix(size_t nrows, size_t ncols) {
-        mMatCount++;
-        return new SqMatrix(nrows, ncols);
-    }
+        CsrUtils::buildFromData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices, isSorted, noDuplicates);
 
-    void SqBackend::releaseMatrix(MatrixBase *matrixBase) {
-        mMatCount--;
-        delete matrixBase;
-    }
-
-    void SqBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
-        caps.cudaSupported = false;
+        // Move actual data to the matrix implementation
+        this->transferToDevice(rowOffsets, colIndices);
     }
 
 }

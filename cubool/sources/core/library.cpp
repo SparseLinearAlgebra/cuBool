@@ -179,7 +179,7 @@ namespace cubool {
             logDeviceInfo();
     }
 
-    MatrixBase *Library::createMatrix(size_t nrows, size_t ncols) {
+    Matrix *Library::createMatrix(size_t nrows, size_t ncols) {
         CHECK_RAISE_ERROR(nrows > 0, InvalidArgument, "Cannot create matrix with zero dimension");
         CHECK_RAISE_ERROR(ncols > 0, InvalidArgument, "Cannot create matrix with zero dimension");
 
@@ -193,17 +193,16 @@ namespace cubool {
         return m;
     }
 
-    void Library::releaseMatrix(MatrixBase *matrixBase) {
+    void Library::releaseMatrix(Matrix *matrix) {
         if (mRelaxedRelease && !mBackend) return;
 
-        auto m = (Matrix*)(matrixBase);
-        CHECK_RAISE_ERROR(mAllocated.find(m) != mAllocated.end(), InvalidArgument, "No such matrix was allocated");
+        CHECK_RAISE_ERROR(mAllocated.find(matrix) != mAllocated.end(), InvalidArgument, "No such matrix was allocated");
 
         LogStream stream(*getLogger());
-        stream << Logger::Level::Info << "Release Matrix " << m->getDebugMarker() << LogStream::cmt;
+        stream << Logger::Level::Info << "Release Matrix " << matrix->getDebugMarker() << LogStream::cmt;
 
-        mAllocated.erase(m);
-        delete m;
+        mAllocated.erase(matrix);
+        delete matrix;
     }
 
     void Library::handleError(const std::exception& error) {

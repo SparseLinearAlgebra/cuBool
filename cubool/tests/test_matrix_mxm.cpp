@@ -130,7 +130,6 @@ TEST(cuBool_Matrix, MultiplySmallFallback) {
 TEST(cuBool_Matrix, MultiplyMediumFallback) {
     cuBool_Index m = 500, t = 1000, n = 800;
     testRun(m, t, n, CUBOOL_HINT_CPU_BACKEND);
-
 }
 
 TEST(cuBool_Matrix, MultiplyLargeFallback) {

@@ -29,12 +29,9 @@
 #include <sequential/sq_ewiseadd.hpp>
 #include <sequential/sq_spgemm.hpp>
 #include <sequential/sq_reduce.hpp>
-#include <utils/exclusive_scan.hpp>
+#include <utils/csr_utils.hpp>
 #include <core/error.hpp>
-#include <algorithm>
 #include <cassert>
-
-#include <iostream>
 
 namespace cubool {
 
@@ -55,110 +52,20 @@ namespace cubool {
         auto ncols = mData.ncols;
 
         mData.rowOffsets.clear();
-        mData.rowOffsets.resize(nrows + 1, 0);
         mData.colIndices.clear();
-        mData.colIndices.resize(nvals);
 
-        if (nvals == 0)
-            return;
-
-        assert(rows);
-        assert(cols);
-
-        for (size_t k = 0; k < nvals; k++) {
-            auto i = rows[k];
-            auto j = cols[k];
-
-            CHECK_RAISE_ERROR(i < nrows, InvalidArgument, "Index out of matrix bound");
-            CHECK_RAISE_ERROR(j < ncols, InvalidArgument, "Index out of matrix bound");
-
-            mData.rowOffsets[i]++;
-        }
-
-        exclusive_scan(mData.rowOffsets.begin(), mData.rowOffsets.end(), 0);
-
-        std::vector<size_t> writeOffset(nrows, 0);
-        for (size_t k = 0; k < nvals; k++) {
-            auto i = rows[k];
-            auto j = cols[k];
-
-            mData.colIndices[mData.rowOffsets[i] + writeOffset[i]] = j;
-            writeOffset[i] += 1;
-        }
-
-        if (!isSorted) {
-            for (size_t i = 0; i < getNrows(); i++) {
-                auto begin = mData.rowOffsets[i];
-                auto end = mData.rowOffsets[i + 1];
-
-                // Sort col values within row
-                std::sort(mData.colIndices.begin() + begin, mData.colIndices.begin() + end, [](const index& a, const index& b) {
-                    return a < b;
-                });
-            }
-        }
-
-        if (!noDuplicates) {
-            size_t unique = 0;
-            for (size_t i = 0; i < getNrows(); i++) {
-                index prev = std::numeric_limits<index>::max();
-
-                for (size_t k = mData.rowOffsets[i]; k < mData.rowOffsets[i + 1]; k++) {
-                    if (prev != mData.colIndices[k]) {
-                        unique += 1;
-                    }
-
-                    prev = mData.colIndices[k];
-                }
-            }
-
-            std::vector<index> rowOffsetsReduced;
-            rowOffsetsReduced.resize(getNrows() + 1, 0);
-
-            std::vector<index> colIndicesReduced;
-            colIndicesReduced.reserve(unique);
-
-            for (size_t i = 0; i < getNrows(); i++) {
-                index prev = std::numeric_limits<index>::max();
-
-                for (size_t k = mData.rowOffsets[i]; k < mData.rowOffsets[i + 1]; k++) {
-                    if (prev != mData.colIndices[k]) {
-                        rowOffsetsReduced[i] += 1;
-                        colIndicesReduced.push_back(mData.colIndices[k]);
-                    }
-
-                    prev = mData.colIndices[k];
-                }
-            }
-
-            // Exclusive scan to eval rows offsets
-            exclusive_scan(rowOffsetsReduced.begin(), rowOffsetsReduced.end(), 0);
-
-            // Now result in respective place
-            std::swap(mData.rowOffsets, rowOffsetsReduced);
-            std::swap(mData.colIndices, colIndicesReduced);
-        }
+        // Call utility to build csr row offsets and column indices and store in mData vectors
+        CsrUtils::buildFromData(nrows, ncols, rows, cols, nvals, mData.rowOffsets, mData.colIndices, isSorted, noDuplicates);
 
         mData.nvals = mData.colIndices.size();
     }
 
     void SqMatrix::extract(index *rows, index *cols, size_t &nvals) {
         assert(nvals >= getNvals());
-
         nvals = getNvals();
 
         if (nvals > 0) {
-            assert(rows);
-            assert(cols);
-
-            size_t id = 0;
-            for (index i = 0; i < getNrows(); i++) {
-                for (index k = mData.rowOffsets[i]; k < mData.rowOffsets[i + 1]; k++) {
-                    rows[id] = i;
-                    cols[id] = mData.colIndices[k];
-                    id += 1;
-                }
-            }
+            CsrUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, mData.rowOffsets, mData.colIndices);
         }
     }
 
@@ -169,11 +76,8 @@ namespace cubool {
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
         CHECK_RAISE_ERROR(other != this, InvalidArgument, "Matrices must differ");
 
-        auto M = this->getNrows();
-        auto N = this->getNcols();
-
-        assert(M == nrows);
-        assert(N == ncols);
+        assert(this->getNrows() == nrows);
+        assert(this->getNcols() == ncols);
 
         this->allocateStorage();
         other->allocateStorage();
@@ -186,11 +90,8 @@ namespace cubool {
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
         CHECK_RAISE_ERROR(other != this, InvalidArgument, "Matrices must differ");
 
-        auto M = other->getNrows();
-        auto N = other->getNcols();
-
-        assert(M == this->getNrows());
-        assert(N == this->getNcols());
+        assert(other->getNrows() == this->getNrows());
+        assert(other->getNcols() == this->getNcols());
 
         this->mData = other->mData;
     }
@@ -200,11 +101,8 @@ namespace cubool {
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        auto M = other->getNrows();
-        auto N = other->getNcols();
-
-        assert(N == this->getNrows());
-        assert(M == this->getNcols());
+        assert(other->getNcols() == this->getNrows());
+        assert(other->getNrows() == this->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();
@@ -222,11 +120,8 @@ namespace cubool {
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        index M = other->getNrows();
-        index N = 1;
-
-        assert(M == this->getNrows());
-        assert(N == this->getNcols());
+        assert(other->getNrows() == this->getNrows());
+        assert(1 == this->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();
@@ -246,12 +141,9 @@ namespace cubool {
         CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
         CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        auto M = a->getNrows();
-        auto N = b->getNcols();
-
         assert(a->getNcols() == b->getNrows());
-        assert(M == this->getNrows());
-        assert(N == this->getNcols());
+        assert(a->getNrows() == this->getNrows());
+        assert(b->getNcols() == this->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();
@@ -282,13 +174,8 @@ namespace cubool {
         CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
         CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        auto M = a->getNrows();
-        auto N = a->getNcols();
-        auto K = b->getNrows();
-        auto T = b->getNcols();
-
-        assert(M * K == this->getNrows());
-        assert(N * T == this->getNcols());
+        assert(a->getNrows() * b->getNrows() == this->getNrows());
+        assert(a->getNcols() * b->getNcols() == this->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();
@@ -308,13 +195,10 @@ namespace cubool {
         CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
         CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        auto M = a->getNrows();
-        auto N = a->getNcols();
-
-        assert(M == this->getNrows());
-        assert(N == this->getNcols());
-        assert(M == b->getNrows());
-        assert(N == b->getNcols());
+        assert(a->getNrows() == this->getNrows());
+        assert(a->getNcols() == this->getNcols());
+        assert(a->getNrows() == b->getNrows());
+        assert(a->getNcols() == b->getNcols());
 
         CsrData out;
         out.nrows = this->getNrows();
