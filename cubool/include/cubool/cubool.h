@@ -32,7 +32,11 @@
 #endif
 
 // Preserve C names in shared library
-#define CUBOOL_EXPORT extern "C"
+#ifdef __cplusplus
+    #define CUBOOL_EXPORT extern "C"
+#else
+    #define CUBOOL_EXPORT
+#endif
 
 // Exporting/importing symbols for Microsoft Visual Studio
 #if (_MSC_VER && !__INTEL_COMPILER)

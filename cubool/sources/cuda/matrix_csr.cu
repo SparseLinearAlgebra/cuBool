@@ -24,7 +24,6 @@
 
 #include <cuda/matrix_csr.hpp>
 #include <core/error.hpp>
-#include <utils/exclusive_scan.hpp>
 #include <utils/timer.hpp>
 #include <algorithm>
 
@@ -96,7 +95,7 @@ namespace cubool {
         return mMatrixImpl.m_vals == 0;
     }
 
-    void MatrixCsr::transferToDevice(const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) {
+    void MatrixCsr::transferToDevice(const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) const {
         // Create device buffers and copy data from the cpu side
         thrust::device_vector<index, DeviceAlloc<index>> rowsDeviceVec(rowOffsets.size());
         thrust::device_vector<index, DeviceAlloc<index>> colsDeviceVec(colIndices.size());
