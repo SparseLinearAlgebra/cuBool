@@ -5,10 +5,11 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 project(cubool LANGUAGES CXX)
 
 # Exposed to the user build options
-option(CUBOOL_WITH_CUDA       "Build library with cuda backend (default)" ON)
-option(CUBOOL_WITH_SEQUENTIAL "Build library with cpu sequential backend (fallback)" ON)
-option(CUBOOL_WITH_NAIVE      "Build library with naive and naive-shared dense matrix multiplication" OFF)
-option(CUBOOL_BUILD_TESTS     "Build project unit-tests with gtest" ON)
+option(CUBOOL_WITH_CUDA          "Build library with cuda backend (default)" ON)
+option(CUBOOL_WITH_SEQUENTIAL    "Build library with cpu sequential backend (fallback)" ON)
+option(CUBOOL_WITH_NAIVE         "Build library with naive and naive-shared dense matrix multiplication" OFF)
+option(CUBOOL_BUILD_TESTS        "Build project unit-tests with gtest" ON)
+option(CUBOOL_COPY_TO_PY_PACKAGE "Copy compiled shared library into python package folder (for package use purposes)" ON)
 
 set(CUBOOL_VERSION_MAJOR 1)
 set(CUBOOL_VERSION_MINOR 0)
