@@ -2,7 +2,7 @@
 # Add this file as sub-directory to your project to use library functionality
 
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
-project(cubool LANGUAGES CXX)
+project(cuBool LANGUAGES CXX)
 
 # Exposed to the user build options
 option(CUBOOL_WITH_CUDA          "Build library with cuda backend (default)" ON)

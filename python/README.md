@@ -29,7 +29,7 @@ for computations on CPU side only. This backend is selected automatically
 if Cuda compatible device is not presented in the system. This can be quite handy for 
 prototyping algorithms on a local computer for later running on a powerful server.   
 
-## Sparse Boolean Matrix Features
+## Features
 
 - Matrix creation (empty, from data, with random data)
 - Matrix-matrix operations (multiplication, element-wise addition, kronecker product)
@@ -37,35 +37,131 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - Matrix data extraction (as lists, as list of pairs)
 - Matrix syntax sugar (pretty string printing, slicing, iterating through non-zero values)
 - IO (import/export matrix from/to `.mtx` file format)
+- GraphViz (export single matrix or set of matrices as a graph with custom color and label settings)
 - Debug (matrix string debug markers, logging)
 
-## Example
+## Simple example
 
-The following Python code snippet demonstrates, how the **pycubool**
-wrapper can be used to compute the transitive closure problem for the
-directed graph within python environment:
+Create sparse matrices, compute matrix-matrix product and print the result to the output:
 
 ```python
-import pycubool
+import pycubool as cb
 
-def transitive_closure(a: pycubool.Matrix):
-    """
-    Evaluates transitive closure for the provided
-    adjacency matrix of the graph.
+a = cb.Matrix.empty(shape=(2, 3))
+a[0, 0] = True
+a[1, 2] = True
 
-    :param a: Adjacency matrix of the graph
-    :return: The transitive closure adjacency matrix
-    """
+b = cb.Matrix.empty(shape=(3, 4))
+b[0, 1] = True
+b[0, 2] = True
+b[1, 3] = True
+b[2, 1] = True
 
-    t = a.dup()                           # Duplicate matrix where to store result
-    total = 0                             # Current number of values
-
-    while total != t.nvals:
-        total = t.nvals
-        t.mxm(t, out=t, accumulate=True)  # t += t * t
-
-    return t
+print(a, b, a.mxm(b), sep="\n")
 ```
+
+Output:
+
+```
+        0   1   2 
+  0 |   1   .   . |   0
+  1 |   .   .   1 |   1
+        0   1   2 
+
+        0   1   2   3 
+  0 |   .   1   1   . |   0
+  1 |   .   .   .   1 |   1
+  2 |   .   1   .   . |   2
+        0   1   2   3 
+
+        0   1   2   3 
+  0 |   .   1   1   . |   0
+  1 |   .   1   .   . |   1
+        0   1   2   3
+```
+
+## Transitive closure example
+
+Compute the transitive closure problem for the directed graph and print the result:
+
+```python
+import pycubool as cb
+
+a = cb.Matrix.empty(shape=(4, 4))
+a[0, 1] = True
+a[1, 2] = True
+a[2, 0] = True
+a[2, 3] = True
+a[3, 2] = True
+
+t = a.dup()                             # Duplicate matrix where to store result
+total = 0                               # Current number of values
+
+while total != t.nvals:
+    total = t.nvals
+    t.mxm(t, out=t, accumulate=True)    # t += t * t
+
+print(a, t, sep="\n")
+```
+
+Output:
+
+```
+        0   1   2   3 
+  0 |   .   1   .   . |   0
+  1 |   .   .   1   . |   1
+  2 |   1   .   .   1 |   2
+  3 |   .   .   1   . |   3
+        0   1   2   3 
+
+        0   1   2   3 
+  0 |   1   1   1   1 |   0
+  1 |   1   1   1   1 |   1
+  2 |   1   1   1   1 |   2
+  3 |   1   1   1   1 |   3
+        0   1   2   3
+```
+
+## GraphViz example
+
+Generate GraphViz graph script for a graph stored as a set of adjacency matrices:
+
+```python
+import pycubool as cb
+
+name = "Test"                           # Displayed graph name   
+shape = (4, 4)                          # Adjacency matrices shape
+colors = {"a": "red", "b": "green"}     # Colors per label
+
+a = cb.Matrix.empty(shape=shape)        # Edges labeled as 'a'
+a[0, 1] = True
+a[1, 2] = True
+a[2, 0] = True
+
+b = cb.Matrix.empty(shape=shape)        # Edges labeled as 'b'
+b[2, 3] = True
+b[3, 2] = True
+
+print(cb.matrices_to_gviz(matrices={"a": a, "b": b}, graph_name=name, edge_colors=colors))
+```
+
+Output:
+
+```
+digraph G {
+    graph [label=Test];
+    node [color=black];
+    0 -> 1 [label=a,color=red];
+    1 -> 2 [label=a,color=red];
+    2 -> 0 [label=a,color=red];
+    2 -> 3 [label=b,color=green];
+    3 -> 2 [label=b,color=green];
+}
+```
+
+As an image:
+
+![gviz-example](https://raw.githubusercontent.com/JetBrains-Research/cuBool/master/docs/pictures/gviz_example.png)
 
 ## Contributors
 

@@ -45,27 +45,48 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [X] Device capabilities query
 - [X] IO matrix loading from mtx file
 - [X] IO matrix saving into mtx file
-- [ ] IO matrix saving into gviz format
+- [X] IO matrix saving into gviz format
 - [X] IO user-defined file logging
 - [X] Wrapper for Python API
 - [X] Wrapper syntax sugar
 - [X] Tests for Python wrapper
 - [X] Pip package
-- [ ] Code examples
+- [X] Code examples
 - [ ] User guide
 - [X] Unit Tests collection
-- [ ] Publish built artifacts and shared libs
+- [X] Publish built artifacts and shared libs
 - [ ] Publish stable source code archives
+
+## Simple example
+
+Create sparse matrices, compute matrix-matrix product and print the result to the output:
+
+```python
+import pycubool as cb
+
+a = cb.Matrix.empty(shape=(2, 3))
+a[0, 0] = True
+a[1, 2] = True
+
+b = cb.Matrix.empty(shape=(3, 4))
+b[0, 1] = True
+b[0, 2] = True
+b[1, 3] = True
+b[2, 1] = True
+
+print(a, b, a.mxm(b), sep="\n")
+```
 
 ## Installation
 
-If you are running OS **Ubuntu 20.04** or higher you can download the official
+If you are running **Linux based** OS (tested on Ubuntu 20.04) you can download the official
 PyPI **pycubool** python package, which includes compiled library source code
 with Cuda and Sequential computations support. Installation process 
 requires only `python3` to be installed on your machine. Python can be installed 
 as follows [link](https://phoenixnap.com/kb/how-to-install-python-3-ubuntu).
 
 If all requirements are satisfied, run the following command to install PyPI package:
+
 ```shell script
 $ python3 -m pip install -i https://test.pypi.org/simple/ pycubool
 ``` 
@@ -77,11 +98,11 @@ These steps are required if you want to build library for your specific platform
 
 ### Requirements
 
-- Linux Ubuntu (tested on 20.04)
+- Linux based (tested on Ubuntu 20.04)
 - CMake Version 3.15 or higher
-- CUDA Compatible GPU device
+- CUDA Compatible GPU device (to run Cuda computations)
 - GCC Compiler 
-- NVIDIA CUDA toolkit
+- NVIDIA CUDA toolkit (to build Cuda backend)
 - Python 3 (for `pycubool` library)
 - Git (to get source code)
 
@@ -237,9 +258,9 @@ wrapper can be used to compute the same transitive closure problem for the
 directed graph within python environment:
 
 ```python
-import pycubool
+import pycubool as cb
 
-def transitive_closure(a: pycubool.Matrix):
+def transitive_closure(a: cb.Matrix):
     """
     Evaluates transitive closure for the provided
     adjacency matrix of the graph.
@@ -296,7 +317,7 @@ cuBool
 ## Citation 
 
 ```ignorelang
-@online{cuBool,
+@MISC{cuBool,
   author = {Orachyov, Egor and Alimov, Pavel and Grigorev, Semyon},
   title = {cuBool: sparse Boolean linear algebra for Nvidia Cuda},
   year = 2020,
