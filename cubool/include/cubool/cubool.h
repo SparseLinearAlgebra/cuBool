@@ -290,6 +290,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_SetMarker(
  * @note Pass null marker if you want to retrieve only the required marker buffer size.
  * @note After the function call the actual size of the marker is stored in the size variable.
  *
+ * @note size is set to the actual marker length plus null terminator symbol.
+ *       For marker "matrix" size variable will be set to 7.
+ *
  * @param matrix Matrix handle to perform operation on
  * @param[in,out] marker Where to store null-terminated UTF-8 encoded marker string.
  * @param[in,out] size Size of the provided buffer in bytes to save marker string.
