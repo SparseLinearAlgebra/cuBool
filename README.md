@@ -5,7 +5,7 @@
 [![JB Research](https://jb.gg/badges/research-flat-square.svg)](https://research.jetbrains.org/)
 [![Ubuntu](https://github.com/JetBrains-Research/cuBool/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/JetBrains-Research/cuBool/actions)
 [![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE)
-[![Package](https://img.shields.io/badge/pypi%20package-alpha-%233776ab)](https://test.pypi.org/project/pycubool/)
+[![Package](https://img.shields.io/badge/pypi%20package-1.0.0-%233776ab)](https://pypi.org/project/pycubool/)
 
 **cuBool** is a linear Boolean algebra library primitives and operations for 
 work with sparse matrices written on the NVIDIA CUDA platform. The primary 
@@ -27,6 +27,8 @@ element-wise addition, matrix-matrix multiplication and Kronecker product.
 for computations on CPU side only. This backend is selected automatically
 if Cuda compatible device is not presented in the system. This can be quite handy for 
 prototyping algorithms on a local computer for later running on a powerful server.  
+
+**PyPI package web page** is following [link](https://pypi.org/project/pycubool/).
 
 ### Features
 
@@ -52,10 +54,10 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - [X] Tests for Python wrapper
 - [X] Pip package
 - [X] Code examples
-- [ ] User guide
+- [X] User guide
 - [X] Unit Tests collection
 - [X] Publish built artifacts and shared libs
-- [ ] Publish stable source code archives
+- [X] Publish stable source code archives
 
 ## Simple example
 

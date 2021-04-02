@@ -60,26 +60,6 @@ b[2, 1] = True
 print(a, b, a.mxm(b), sep="\n")
 ```
 
-Output:
-
-```
-        0   1   2 
-  0 |   1   .   . |   0
-  1 |   .   .   1 |   1
-        0   1   2 
-
-        0   1   2   3 
-  0 |   .   1   1   . |   0
-  1 |   .   .   .   1 |   1
-  2 |   .   1   .   . |   2
-        0   1   2   3 
-
-        0   1   2   3 
-  0 |   .   1   1   . |   0
-  1 |   .   1   .   . |   1
-        0   1   2   3
-```
-
 ## Transitive closure example
 
 Compute the transitive closure problem for the directed graph and print the result:
@@ -102,24 +82,6 @@ while total != t.nvals:
     t.mxm(t, out=t, accumulate=True)    # t += t * t
 
 print(a, t, sep="\n")
-```
-
-Output:
-
-```
-        0   1   2   3 
-  0 |   .   1   .   . |   0
-  1 |   .   .   1   . |   1
-  2 |   1   .   .   1 |   2
-  3 |   .   .   1   . |   3
-        0   1   2   3 
-
-        0   1   2   3 
-  0 |   1   1   1   1 |   0
-  1 |   1   1   1   1 |   1
-  2 |   1   1   1   1 |   2
-  3 |   1   1   1   1 |   3
-        0   1   2   3
 ```
 
 ## GraphViz example
@@ -145,21 +107,7 @@ b[3, 2] = True
 print(cb.matrices_to_gviz(matrices={"a": a, "b": b}, graph_name=name, edge_colors=colors))
 ```
 
-Output:
-
-```
-digraph G {
-    graph [label=Test];
-    node [color=black];
-    0 -> 1 [label=a,color=red];
-    1 -> 2 [label=a,color=red];
-    2 -> 0 [label=a,color=red];
-    2 -> 3 [label=b,color=green];
-    3 -> 2 [label=b,color=green];
-}
-```
-
-As an image:
+Script can be rendered by any [gviz tool](https://dreampuf.github.io/GraphvizOnline/) online and the result can be following:
 
 ![gviz-example](https://raw.githubusercontent.com/JetBrains-Research/cuBool/master/docs/pictures/gviz_example.png)
 

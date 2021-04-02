@@ -10,7 +10,7 @@ with open(HERE / "README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pycubool",
-    version="0.0.1",
+    version="1.0.0",
     author="Egor Orachyov",
     author_email="egororachyov@gmail.com",
     license="MIT",
@@ -23,7 +23,7 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/JetBrains-Research/cuBool/issues"
     },
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
         "Programming Language :: C++",
         "License :: OSI Approved :: MIT License",
