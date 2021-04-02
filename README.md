@@ -90,7 +90,7 @@ as follows [link](https://phoenixnap.com/kb/how-to-install-python-3-ubuntu).
 If all requirements are satisfied, run the following command to install PyPI package:
 
 ```shell script
-$ python3 -m pip install -i https://test.pypi.org/simple/ pycubool
+$ python3 -m pip install pycubool
 ``` 
 
 ## Getting Started
