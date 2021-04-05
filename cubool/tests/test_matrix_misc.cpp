@@ -23,6 +23,7 @@
 /**********************************************************************************/
 
 #include <testing/testing.hpp>
+#include <cstring>
 
 TEST(cuBool_Matrix, Duplicate) {
     cuBool_Matrix matrix = nullptr, duplicated = nullptr;
@@ -96,6 +97,57 @@ TEST(cuBool_Matrix, ExtractPairs) {
     ASSERT_EQ(nvals, tmatrix.nvals);
     ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(cuBool_Matrix, Marker) {
+    cuBool_Matrix matrix = nullptr;
+    cuBool_Index m, n;
+
+    m = n = 100;
+
+    const cuBool_Index BUFFER_SIZE = 100;
+    const char* marker = "Test Matrix Marker";
+    cuBool_Index size = 0;
+    char buffer[BUFFER_SIZE];
+
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_SetMarker(matrix, marker), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Marker(matrix, nullptr, &size), CUBOOL_STATUS_SUCCESS);
+    ASSERT_LE(size, BUFFER_SIZE);
+    ASSERT_EQ(cuBool_Matrix_Marker(matrix, buffer, &size), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+
+    ASSERT_EQ(std::strlen(buffer), size - 1);
+    ASSERT_LE(std::strcmp(marker, buffer), 0);
+
+    std::cout << "Source marker: " << marker << std::endl;
+    std::cout << "Returned marker: " << buffer << std::endl;
+}
+
+TEST(cuBool_Matrix, MarkerShort) {
+    cuBool_Matrix matrix = nullptr;
+    cuBool_Index m, n;
+
+    m = n = 100;
+
+    const cuBool_Index BUFFER_SIZE = 10;
+    const char* marker = "Test Matrix Marker";
+    cuBool_Index size = BUFFER_SIZE;
+    char buffer[BUFFER_SIZE];
+
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_SetMarker(matrix, marker), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Marker(matrix, buffer, &size), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Free(matrix), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+
+    ASSERT_GE(std::strcmp(marker, buffer), 0);
+
+    std::cout << "Source marker: " << marker << std::endl;
+    std::cout << "Returned marker: " << buffer << std::endl;
 }
 
 CUBOOL_GTEST_MAIN

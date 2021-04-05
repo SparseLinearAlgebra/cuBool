@@ -24,6 +24,7 @@
 
 #include <cuBool_Common.hpp>
 #include <cstring>
+#include <cmath>
 
 cuBool_Status cuBool_Matrix_Marker(
         cuBool_Matrix matrix,
@@ -37,11 +38,15 @@ cuBool_Status cuBool_Matrix_Marker(
 
         auto m = (cubool::Matrix*) matrix;
         auto actualSize = m->getDebugMarkerSizeWithNullT();
+        auto toCopy = std::min(*size, actualSize);
 
-        if (marker != nullptr && *size > 0) {
+        if (marker != nullptr && toCopy > 0) {
+            // C str (with \0)
             const auto* text = m->getDebugMarker();
-            std::memcpy(marker, text, *size);
-            marker[*size - 1] = '\0';
+            std::memcpy(marker, text, toCopy);
+
+            // Explicitly terminate (for case size < actualSize)
+            marker[toCopy - 1] = '\0';
         }
 
         *size = actualSize;

@@ -32,7 +32,11 @@
 #endif
 
 // Preserve C names in shared library
-#define CUBOOL_EXPORT extern "C"
+#ifdef __cplusplus
+    #define CUBOOL_EXPORT extern "C"
+#else
+    #define CUBOOL_EXPORT
+#endif
 
 // Exporting/importing symbols for Microsoft Visual Studio
 #if (_MSC_VER && !__INTEL_COMPILER)
@@ -285,6 +289,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_SetMarker(
  *
  * @note Pass null marker if you want to retrieve only the required marker buffer size.
  * @note After the function call the actual size of the marker is stored in the size variable.
+ *
+ * @note size is set to the actual marker length plus null terminator symbol.
+ *       For marker "matrix" size variable will be set to 7.
  *
  * @param matrix Matrix handle to perform operation on
  * @param[in,out] marker Where to store null-terminated UTF-8 encoded marker string.
