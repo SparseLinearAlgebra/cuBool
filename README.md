@@ -32,32 +32,16 @@ prototyping algorithms on a local computer for later running on a powerful serve
 
 ### Features
 
-- [X] Library C interface
-- [X] Library setup
-- [X] Sparse matrix
-- [X] Sparse matrix multiplication
-- [X] Sparse matrix element-wise addition
-- [X] Sparse matrix kronecker
-- [X] Sparse matrix transpose
-- [X] Sparse matrix extract sub-matrix
-- [X] Sparse matrix reduce
-- [X] Sparse matrix slicing
-- [X] Matrix cached filling
-- [X] Sequential fallback backend for CPU
-- [X] Device capabilities query
-- [X] IO matrix loading from mtx file
-- [X] IO matrix saving into mtx file
-- [X] IO matrix saving into gviz format
-- [X] IO user-defined file logging
-- [X] Wrapper for Python API
-- [X] Wrapper syntax sugar
-- [X] Tests for Python wrapper
-- [X] Pip package
-- [X] Code examples
-- [X] User guide
-- [X] Unit Tests collection
-- [X] Publish built artifacts and shared libs
-- [X] Publish stable source code archives
+- Matrix creation (empty, from data, with random data)
+- Matrix-matrix operations (multiplication, element-wise addition, kronecker product)
+- Matrix operations (equality, transpose, reduce to vector, extract sub-matrix)
+- Matrix data extraction (as lists, as list of pairs)
+- Matrix syntax sugar (pretty string printing, slicing, iterating through non-zero values)
+- IO (import/export matrix from/to `.mtx` file format)
+- GraphViz (export single matrix or set of matrices as a graph with custom color and label settings)
+- Debug (matrix string debug markers, logging)
+- C API for performance-critical computations
+- Python package for every-day tasks
 
 ## Simple example
 
@@ -100,7 +84,7 @@ These steps are required if you want to build library for your specific platform
 
 ### Requirements
 
-- Linux based (tested on Ubuntu 20.04)
+- Linux based OS (tested on Ubuntu 20.04)
 - CMake Version 3.15 or higher
 - CUDA Compatible GPU device (to run Cuda computations)
 - GCC Compiler 
