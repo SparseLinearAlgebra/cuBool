@@ -8,7 +8,7 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-a = cb.Matrix.empty(shape=(3, 3))
+a = cb.Matrix.empty(shape=(3, 3))               # Adjacency matrices shape
 a[1, 0] = True
 a[1, 1] = True
 a[1, 2] = True
@@ -21,4 +21,4 @@ a[0, 1] = True
 result = a.reduce()
 
 print("Result of matrix reduce operation:")
-print(result, sep='\n')
+print(result, sep='\n')                         # Matrix output

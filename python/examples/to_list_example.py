@@ -26,7 +26,7 @@ print(f"Rows - {list(rows)}")
 print(f"Columns - {list(columns)}")
 
 #
-# Extract values as one list - pair of indices (i, j)
+# Extract values as one list - pair of indices (i, j) - list of edges
 #
 
 values = a.to_list()

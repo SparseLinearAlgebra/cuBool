@@ -1,5 +1,5 @@
 """
-Example of matrix transposition 
+Example of start the logger
 """
 
 import pycubool as cb
@@ -21,7 +21,7 @@ a[1, 1] = True
 a[1, 2] = True
 a[0, 0] = True
 
-a.set_marker("log-example")                         # Set debug marker for "a" matrix
+a.set_marker("a-log-example-matrix")                # Set debug marker for "a" matrix
 
 b = cb.Matrix.empty(shape=(3, 3))
 b[0, 1] = True

@@ -24,7 +24,7 @@ a[0, 1] = True
 result = a.extract_matrix(1, 1, (2, 2))
 
 print("First result of extract sub-matrix operation:")
-print(result, sep='\n')
+print(result, sep='\n')                 # Matrix output
 
 
 #
@@ -34,4 +34,4 @@ print(result, sep='\n')
 result = a.extract_matrix(0, 0, (3, 3))
 
 print("Second result of extract sub-matrix operation:")
-print(result, sep='\n')
+print(result, sep='\n')                 # Matrix output

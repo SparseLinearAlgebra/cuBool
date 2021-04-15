@@ -22,4 +22,4 @@ a[0, 1] = True
 
 print("Filled cell indices (row, column):")
 for i, j in a:
-    print(f"({i}, {j})", end="; ")
+    print(f"({i}, {j})", end=" ")

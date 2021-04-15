@@ -22,7 +22,7 @@ b[1, 2] = True
 #  Matrix element-wise addition
 #
 
-result = a.ewiseadd(b)  # result = a + b
+result = a.ewiseadd(b)                  # result = a + b
 
-print("Matrix element-wise addition")
+print("Matrix element-wise addition:")
 print(result, sep='\n')                 # Matrix output
