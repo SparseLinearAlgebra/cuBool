@@ -44,7 +44,6 @@ class Wrapper:
 
     def __init__(self):
         self.loaded_dll = None
-        self.lib_object_name = "libcubool.so"
 
         try:
             # Try from config if present
@@ -52,19 +51,28 @@ class Wrapper:
         except KeyError:
             # Fallback to package directory
             source_path = pathlib.Path(__file__).resolve()
-            self.load_path = str(source_path.parent / self.lib_object_name)
+            self.load_path = Wrapper.__get_lib_path(source_path.parent)
+
+        assert self.load_path
 
         self.loaded_dll = bridge.load_and_configure(self.load_path)
-        self._setup_library()
+        self.__setup_library()
 
     def __del__(self):
-        self._release_library()
-        pass
+        self.__release_library()
 
-    def _setup_library(self):
+    def __setup_library(self):
         status = self.loaded_dll.cuBool_Initialize(ctypes.c_uint(bridge.get_init_hints(False, False)))
         bridge.check(status)
 
-    def _release_library(self):
+    def __release_library(self):
         status = self.loaded_dll.cuBool_Finalize()
         bridge.check(status)
+
+    @classmethod
+    def __get_lib_path(cls, prefix):
+        for entry in os.listdir(prefix):
+            if "cubool" in str(entry):
+                return prefix / entry
+
+        return None
