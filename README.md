@@ -30,7 +30,7 @@ prototyping algorithms on a local computer for later running on a powerful serve
 
 **PyPI package web page** is following [link](https://pypi.org/project/pycubool/).
 
-### Features
+### Features Summary
 
 - Matrix creation (empty, from data, with random data)
 - Matrix-matrix operations (multiplication, element-wise addition, kronecker product)
@@ -43,7 +43,13 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - C API for performance-critical computations
 - Python package for every-day tasks
 
-## Simple example
+### Platforms
+
+- Linux based OS (tested on Ubuntu 20.04)
+- Windows (coming soon)
+- macOS (coming soon)
+
+### Simple example
 
 Create sparse matrices, compute matrix-matrix product and print the result to the output:
 
@@ -308,7 +314,7 @@ cuBool
   title = {cuBool: sparse Boolean linear algebra for Nvidia Cuda},
   year = 2020,
   url = {https://github.com/JetBrains-Research/cuBool},
-  note = {Version Alpha}
+  note = {Version 1.0.0}
 }
 ```
 
