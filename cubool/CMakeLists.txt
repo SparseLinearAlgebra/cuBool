@@ -13,6 +13,24 @@ if (CUBOOL_WITH_CUDA)
     message(STATUS "Add CUDA backend for GPGPU computations")
 endif()
 
+set(TARGET_NAME cubool)
+set(TARGET_FILE_NAME)
+set(DEFINES_LIST)
+
+# Platform checks
+if(APPLE)
+    list(APPEND DEFINES_LIST CUBOOL_PLATFORM_MACOS)
+    set(TARGET_FILE_NAME "lib${TARGET_NAME}.dylib")
+elseif(UNIX)
+    list(APPEND DEFINES_LIST CUBOOL_PLATFORM_LINUX)
+    set(TARGET_FILE_NAME "lib${TARGET_NAME}.so")
+elseif(WIN32)
+    list(APPEND DEFINES_LIST CUBOOL_PLATFORM_WIN)
+    set(TARGET_FILE_NAME "${TARGET_NAME}.dll")
+else()
+    message(FATAL_ERROR "Platform not specified")
+endif()
+
 # Library sources
 set(CUBOOL_SOURCES
     sources/core/config.hpp
@@ -27,8 +45,7 @@ set(CUBOOL_SOURCES
     sources/utils/exclusive_scan.hpp
     sources/utils/timer.hpp
     sources/utils/csr_utils.cpp
-    sources/utils/csr_utils.hpp
-        )
+    sources/utils/csr_utils.hpp)
 
 set(CUBOOL_C_API_SOURCES
     include/cubool/cubool.h
@@ -139,6 +156,11 @@ target_compile_options(cubool PRIVATE $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUA
 set_target_properties(cubool PROPERTIES CXX_STANDARD 17)
 set_target_properties(cubool PROPERTIES CXX_STANDARD_REQUIRED ON)
 
+# Platform defines
+foreach(DEFINE ${DEFINES_LIST})
+    target_compile_definitions(cubool PUBLIC ${DEFINE})
+endforeach()
+
 # Cuda specifics
 if (CUBOOL_WITH_CUDA)
     set_target_properties(cubool PROPERTIES CUDA_STANDARD 14)
@@ -171,8 +193,7 @@ endif()
 
 # Copy cubool library after build if allowed
 if (CUBOOL_COPY_TO_PY_PACKAGE)
-    # todo: Different platforms has specific naming conventions
-    set(LIBRARY_FILE_NAME "libcubool.so")
+    set(LIBRARY_FILE_NAME ${TARGET_FILE_NAME})
 
     add_custom_command(
         TARGET cubool POST_BUILD
@@ -180,5 +201,5 @@ if (CUBOOL_COPY_TO_PY_PACKAGE)
         copy
         "${CMAKE_BINARY_DIR}/cubool/${LIBRARY_FILE_NAME}"
         "${CMAKE_BINARY_DIR}/python/pycubool"
-        COMMENT "Copy cubool compiled lib into python folder")
+        COMMENT "Copy ${LIBRARY_FILE_NAME} compiled lib into python folder")
 endif()
