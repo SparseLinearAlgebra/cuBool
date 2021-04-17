@@ -69,7 +69,7 @@ b[2, 1] = True
 print(a, b, a.mxm(b), sep="\n")
 ```
 
-## Installation
+### Installation
 
 If you are running **Linux based** OS (tested on Ubuntu 20.04) you can download the official
 PyPI **pycubool** python package, which includes compiled library source code
