@@ -32,6 +32,10 @@ prototyping algorithms on a local computer for later running on a powerful serve
 
 ### Features summary
 
+- C API for performance-critical computations
+- Python package for every-day tasks
+- Cuda backend for computations
+- Cpu backend for computations
 - Matrix creation (empty, from data, with random data)
 - Matrix-matrix operations (multiplication, element-wise addition, kronecker product)
 - Matrix operations (equality, transpose, reduce to vector, extract sub-matrix)
@@ -40,8 +44,6 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - IO (import/export matrix from/to `.mtx` file format)
 - GraphViz (export single matrix or set of matrices as a graph with custom color and label settings)
 - Debug (matrix string debug markers, logging)
-- C API for performance-critical computations
-- Python package for every-day tasks
 
 ### Platforms
 
@@ -207,7 +209,7 @@ $ cd tests
 $ python3 -m unittest discover -v
 ```
 
-**Note:** after the build process, the shared library object `libcubool.so` will be placed
+**Note:** after the build process, the shared library object will be placed
 inside the build directory in the folder with python wrapper `python/pycubool/`. 
 So, the wrapper will be able to automatically locate required lib file.
 
@@ -282,6 +284,8 @@ cuBool
 │   ├── include - library public C API 
 │   ├── sources - source-code for implementation
 │   │   ├── core - library core and state management
+│   │   ├── io - logging and i/o stuff
+│   │   ├── utils - auxilary class shared among modules
 │   │   ├── backend - common interfaces
 │   │   ├── cuda - cuda backend
 │   │   └── sequential - fallback cpu backend

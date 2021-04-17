@@ -1,3 +1,4 @@
+import os
 import pathlib
 import setuptools
 
@@ -7,6 +8,15 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 with open(HERE / "README.md", "r", encoding="utf-8") as fh:
     README = fh.read()
+
+# Find lib name
+SOURCE_PATH = pathlib.Path(__file__).resolve()
+LIB_NAME = None
+
+for entry in os.listdir(SOURCE_PATH.parent / "pycubool"):
+    if "cubool" in str(entry):
+        LIB_NAME = entry
+        break
 
 setuptools.setup(
     name="pycubool",
@@ -49,7 +59,7 @@ setuptools.setup(
     ],
     packages=["pycubool"],
     package_dir={'': '.'},
-    package_data={'': ['libcubool.so']},
+    package_data={'': [LIB_NAME]},
     python_requires=">=3.0",
     include_package_data=True
 )
