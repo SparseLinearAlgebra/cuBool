@@ -30,7 +30,7 @@ prototyping algorithms on a local computer for later running on a powerful serve
 
 **PyPI package web page** is following [link](https://pypi.org/project/pycubool/).
 
-### Features Summary
+### Features summary
 
 - Matrix creation (empty, from data, with random data)
 - Matrix-matrix operations (multiplication, element-wise addition, kronecker product)
@@ -83,7 +83,7 @@ If all requirements are satisfied, run the following command to install PyPI pac
 $ python3 -m pip install pycubool
 ``` 
 
-## Getting Started
+## Getting started
 
 This section gives instructions to build the library from sources.
 These steps are required if you want to build library for your specific platform with custom build settings.
@@ -98,7 +98,7 @@ These steps are required if you want to build library for your specific platform
 - Python 3 (for `pycubool` library)
 - Git (to get source code)
 
-### Cuda & Compiler Setup
+### Cuda & compiler setup
 
 > Skip this section if you want to build library with only sequential backend
 > without cuda backend support.
@@ -192,7 +192,7 @@ By default, the following cmake options will be automatically enabled:
 > $ export CUDAHOSTCXX=/usr/bin/g++-8
 > ```
 
-### Python Wrapper
+### Python wrapper
 
 **Export** env variable `PYTHONPATH="/build_dir_path/python/:$PYTHONPATH"` if
 you want to use `pycubool` without installation into default python packages dir.

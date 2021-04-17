@@ -49,7 +49,6 @@ namespace cubool {
              */
             MatrixType operator()(const MatrixType& a) {
                 auto nrows = a.m_rows;
-                auto ncols = a.m_cols;
 
                 ContainerType<IndexType> rowIndex(nrows + 1);
                 ContainerType<IndexType> tmpRowIndex(nrows + 1);
@@ -77,7 +76,8 @@ namespace cubool {
                 assert(rowIndex.size() == nrows + 1);
                 assert(rowIndex.back() == resultNvals);
 
-                return MatrixType(std::move(colIndex), std::move(rowIndex), nrows, ncols, resultNvals);
+                // Returned matrix has M x 1 dim (so ncols always 1)
+                return MatrixType(std::move(colIndex), std::move(rowIndex), nrows, 1, resultNvals);
             }
         };
 
