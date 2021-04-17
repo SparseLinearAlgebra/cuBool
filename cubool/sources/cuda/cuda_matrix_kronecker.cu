@@ -22,25 +22,41 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/matrix_csr.hpp>
-#include <utils/csr_utils.hpp>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/kernels/spkron.cuh>
 
 namespace cubool {
 
-    void MatrixCsr::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
-        if (nvals == 0) {
-            mMatrixImpl.zero_dim();  // no content, empty matrix
+    void CudaMatrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+        auto a = dynamic_cast<const CudaMatrix*>(&aBase);
+        auto b = dynamic_cast<const CudaMatrix*>(&bBase);
+
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+
+        index M = a->getNrows();
+        index N = a->getNcols();
+        index K = b->getNrows();
+        index T = b->getNcols();
+
+        assert(this->getNrows() == M * K);
+        assert(this->getNcols() == N * T);
+
+        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
+            // Result will be empty
+            mMatrixImpl.zero_dim();
             return;
         }
 
-        // Build csr structure and store on cpu side
-        std::vector<index> rowOffsets;
-        std::vector<index> colIndices;
+        // Prepare matrices
+        a->resizeStorageToDim();
+        b->resizeStorageToDim();
 
-        CsrUtils::buildFromData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices, isSorted, noDuplicates);
+        kernels::SpKronFunctor<index, DeviceAlloc<index>> spKronFunctor;
+        auto result = spKronFunctor(a->mMatrixImpl, b->mMatrixImpl);
 
-        // Move actual data to the matrix implementation
-        this->transferToDevice(rowOffsets, colIndices);
+        // Assign result to this
+        this->mMatrixImpl = std::move(result);
     }
 
 }

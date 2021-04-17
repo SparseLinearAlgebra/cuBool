@@ -22,45 +22,33 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/matrix_csr.hpp>
-#include <nsparse/spgemm.h>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/kernels/spsubmatrix.cuh>
 
 namespace cubool {
 
-    void MatrixCsr::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) {
-        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
-        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
+    void CudaMatrix::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
+                                      bool checkTime) {
+        auto other = dynamic_cast<const CudaMatrix*>(&otherBase);
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belong to matrix csr class");
+        CHECK_RAISE_ERROR(other != this, InvalidArgument, "Matrices must differ");
 
-        index M = a->getNrows();
-        index N = b->getNcols();
+        assert(nrows > 0);
+        assert(ncols > 0);
 
-        assert(this->getNrows() == M);
-        assert(this->getNcols() == N);
+        assert(other->getNrows() >= i + nrows);
+        assert(other->getNcols() >= j + ncols);
 
-        if (!accumulate) {
-            // Clear all values
-            this->clearAndResizeStorageToDim();
-        }
+        assert(this->getNrows() == nrows);
+        assert(this->getNcols() == ncols);
 
-        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
-            // Return empty matrix
-            return;
-        }
+        other->resizeStorageToDim();
 
-        // Ensure csr proper csr format even if empty
-        a->resizeStorageToDim();
-        b->resizeStorageToDim();
-        this->resizeStorageToDim();
+        kernels::SpSubMatrix<index, details::DeviceAllocator<index>> spSubMatrix;
+        auto result = spSubMatrix(other->mMatrixImpl, i, j, nrows, ncols);
 
-        // Call backend r = c + a * b implementation, as C this is passed
-        nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
-        auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
-
-        // Assign result to this
-        this->mMatrixImpl = std::move(result);
+        mMatrixImpl = std::move(result);
     }
 
 }

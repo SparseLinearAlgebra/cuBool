@@ -22,46 +22,51 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/matrix_csr.hpp>
-#include <cuda/kernels/spmerge.cuh>
+#ifndef CUBOOL_CUDA_INSTANCE_HPP
+#define CUBOOL_CUDA_INSTANCE_HPP
+
+#include <core/config.hpp>
+#include <unordered_set>
 
 namespace cubool {
 
-    void MatrixCsr::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
-        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
-        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
+    /**
+     * Manages global state for various internal operations.
+     */
+    class CudaInstance {
+    public:
+        enum MemType {
+            Default,
+            Managed
+        };
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        explicit CudaInstance(bool useManagedMemory);
+        CudaInstance(const CudaInstance& other) = delete;
+        CudaInstance(CudaInstance&& other) noexcept = delete;
+        ~CudaInstance();
 
-        index M = this->getNrows();
-        index N = this->getNcols();
+        // For custom host & device allocators
+        void allocate(void* &ptr, size_t s) const;
+        void allocateOnGpu(void* &ptr, size_t s) const;
+        void deallocate(void* ptr) const;
+        void deallocateOnGpu(void* ptr) const;
 
-        assert(a->getNrows() == M);
-        assert(a->getNcols() == N);
+        void syncHostDevice() const;
 
-        assert(b->getNrows() == M);
-        assert(b->getNcols() == N);
+        static bool isCudaDeviceSupported();
+        static void queryDeviceCapabilities(cuBool_DeviceCaps& deviceCaps);
+        static CudaInstance& getInstanceRef();
+        static CudaInstance* getInstancePtr();
+        static bool isInstancePresent();
 
-        if (a->isMatrixEmpty()) {
-            this->clone(bBase);
-            return;
-        }
+    private:
+        MemType mMemoryType = Default;
+        mutable size_t mHostAllocCount = 0;
+        mutable size_t mDeviceAllocCount = 0;
 
-        if (b->isMatrixEmpty()) {
-            this->clone(aBase);
-            return;
-        }
-
-        // Ensure csr proper csr format even if empty
-        a->resizeStorageToDim();
-        b->resizeStorageToDim();
-
-        kernels::SpMergeFunctor<index, DeviceAlloc<index>> spMergeFunctor;
-        auto result = spMergeFunctor(a->mMatrixImpl, b->mMatrixImpl);
-
-        // Assign the actual impl result to this storage
-        this->mMatrixImpl = std::move(result);
-    }
+        static volatile CudaInstance* gInstance;
+    };
 
 }
+
+#endif //CUBOOL_CUDA_INSTANCE_HPP

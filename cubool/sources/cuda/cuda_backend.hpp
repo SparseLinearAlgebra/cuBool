@@ -26,7 +26,7 @@
 #define CUBOOL_CUDA_BACKEND_HPP
 
 #include <backend/backend_base.hpp>
-#include <cuda/instance.hpp>
+#include <cuda/cuda_instance.hpp>
 
 namespace cubool {
 
@@ -45,10 +45,10 @@ namespace cubool {
         void releaseMatrix(MatrixBase *matrixBase) override;
         void queryCapabilities(cuBool_DeviceCaps& caps) override;
 
-        Instance& getInstance();
+        CudaInstance& getInstance();
 
     private:
-        Instance* mInstance;
+        CudaInstance* mInstance;
         size_t mMatCount = 0;
     };
 

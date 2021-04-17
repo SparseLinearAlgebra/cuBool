@@ -22,41 +22,26 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/matrix_csr.hpp>
-#include <cuda/kernels/spkron.cuh>
+#include <cuda/cuda_matrix.hpp>
+#include <utils/csr_utils.hpp>
 
 namespace cubool {
 
-    void MatrixCsr::kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
-        auto a = dynamic_cast<const MatrixCsr*>(&aBase);
-        auto b = dynamic_cast<const MatrixCsr*>(&bBase);
+    void CudaMatrix::extract(index *rows, index *cols, size_t &nvals) {
+        assert(nvals >= getNvals());
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        // Set nvals to the exact number of nnz values
+        nvals = getNvals();
 
-        index M = a->getNrows();
-        index N = a->getNcols();
-        index K = b->getNrows();
-        index T = b->getNcols();
+        if (nvals > 0) {
+            // Copy data to the host
+            std::vector<index> rowOffsets;
+            std::vector<index> colIndices;
 
-        assert(this->getNrows() == M * K);
-        assert(this->getNcols() == N * T);
+            this->transferFromDevice(rowOffsets, colIndices);
 
-        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
-            // Result will be empty
-            mMatrixImpl.zero_dim();
-            return;
+            CsrUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices);
         }
-
-        // Prepare matrices
-        a->resizeStorageToDim();
-        b->resizeStorageToDim();
-
-        kernels::SpKronFunctor<index, DeviceAlloc<index>> spKronFunctor;
-        auto result = spKronFunctor(a->mMatrixImpl, b->mMatrixImpl);
-
-        // Assign result to this
-        this->mMatrixImpl = std::move(result);
     }
 
 }

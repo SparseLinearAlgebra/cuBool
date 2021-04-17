@@ -22,27 +22,45 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/matrix_csr.hpp>
-#include <cuda/kernels/spreduce.cuh>
+#include <cuda/cuda_matrix.hpp>
+#include <nsparse/spgemm.h>
 
 namespace cubool {
 
-    void MatrixCsr::reduce(const MatrixBase &otherBase, bool checkTime) {
-        auto other = dynamic_cast<const MatrixCsr*>(&otherBase);
+    void CudaMatrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) {
+        auto a = dynamic_cast<const CudaMatrix*>(&aBase);
+        auto b = dynamic_cast<const CudaMatrix*>(&bBase);
 
-        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
 
-        auto M = other->getNrows();
+        index M = a->getNrows();
+        index N = b->getNcols();
 
         assert(this->getNrows() == M);
-        assert(this->getNcols() == 1);
+        assert(this->getNcols() == N);
 
-        other->resizeStorageToDim();
+        if (!accumulate) {
+            // Clear all values
+            this->clearAndResizeStorageToDim();
+        }
 
-        kernels::SpReduceFunctor<index, details::DeviceAllocator<index>> spReduceFunctor;
-        auto result = spReduceFunctor(other->mMatrixImpl);
+        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
+            // Return empty matrix
+            return;
+        }
 
-        mMatrixImpl = std::move(result);
+        // Ensure csr proper csr format even if empty
+        a->resizeStorageToDim();
+        b->resizeStorageToDim();
+        this->resizeStorageToDim();
+
+        // Call backend r = c + a * b implementation, as C this is passed
+        nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
+        auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
+
+        // Assign result to this
+        this->mMatrixImpl = std::move(result);
     }
 
 }

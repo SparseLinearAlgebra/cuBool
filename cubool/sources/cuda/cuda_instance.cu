@@ -22,22 +22,22 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/instance.hpp>
-#include <cuda/matrix_dense.hpp>
+#include <cuda/cuda_instance.hpp>
 #include <core/error.hpp>
 #include <string>
+#include <cassert>
 #include <cstring>
 
 namespace cubool {
 
-    Instance::~Instance() {
+    CudaInstance::~CudaInstance() {
         assert(mHostAllocCount == 0);
         assert(mDeviceAllocCount == 0);
 
         gInstance = nullptr;
     }
 
-    void Instance::allocateOnGpu(void* &ptr, size_t size) const {
+    void CudaInstance::allocateOnGpu(void* &ptr, size_t size) const {
         cudaError error;
 
         switch (mMemoryType) {
@@ -59,7 +59,7 @@ namespace cubool {
         mDeviceAllocCount++;
     }
 
-    void Instance::deallocateOnGpu(void* ptr) const {
+    void CudaInstance::deallocateOnGpu(void* ptr) const {
         cudaError error = cudaFree(ptr);
 
         if (error != cudaSuccess) {
@@ -70,7 +70,7 @@ namespace cubool {
         mDeviceAllocCount--;
     }
 
-    void Instance::syncHostDevice() const {
+    void CudaInstance::syncHostDevice() const {
         cudaError error = cudaDeviceSynchronize();
 
         if (error != cudaSuccess) {
@@ -79,13 +79,13 @@ namespace cubool {
         }
     }
 
-    bool Instance::isCudaDeviceSupported() {
+    bool CudaInstance::isCudaDeviceSupported() {
         int device;
         cudaError error = cudaGetDevice(&device);
         return error == cudaSuccess;
     }
 
-    void Instance::queryDeviceCapabilities(cuBool_DeviceCaps &deviceCaps) {
+    void CudaInstance::queryDeviceCapabilities(cuBool_DeviceCaps &deviceCaps) {
         const unsigned long long KiB = 1024;
 
         int device;

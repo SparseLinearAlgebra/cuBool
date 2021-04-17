@@ -22,33 +22,28 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/matrix_csr.hpp>
-#include <cuda/kernels/spsubmatrix.cuh>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/kernels/sptranspose.cuh>
+#include <cuda/kernels/sptranspose2.cuh>
 
 namespace cubool {
 
-    void MatrixCsr::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
-                                     bool checkTime) {
-        auto other = dynamic_cast<const MatrixCsr*>(&otherBase);
+    void CudaMatrix::transpose(const MatrixBase &otherBase, bool checkTime) {
+        auto other = dynamic_cast<const CudaMatrix*>(&otherBase);
 
-        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belong to matrix csr class");
-        CHECK_RAISE_ERROR(other != this, InvalidArgument, "Matrices must differ");
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
 
-        assert(nrows > 0);
-        assert(ncols > 0);
+        size_t M = other->getNrows();
+        size_t N = other->getNcols();
 
-        assert(other->getNrows() >= i + nrows);
-        assert(other->getNcols() >= j + ncols);
+        assert(this->getNrows() == N);
+        assert(this->getNcols() == M);
 
-        assert(this->getNrows() == nrows);
-        assert(this->getNcols() == ncols);
+        kernels::SpTranspose2Functor<index, DeviceAlloc<index>> spTranspose2Functor;
+        auto result = spTranspose2Functor(other->mMatrixImpl);
 
-        other->resizeStorageToDim();
-
-        kernels::SpSubMatrix<index, details::DeviceAllocator<index>> spSubMatrix;
-        auto result = spSubMatrix(other->mMatrixImpl, i, j, nrows, ncols);
-
-        mMatrixImpl = std::move(result);
+        // Assign the actual impl result to this storage
+        this->mMatrixImpl = std::move(result);
     }
 
 }

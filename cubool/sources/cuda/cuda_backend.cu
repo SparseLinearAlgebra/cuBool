@@ -23,15 +23,15 @@
 /**********************************************************************************/
 
 #include <cuda/cuda_backend.hpp>
-#include <cuda/matrix_csr.hpp>
+#include <cuda/cuda_matrix.hpp>
 #include <core/library.hpp>
 #include <io/logger.hpp>
 
 namespace cubool {
 
     void CudaBackend::initialize(hints initHints) {
-        if (Instance::isCudaDeviceSupported()) {
-            mInstance = new Instance(initHints & CUBOOL_HINT_GPU_MEM_MANAGED);
+        if (CudaInstance::isCudaDeviceSupported()) {
+            mInstance = new CudaInstance(initHints & CUBOOL_HINT_GPU_MEM_MANAGED);
         }
 
         // No device. Cannot init this backend
@@ -58,7 +58,7 @@ namespace cubool {
 
     MatrixBase *CudaBackend::createMatrix(size_t nrows, size_t ncols) {
         mMatCount++;
-        return new MatrixCsr(nrows, ncols, getInstance());
+        return new CudaMatrix(nrows, ncols, getInstance());
     }
 
     void CudaBackend::releaseMatrix(MatrixBase *matrixBase) {
@@ -67,10 +67,10 @@ namespace cubool {
     }
 
     void CudaBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
-        Instance::queryDeviceCapabilities(caps);
+        CudaInstance::queryDeviceCapabilities(caps);
     }
 
-    Instance & CudaBackend::getInstance() {
+    CudaInstance & CudaBackend::getInstance() {
         return *mInstance;
     }
 

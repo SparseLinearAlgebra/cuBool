@@ -22,16 +22,16 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/instance.hpp>
+#include <cuda/cuda_instance.hpp>
 #include <core/error.hpp>
 #include <string>
 #include <cstdlib>
 
 namespace cubool {
 
-    volatile Instance* Instance::gInstance = nullptr;
+    volatile CudaInstance* CudaInstance::gInstance = nullptr;
 
-    Instance::Instance(bool useManagedMemory) {
+    CudaInstance::CudaInstance(bool useManagedMemory) {
         gInstance = this;
         mMemoryType = useManagedMemory? Managed: Default;
 
@@ -41,28 +41,28 @@ namespace cubool {
 #endif // CUBOOL_DEBUG
     }
 
-    void Instance::allocate(void* &ptr, size_t size) const {
+    void CudaInstance::allocate(void* &ptr, size_t size) const {
         ptr = malloc(size);
         CHECK_RAISE_ERROR(ptr != nullptr, MemOpFailed, "Failed to allocate memory on the CPU");
         mHostAllocCount++;
     }
 
-    void Instance::deallocate(void* ptr) const {
+    void CudaInstance::deallocate(void* ptr) const {
         CHECK_RAISE_ERROR(ptr != nullptr, InvalidArgument, "Passed null ptr to free");
         free(ptr);
         mHostAllocCount--;
     }
 
-    Instance& Instance::getInstanceRef() {
+    CudaInstance& CudaInstance::getInstanceRef() {
         CHECK_RAISE_ERROR(gInstance != nullptr, InvalidState, "No instance in the system");
-        return (Instance&) *gInstance;
+        return (CudaInstance&) *gInstance;
     }
 
-    Instance* Instance::getInstancePtr() {
-        return (Instance* ) gInstance;
+    CudaInstance* CudaInstance::getInstancePtr() {
+        return (CudaInstance* ) gInstance;
     }
 
-    bool Instance::isInstancePresent() {
+    bool CudaInstance::isInstancePresent() {
         return gInstance != nullptr;
     }
 

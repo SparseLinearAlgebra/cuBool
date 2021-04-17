@@ -22,65 +22,59 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_DENSE_HPP
-#define CUBOOL_MATRIX_DENSE_HPP
+#ifndef CUBOOL_CUDA_MATRIX_HPP
+#define CUBOOL_CUDA_MATRIX_HPP
 
-#include <cubool/cubool.h>
 #include <backend/matrix_base.hpp>
 #include <cuda/details/host_allocator.hpp>
 #include <cuda/details/device_allocator.cuh>
-#include <thrust/device_vector.h>
-#include <thrust/host_vector.h>
-#include <cinttypes>
-#include <vector>
+#include <nsparse/matrix.h>
 
 namespace cubool {
 
-    class MatrixDense final: public MatrixBase {
+    class CudaMatrix: public MatrixBase {
     public:
-        // How we actually pack this matrix in memory
-        // This info approached by kernels code
-        using PackType_t = uint32_t;
-        using Super = MatrixBase;
         template<typename T>
         using DeviceAlloc = details::DeviceAllocator<T>;
         template<typename T>
         using HostAlloc = details::HostAllocator<T>;
-        static const size_t BYTE_SIZE_IN_BITS = 8; // 8 bits per byte?
-        static const size_t PACK_TYPE_SIZE_BITS = sizeof(PackType_t) * BYTE_SIZE_IN_BITS;
+        using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
 
-        explicit MatrixDense(class Instance& instance);
-        MatrixDense(const MatrixDense& other) = delete;
-        MatrixDense(MatrixDense&& other) noexcept = delete;
-        ~MatrixDense() override = default;
+        explicit CudaMatrix(size_t nrows, size_t ncols, CudaInstance& instance);
+        ~CudaMatrix() override = default;
 
+        void setElement(index i, index j) override;
         void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) override;
-        void extract(index* rows, index* cols, size_t& nvals) override;
+        void extract(index* rows, index* cols, size_t &nvals) override;
+        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols, bool checkTime) override;
 
-        void clone(const MatrixBase& other) override;
+        void clone(const MatrixBase &other) override;
         void transpose(const MatrixBase &other, bool checkTime) override;
+        void reduce(const MatrixBase &other, bool checkTime) override;
 
-        void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) override;
-        void kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
-        void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
+        void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate, bool checkTime) override;
+        void kronecker(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
+        void eWiseAdd(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
 
-        index getNumRowsPacked() const { return mNumRowsPacked; }
-        index getNumColsPadded() const { return mNumColsPadded; }
-        thrust::device_vector<PackType_t, DeviceAlloc<PackType_t>>& getBuffer() { return mBuffer; }
-        const thrust::device_vector<PackType_t, DeviceAlloc<PackType_t>>& getBuffer() const { return mBuffer; }
-
-        static void getRowPackedIndex(index rowIndex, index &rowPackIdxMajor, index &rowPackIdxMinor);
-        static index getNumRowsPackedFromRows(index rows);
-        static index getNumColsPaddedFromCols(index cols);
+        index getNrows() const override;
+        index getNcols() const override;
+        index getNvals() const override;
 
     private:
-        void extractVector(std::vector<Pair, details::HostAllocator<Pair>> &vals) const;
+        void resizeStorageToDim() const;
+        void clearAndResizeStorageToDim() const;
+        bool isStorageEmpty() const;
+        bool isMatrixEmpty() const;
+        void transferToDevice(const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) const;
+        void transferFromDevice(std::vector<index> &rowOffsets, std::vector<index> &colIndices) const;
 
-        thrust::device_vector<PackType_t, DeviceAlloc<PackType_t>> mBuffer;
-        index mNumRowsPacked = 0;
-        index mNumColsPadded = 0;
+        // Uses nsparse csr matrix implementation as a backend
+        mutable MatrixImplType mMatrixImpl;
+
+        size_t mNrows = 0;
+        size_t mNcols = 0;
+        CudaInstance& mInstance;
     };
+};
 
-}
-
-#endif //CUBOOL_MATRIX_DENSE_HPP
+#endif //CUBOOL_CUDA_MATRIX_HPP

@@ -1,9 +1,9 @@
 # IDE files
-/.idea
+/**/.idea/
 
 # Build files
-/cmake-build-debug
-/build
+/**/cmake-build-debug/
+/**/*build*/
 
 # Python cache
 /**/__pycache__/

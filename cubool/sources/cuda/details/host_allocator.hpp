@@ -25,7 +25,7 @@
 #ifndef CUBOOL_HOST_ALLOCATOR_HPP
 #define CUBOOL_HOST_ALLOCATOR_HPP
 
-#include <cuda/instance.hpp>
+#include <cuda/cuda_instance.hpp>
 #include <core/error.hpp>
 
 namespace cubool {
@@ -44,7 +44,7 @@ namespace cubool {
             template <class U>
             struct rebind { typedef HostAllocator<U> other; };
 
-            explicit HostAllocator(): mInstanceRef(Instance::getInstanceRef()) {
+            explicit HostAllocator(): mInstanceRef(CudaInstance::getInstanceRef()) {
 
             }
 
@@ -80,7 +80,7 @@ namespace cubool {
             }
 
         private:
-            Instance& mInstanceRef;
+            CudaInstance& mInstanceRef;
         };
 
     }

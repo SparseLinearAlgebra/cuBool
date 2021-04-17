@@ -22,51 +22,25 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_INSTANCE_HPP
-#define CUBOOL_INSTANCE_HPP
-
-#include <core/config.hpp>
-#include <unordered_set>
+#include <cuda/cuda_matrix.hpp>
+#include <utils/csr_utils.hpp>
 
 namespace cubool {
 
-    /**
-     * Manages global state for various internal operations.
-     */
-    class Instance {
-    public:
-        enum MemType {
-            Default,
-            Managed
-        };
+    void CudaMatrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
+        if (nvals == 0) {
+            mMatrixImpl.zero_dim();  // no content, empty matrix
+            return;
+        }
 
-        explicit Instance(bool useManagedMemory);
-        Instance(const Instance& other) = delete;
-        Instance(Instance&& other) noexcept = delete;
-        ~Instance();
+        // Build csr structure and store on cpu side
+        std::vector<index> rowOffsets;
+        std::vector<index> colIndices;
 
-        // For custom host & device allocators
-        void allocate(void* &ptr, size_t s) const;
-        void allocateOnGpu(void* &ptr, size_t s) const;
-        void deallocate(void* ptr) const;
-        void deallocateOnGpu(void* ptr) const;
+        CsrUtils::buildFromData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices, isSorted, noDuplicates);
 
-        void syncHostDevice() const;
-
-        static bool isCudaDeviceSupported();
-        static void queryDeviceCapabilities(cuBool_DeviceCaps& deviceCaps);
-        static Instance& getInstanceRef();
-        static Instance* getInstancePtr();
-        static bool isInstancePresent();
-
-    private:
-        MemType mMemoryType = Default;
-        mutable size_t mHostAllocCount = 0;
-        mutable size_t mDeviceAllocCount = 0;
-
-        static volatile Instance* gInstance;
-    };
+        // Move actual data to the matrix implementation
+        this->transferToDevice(rowOffsets, colIndices);
+    }
 
 }
-
-#endif //CUBOOL_INSTANCE_HPP

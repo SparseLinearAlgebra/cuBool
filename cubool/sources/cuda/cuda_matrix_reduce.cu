@@ -22,28 +22,27 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/matrix_csr.hpp>
-#include <cuda/kernels/sptranspose.cuh>
-#include <cuda/kernels/sptranspose2.cuh>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/kernels/spreduce.cuh>
 
 namespace cubool {
 
-    void MatrixCsr::transpose(const MatrixBase &otherBase, bool checkTime) {
-        auto other = dynamic_cast<const MatrixCsr*>(&otherBase);
+    void CudaMatrix::reduce(const MatrixBase &otherBase, bool checkTime) {
+        auto other = dynamic_cast<const CudaMatrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
 
-        size_t M = other->getNrows();
-        size_t N = other->getNcols();
+        auto M = other->getNrows();
 
-        assert(this->getNrows() == N);
-        assert(this->getNcols() == M);
+        assert(this->getNrows() == M);
+        assert(this->getNcols() == 1);
 
-        kernels::SpTranspose2Functor<index, DeviceAlloc<index>> spTranspose2Functor;
-        auto result = spTranspose2Functor(other->mMatrixImpl);
+        other->resizeStorageToDim();
 
-        // Assign the actual impl result to this storage
-        this->mMatrixImpl = std::move(result);
+        kernels::SpReduceFunctor<index, details::DeviceAllocator<index>> spReduceFunctor;
+        auto result = spReduceFunctor(other->mMatrixImpl);
+
+        mMatrixImpl = std::move(result);
     }
 
 }

@@ -69,19 +69,19 @@ if (CUBOOL_WITH_CUDA)
     set(CUBOOL_CUDA_SOURCES
         sources/cuda/cuda_backend.hpp
         sources/cuda/cuda_backend.cu
-        sources/cuda/instance.hpp
-        sources/cuda/instance.cu
-        sources/cuda/instance.cpp
-        sources/cuda/matrix_csr.hpp
-        sources/cuda/matrix_csr.cu
-        sources/cuda/matrix_csr_build.cu
-        sources/cuda/matrix_csr_extract.cu
-        sources/cuda/matrix_csr_ewiseadd.cu
-        sources/cuda/matrix_csr_kronecker.cu
-        sources/cuda/matrix_csr_multiply.cu
-        sources/cuda/matrix_csr_transpose.cu
-        sources/cuda/matrix_csr_reduce.cu
-        sources/cuda/matrix_csr_extract_sub_matrix.cu
+        sources/cuda/cuda_instance.hpp
+        sources/cuda/cuda_instance.cu
+        sources/cuda/cuda_instance.cpp
+        sources/cuda/cuda_matrix.hpp
+        sources/cuda/cuda_matrix.cu
+        sources/cuda/cuda_matrix_build.cu
+        sources/cuda/cuda_matrix_extract.cu
+        sources/cuda/cuda_matrix_ewiseadd.cu
+        sources/cuda/cuda_matrix_kronecker.cu
+        sources/cuda/cuda_matrix_multiply.cu
+        sources/cuda/cuda_matrix_transpose.cu
+        sources/cuda/cuda_matrix_reduce.cu
+        sources/cuda/cuda_matrix_extract_sub_matrix.cu
         sources/cuda/kernels/slow_sort.cuh
         sources/cuda/kernels/bin_search.cuh
         sources/cuda/kernels/sptranspose.cuh
@@ -146,15 +146,6 @@ if (CUBOOL_WITH_CUDA)
     set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     # Settings: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
-    #target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-    #    # todo: fix this flag later -arch=sm_30 ?
-    #    # todo: can we omit arch flag?
-    #    -gencode=arch=compute_30,code=sm_30
-    #    -gencode=arch=compute_50,code=sm_50
-    #    -gencode=arch=compute_52,code=sm_52
-    #    -gencode=arch=compute_60,code=sm_60
-    #    -gencode=arch=compute_61,code=sm_61
-    #    -gencode=arch=compute_61,code=compute_61>)
 
     target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CUDA>: -use_fast_math -Xptxas -O2>)
 

@@ -22,26 +22,46 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/matrix_csr.hpp>
-#include <utils/csr_utils.hpp>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/kernels/spmerge.cuh>
 
 namespace cubool {
 
-    void MatrixCsr::extract(index *rows, index *cols, size_t &nvals) {
-        assert(nvals >= getNvals());
+    void CudaMatrix::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+        auto a = dynamic_cast<const CudaMatrix*>(&aBase);
+        auto b = dynamic_cast<const CudaMatrix*>(&bBase);
 
-        // Set nvals to the exact number of nnz values
-        nvals = getNvals();
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
 
-        if (nvals > 0) {
-            // Copy data to the host
-            std::vector<index> rowOffsets;
-            std::vector<index> colIndices;
+        index M = this->getNrows();
+        index N = this->getNcols();
 
-            this->transferFromDevice(rowOffsets, colIndices);
+        assert(a->getNrows() == M);
+        assert(a->getNcols() == N);
 
-            CsrUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices);
+        assert(b->getNrows() == M);
+        assert(b->getNcols() == N);
+
+        if (a->isMatrixEmpty()) {
+            this->clone(bBase);
+            return;
         }
+
+        if (b->isMatrixEmpty()) {
+            this->clone(aBase);
+            return;
+        }
+
+        // Ensure csr proper csr format even if empty
+        a->resizeStorageToDim();
+        b->resizeStorageToDim();
+
+        kernels::SpMergeFunctor<index, DeviceAlloc<index>> spMergeFunctor;
+        auto result = spMergeFunctor(a->mMatrixImpl, b->mMatrixImpl);
+
+        // Assign the actual impl result to this storage
+        this->mMatrixImpl = std::move(result);
     }
 
 }
