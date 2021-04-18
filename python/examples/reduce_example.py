@@ -8,7 +8,7 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-a = cb.Matrix.empty(shape=(3, 3))               # Adjacency matrices shape
+a = cb.Matrix.empty(shape=(3, 3))               # Creating an empty matrix of a given shape
 a[1, 0] = True
 a[1, 1] = True
 a[1, 2] = True
