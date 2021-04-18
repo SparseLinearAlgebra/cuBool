@@ -12,7 +12,7 @@ import pycubool as cb
 #  Creation an empty matrix of a known form
 #
 
-shape = (3, 3)                          # Adjacency matrices shape
+shape = (3, 3)                          # Matrix shape
 a = cb.Matrix.empty(shape=shape)        # Creating matrix
 
 #
@@ -31,7 +31,7 @@ print(a, sep='\n')                      # Matrix output
 # Creation an empty matrix of known shape and filling with given arrays of indices
 #
 
-shape = (3, 3)                          # Adjacency matrices shape
+shape = (3, 3)                          # Matrix shape
 a = cb.Matrix.empty(shape=shape)        # Creating matrix
 rows = [0, 1, 1, 1]                     # Row indices of values
 cols = [0, 0, 1, 2]                     # Column indices of values
@@ -44,7 +44,7 @@ print(a, sep='\n')                      # Matrix output
 # Creating a matrix via shape and arrays of significant element indices
 #
 
-shape = (3, 3)                          # Adjacency matrices shape
+shape = (3, 3)                          # Matrix shape
 rows = [0, 1, 1, 1]                     # Row indices of values
 cols = [0, 0, 1, 2]                     # Column indices of values
 a = cb.Matrix.from_lists(shape=shape, rows=rows, cols=cols)
@@ -57,7 +57,7 @@ print(a, sep='\n')                      # Matrix output
 # Generate random matrix by determining the shape and density - the percentage of non-zeros elements
 #
 
-shape = (4, 4)                          # Adjacency matrices shape
+shape = (4, 4)                          # Matrix shape
 density = 0.5                           # Matrix filling density
 a = cb.Matrix.generate(shape=shape, density=density)
 
@@ -110,12 +110,12 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-shape = (3, 3)                          # Adjacency matrices shape
+shape = (3, 3)                          # Matrix shape
 a = cb.Matrix.empty(shape=shape)
 a[0, 0] = True
 a[2, 0] = True
 
-shape = (3, 3)                          # Adjacency matrices shape
+shape = (3, 3)                          # Matrix shape
 b = cb.Matrix.empty(shape=shape)
 b[1, 1] = True
 b[1, 2] = True
@@ -151,13 +151,13 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-a = cb.Matrix.empty(shape=(3, 3))
+a = cb.Matrix.empty(shape=(3, 3))           # Creating an empty matrix of a given shape
 a[1, 0] = True
 a[1, 1] = True
 a[1, 2] = True
 a[0, 0] = True
 
-b = cb.Matrix.empty(shape=(3, 3))
+b = cb.Matrix.empty(shape=(3, 3))           # Creating an empty matrix of a given shape
 b[0, 1] = True
 b[0, 2] = True
 
@@ -165,7 +165,7 @@ b[0, 2] = True
 #  Simple matrix multiplication
 #
 
-result = a.mxm(b)  # result = a * b
+result = a.mxm(b)                           # result = a * b
 
 print("Simple matrix multiplication:")
 print(result, sep='\n')                     # Matrix output
@@ -209,7 +209,7 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-shape = (3, 3)                          # Adjacency matrices shape
+shape = (3, 3)                          # Matrix shape
 a = cb.Matrix.empty(shape=shape)
 a[1, 0] = True
 a[1, 1] = True
@@ -248,11 +248,11 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-a = cb.Matrix.empty(shape=(2, 2))           # Adjacency matrices shape
+a = cb.Matrix.empty(shape=(2, 2))           # Creating an empty matrix of a given shape
 a[0, 0] = True
 a[1, 0] = True
 
-b = cb.Matrix.empty(shape=(2, 2))           # Adjacency matrices shape
+b = cb.Matrix.empty(shape=(2, 2))           # Creating an empty matrix of a given shape
 b[1, 1] = True
 b[1, 0] = True
 
@@ -289,7 +289,7 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-a = cb.Matrix.empty(shape=(3, 3))               # Adjacency matrices shape
+a = cb.Matrix.empty(shape=(3, 3))               # Creating an empty matrix of a given shape
 a[1, 0] = True
 a[1, 1] = True
 a[1, 2] = True
@@ -327,7 +327,7 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-shape = (3, 3)                          # Adjacency matrices shape
+shape = (3, 3)                          # Matrix shape
 a = cb.Matrix.empty(shape=shape)
 a[1, 0] = True
 a[1, 1] = True
@@ -384,7 +384,7 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-a = cb.Matrix.empty(shape=(3, 3))           # Adjacency matrices shape
+a = cb.Matrix.empty(shape=(3, 3))           # Creating an empty matrix of a given shape
 a[1, 0] = True
 a[1, 1] = True
 a[1, 2] = True
@@ -422,7 +422,7 @@ import pycubool as cb
 #  Creation an empty matrix of a known form
 #
 
-shape = (3, 3)                          # Adjacency matrices shape
+shape = (3, 3)                          # Matrix shape
 a = cb.Matrix.empty(shape=shape)        # Creating matrix
 a[1, 0] = True
 a[1, 1] = True
@@ -467,7 +467,7 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-shape = (3, 3)                          # Adjacency matrices shape
+shape = (3, 3)                          # Matrix shape
 a = cb.Matrix.empty(shape=shape)
 a[1, 0] = True
 a[1, 1] = True
@@ -502,7 +502,7 @@ import pycubool as cb
 #  Matrix initialization
 #
 
-a = cb.Matrix.empty(shape=(3, 3))               # Adjacency matrices shape
+a = cb.Matrix.empty(shape=(3, 3))               # Creating an empty matrix of a given shape
 a[1, 0] = True
 a[1, 1] = True
 a[1, 2] = True
@@ -584,7 +584,7 @@ cb.setup_logger(path)
 #  Matrix initialization
 #
 
-a = cb.Matrix.empty(shape=(3, 3))
+a = cb.Matrix.empty(shape=(3, 3))                   # Creating an empty matrix of a given shape
 a[1, 0] = True
 a[1, 1] = True
 a[1, 2] = True
@@ -592,7 +592,7 @@ a[0, 0] = True
 
 a.set_marker("a-log-example-matrix")                # Set debug marker for "a" matrix
 
-b = cb.Matrix.empty(shape=(3, 3))
+b = cb.Matrix.empty(shape=(3, 3))                   # Creating an empty matrix of a given shape
 b[0, 1] = True
 b[0, 2] = True
 
