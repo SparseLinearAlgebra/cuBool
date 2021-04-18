@@ -1,5 +1,19 @@
 # Detailed Example
 
+The following set of code snippets demonstrates how to use
+the **pycubool** package primary primitives, operations and features.
+
+This set contains examples of:
+
+- Matrix manipulation
+- Matrix-matrix operations
+- Matrix operations
+- Debug features
+- IO features
+
+These examples require **pycubool** package to installed and the environment properly configured
+accordingly to the main [readme](https://github.com/JetBrains-Research/cuBool/blob/master/README.md) document of the project.
+
 ## Matrix creation example
 ```Python
 """

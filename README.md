@@ -85,6 +85,13 @@ If all requirements are satisfied, run the following command to install PyPI pac
 $ python3 -m pip install pycubool
 ``` 
 
+### Documentation
+
+The following links give a brief start guide for new users:
+
+- [C API example](https://github.com/JetBrains-Research/cuBool/blob/master/docs/examples/transitive_closure_cpp.md) - complete C++ application to compute transitive closure of an example graph
+- [Python API usage](https://github.com/JetBrains-Research/cuBool/blob/master/docs/examples/python_examples.md) - complete and detailed set of the python API usage examples for all lib features  
+
 ## Getting started
 
 This section gives instructions to build the library from sources.
@@ -106,7 +113,7 @@ These steps are required if you want to build library for your specific platform
 > without cuda backend support.
 
 Before the CUDA setup process, validate your system NVIDIA driver with `nvidia-smi`
-command. if it is need, install required driver via `ubuntu-drivers devices` and 
+command. Install required driver via `ubuntu-drivers devices` and 
 `apt install <driver>` commands respectively.
 
 The following commands grubs the required GCC compilers for the CC and CXX compiling 
@@ -294,6 +301,7 @@ cuBool
 ├── python - pycubool related sources
 │   ├── pycubool - cubool library wrapper for python (similar to pygraphblas)
 │   ├── tests - regression tests for python wrapper
+│   ├── examples - short script files with python api usage examples
 │   └── data - generate data for pycubool regression tests
 ├── deps - project dependencies
 │   ├── cub - cuda utility, required for nsparse
