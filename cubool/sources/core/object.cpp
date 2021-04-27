@@ -22,38 +22,26 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CUBOOL_COMMON_HPP
-#define CUBOOL_CUBOOL_COMMON_HPP
-
-#include <cubool/cubool.h>
-#include <core/config.hpp>
-#include <core/version.hpp>
+#include <core/object.hpp>
 #include <core/error.hpp>
-#include <core/library.hpp>
-#include <core/matrix.hpp>
-#include <core/vector.hpp>
-#include <cstring>
 
-// State validation
-#define CUBOOL_VALIDATE_LIBRARY                                                         \
-    cubool::Library::validate();
+namespace cubool {
 
-// Arguments validation
-#define CUBOOL_ARG_NOT_NULL(arg)                                                        \
-    CHECK_RAISE_ERROR(arg != nullptr, InvalidArgument, "Passed null argument")
+    void Object::setDebugMarker(const char *marker) {
+        CHECK_RAISE_ERROR(marker, InvalidArgument, "Null pointer marker string");
 
-#define CUBOOL_BEGIN_BODY                                                               \
-    try {
+        // Marker = "$marker (address)"
+        std::stringstream s;
+        s << marker << " (" << this << ")";
+        mMarker = s.str();
+    }
 
-#define CUBOOL_END_BODY }                                                               \
-    catch (const cubool::Error& err) {                                                  \
-         cubool::Library::handleError(err);                                             \
-         return err.getStatus();                                                        \
-    }                                                                                   \
-    catch (const std::exception& exc) {                                                 \
-         cubool::Library::handleError(exc);                                             \
-         return CUBOOL_STATUS_ERROR;                                                    \
-    }                                                                                   \
-    return cuBool_Status::CUBOOL_STATUS_SUCCESS;
+    const char* Object::getDebugMarker() const {
+        return mMarker.c_str();
+    }
 
-#endif //CUBOOL_CUBOOL_COMMON_HPP
+    index Object::getDebugMarkerSizeWithNullT() const {
+        return mMarker.length() + 1;
+    }
+
+}

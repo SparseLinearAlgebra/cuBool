@@ -22,52 +22,71 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <sequential/sq_backend.hpp>
-#include <sequential/sq_matrix.hpp>
-#include <core/library.hpp>
-#include <io/logger.hpp>
-#include <cassert>
+#include <core/vector.hpp>
+#include <core/error.hpp>
 
 namespace cubool {
 
-    void SqBackend::initialize(hints initHints) {
-        // No special actions
+    Vector::Vector(size_t nrows, BackendBase &backend) {
+        mHnd = backend.createVector(nrows);
+        mProvider = &backend;
+
+        // By default marker is the address of the vector
+        std::stringstream s;
+        s << this;
+        mMarker = s.str();
     }
 
-    void SqBackend::finalize() {
-        assert(mMatCount == 0);
-
-        if (mMatCount > 0) {
-            LogStream stream(*Library::getLogger());
-            stream << Logger::Level::Error
-                   << "Lost some (" << mMatCount << ") matrix objects" << LogStream::cmt;
+    Vector::~Vector() {
+        if (mHnd) {
+            mProvider->releaseVector(mHnd);
+            mHnd = nullptr;
+            mProvider = nullptr;
         }
     }
 
-    bool SqBackend::isInitialized() const {
-        return true;
+    void Vector::setElement(index i) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
     }
 
-    MatrixBase *SqBackend::createMatrix(size_t nrows, size_t ncols) {
-        mMatCount++;
-        return new SqMatrix(nrows, ncols);
+    void Vector::build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
     }
 
-    VectorBase* SqBackend::createVector(size_t nrows) {
-        RAISE_ERROR(NotImplemented, "Not implemented");
+    void Vector::extract(index *rows, size_t &nvals) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
     }
 
-    void SqBackend::releaseMatrix(MatrixBase *matrixBase) {
-        mMatCount--;
-        delete matrixBase;
+    void Vector::extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
     }
 
-    void SqBackend::releaseVector(VectorBase *vectorBase) {
-        RAISE_ERROR(NotImplemented, "Not implemented");
+    void Vector::clone(const VectorBase &otherBase) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
     }
 
-    void SqBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
-        caps.cudaSupported = false;
+    void Vector::reduce(index &result, bool checkTime) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
+
+    void Vector::reduceMatrix(const MatrixBase &matrix, bool transpose, bool checkTime) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
+
+    index Vector::getNrows() const {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
+
+    index Vector::getNvals() const {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
+
+    void Vector::releaseCache() const {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
+
+    void Vector::commitCache() const {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
     }
 
 }

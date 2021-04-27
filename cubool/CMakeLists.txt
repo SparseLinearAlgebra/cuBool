@@ -38,8 +38,12 @@ set(CUBOOL_SOURCES
     sources/core/error.hpp
     sources/core/library.cpp
     sources/core/library.hpp
+    sources/core/object.cpp
+    sources/core/object.hpp
     sources/core/matrix.cpp
     sources/core/matrix.hpp
+    sources/core/vector.cpp
+    sources/core/vector.hpp
     sources/io/logger.cpp
     sources/io/logger.hpp
     sources/utils/exclusive_scan.hpp
@@ -71,12 +75,25 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Matrix_Free.cpp
     sources/cuBool_Matrix_Reduce.cpp
     sources/cuBool_Matrix_EWiseAdd.cpp
+    sources/cuBool_Vector_New.cpp
+    sources/cuBool_Vector_Build.cpp
+    sources/cuBool_Vector_SetElement.cpp
+    sources/cuBool_Vector_SetMarker.cpp
+    sources/cuBool_Vector_Marker.cpp
+    sources/cuBool_Vector_ExtractValues.cpp
+    sources/cuBool_Vector_ExtractSubVector.cpp
+    sources/cuBool_Vector_Duplicate.cpp
+    sources/cuBool_Vector_Nvals.cpp
+    sources/cuBool_Vector_Nrows.cpp
+    sources/cuBool_Vector_Reduce.cpp
+    sources/cuBool_Vector_Free.cpp
     sources/cuBool_MxM.cpp
     sources/cuBool_Kronecker.cpp)
 
 set(CUBOOL_BACKEND_SOURCES
     sources/backend/backend_base.hpp
-    sources/backend/matrix_base.hpp)
+    sources/backend/matrix_base.hpp
+    sources/backend/vector_base.hpp)
 
 set(CUBOOL_CUDA_SOURCES)
 set(CUBOOL_SEQUENTIAL_SOURCES)
@@ -116,7 +133,9 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_backend.hpp
         sources/sequential/sq_matrix.cpp
         sources/sequential/sq_matrix.hpp
-        sources/sequential/sq_csr_data.hpp
+        sources/sequential/sq_vector.cpp
+        sources/sequential/sq_vector.hpp
+        sources/sequential/sq_data.hpp
         sources/sequential/sq_transpose.cpp
         sources/sequential/sq_transpose.hpp
         sources/sequential/sq_kronecker.cpp

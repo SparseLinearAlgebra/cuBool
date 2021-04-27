@@ -22,38 +22,46 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CUBOOL_COMMON_HPP
-#define CUBOOL_CUBOOL_COMMON_HPP
-
-#include <cubool/cubool.h>
-#include <core/config.hpp>
-#include <core/version.hpp>
+#include <sequential/sq_vector.hpp>
+#include <sequential/sq_matrix.hpp>
 #include <core/error.hpp>
-#include <core/library.hpp>
-#include <core/matrix.hpp>
-#include <core/vector.hpp>
-#include <cstring>
 
-// State validation
-#define CUBOOL_VALIDATE_LIBRARY                                                         \
-    cubool::Library::validate();
+namespace cubool {
 
-// Arguments validation
-#define CUBOOL_ARG_NOT_NULL(arg)                                                        \
-    CHECK_RAISE_ERROR(arg != nullptr, InvalidArgument, "Passed null argument")
+    void SqVector::setElement(index i) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
 
-#define CUBOOL_BEGIN_BODY                                                               \
-    try {
+    void SqVector::build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
 
-#define CUBOOL_END_BODY }                                                               \
-    catch (const cubool::Error& err) {                                                  \
-         cubool::Library::handleError(err);                                             \
-         return err.getStatus();                                                        \
-    }                                                                                   \
-    catch (const std::exception& exc) {                                                 \
-         cubool::Library::handleError(exc);                                             \
-         return CUBOOL_STATUS_ERROR;                                                    \
-    }                                                                                   \
-    return cuBool_Status::CUBOOL_STATUS_SUCCESS;
+    void SqVector::extract(index *rows, size_t &nvals) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
 
-#endif //CUBOOL_CUBOOL_COMMON_HPP
+    void SqVector::extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
+
+    void SqVector::clone(const VectorBase &otherBase) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
+
+    void SqVector::reduce(index &result, bool checkTime) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
+
+    void SqVector::reduceMatrix(const MatrixBase &matrix, bool transpose, bool checkTime) {
+        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    }
+
+    index SqVector::getNrows() const {
+        return 0;
+    }
+
+    index SqVector::getNvals() const {
+        return 0;
+    }
+
+}

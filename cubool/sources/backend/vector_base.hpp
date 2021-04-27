@@ -22,38 +22,35 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CUBOOL_COMMON_HPP
-#define CUBOOL_CUBOOL_COMMON_HPP
+#ifndef CUBOOL_VECTOR_BASE_HPP
+#define CUBOOL_VECTOR_BASE_HPP
 
-#include <cubool/cubool.h>
 #include <core/config.hpp>
-#include <core/version.hpp>
-#include <core/error.hpp>
-#include <core/library.hpp>
-#include <core/matrix.hpp>
-#include <core/vector.hpp>
-#include <cstring>
 
-// State validation
-#define CUBOOL_VALIDATE_LIBRARY                                                         \
-    cubool::Library::validate();
+namespace cubool {
 
-// Arguments validation
-#define CUBOOL_ARG_NOT_NULL(arg)                                                        \
-    CHECK_RAISE_ERROR(arg != nullptr, InvalidArgument, "Passed null argument")
+    /**
+     * Base class for any boolean vector type
+     */
+    class VectorBase {
+    public:
+        virtual ~VectorBase() = default;
 
-#define CUBOOL_BEGIN_BODY                                                               \
-    try {
+        virtual void setElement(index i) = 0;
+        virtual void build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) = 0;
+        virtual void extract(index* rows, size_t &nvals) = 0;
+        virtual void extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) = 0;
 
-#define CUBOOL_END_BODY }                                                               \
-    catch (const cubool::Error& err) {                                                  \
-         cubool::Library::handleError(err);                                             \
-         return err.getStatus();                                                        \
-    }                                                                                   \
-    catch (const std::exception& exc) {                                                 \
-         cubool::Library::handleError(exc);                                             \
-         return CUBOOL_STATUS_ERROR;                                                    \
-    }                                                                                   \
-    return cuBool_Status::CUBOOL_STATUS_SUCCESS;
+        virtual void clone(const VectorBase& otherBase) = 0;
+        virtual void reduce(index &result, bool checkTime) = 0;
+        virtual void reduceMatrix(const class MatrixBase& matrix, bool transpose, bool checkTime) = 0;
 
-#endif //CUBOOL_CUBOOL_COMMON_HPP
+        virtual index getNrows() const = 0;
+        virtual index getNvals() const = 0;
+
+        bool isZeroDim() const { return getNrows() == 0; }
+    };
+
+}
+
+#endif //CUBOOL_VECTOR_BASE_HPP

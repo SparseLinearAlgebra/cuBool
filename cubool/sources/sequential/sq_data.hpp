@@ -22,38 +22,30 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CUBOOL_COMMON_HPP
-#define CUBOOL_CUBOOL_COMMON_HPP
+#ifndef CUBOOL_SQ_DATA_HPP
+#define CUBOOL_SQ_DATA_HPP
 
-#include <cubool/cubool.h>
 #include <core/config.hpp>
-#include <core/version.hpp>
-#include <core/error.hpp>
-#include <core/library.hpp>
-#include <core/matrix.hpp>
-#include <core/vector.hpp>
-#include <cstring>
+#include <vector>
 
-// State validation
-#define CUBOOL_VALIDATE_LIBRARY                                                         \
-    cubool::Library::validate();
+namespace cubool {
 
-// Arguments validation
-#define CUBOOL_ARG_NOT_NULL(arg)                                                        \
-    CHECK_RAISE_ERROR(arg != nullptr, InvalidArgument, "Passed null argument")
+    class CsrData {
+    public:
+        std::vector<index> rowOffsets;
+        std::vector<index> colIndices;
+        index nrows = 0;
+        index ncols = 0;
+        index nvals = 0;
+    };
 
-#define CUBOOL_BEGIN_BODY                                                               \
-    try {
+    class VecData {
+    public:
+        std::vector<index> indices;
+        index nrows = 0;
+        index nvals = 0;
+    };
 
-#define CUBOOL_END_BODY }                                                               \
-    catch (const cubool::Error& err) {                                                  \
-         cubool::Library::handleError(err);                                             \
-         return err.getStatus();                                                        \
-    }                                                                                   \
-    catch (const std::exception& exc) {                                                 \
-         cubool::Library::handleError(exc);                                             \
-         return CUBOOL_STATUS_ERROR;                                                    \
-    }                                                                                   \
-    return cuBool_Status::CUBOOL_STATUS_SUCCESS;
+}
 
-#endif //CUBOOL_CUBOOL_COMMON_HPP
+#endif //CUBOOL_SQ_DATA_HPP

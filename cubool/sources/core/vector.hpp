@@ -22,38 +22,51 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CUBOOL_COMMON_HPP
-#define CUBOOL_CUBOOL_COMMON_HPP
+#ifndef CUBOOL_VECTOR_HPP
+#define CUBOOL_VECTOR_HPP
 
-#include <cubool/cubool.h>
 #include <core/config.hpp>
-#include <core/version.hpp>
-#include <core/error.hpp>
-#include <core/library.hpp>
-#include <core/matrix.hpp>
-#include <core/vector.hpp>
-#include <cstring>
+#include <core/object.hpp>
+#include <backend/vector_base.hpp>
+#include <backend/backend_base.hpp>
+#include <vector>
+#include <string>
 
-// State validation
-#define CUBOOL_VALIDATE_LIBRARY                                                         \
-    cubool::Library::validate();
+namespace cubool {
 
-// Arguments validation
-#define CUBOOL_ARG_NOT_NULL(arg)                                                        \
-    CHECK_RAISE_ERROR(arg != nullptr, InvalidArgument, "Passed null argument")
+    class Vector final: public VectorBase, public Object {
+    public:
+        Vector(size_t nrows, BackendBase& backendBase);
+        ~Vector() override;
 
-#define CUBOOL_BEGIN_BODY                                                               \
-    try {
+        void setElement(index i) override;
+        void build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) override;
+        void extract(index *rows, size_t &nvals) override;
+        void extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) override;
 
-#define CUBOOL_END_BODY }                                                               \
-    catch (const cubool::Error& err) {                                                  \
-         cubool::Library::handleError(err);                                             \
-         return err.getStatus();                                                        \
-    }                                                                                   \
-    catch (const std::exception& exc) {                                                 \
-         cubool::Library::handleError(exc);                                             \
-         return CUBOOL_STATUS_ERROR;                                                    \
-    }                                                                                   \
-    return cuBool_Status::CUBOOL_STATUS_SUCCESS;
+        void clone(const VectorBase &otherBase) override;
+        void reduce(index &result, bool checkTime) override;
+        void reduceMatrix(const MatrixBase &matrix, bool transpose, bool checkTime) override;
 
-#endif //CUBOOL_CUBOOL_COMMON_HPP
+        index getNrows() const override;
+        index getNvals() const override;
+
+    private:
+
+        void releaseCache() const;
+        void commitCache() const;
+
+        // Cached values by the set functions
+        mutable std::vector<index> mCachedI;
+
+        // Marker for debugging
+        std::string mMarker;
+
+        // Implementation handle references
+        VectorBase* mHnd = nullptr;
+        BackendBase* mProvider = nullptr;
+    };
+
+}
+
+#endif //CUBOOL_VECTOR_HPP

@@ -22,38 +22,31 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CUBOOL_COMMON_HPP
-#define CUBOOL_CUBOOL_COMMON_HPP
+#include <cuBool_Common.hpp>
 
-#include <cubool/cubool.h>
-#include <core/config.hpp>
-#include <core/version.hpp>
-#include <core/error.hpp>
-#include <core/library.hpp>
-#include <core/matrix.hpp>
-#include <core/vector.hpp>
-#include <cstring>
+cuBool_Status cuBool_Vector_Marker(
+        cuBool_Vector vector,
+        char* marker,
+        cuBool_Index* size
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(vector)
+        CUBOOL_ARG_NOT_NULL(size)
 
-// State validation
-#define CUBOOL_VALIDATE_LIBRARY                                                         \
-    cubool::Library::validate();
+        auto v = (cubool::Vector*) vector;
+        auto actualSize = v->getDebugMarkerSizeWithNullT();
+        auto toCopy = std::min(*size, actualSize);
 
-// Arguments validation
-#define CUBOOL_ARG_NOT_NULL(arg)                                                        \
-    CHECK_RAISE_ERROR(arg != nullptr, InvalidArgument, "Passed null argument")
+        if (marker != nullptr && toCopy > 0) {
+            // C str (with \0)
+            const auto* text = v->getDebugMarker();
+            std::memcpy(marker, text, toCopy);
 
-#define CUBOOL_BEGIN_BODY                                                               \
-    try {
+            // Explicitly terminate (for case size < actualSize)
+            marker[toCopy - 1] = '\0';
+        }
 
-#define CUBOOL_END_BODY }                                                               \
-    catch (const cubool::Error& err) {                                                  \
-         cubool::Library::handleError(err);                                             \
-         return err.getStatus();                                                        \
-    }                                                                                   \
-    catch (const std::exception& exc) {                                                 \
-         cubool::Library::handleError(exc);                                             \
-         return CUBOOL_STATUS_ERROR;                                                    \
-    }                                                                                   \
-    return cuBool_Status::CUBOOL_STATUS_SUCCESS;
-
-#endif //CUBOOL_CUBOOL_COMMON_HPP
+        *size = actualSize;
+    CUBOOL_END_BODY
+}

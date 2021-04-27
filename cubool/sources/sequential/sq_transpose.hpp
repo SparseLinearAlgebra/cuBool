@@ -25,7 +25,7 @@
 #ifndef CUBOOL_SQ_TRANSPOSE_HPP
 #define CUBOOL_SQ_TRANSPOSE_HPP
 
-#include <sequential/sq_csr_data.hpp>
+#include <sequential/sq_data.hpp>
 
 namespace cubool {
 

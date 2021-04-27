@@ -61,9 +61,17 @@ namespace cubool {
         return new CudaMatrix(nrows, ncols, getInstance());
     }
 
+    VectorBase* CudaBackend::createVector(size_t nrows) {
+        RAISE_ERROR(NotImplemented, "Not implemented");
+    }
+
     void CudaBackend::releaseMatrix(MatrixBase *matrixBase) {
         mMatCount--;
         delete matrixBase;
+    }
+
+    void CudaBackend::releaseVector(VectorBase *vectorBase) {
+        RAISE_ERROR(NotImplemented, "Not implemented");
     }
 
     void CudaBackend::queryCapabilities(cuBool_DeviceCaps &caps) {

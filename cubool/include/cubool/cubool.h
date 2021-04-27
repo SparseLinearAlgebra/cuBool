@@ -106,8 +106,11 @@ typedef uint32_t cuBool_Hints;
 /** Alias integer type for indexing operations */
 typedef uint32_t cuBool_Index;
 
-/** Cubool sparse boolean matrix handle */
+/** cuBool sparse boolean matrix handle */
 typedef struct cuBool_Matrix_t* cuBool_Matrix;
+
+/** cuBool sparse boolean vector handle */
+typedef struct cuBool_Vector_t* cuBool_Vector;
 
 /** Cuda device capabilities */
 typedef struct cuBool_DeviceCaps {
@@ -407,7 +410,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Nvals(
  *
  * @param matrix Matrix handle to perform operation on
  * @param nrows[out] Pointer to the place where to store number of matrix rows
- * 
+ *
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Nrows(
@@ -482,6 +485,73 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
     cuBool_Matrix result,
     cuBool_Matrix left,
     cuBool_Matrix right,
+    cuBool_Hints hints
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_New(
+    cuBool_Vector* vector,
+    cuBool_Index nrows
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Build(
+    cuBool_Vector vector,
+    const cuBool_Index* rows,
+    cuBool_Index nvals,
+    cuBool_Hints hints
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_SetElement(
+    cuBool_Vector vector,
+    cuBool_Index i
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_SetMarker(
+    cuBool_Vector vector,
+    const char* marker
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Marker(
+    cuBool_Vector vector,
+    char* marker,
+    cuBool_Index* size
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_ExtractValues(
+    cuBool_Vector vector,
+    cuBool_Index* rows,
+    cuBool_Index* nvals
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_ExtractSubVector(
+    cuBool_Vector result,
+    cuBool_Vector vector,
+    cuBool_Index i,
+    cuBool_Index nrows,
+    cuBool_Hints hints
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Duplicate(
+    cuBool_Vector vector,
+    cuBool_Vector* duplicated
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Nvals(
+    cuBool_Vector vector,
+    cuBool_Index* nvals
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Nrows(
+    cuBool_Vector vector,
+    cuBool_Index* nrows
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Free(
+    cuBool_Vector vector
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Reduce(
+    cuBool_Index* result,
+    cuBool_Vector vector,
     cuBool_Hints hints
 );
 

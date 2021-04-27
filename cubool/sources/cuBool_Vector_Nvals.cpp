@@ -22,23 +22,17 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_SQ_CSR_DATA_HPP
-#define CUBOOL_SQ_CSR_DATA_HPP
+#include <cuBool_Common.hpp>
 
-#include <core/config.hpp>
-#include <vector>
-
-namespace cubool {
-
-    class CsrData {
-    public:
-        std::vector<index> rowOffsets;
-        std::vector<index> colIndices;
-        index nrows = 0;
-        index ncols = 0;
-        index nvals = 0;
-    };
-
+cuBool_Status cuBool_Vector_Nvals(
+        cuBool_Vector vector,
+        cuBool_Index* nvals
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(vector)
+        CUBOOL_ARG_NOT_NULL(nvals)
+        auto v = (cubool::Vector *) vector;
+        *nvals = v->getNvals();
+    CUBOOL_END_BODY
 }
-
-#endif //CUBOOL_SQ_CSR_DATA_HPP

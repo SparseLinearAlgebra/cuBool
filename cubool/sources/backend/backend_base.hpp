@@ -26,6 +26,7 @@
 #define CUBOOL_BACKEND_BASE_HPP
 
 #include <backend/matrix_base.hpp>
+#include <backend/vector_base.hpp>
 #include <core/config.hpp>
 
 namespace cubool {
@@ -37,7 +38,9 @@ namespace cubool {
         virtual void finalize() = 0;
         virtual bool isInitialized() const = 0;
         virtual MatrixBase* createMatrix(size_t nrows, size_t ncols) = 0;
+        virtual VectorBase* createVector(size_t nrows) = 0;
         virtual void releaseMatrix(MatrixBase* matrixBase) = 0;
+        virtual void releaseVector(VectorBase* vectorBase) = 0;
         virtual void queryCapabilities(cuBool_DeviceCaps& caps) = 0;
     };
 

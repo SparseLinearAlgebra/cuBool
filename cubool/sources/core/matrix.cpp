@@ -330,23 +330,6 @@ namespace cubool {
         return mHnd->getNvals();
     }
 
-    void Matrix::setDebugMarker(const char *marker) {
-        CHECK_RAISE_ERROR(marker, InvalidArgument, "Null pointer marker string");
-
-        // Marker = "$marker (address)"
-        std::stringstream s;
-        s << marker << " (" << this << ")";
-        mMarker = s.str();
-    }
-
-    const char * Matrix::getDebugMarker() const {
-        return mMarker.c_str();
-    }
-
-    index Matrix::getDebugMarkerSizeWithNullT() const {
-        return mMarker.length() + 1;
-    }
-
     void Matrix::releaseCache() const {
         mCachedI.clear();
         mCachedJ.clear();

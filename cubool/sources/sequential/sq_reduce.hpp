@@ -25,7 +25,7 @@
 #ifndef CUBOOL_SP_REDUCE_HPP
 #define CUBOOL_SP_REDUCE_HPP
 
-#include <sequential/sq_csr_data.hpp>
+#include <sequential/sq_data.hpp>
 
 namespace cubool {
 
