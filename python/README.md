@@ -31,6 +31,10 @@ prototyping algorithms on a local computer for later running on a powerful serve
 
 ## Features
 
+- C API for performance-critical computations
+- Python package for every-day tasks
+- Cuda backend for computations
+- Cpu backend for computations
 - Matrix creation (empty, from data, with random data)
 - Matrix-matrix operations (multiplication, element-wise addition, kronecker product)
 - Matrix operations (equality, transpose, reduce to vector, extract sub-matrix)
@@ -120,12 +124,12 @@ Script can be rendered by any [gviz tool](https://dreampuf.github.io/GraphvizOnl
 ## Citation 
 
 ```ignorelang
-@online{cuBool,
+@MISC{cuBool,
   author = {Orachyov, Egor and Alimov, Pavel and Grigorev, Semyon},
   title = {cuBool: sparse Boolean linear algebra for Nvidia Cuda},
   year = 2020,
   url = {https://github.com/JetBrains-Research/cuBool},
-  note = {Version Alpha}
+  note = {Version 1.0.0}
 }
 ```
 
