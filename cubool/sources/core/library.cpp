@@ -46,6 +46,7 @@
 namespace cubool {
 
     std::unordered_set<class Matrix*> Library::mAllocMatrices;
+    std::unordered_set<class Vector*> Library::mAllocVectors;
     std::shared_ptr<class BackendBase> Library::mBackend = nullptr;
     std::shared_ptr<class Logger>  Library::mLogger = std::make_shared<DummyLogger>();
     bool Library::mRelaxedRelease = false;
