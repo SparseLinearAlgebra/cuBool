@@ -22,22 +22,35 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_EXCLUSIVE_SCAN_HPP
-#define CUBOOL_EXCLUSIVE_SCAN_HPP
+#include <sequential/sq_subvector.hpp>
 
 namespace cubool {
 
-    template <typename FirstT, typename LastT, typename T>
-    void exclusive_scan(FirstT firstT, LastT lastT, T initial) {
-        T sum = initial;
-        while (firstT != lastT) {
-            T next = sum + *firstT;
-            *firstT = sum;
-            sum = next;
-            firstT++;
+    void sq_subvector(const VecData& a, index i, index nrows, VecData& out) {
+        if (a.indices.empty()) {
+            return;
+        }
+
+        index first = i;
+        index last = i + nrows;
+
+        size_t size = 0;
+
+        for (auto v: a.indices) {
+            if (first <= v && v < last) {
+                size += 1;
+            }
+        }
+
+        out.indices.clear();
+        out.indices.reserve(size);
+        out.nvals = size;
+
+        for (auto v: a.indices) {
+            if (first <= v && v < last) {
+                out.indices.push_back(v);
+            }
         }
     }
 
 }
-
-#endif //CUBOOL_EXCLUSIVE_SCAN_HPP

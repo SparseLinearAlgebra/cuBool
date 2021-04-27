@@ -23,7 +23,7 @@
 /**********************************************************************************/
 
 #include <cuda/cuda_matrix.hpp>
-#include <utils/csr_utils.hpp>
+#include <utils/data_utils.hpp>
 
 namespace cubool {
 
@@ -40,7 +40,7 @@ namespace cubool {
 
             this->transferFromDevice(rowOffsets, colIndices);
 
-            CsrUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices);
+            DataUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices);
         }
     }
 

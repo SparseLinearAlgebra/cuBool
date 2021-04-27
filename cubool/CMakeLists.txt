@@ -46,10 +46,10 @@ set(CUBOOL_SOURCES
     sources/core/vector.hpp
     sources/io/logger.cpp
     sources/io/logger.hpp
-    sources/utils/exclusive_scan.hpp
+    sources/utils/algo_utils.hpp
     sources/utils/timer.hpp
-    sources/utils/csr_utils.cpp
-    sources/utils/csr_utils.hpp)
+    sources/utils/data_utils.cpp
+    sources/utils/data_utils.hpp)
 
 set(CUBOOL_C_API_SOURCES
     include/cubool/cubool.h
@@ -147,7 +147,9 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_reduce.cpp
         sources/sequential/sq_reduce.hpp
         sources/sequential/sq_submatrix.cpp
-        sources/sequential/sq_submatrix.hpp)
+        sources/sequential/sq_submatrix.hpp
+        sources/sequential/sq_subvector.cpp
+        sources/sequential/sq_subvector.hpp)
 endif()
 
 # Shared library object config

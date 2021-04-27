@@ -23,7 +23,7 @@
 /**********************************************************************************/
 
 #include <cuda/cuda_matrix.hpp>
-#include <utils/csr_utils.hpp>
+#include <utils/data_utils.hpp>
 
 namespace cubool {
 
@@ -37,7 +37,7 @@ namespace cubool {
         std::vector<index> rowOffsets;
         std::vector<index> colIndices;
 
-        CsrUtils::buildFromData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices, isSorted, noDuplicates);
+        DataUtils::buildFromData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices, isSorted, noDuplicates);
 
         // Move actual data to the matrix implementation
         this->transferToDevice(rowOffsets, colIndices);

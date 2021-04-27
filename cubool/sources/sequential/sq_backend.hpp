@@ -49,6 +49,7 @@ namespace cubool {
 
     private:
         size_t mMatCount = 0;
+        size_t mVecCount = 0;
     };
 
 }

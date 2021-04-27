@@ -22,26 +22,23 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CSR_UTILS_HPP
-#define CUBOOL_CSR_UTILS_HPP
+#ifndef CUBOOL_SQ_SUBVECTOR_HPP
+#define CUBOOL_SQ_SUBVECTOR_HPP
 
-#include <core/config.hpp>
-#include <vector>
+#include <sequential/sq_data.hpp>
 
 namespace cubool {
 
-    class CsrUtils {
-    public:
-        static void buildFromData(size_t nrows, size_t ncols,
-                                  const index* rows, const index* cols, size_t nvals,
-                                  std::vector<index>& rowOffsets, std::vector<index>& colIndices,
-                                  bool isSorted, bool noDuplicates);
-
-        static void extractData(size_t nrows, size_t ncols,
-                                index* rows, index* cols, size_t nvals,
-                                const std::vector<index>& rowOffsets, const std::vector<index>& colIndices);
-    };
+    /**
+     * Extract sub-vector
+     *
+     * @param a Source vector
+     * @param i First row to extract
+     * @param nrows Num of rows to extract
+     * @param[out] out Where to store result
+     */
+    void sq_subvector(const VecData& a, index i, index nrows, VecData& out);
 
 }
 
-#endif //CUBOOL_CSR_UTILS_HPP
+#endif //CUBOOL_SQ_SUBVECTOR_HPP

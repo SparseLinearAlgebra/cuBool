@@ -24,44 +24,94 @@
 
 #include <sequential/sq_vector.hpp>
 #include <sequential/sq_matrix.hpp>
+#include <sequential/sq_reduce.hpp>
+#include <sequential/sq_subvector.hpp>
+#include <utils/data_utils.hpp>
 #include <core/error.hpp>
+#include <cassert>
 
 namespace cubool {
+
+    SqVector::SqVector(size_t nrows) {
+        assert(nrows > 0);
+
+        mData.nrows = nrows;
+    }
 
     void SqVector::setElement(index i) {
         RAISE_ERROR(NotImplemented, "This function is not implemented");
     }
 
     void SqVector::build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        // Utility used to reduce duplicates and sort values if needed
+        DataUtils::buildVectorFromData(mData.nrows, rows, nvals, mData.indices, isSorted, noDuplicates);
+
+        mData.nvals = mData.indices.size();
     }
 
     void SqVector::extract(index *rows, size_t &nvals) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        assert(nvals >= getNvals());
+        nvals = mData.nvals;
+
+        if (nvals > 0) {
+            std::copy(mData.indices.begin(), mData.indices.end(), rows);
+        }
     }
 
     void SqVector::extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        auto other = dynamic_cast<const SqVector*>(&otherBase);
+
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided vector does not belongs to sequential vector class");
+
+        assert(this->getNrows() == nrows);
+
+        sq_subvector(other->mData, i, nrows, this->mData);
     }
 
     void SqVector::clone(const VectorBase &otherBase) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        auto other = dynamic_cast<const SqVector*>(&otherBase);
+
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided vector does not belongs to sequential vector class");
+        CHECK_RAISE_ERROR(other != this, InvalidArgument, "Vectors must differ");
+
+        assert(other->getNrows() == this->getNrows());
+
+        this->mData = other->mData;
     }
 
     void SqVector::reduce(index &result, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        result = mData.nvals;
     }
 
-    void SqVector::reduceMatrix(const MatrixBase &matrix, bool transpose, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    void SqVector::reduceMatrix(const MatrixBase &otherBase, bool transpose, bool checkTime) {
+        auto other = dynamic_cast<const SqMatrix*>(&otherBase);
+
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+
+        if (transpose)
+            assert(other->getNcols() == this->getNrows());
+        else
+            assert(other->getNrows() == this->getNrows());
+
+        VecData out;
+        out.nrows = this->getNrows();
+
+        other->allocateStorage();
+
+        if (transpose)
+            sq_reduce_transposed(other->mData, out);
+        else
+            sq_reduce(other->mData, out);
+
+        this->mData = std::move(out);
     }
 
     index SqVector::getNrows() const {
-        return 0;
+        return mData.nrows;
     }
 
     index SqVector::getNvals() const {
-        return 0;
+        return mData.nvals;
     }
 
 }

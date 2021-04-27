@@ -56,7 +56,7 @@ namespace cubool {
         index getNvals() const override;
 
     private:
-
+        friend class SqVector;
         void allocateStorage() const;
 
         mutable CsrData mData;

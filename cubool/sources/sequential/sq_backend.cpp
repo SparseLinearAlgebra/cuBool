@@ -24,6 +24,7 @@
 
 #include <sequential/sq_backend.hpp>
 #include <sequential/sq_matrix.hpp>
+#include <sequential/sq_vector.hpp>
 #include <core/library.hpp>
 #include <io/logger.hpp>
 #include <cassert>
@@ -54,7 +55,8 @@ namespace cubool {
     }
 
     VectorBase* SqBackend::createVector(size_t nrows) {
-        RAISE_ERROR(NotImplemented, "Not implemented");
+        mVecCount++;
+        return new SqVector(nrows);
     }
 
     void SqBackend::releaseMatrix(MatrixBase *matrixBase) {
@@ -63,7 +65,8 @@ namespace cubool {
     }
 
     void SqBackend::releaseVector(VectorBase *vectorBase) {
-        RAISE_ERROR(NotImplemented, "Not implemented");
+        mVecCount--;
+        delete vectorBase;
     }
 
     void SqBackend::queryCapabilities(cuBool_DeviceCaps &caps) {

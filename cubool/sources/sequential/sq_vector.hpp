@@ -32,6 +32,7 @@ namespace cubool {
 
     class SqVector final: public VectorBase {
     public:
+        SqVector(size_t nrows);
         ~SqVector() override = default;
 
         void setElement(index i) override;

@@ -24,6 +24,8 @@
 
 #include <core/vector.hpp>
 #include <core/error.hpp>
+#include <core/library.hpp>
+#include <io/logger.hpp>
 
 namespace cubool {
 
@@ -50,11 +52,25 @@ namespace cubool {
     }
 
     void Vector::build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        CHECK_RAISE_ERROR(rows != nullptr || nvals == 0, InvalidArgument, "Null ptr rows array");
+
+        this->releaseCache();
+
+        LogStream stream(*Library::getLogger());
+        stream << Logger::Level::Info
+               << "Vector:build:" << this->getDebugMarker() << " "
+               << "isSorted=" << isSorted << ", "
+               << "noDuplicates=" << noDuplicates << LogStream::cmt;
+
+        mHnd->build(rows, nvals, isSorted, noDuplicates);
     }
 
     void Vector::extract(index *rows, size_t &nvals) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        CHECK_RAISE_ERROR(rows != nullptr || getNvals() == 0, InvalidArgument, "Null ptr rows array");
+        CHECK_RAISE_ERROR(getNvals() <= nvals, InvalidArgument, "Passed arrays size must be more or equal to the nvals of the vector");
+
+        this->commitCache();
+        mHnd->extract(rows, nvals);
     }
 
     void Vector::extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) {
@@ -62,7 +78,21 @@ namespace cubool {
     }
 
     void Vector::clone(const VectorBase &otherBase) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        const auto* other = dynamic_cast<const Vector*>(&otherBase);
+
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed vector does not belong to core vector class");
+
+        if (this == other)
+            return;
+
+        auto M = other->getNrows();
+
+        CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Cloned vector has incompatible size");
+
+        other->commitCache();
+        this->releaseCache(); // Values of this vector won't be used any more
+
+        mHnd->clone(*other->mHnd);
     }
 
     void Vector::reduce(index &result, bool checkTime) {
@@ -74,19 +104,20 @@ namespace cubool {
     }
 
     index Vector::getNrows() const {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        return mHnd->getNrows();
     }
 
     index Vector::getNvals() const {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        this->commitCache();
+        return mHnd->getNvals();
     }
 
     void Vector::releaseCache() const {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        mCachedI.clear();
     }
 
     void Vector::commitCache() const {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        // todo
     }
 
 }

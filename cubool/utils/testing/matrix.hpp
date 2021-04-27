@@ -222,7 +222,7 @@ namespace testing {
             Matrix out;
             out.nrows = nrows;
             out.ncols = ncols;
-            return std::move(out);
+            return out;
         }
 
     };

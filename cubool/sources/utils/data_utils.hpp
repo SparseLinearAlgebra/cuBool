@@ -22,67 +22,30 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <testing/testing.hpp>
-#include <memory>
+#ifndef CUBOOL_DATA_UTILS_HPP
+#define CUBOOL_DATA_UTILS_HPP
 
-// Simple kernel to sum float matrices
+#include <core/config.hpp>
+#include <vector>
 
-__global__ void kernelAdd(unsigned int n, const float* a, const float* b, float* c) {
-    unsigned int i = blockDim.x * blockIdx.x + threadIdx.x;
-    unsigned int j = blockDim.y * blockIdx.y + threadIdx.y;
+namespace cubool {
 
-    unsigned int idx = n * i + j;
+    class DataUtils {
+    public:
+        static void buildFromData(size_t nrows, size_t ncols,
+                                  const index* rows, const index* cols, size_t nvals,
+                                  std::vector<index>& rowOffsets, std::vector<index>& colIndices,
+                                  bool isSorted, bool noDuplicates);
 
-    if (i < n * n) {
-        c[idx] = a[idx] + b[idx];
-    }
+        static void extractData(size_t nrows, size_t ncols,
+                                index* rows, index* cols, size_t nvals,
+                                const std::vector<index>& rowOffsets, const std::vector<index>& colIndices);
+
+        static void buildVectorFromData(size_t nrows, const index* rows, size_t nvals,
+                                        std::vector<index>& values,
+                                        bool isSorted, bool noDuplicates);
+    };
+
 }
 
-// Test cuda device support.
-TEST(Cuda, BasicExample) {
-    const unsigned int N = 128;
-    const unsigned int NxN = N * N;
-    const unsigned int THREADS_PER_BLOCK = 8;
-
-    float *a, *device_a;
-    float *b, *device_b;
-    float *c, *device_c;
-
-    a = (float*) malloc(sizeof(float) * NxN);
-    b = (float*) malloc(sizeof(float) * NxN);
-    c = (float*) malloc(sizeof(float) * NxN);
-
-    for (int i = 0; i < NxN; i++) {
-        a[i] = (float) i / 2.0f;
-        b[i] = (float) -i / 4.0f;
-    }
-
-    cudaMalloc(&device_a, sizeof(float) * NxN);
-    cudaMalloc(&device_b, sizeof(float) * NxN);
-    cudaMalloc(&device_c, sizeof(float) * NxN);
-
-    cudaMemcpy(device_a, a, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-    cudaMemcpy(device_b, b, sizeof(float) * NxN, cudaMemcpyHostToDevice);
-
-    dim3 blocks(N / THREADS_PER_BLOCK, N / THREADS_PER_BLOCK);
-    dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
-
-    kernelAdd<<<blocks, threads>>>(N, device_a, device_b, device_c);
-
-    cudaDeviceSynchronize();
-    cudaMemcpy(c, device_c, sizeof(float) * NxN, cudaMemcpyDeviceToHost);
-
-    for (int i = 0; i < NxN; i++) {
-        ASSERT_EQ(c[i], a[i] + b[i]);
-    }
-
-    cudaFree(device_a);
-    cudaFree(device_b);
-    cudaFree(device_c);
-
-    free(a);
-    free(b);
-    free(c);
-}
-
-CUBOOL_GTEST_MAIN
+#endif //CUBOOL_DATA_UTILS_HPP

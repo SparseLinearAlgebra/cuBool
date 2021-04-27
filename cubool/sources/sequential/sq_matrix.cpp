@@ -29,7 +29,7 @@
 #include <sequential/sq_ewiseadd.hpp>
 #include <sequential/sq_spgemm.hpp>
 #include <sequential/sq_reduce.hpp>
-#include <utils/csr_utils.hpp>
+#include <utils/data_utils.hpp>
 #include <core/error.hpp>
 #include <cassert>
 
@@ -55,7 +55,7 @@ namespace cubool {
         mData.colIndices.clear();
 
         // Call utility to build csr row offsets and column indices and store in mData vectors
-        CsrUtils::buildFromData(nrows, ncols, rows, cols, nvals, mData.rowOffsets, mData.colIndices, isSorted, noDuplicates);
+        DataUtils::buildFromData(nrows, ncols, rows, cols, nvals, mData.rowOffsets, mData.colIndices, isSorted, noDuplicates);
 
         mData.nvals = mData.colIndices.size();
     }
@@ -65,7 +65,7 @@ namespace cubool {
         nvals = getNvals();
 
         if (nvals > 0) {
-            CsrUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, mData.rowOffsets, mData.colIndices);
+            DataUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, mData.rowOffsets, mData.colIndices);
         }
     }
 
