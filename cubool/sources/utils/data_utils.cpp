@@ -139,9 +139,14 @@ namespace cubool {
 
     void DataUtils::buildVectorFromData(size_t nrows, const index *rows, size_t nvals, std::vector<index> &values,
                                         bool isSorted, bool noDuplicates) {
+        values.resize(nvals);
+        std::copy(rows, rows + nvals, values.begin());
+
+        if (nvals == 0)
+            return;
+
         assert(rows);
 
-        values.resize(nvals);
         std::copy(rows, rows + nvals, values.begin());
 
         auto checkBounds = [&]() {

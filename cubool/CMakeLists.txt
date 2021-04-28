@@ -85,8 +85,9 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Vector_Duplicate.cpp
     sources/cuBool_Vector_Nvals.cpp
     sources/cuBool_Vector_Nrows.cpp
-    sources/cuBool_Vector_Reduce.cpp
     sources/cuBool_Vector_Free.cpp
+    sources/cuBool_Vector_Reduce.cpp
+    sources/cuBool_Vector_EWiseAdd.cpp
     sources/cuBool_MxM.cpp
     sources/cuBool_Kronecker.cpp)
 

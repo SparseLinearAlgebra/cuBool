@@ -25,6 +25,7 @@
 #include <sequential/sq_vector.hpp>
 #include <sequential/sq_matrix.hpp>
 #include <sequential/sq_reduce.hpp>
+#include <sequential/sq_ewiseadd.hpp>
 #include <sequential/sq_subvector.hpp>
 #include <utils/data_utils.hpp>
 #include <core/error.hpp>
@@ -102,6 +103,24 @@ namespace cubool {
             sq_reduce_transposed(other->mData, out);
         else
             sq_reduce(other->mData, out);
+
+        this->mData = std::move(out);
+    }
+
+    void SqVector::eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
+        auto a = dynamic_cast<const SqVector*>(&aBase);
+        auto b = dynamic_cast<const SqVector*>(&bBase);
+
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided vector does not belongs to sequential vector class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided vector does not belongs to sequential vector class");
+
+        assert(a->getNrows() == this->getNrows());
+        assert(a->getNrows() == b->getNrows());
+
+        VecData out;
+        out.nrows = this->getNrows();
+
+        sq_ewiseadd(a->mData, b->mData, out);
 
         this->mData = std::move(out);
     }

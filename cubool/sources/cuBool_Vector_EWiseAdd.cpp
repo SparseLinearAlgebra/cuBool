@@ -22,31 +22,22 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_SQ_EWISEADD_HPP
-#define CUBOOL_SQ_EWISEADD_HPP
+#include <cuBool_Common.hpp>
 
-#include <sequential/sq_data.hpp>
-
-namespace cubool {
-
-    /**
-     * Element-wise addition of the matrices `a` and `b`.
-     *
-     * @param a Input matrix
-     * @param b Input matrix
-     * @param[out] out Where to store the result
-     */
-    void sq_ewiseadd(const CsrData& a, const CsrData& b, CsrData& out);
-
-    /**
-     * Element-wise addition of the vectors `a` and `b`.
-     *
-     * @param a Input vector
-     * @param b Input vector
-     * @param[out] out Where to store the result
-     */
-    void sq_ewiseadd(const VecData& a, const VecData& b, VecData& out);
-
+cuBool_Status cuBool_Vector_EWiseAdd(
+        cuBool_Vector result,
+        cuBool_Vector left,
+        cuBool_Vector right,
+        cuBool_Hints hints
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(result)
+        CUBOOL_ARG_NOT_NULL(left)
+        CUBOOL_ARG_NOT_NULL(right)
+        auto resultM = (cubool::Vector *) result;
+        auto leftM = (cubool::Vector *) left;
+        auto rightM = (cubool::Vector *) right;
+        resultM->eWiseAdd(*leftM, *rightM, hints & CUBOOL_HINT_TIME_CHECK);
+    CUBOOL_END_BODY
 }
-
-#endif //CUBOOL_SQ_EWISEADD_HPP

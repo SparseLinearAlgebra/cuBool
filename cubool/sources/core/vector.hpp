@@ -48,6 +48,8 @@ namespace cubool {
         void reduce(index &result, bool checkTime) override;
         void reduceMatrix(const MatrixBase &matrix, bool transpose, bool checkTime) override;
 
+        void eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) override;
+
         index getNrows() const override;
         index getNvals() const override;
 

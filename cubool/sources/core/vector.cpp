@@ -25,7 +25,14 @@
 #include <core/vector.hpp>
 #include <core/error.hpp>
 #include <core/library.hpp>
+#include <utils/timer.hpp>
 #include <io/logger.hpp>
+
+#define TIMER_ACTION(timer, action)              \
+    Timer timer;                                 \
+    timer.start();                               \
+    action;                                      \
+    timer.end()
 
 namespace cubool {
 
@@ -48,7 +55,10 @@ namespace cubool {
     }
 
     void Vector::setElement(index i) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        CHECK_RAISE_ERROR(i < getNrows(), InvalidArgument, "Value out of vector bounds");
+
+        // This values will be committed later
+        mCachedI.push_back(i);
     }
 
     void Vector::build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) {
@@ -103,6 +113,39 @@ namespace cubool {
         RAISE_ERROR(NotImplemented, "This function is not implemented");
     }
 
+    void Vector::eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
+        const auto* a = dynamic_cast<const Vector*>(&aBase);
+        const auto* b = dynamic_cast<const Vector*>(&bBase);
+
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed vector does not belong to core vector class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed vector does not belong to core vector class");
+
+        index M = a->getNrows();
+
+        CHECK_RAISE_ERROR(M == b->getNrows(), InvalidArgument, "Passed vectors have incompatible size");
+        CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Vector has incompatible size for operation result");
+
+        a->commitCache();
+        b->commitCache();
+        this->releaseCache();
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->eWiseAdd(*a->mHnd, *b->mHnd, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Vector::eWiseAdd: "
+                   << this->getDebugMarker() << " = "
+                   << a->getDebugMarker() << " + "
+                   << b->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->eWiseAdd(*a->mHnd, *b->mHnd, false);
+    }
+
     index Vector::getNrows() const {
         return mHnd->getNrows();
     }
@@ -117,7 +160,31 @@ namespace cubool {
     }
 
     void Vector::commitCache() const {
-        // todo
+        size_t cachedNvals = mCachedI.size();
+
+        // Nothing to do if no value was cached on CPU side
+        if (cachedNvals == 0)
+            return;
+
+        bool isSorted = false;
+        bool noDuplicates = false;
+
+        if (mHnd->getNvals() > 0) {
+            // We will have to join old and new values
+            // Create tmp vector and merge values
+
+            VectorBase* tmp = mProvider->createVector(getNrows());
+            tmp->build(mCachedI.data(), cachedNvals, isSorted, noDuplicates);
+            mHnd->eWiseAdd(*mHnd, *tmp, false);
+            mProvider->releaseVector(tmp);
+        }
+        else {
+            // Otherwise, new values are used to build vector content
+            mHnd->build(mCachedI.data(), cachedNvals, isSorted, noDuplicates);
+        }
+
+        // Clear arrays
+        releaseCache();
     }
 
 }

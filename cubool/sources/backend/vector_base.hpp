@@ -45,6 +45,8 @@ namespace cubool {
         virtual void reduce(index &result, bool checkTime) = 0;
         virtual void reduceMatrix(const class MatrixBase& matrix, bool transpose, bool checkTime) = 0;
 
+        virtual void eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) = 0;
+
         virtual index getNrows() const = 0;
         virtual index getNvals() const = 0;
 

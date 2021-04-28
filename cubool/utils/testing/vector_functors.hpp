@@ -22,31 +22,40 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_SQ_EWISEADD_HPP
-#define CUBOOL_SQ_EWISEADD_HPP
+#ifndef CUBOOL_VECTOR_FUNCTORS_HPP
+#define CUBOOL_VECTOR_FUNCTORS_HPP
 
-#include <sequential/sq_data.hpp>
+#include <testing/vector.hpp>
 
-namespace cubool {
+namespace testing {
 
-    /**
-     * Element-wise addition of the matrices `a` and `b`.
-     *
-     * @param a Input matrix
-     * @param b Input matrix
-     * @param[out] out Where to store the result
-     */
-    void sq_ewiseadd(const CsrData& a, const CsrData& b, CsrData& out);
+    struct VectorEWiseAddFunctor {
+    public:
 
-    /**
-     * Element-wise addition of the vectors `a` and `b`.
-     *
-     * @param a Input vector
-     * @param b Input vector
-     * @param[out] out Where to store the result
-     */
-    void sq_ewiseadd(const VecData& a, const VecData& b, VecData& out);
+        Vector operator()(const Vector& a, const Vector& b) {
+            std::unordered_set<cuBool_Index> values;
+
+            for (auto v: a.index)
+                values.emplace(v);
+
+            for (auto v: b.index)
+                values.emplace(v);
+
+            std::vector<cuBool_Index> sorted(values.size());
+            std::copy(values.begin(), values.end(), sorted.begin());
+
+            std::sort(sorted.begin(), sorted.end(), [](cuBool_Index i, cuBool_Index j) { return i < j; });
+
+            Vector out;
+            out.nrows = a.nrows;
+            out.nvals = sorted.size();
+            out.index = std::move(sorted);
+
+            return out;
+        }
+
+    };
 
 }
 
-#endif //CUBOOL_SQ_EWISEADD_HPP
+#endif //CUBOOL_VECTOR_FUNCTORS_HPP

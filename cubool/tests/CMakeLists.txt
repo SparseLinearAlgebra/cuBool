@@ -30,3 +30,9 @@ target_link_libraries(test_matrix_ewiseadd PUBLIC testing)
 
 add_executable(test_vector_misc test_vector_misc.cpp)
 target_link_libraries(test_vector_misc PUBLIC testing)
+
+add_executable(test_vector_element test_vector_element.cpp)
+target_link_libraries(test_vector_element PUBLIC testing)
+
+add_executable(test_vector_ewiseadd test_vector_ewiseadd.cpp)
+target_link_libraries(test_vector_ewiseadd PUBLIC testing)

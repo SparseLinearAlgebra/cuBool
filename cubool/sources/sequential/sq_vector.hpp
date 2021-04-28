@@ -32,7 +32,7 @@ namespace cubool {
 
     class SqVector final: public VectorBase {
     public:
-        SqVector(size_t nrows);
+        explicit SqVector(size_t nrows);
         ~SqVector() override = default;
 
         void setElement(index i) override;
@@ -43,6 +43,8 @@ namespace cubool {
         void clone(const VectorBase &otherBase) override;
         void reduce(index &result, bool checkTime) override;
         void reduceMatrix(const class MatrixBase &matrix, bool transpose, bool checkTime) override;
+
+        void eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) override;
 
         index getNrows() const override;
         index getNvals() const override;

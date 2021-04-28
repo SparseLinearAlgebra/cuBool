@@ -555,6 +555,13 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Reduce(
     cuBool_Hints hints
 );
 
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_EWiseAdd(
+        cuBool_Vector result,
+        cuBool_Vector left,
+        cuBool_Vector right,
+        cuBool_Hints hints
+);
+
 /**
  * Performs result (accum)= left x right evaluation, where source '+' and 'x' are boolean semiring operations.
  * If accum hint passed, the the result of the multiplication is added to the result matrix.
