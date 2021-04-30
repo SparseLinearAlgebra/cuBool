@@ -49,6 +49,8 @@ namespace cubool {
         void reduceMatrix(const MatrixBase &matrix, bool transpose, bool checkTime) override;
 
         void eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) override;
+        void multiplyVxM(const VectorBase& vBase, const class MatrixBase& mBase, bool checkTime) override;
+        void multiplyMxV(const class MatrixBase& mBase, const VectorBase& vBase, bool checkTime) override;
 
         index getNrows() const override;
         index getNvals() const override;

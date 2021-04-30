@@ -125,6 +125,26 @@ namespace cubool {
         this->mData = std::move(out);
     }
 
+    void SqVector::multiplyVxM(const VectorBase &vBase, const class MatrixBase &mBase, bool checkTime) {
+        auto v = dynamic_cast<const SqVector*>(&vBase);
+        auto m = dynamic_cast<const SqMatrix*>(&mBase);
+
+        CHECK_RAISE_ERROR(v != nullptr, InvalidArgument, "Provided vector does not belongs to sequential vector class");
+        CHECK_RAISE_ERROR(m != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+
+        // todo
+    }
+
+    void SqVector::multiplyMxV(const class MatrixBase &mBase, const VectorBase &vBase, bool checkTime) {
+        auto v = dynamic_cast<const SqVector*>(&vBase);
+        auto m = dynamic_cast<const SqMatrix*>(&mBase);
+
+        CHECK_RAISE_ERROR(v != nullptr, InvalidArgument, "Provided vector does not belongs to sequential vector class");
+        CHECK_RAISE_ERROR(m != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+
+        // todo
+    }
+
     index SqVector::getNrows() const {
         return mData.nrows;
     }

@@ -22,39 +22,22 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_VECTOR_BASE_HPP
-#define CUBOOL_VECTOR_BASE_HPP
+#include <cuBool_Common.hpp>
 
-#include <core/config.hpp>
-
-namespace cubool {
-
-    /**
-     * Base class for any boolean vector type
-     */
-    class VectorBase {
-    public:
-        virtual ~VectorBase() = default;
-
-        virtual void setElement(index i) = 0;
-        virtual void build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) = 0;
-        virtual void extract(index* rows, size_t &nvals) = 0;
-        virtual void extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) = 0;
-
-        virtual void clone(const VectorBase& otherBase) = 0;
-        virtual void reduce(index &result, bool checkTime) = 0;
-        virtual void reduceMatrix(const class MatrixBase& matrix, bool transpose, bool checkTime) = 0;
-
-        virtual void eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) = 0;
-        virtual void multiplyVxM(const VectorBase& vBase, const class MatrixBase& mBase, bool checkTime) = 0;
-        virtual void multiplyMxV(const class MatrixBase& mBase, const VectorBase& vBase, bool checkTime) = 0;
-
-        virtual index getNrows() const = 0;
-        virtual index getNvals() const = 0;
-
-        bool isZeroDim() const { return getNrows() == 0; }
-    };
-
+cuBool_Status cuBool_MxV(
+        cuBool_Vector result,
+        cuBool_Matrix matrix,
+        cuBool_Vector vector,
+        cuBool_Hints hints
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(result)
+        CUBOOL_ARG_NOT_NULL(matrix)
+        CUBOOL_ARG_NOT_NULL(vector)
+        auto resultV = (cubool::Vector *) result;
+        auto left = (cubool::Matrix *) matrix;
+        auto right = (cubool::Vector *) vector;
+        resultV->multiplyMxV(*left, *right, hints & CUBOOL_HINT_TIME_CHECK);
+    CUBOOL_END_BODY
 }
-
-#endif //CUBOOL_VECTOR_BASE_HPP

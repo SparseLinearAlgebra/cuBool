@@ -23,6 +23,7 @@
 /**********************************************************************************/
 
 #include <core/vector.hpp>
+#include <core/matrix.hpp>
 #include <core/error.hpp>
 #include <core/library.hpp>
 #include <utils/timer.hpp>
@@ -106,11 +107,54 @@ namespace cubool {
     }
 
     void Vector::reduce(index &result, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        this->commitCache();
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->reduce(result, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Vector::reduce: "
+                   << "index" << " =reduce"
+                   << this->getDebugMarker()
+                   << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->reduce(result, false);
     }
 
-    void Vector::reduceMatrix(const MatrixBase &matrix, bool transpose, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+    void Vector::reduceMatrix(const MatrixBase &matrixBase, bool transpose, bool checkTime) {
+        const auto* matrix = dynamic_cast<const Matrix*>(&matrixBase);
+
+        CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+
+        if (transpose) {
+            CHECK_RAISE_ERROR(matrix->getNcols() == this->getNrows(), InvalidArgument, "Passed matrix has incompatible size");
+        }
+        else {
+            CHECK_RAISE_ERROR(matrix->getNrows() == this->getNrows(), InvalidArgument, "Passed matrix has incompatible size");
+        }
+
+        matrix->commitCache();
+        this->releaseCache();
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->reduceMatrix(*matrix->mHnd, transpose, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Vector::reduceMatrix: "
+                   << this->getDebugMarker() << " =reduce(trsp=" << transpose << ") "
+                   << matrix->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->reduceMatrix(*matrix->mHnd, transpose, false);
     }
 
     void Vector::eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
@@ -144,6 +188,68 @@ namespace cubool {
         }
 
         mHnd->eWiseAdd(*a->mHnd, *b->mHnd, false);
+    }
+
+    void Vector::multiplyVxM(const VectorBase &vBase, const class MatrixBase &mBase, bool checkTime) {
+        const auto* v = dynamic_cast<const Vector*>(&vBase);
+        const auto* m = dynamic_cast<const Matrix*>(&mBase);
+
+        CHECK_RAISE_ERROR(v != nullptr, InvalidArgument, "Passed vector does not belong to core vector class");
+        CHECK_RAISE_ERROR(m != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+
+        CHECK_RAISE_ERROR(v->getNrows() == m->getNrows(), InvalidArgument, "Provided vector and matrix have incompatible size for operation");
+        CHECK_RAISE_ERROR(this->getNrows() == v->getNrows(), InvalidArgument, "This vector has incompatible size for operation result");
+
+        v->commitCache();
+        m->commitCache();
+        this->releaseCache();
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->multiplyVxM(*v->mHnd, *m->mHnd, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Vector::multiplyVxM: "
+                   << this->getDebugMarker() << " = "
+                   << v->getDebugMarker() << " x "
+                   << m->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->multiplyVxM(*v->mHnd, *m->mHnd, false);
+    }
+
+    void Vector::multiplyMxV(const class MatrixBase &mBase, const VectorBase &vBase, bool checkTime) {
+        const auto* v = dynamic_cast<const Vector*>(&vBase);
+        const auto* m = dynamic_cast<const Matrix*>(&mBase);
+
+        CHECK_RAISE_ERROR(v != nullptr, InvalidArgument, "Passed vector does not belong to core vector class");
+        CHECK_RAISE_ERROR(m != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+
+        CHECK_RAISE_ERROR(v->getNrows() == m->getNcols(), InvalidArgument, "Provided vector and matrix have incompatible size for operation");
+        CHECK_RAISE_ERROR(this->getNrows() == v->getNrows(), InvalidArgument, "This vector has incompatible size for operation result");
+
+        v->commitCache();
+        m->commitCache();
+        this->releaseCache();
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->multiplyMxV(*m->mHnd, *v->mHnd, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Vector::multiplyMxV: "
+                   << this->getDebugMarker() << " = "
+                   << m->getDebugMarker() << " x "
+                   << v->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->multiplyMxV(*m->mHnd, *v->mHnd, false);
     }
 
     index Vector::getNrows() const {

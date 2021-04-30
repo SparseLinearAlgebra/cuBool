@@ -89,6 +89,8 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Vector_Reduce.cpp
     sources/cuBool_Vector_EWiseAdd.cpp
     sources/cuBool_MxM.cpp
+    sources/cuBool_MxV.cpp
+    sources/cuBool_VxM.cpp
     sources/cuBool_Kronecker.cpp)
 
 set(CUBOOL_BACKEND_SOURCES

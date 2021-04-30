@@ -588,6 +588,20 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxM(
     cuBool_Hints hints
 );
 
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxV(
+    cuBool_Vector result,
+    cuBool_Matrix matrix,
+    cuBool_Vector vector,
+    cuBool_Hints hints
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_VxM(
+    cuBool_Vector result,
+    cuBool_Vector vector,
+    cuBool_Matrix matrix,
+    cuBool_Hints hints
+);
+
 /**
  * Performs result = left `kron` right, where `kron` is a Kronecker product for boolean semiring.
  *

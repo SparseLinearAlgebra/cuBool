@@ -61,7 +61,7 @@ namespace cubool {
         index getNvals() const override;
 
     private:
-
+        friend class Vector;
         void releaseCache() const;
         void commitCache() const;
 
