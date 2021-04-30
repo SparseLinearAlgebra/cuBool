@@ -147,6 +147,8 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_ewiseadd.hpp
         sources/sequential/sq_spgemm.cpp
         sources/sequential/sq_spgemm.hpp
+        sources/sequential/sq_spgemv.cpp
+        sources/sequential/sq_spgemv.hpp
         sources/sequential/sq_reduce.cpp
         sources/sequential/sq_reduce.hpp
         sources/sequential/sq_submatrix.cpp

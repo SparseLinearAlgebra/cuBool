@@ -198,7 +198,7 @@ namespace cubool {
         CHECK_RAISE_ERROR(m != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
 
         CHECK_RAISE_ERROR(v->getNrows() == m->getNrows(), InvalidArgument, "Provided vector and matrix have incompatible size for operation");
-        CHECK_RAISE_ERROR(this->getNrows() == v->getNrows(), InvalidArgument, "This vector has incompatible size for operation result");
+        CHECK_RAISE_ERROR(this->getNrows() == m->getNcols(), InvalidArgument, "This vector has incompatible size for operation result");
 
         v->commitCache();
         m->commitCache();
@@ -229,7 +229,7 @@ namespace cubool {
         CHECK_RAISE_ERROR(m != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
 
         CHECK_RAISE_ERROR(v->getNrows() == m->getNcols(), InvalidArgument, "Provided vector and matrix have incompatible size for operation");
-        CHECK_RAISE_ERROR(this->getNrows() == v->getNrows(), InvalidArgument, "This vector has incompatible size for operation result");
+        CHECK_RAISE_ERROR(this->getNrows() == m->getNrows(), InvalidArgument, "This vector has incompatible size for operation result");
 
         v->commitCache();
         m->commitCache();

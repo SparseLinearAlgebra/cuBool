@@ -27,6 +27,7 @@
 #include <sequential/sq_reduce.hpp>
 #include <sequential/sq_ewiseadd.hpp>
 #include <sequential/sq_subvector.hpp>
+#include <sequential/sq_spgemv.hpp>
 #include <utils/data_utils.hpp>
 #include <core/error.hpp>
 #include <cassert>
@@ -77,7 +78,7 @@ namespace cubool {
 
         assert(other->getNrows() == this->getNrows());
 
-        this->mData = other->mData;
+        mData = other->mData;
     }
 
     void SqVector::reduce(index &result, bool checkTime) {
@@ -104,7 +105,7 @@ namespace cubool {
         else
             sq_reduce(other->mData, out);
 
-        this->mData = std::move(out);
+        mData = std::move(out);
     }
 
     void SqVector::eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
@@ -122,7 +123,7 @@ namespace cubool {
 
         sq_ewiseadd(a->mData, b->mData, out);
 
-        this->mData = std::move(out);
+        mData = std::move(out);
     }
 
     void SqVector::multiplyVxM(const VectorBase &vBase, const class MatrixBase &mBase, bool checkTime) {
@@ -132,7 +133,15 @@ namespace cubool {
         CHECK_RAISE_ERROR(v != nullptr, InvalidArgument, "Provided vector does not belongs to sequential vector class");
         CHECK_RAISE_ERROR(m != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        // todo
+        assert(v->getNrows() == m->getNrows());
+        assert(this->getNrows() == m->getNcols());
+
+        VecData out;
+        out.nrows = this->getNrows();
+
+        sq_spgemv_transposed(m->mData, v->mData, out);
+
+        mData = std::move(out);
     }
 
     void SqVector::multiplyMxV(const class MatrixBase &mBase, const VectorBase &vBase, bool checkTime) {
@@ -142,7 +151,15 @@ namespace cubool {
         CHECK_RAISE_ERROR(v != nullptr, InvalidArgument, "Provided vector does not belongs to sequential vector class");
         CHECK_RAISE_ERROR(m != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
 
-        // todo
+        assert(v->getNrows() == m->getNcols());
+        assert(this->getNrows() == m->getNrows());
+
+        VecData out;
+        out.nrows = this->getNrows();
+
+        sq_spgemv(m->mData, v->mData, out);
+
+        mData = std::move(out);
     }
 
     index SqVector::getNrows() const {

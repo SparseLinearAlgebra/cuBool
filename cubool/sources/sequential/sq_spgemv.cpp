@@ -22,62 +22,62 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <sequential/sq_backend.hpp>
-#include <sequential/sq_matrix.hpp>
-#include <sequential/sq_vector.hpp>
-#include <core/library.hpp>
-#include <io/logger.hpp>
-#include <cassert>
+#include <sequential/sq_spgemm.hpp>
 
 namespace cubool {
 
-    void SqBackend::initialize(hints initHints) {
-        // No special actions
-    }
+    void sq_spgemv(const CsrData& a, const VecData& b, VecData& out) {
+        std::vector<index> result;
 
-    void SqBackend::finalize() {
-        assert(mMatCount == 0);
-        assert(mVecCount == 0);
+        for (index i = 0; i < a.nrows; i++) {
+            const index* ar = a.colIndices.data() + a.rowOffsets[i];
+            const index* vr = b.indices.data();
 
-        if (mMatCount > 0) {
-            LogStream stream(*Library::getLogger());
-            stream << Logger::Level::Error
-                   << "Lost some (" << mMatCount << ") matrix objects" << LogStream::cmt;
+            const index* arend = ar + (a.rowOffsets[i + 1] - a.rowOffsets[i]);
+            const index* vrend = vr + b.nvals;
+
+            bool nonZero = false;
+
+            while (ar != arend && vr != vrend) {
+                if (*ar == *vr) {
+                    nonZero = true;
+                    break;
+                }
+                else if (*ar < *vr) {
+                    ar++;
+                }
+                else {
+                    vr++;
+                }
+            }
+
+            if (nonZero) {
+                result.push_back(i);
+            }
         }
 
-        if (mVecCount > 0) {
-            LogStream stream(*Library::getLogger());
-            stream << Logger::Level::Error
-                   << "Lost some (" << mVecCount << ") vector objects" << LogStream::cmt;
+        out.nvals = result.size();
+        out.indices = std::move(result);
+    }
+
+    void sq_spgemv_transposed(const CsrData& a, const VecData& b, VecData& out) {
+        std::vector<bool> mask(a.ncols, false);
+
+        for (index i: b.indices) {
+            for (index k = a.rowOffsets[i]; k < a.rowOffsets[i + 1]; k++) {
+                mask[a.colIndices[k]] = true;
+            }
         }
-    }
 
-    bool SqBackend::isInitialized() const {
-        return true;
-    }
+        std::vector<index> result;
 
-    MatrixBase *SqBackend::createMatrix(size_t nrows, size_t ncols) {
-        mMatCount++;
-        return new SqMatrix(nrows, ncols);
-    }
+        for (index i = 0; i < mask.size(); i++) {
+            if (mask[i])
+                result.push_back(i);
+        }
 
-    VectorBase* SqBackend::createVector(size_t nrows) {
-        mVecCount++;
-        return new SqVector(nrows);
-    }
-
-    void SqBackend::releaseMatrix(MatrixBase *matrixBase) {
-        mMatCount--;
-        delete matrixBase;
-    }
-
-    void SqBackend::releaseVector(VectorBase *vectorBase) {
-        mVecCount--;
-        delete vectorBase;
-    }
-
-    void SqBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
-        caps.cudaSupported = false;
+        out.nvals = result.size();
+        out.indices = std::move(result);
     }
 
 }

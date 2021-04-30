@@ -22,62 +22,31 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <sequential/sq_backend.hpp>
-#include <sequential/sq_matrix.hpp>
-#include <sequential/sq_vector.hpp>
-#include <core/library.hpp>
-#include <io/logger.hpp>
-#include <cassert>
+#ifndef CUBOOL_SQ_SPGEMV_HPP
+#define CUBOOL_SQ_SPGEMV_HPP
+
+#include <sequential/sq_data.hpp>
 
 namespace cubool {
 
-    void SqBackend::initialize(hints initHints) {
-        // No special actions
-    }
+    /**
+     * Matrix-vector multiplication of `a` and `b`.
+     *
+     * @param a Input matrix
+     * @param b Input vector
+     * @param[out] out Where to store result
+     */
+    void sq_spgemv(const CsrData& a, const VecData& b, VecData& out);
 
-    void SqBackend::finalize() {
-        assert(mMatCount == 0);
-        assert(mVecCount == 0);
-
-        if (mMatCount > 0) {
-            LogStream stream(*Library::getLogger());
-            stream << Logger::Level::Error
-                   << "Lost some (" << mMatCount << ") matrix objects" << LogStream::cmt;
-        }
-
-        if (mVecCount > 0) {
-            LogStream stream(*Library::getLogger());
-            stream << Logger::Level::Error
-                   << "Lost some (" << mVecCount << ") vector objects" << LogStream::cmt;
-        }
-    }
-
-    bool SqBackend::isInitialized() const {
-        return true;
-    }
-
-    MatrixBase *SqBackend::createMatrix(size_t nrows, size_t ncols) {
-        mMatCount++;
-        return new SqMatrix(nrows, ncols);
-    }
-
-    VectorBase* SqBackend::createVector(size_t nrows) {
-        mVecCount++;
-        return new SqVector(nrows);
-    }
-
-    void SqBackend::releaseMatrix(MatrixBase *matrixBase) {
-        mMatCount--;
-        delete matrixBase;
-    }
-
-    void SqBackend::releaseVector(VectorBase *vectorBase) {
-        mVecCount--;
-        delete vectorBase;
-    }
-
-    void SqBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
-        caps.cudaSupported = false;
-    }
+    /**
+     * Matrix(^T)-vector multiplication of `a` and `b`.
+     *
+     * @param a Input matrix
+     * @param b Input vector
+     * @param[out] out Where to store result
+     */
+    void sq_spgemv_transposed(const CsrData& a, const VecData& b, VecData& out);
 
 }
+
+#endif //CUBOOL_SQ_SPGEMV_HPP

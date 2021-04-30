@@ -36,3 +36,9 @@ target_link_libraries(test_vector_element PUBLIC testing)
 
 add_executable(test_vector_ewiseadd test_vector_ewiseadd.cpp)
 target_link_libraries(test_vector_ewiseadd PUBLIC testing)
+
+add_executable(test_vector_mxv test_vector_mxv.cpp)
+target_link_libraries(test_vector_mxv PUBLIC testing)
+
+add_executable(test_vector_vxm test_vector_vxm.cpp)
+target_link_libraries(test_vector_vxm PUBLIC testing)
