@@ -121,10 +121,6 @@ namespace cubool {
         return mMatrixImpl.m_vals;
     }
 
-    bool CudaMatrix::isStorageEmpty() const {
-        return mMatrixImpl.is_zero_dim();
-    }
-
     bool CudaMatrix::isMatrixEmpty() const {
         return mMatrixImpl.m_vals == 0;
     }

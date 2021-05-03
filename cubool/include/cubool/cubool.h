@@ -97,7 +97,9 @@ typedef enum cuBool_Hint {
     /** No duplicates in the build data */
     CUBOOL_HINT_NO_DUPLICATES = 256,
     /** Performs time measurement and logs elapsed operation time */
-    CUBOOL_HINT_TIME_CHECK = 512
+    CUBOOL_HINT_TIME_CHECK = 512,
+    /** Transpose matrix before operation */
+    CUBOOL_HINT_TRANSPOSE = 1024
 } cuBool_Hint;
 
 /** Hit mask */
@@ -458,8 +460,14 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Free(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce2(
     cuBool_Matrix result,
+    cuBool_Matrix matrix,
+    cuBool_Hints hints
+);
+
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
+    cuBool_Vector result,
     cuBool_Matrix matrix,
     cuBool_Hints hints
 );

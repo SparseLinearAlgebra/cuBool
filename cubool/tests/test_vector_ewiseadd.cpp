@@ -68,32 +68,32 @@ void testRun(cuBool_Index m, cuBool_Hints setup) {
 }
 
 TEST(cuBool_Vector, EWiseAddSmall) {
-    cuBool_Index m = 60;
+    cuBool_Index m = 6000;
     testRun(m, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Vector, EWiseAddMedium) {
-    cuBool_Index m = 500;
+    cuBool_Index m = 50000;
     testRun(m, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Vector, EWiseAddLarge) {
-    cuBool_Index m = 2500;
+    cuBool_Index m = 165000;
     testRun(m, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Vector, EWiseAddSmallFallback) {
-    cuBool_Index m = 60;
+    cuBool_Index m = 6000;
     testRun(m, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Vector, EWiseAddMediumFallback) {
-    cuBool_Index m = 500;
+    cuBool_Index m = 50000;
     testRun(m, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Vector, EWiseAddLargeFallback) {
-    cuBool_Index m = 2500;
+    cuBool_Index m = 165000;
     testRun(m, CUBOOL_HINT_CPU_BACKEND);
 }
 

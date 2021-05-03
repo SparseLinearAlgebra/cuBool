@@ -631,7 +631,7 @@ class Matrix:
         shape = (self.nrows, 1)
         out = Matrix.empty(shape)
 
-        status = wrapper.loaded_dll.cuBool_Matrix_Reduce(
+        status = wrapper.loaded_dll.cuBool_Matrix_Reduce2(
             out.hnd,
             self.hnd,
             ctypes.c_uint(bridge.get_reduce_hints(time_check=time_check))

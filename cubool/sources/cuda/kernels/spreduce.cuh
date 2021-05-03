@@ -25,6 +25,7 @@
 #ifndef CUBOOL_SPREDUCE_CUH
 #define CUBOOL_SPREDUCE_CUH
 
+#include <cuda/details/sp_vector.hpp>
 #include <cuda/kernels/bin_search.cuh>
 #include <thrust/device_vector.h>
 #include <nsparse/matrix.h>
@@ -79,6 +80,111 @@ namespace cubool {
                 // Returned matrix has M x 1 dim (so ncols always 1)
                 return MatrixType(std::move(colIndex), std::move(rowIndex), nrows, 1, resultNvals);
             }
+        };
+
+        template <typename IndexType, typename AllocType>
+        class SpVectorMatrixReduceFunctor {
+        public:
+            template<typename T>
+            using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
+            using MatrixType = nsparse::matrix<bool, IndexType, AllocType>;
+            using VectorType = details::SpVector<IndexType, AllocType>;
+
+            VectorType operator()(const MatrixType& m) {
+                auto nrows = m.m_rows;
+
+                ContainerType<index> nnz(1);
+                thrust::fill(nnz.begin(), nnz.end(), 0);
+
+                // For each row if not empty then row will have 1 value
+                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(nrows),
+                     [rowIndex = m.m_row_index.data(), nnz = nnz.data()]
+                         __device__ (IndexType i) {
+                        auto rowSize = rowIndex[i + 1] - rowIndex[i];
+
+                        if (rowSize > 0) {
+                            atomicAdd(nnz.get(), (IndexType) 1);
+                        }
+                     }
+                );
+
+                IndexType resultSize = nnz.back();
+                thrust::fill(nnz.begin(), nnz.end(), 0);
+
+                ContainerType<index> result(resultSize);
+
+                // For each row if not empty then row will have 1 value
+                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(nrows),
+                     [rowIndex = m.m_row_index.data(), resultBuffer = result.data(), nnz = nnz.data()]
+                         __device__ (IndexType i) {
+                         auto rowSize = rowIndex[i + 1] - rowIndex[i];
+
+                         if (rowSize > 0) {
+                             auto writePlace = atomicAdd(nnz.get(), (IndexType) 1);
+                             resultBuffer[writePlace] = i;
+                         }
+                     }
+                );
+
+                // Sort values within vector
+                thrust::sort(result.begin(), result.end());
+
+                return VectorType(std::move(result), nrows, resultSize);
+            }
+
+        };
+
+        template <typename IndexType, typename AllocType>
+        class SpVectorMatrixTransposedReduceFunctor {
+        public:
+            template<typename T>
+            using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
+            using MatrixType = nsparse::matrix<bool, IndexType, AllocType>;
+            using VectorType = details::SpVector<IndexType, AllocType>;
+
+            VectorType operator()(const MatrixType& m) {
+                auto nrows = m.m_rows;
+                auto ncols = m.m_cols;
+                auto nvals = m.m_vals;
+
+                ContainerType<index> mask(ncols);
+                thrust::fill(mask.begin(), mask.end(), (IndexType) 0);
+
+                // For each value check, if column correspond to the result
+                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(nvals),
+                     [colIndex = m.m_col_index.data(), mask = mask.data()]
+                         __device__ (IndexType i) {
+                         auto j = colIndex[i];
+
+                         atomicOr((mask + j).get(), (IndexType) 1);
+                     }
+                );
+
+                // Count nnz of the vector
+                auto resultSize = thrust::reduce(mask.begin(), mask.end(), (IndexType) 0);
+
+                ContainerType<index> result(resultSize);
+                ContainerType<index> offsets(mask.size());
+
+                // Evaluate write offsets of the result
+                thrust::exclusive_scan(mask.begin(), mask.end(), offsets.begin(), (IndexType) 0, thrust::plus<IndexType>());
+
+                // For each value of the mask write in the result buffer if it not zero
+                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(ncols),
+                     [mask = mask.data(), result = result.data(), offsets = offsets.data()]
+                         __device__ (IndexType i) {
+                        if (mask[i] > 0) {
+                            auto offset = offsets[i];
+                            auto colId = i;
+
+                            result[offset] = colId;
+                        }
+                     }
+                );
+
+                return VectorType(std::move(result), nrows, resultSize);
+            }
+
         };
 
     }

@@ -88,16 +88,6 @@ namespace cubool {
         result = getNvals();
     }
 
-    void CudaVector::reduceMatrix(const struct MatrixBase &matrix, bool transpose, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
-
-    }
-
-    void CudaVector::eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
-
-    }
-
     void CudaVector::multiplyVxM(const VectorBase &vBase, const struct MatrixBase &mBase, bool checkTime) {
         RAISE_ERROR(NotImplemented, "This function is not implemented");
 

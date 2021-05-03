@@ -24,8 +24,8 @@
 
 #include <cuBool_Common.hpp>
 
-cuBool_Status cuBool_Matrix_Reduce(
-        cuBool_Vector result,
+cuBool_Status cuBool_Matrix_Reduce2(
+        cuBool_Matrix result,
         cuBool_Matrix matrix,
         cuBool_Hints hints
 ) {
@@ -33,8 +33,8 @@ cuBool_Status cuBool_Matrix_Reduce(
         CUBOOL_VALIDATE_LIBRARY
         CUBOOL_ARG_NOT_NULL(result)
         CUBOOL_ARG_NOT_NULL(matrix)
-        auto r = (cubool::Vector*) result;
+        auto r = (cubool::Matrix*) result;
         auto m = (cubool::Matrix*) matrix;
-        r->reduceMatrix(*m, hints & CUBOOL_HINT_TRANSPOSE,hints & CUBOOL_HINT_TIME_CHECK);
+        r->reduce(*m, hints & CUBOOL_HINT_TIME_CHECK);
     CUBOOL_END_BODY
 }

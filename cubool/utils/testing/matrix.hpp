@@ -27,6 +27,7 @@
 
 #include <cubool/cubool.h>
 #include <testing/pair.hpp>
+#include <testing/vector.hpp>
 #include <testing/matrix_generator.hpp>
 #include <algorithm>
 #include <chrono>
@@ -116,6 +117,26 @@ namespace testing {
             }
 
             return std::move(result);
+        }
+
+        Vector reduceToVector() const {
+            Vector vec;
+
+            std::vector<cuBool_Index> mask(nrows, 0);
+
+            for (auto r: rowsIndex) {
+                mask[r] |= 0x1u;
+            }
+
+            for (cuBool_Index i = 0; i < nrows; i++) {
+                if (mask[i] > 0)
+                    vec.index.push_back(i);
+            }
+
+            vec.nrows = nrows;
+            vec.nvals = vec.index.size();
+
+            return vec;
         }
 
         Matrix subMatrix(cuBool_Index i, cuBool_Index j, cuBool_Index m, cuBool_Index n) const {

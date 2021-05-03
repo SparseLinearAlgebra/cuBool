@@ -24,7 +24,49 @@
 
 #include <testing/testing.hpp>
 
-void testMatrixReduce(cuBool_Index m, cuBool_Index n, float density, cuBool_Hints flags) {
+void testMatrixToVectorReduce(cuBool_Index m, cuBool_Index n, float density, cuBool_Hints flags) {
+    cuBool_Matrix a;
+    cuBool_Vector r;
+
+    auto ta = testing::Matrix::generateSparse(m, n, density);
+
+    ASSERT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Vector_New(&r, m), CUBOOL_STATUS_SUCCESS);
+
+    ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+
+    ASSERT_EQ(cuBool_Matrix_Reduce(r, a, flags), CUBOOL_STATUS_SUCCESS);
+
+    auto tr = ta.reduceToVector();
+
+    ASSERT_TRUE(tr.areEqual(r));
+
+    ASSERT_EQ(cuBool_Matrix_Free(a), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Vector_Free(r), CUBOOL_STATUS_SUCCESS);
+}
+
+void testMatrixToVectorReduceTransposed(cuBool_Index m, cuBool_Index n, float density, cuBool_Hints flags) {
+    cuBool_Matrix a;
+    cuBool_Vector r;
+
+    auto ta = testing::Matrix::generateSparse(m, n, density);
+
+    ASSERT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Vector_New(&r, n), CUBOOL_STATUS_SUCCESS);
+
+    ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
+
+    ASSERT_EQ(cuBool_Matrix_Reduce(r, a, CUBOOL_HINT_TRANSPOSE | flags), CUBOOL_STATUS_SUCCESS);
+
+    auto tr = ta.transpose().reduceToVector();
+
+    ASSERT_TRUE(tr.areEqual(r));
+
+    ASSERT_EQ(cuBool_Matrix_Free(a), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Vector_Free(r), CUBOOL_STATUS_SUCCESS);
+}
+
+void testMatrixReduce2(cuBool_Index m, cuBool_Index n, float density, cuBool_Hints flags) {
     cuBool_Matrix r, a;
 
     auto ta = testing::Matrix::generateSparse(m, n, density);
@@ -34,7 +76,7 @@ void testMatrixReduce(cuBool_Index m, cuBool_Index n, float density, cuBool_Hint
 
     ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-    ASSERT_EQ(cuBool_Matrix_Reduce(r, a, flags), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Matrix_Reduce2(r, a, flags), CUBOOL_STATUS_SUCCESS);
 
     auto tr = ta.reduce();
 
@@ -49,7 +91,15 @@ void testRun(cuBool_Index m, cuBool_Index n, float step, cuBool_Hints setup) {
     EXPECT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 10; i++) {
-        testMatrixReduce(m, n, 0.01f + step * ((float) i), CUBOOL_HINT_NO);
+        testMatrixToVectorReduce(m, n, 0.01f + step * ((float) i), CUBOOL_HINT_NO);
+    }
+
+    for (size_t i = 0; i < 10; i++) {
+        testMatrixToVectorReduceTransposed(m, n, 0.01f + step * ((float) i), CUBOOL_HINT_NO);
+    }
+
+    for (size_t i = 0; i < 10; i++) {
+        testMatrixReduce2(m, n, 0.01f + step * ((float) i), CUBOOL_HINT_NO);
     }
 
     // Finalize library

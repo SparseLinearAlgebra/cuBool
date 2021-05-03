@@ -61,9 +61,10 @@ namespace cubool {
         index getNvals() const override;
 
     private:
+        friend class CudaVector;
+
         void resizeStorageToDim() const;
         void clearAndResizeStorageToDim() const;
-        bool isStorageEmpty() const;
         bool isMatrixEmpty() const;
         void transferToDevice(const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) const;
         void transferFromDevice(std::vector<index> &rowOffsets, std::vector<index> &colIndices) const;

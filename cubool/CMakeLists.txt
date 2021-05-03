@@ -25,7 +25,7 @@ if (CUBOOL_RELEASE)
     list(APPEND DEFINES_LIST CUBOOL_RELEASE)
 endif()
 
-    # Platform checks
+# Platform checks
 if(APPLE)
     list(APPEND DEFINES_LIST CUBOOL_PLATFORM_MACOS)
     set(TARGET_FILE_NAME "lib${TARGET_NAME}.dylib")
@@ -82,6 +82,7 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Matrix_Ncols.cpp
     sources/cuBool_Matrix_Free.cpp
     sources/cuBool_Matrix_Reduce.cpp
+    sources/cuBool_Matrix_Reduce2.cpp
     sources/cuBool_Matrix_EWiseAdd.cpp
     sources/cuBool_Vector_New.cpp
     sources/cuBool_Vector_Build.cpp
@@ -127,12 +128,15 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/cuda_matrix_extract_sub_matrix.cu
         sources/cuda/cuda_vector.hpp
         sources/cuda/cuda_vector.cu
+        sources/cuda/cuda_vector_ewiseadd.cu
+        sources/cuda/cuda_vector_reduce.cu
         sources/cuda/details/meta.hpp
         sources/cuda/details/sp_vector.hpp
         sources/cuda/details/host_allocator.hpp
         sources/cuda/details/device_allocator.cuh
         sources/cuda/kernels/slow_sort.cuh
         sources/cuda/kernels/bin_search.cuh
+        sources/cuda/kernels/spewiseadd.cuh
         sources/cuda/kernels/sptranspose.cuh
         sources/cuda/kernels/sptranspose2.cuh
         sources/cuda/kernels/spkron.cuh

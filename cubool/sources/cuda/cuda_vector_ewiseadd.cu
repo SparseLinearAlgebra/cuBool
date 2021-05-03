@@ -22,19 +22,26 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#include <cuda/cuda_vector.hpp>
+#include <cuda/kernels/spewiseadd.cuh>
+#include <core/error.hpp>
+#include <cassert>
 
-cuBool_Status cuBool_Matrix_Reduce(
-        cuBool_Vector result,
-        cuBool_Matrix matrix,
-        cuBool_Hints hints
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(matrix)
-        auto r = (cubool::Vector*) result;
-        auto m = (cubool::Matrix*) matrix;
-        r->reduceMatrix(*m, hints & CUBOOL_HINT_TRANSPOSE,hints & CUBOOL_HINT_TIME_CHECK);
-    CUBOOL_END_BODY
+namespace cubool {
+
+    void CudaVector::eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
+        const auto* a = dynamic_cast<const CudaVector*>(&aBase);
+        const auto* b = dynamic_cast<const CudaVector*>(&bBase);
+
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided vector does not belong to cuda vector class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided vector does not belong to cuda vector class");
+
+        assert(a->getNrows() == b->getNrows());
+
+        kernels::SpVectorEWiseAdd<index, DeviceAlloc<index>> functor;
+        auto result = functor(a->mVectorImpl, b->mVectorImpl);
+
+        mVectorImpl = std::move(result);
+    }
+
 }

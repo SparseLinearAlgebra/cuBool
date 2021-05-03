@@ -22,19 +22,35 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#include <cuda/cuda_vector.hpp>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/kernels/spreduce.cuh>
+#include <core/error.hpp>
+#include <cassert>
 
-cuBool_Status cuBool_Matrix_Reduce(
-        cuBool_Vector result,
-        cuBool_Matrix matrix,
-        cuBool_Hints hints
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(matrix)
-        auto r = (cubool::Vector*) result;
-        auto m = (cubool::Matrix*) matrix;
-        r->reduceMatrix(*m, hints & CUBOOL_HINT_TRANSPOSE,hints & CUBOOL_HINT_TIME_CHECK);
-    CUBOOL_END_BODY
+namespace cubool {
+
+    void CudaVector::reduceMatrix(const struct MatrixBase &matrixBase, bool transpose, bool checkTime) {
+        auto matrix = dynamic_cast<const CudaMatrix*>(&matrixBase);
+
+        CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Provided matrix does not belongs to cuda matrix class");
+
+        if (transpose) {
+            assert(matrix->getNcols() == this->getNrows());
+            matrix->resizeStorageToDim();
+
+            // Reduce to row-vector
+            kernels::SpVectorMatrixTransposedReduceFunctor<index, DeviceAlloc<index>> functor;
+            mVectorImpl = std::move(functor(matrix->mMatrixImpl));
+        }
+        else {
+            assert(matrix->getNrows() == this->getNrows());
+            matrix->resizeStorageToDim();
+
+            // Reduce to column-vector
+            kernels::SpVectorMatrixReduceFunctor<index, DeviceAlloc<index>> functor;
+            mVectorImpl = std::move(functor(matrix->mMatrixImpl));
+        }
+    }
+
 }

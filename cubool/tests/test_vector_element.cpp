@@ -135,32 +135,32 @@ void testRun(cuBool_Index m, cuBool_Hints setup) {
 }
 
 TEST(cuBool_Vector, SetElementSmall) {
-    cuBool_Index m = 60;
+    cuBool_Index m = 1000;
     testRun(m, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Vector, SetElementMedium) {
-    cuBool_Index m = 500;
+    cuBool_Index m = 20000;
     testRun(m, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Vector, SetElementLarge) {
-    cuBool_Index m = 1000;
+    cuBool_Index m = 90000;
     testRun(m, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Vector, SetElementSmallFallback) {
-    cuBool_Index m = 60;
+    cuBool_Index m = 1000;
     testRun(m, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Vector, SetElementMediumFallback) {
-    cuBool_Index m = 500;
+    cuBool_Index m = 20000;
     testRun(m, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Vector, SetElementLargeFallback) {
-    cuBool_Index m = 1000;
+    cuBool_Index m = 90000;
     testRun(m, CUBOOL_HINT_CPU_BACKEND);
 }
 

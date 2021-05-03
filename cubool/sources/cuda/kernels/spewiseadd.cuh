@@ -22,19 +22,49 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
+#ifndef CUBOOL_SPEWISEADD_HPP
+#define CUBOOL_SPEWISEADD_HPP
 
-cuBool_Status cuBool_Matrix_Reduce(
-        cuBool_Vector result,
-        cuBool_Matrix matrix,
-        cuBool_Hints hints
-) {
-    CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(matrix)
-        auto r = (cubool::Vector*) result;
-        auto m = (cubool::Matrix*) matrix;
-        r->reduceMatrix(*m, hints & CUBOOL_HINT_TRANSPOSE,hints & CUBOOL_HINT_TIME_CHECK);
-    CUBOOL_END_BODY
+#include <cuda/details/sp_vector.hpp>
+
+namespace cubool {
+    namespace kernels {
+
+        template <typename IndexType, typename AllocType>
+        struct SpVectorEWiseAdd {
+            template<typename T>
+            using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
+            using VectorType = details::SpVector<IndexType, AllocType>;
+
+            VectorType operator()(const VectorType& a, const VectorType& b) {
+                auto aNvals = a.m_vals;
+                auto bNvals = b.m_vals;
+                auto worst = aNvals + bNvals;
+
+                // Allocate memory for the worst case scenario
+                if (mCacheBuffer.size() < worst)
+                    mCacheBuffer.resize(aNvals + bNvals);
+
+                // Merge sorted arrays without duplicates
+                auto out = thrust::set_union(a.m_rows_index.begin(), a.m_rows_index.end(),
+                                             b.m_rows_index.begin(), b.m_rows_index.end(),
+                                             mCacheBuffer.begin());
+
+                // Count result nvals count
+                auto nvals = thrust::distance(mCacheBuffer.begin(), out);
+
+                // Fill the result buffer
+                ContainerType<index> rowIndex(nvals);
+                thrust::copy(mCacheBuffer.begin(), out, rowIndex.begin());
+
+                return VectorType(std::move(rowIndex), a.m_rows, nvals);
+            }
+
+        private:
+            ContainerType<index> mCacheBuffer;
+        };
+
+    }
 }
+
+#endif //CUBOOL_SPEWISEADD_HPP
