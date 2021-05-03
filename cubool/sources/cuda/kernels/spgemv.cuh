@@ -34,14 +34,22 @@
 namespace cubool {
     namespace kernels {
 
-        template<typename IndexType, size_t blockSize>
+        template<typename IndexType, size_t threads, size_t blockSize>
         __global__ void spgemv(thrust::device_ptr<const IndexType> rowOffsets,  // Input csr matrix rows
                                thrust::device_ptr<const IndexType> colIndices,  // Input csr matrix col indices
                                thrust::device_ptr<const IndexType> v,           // Input dense v vector
                                thrust::device_ptr<IndexType> x,                 // Output dense x vector (x = M*v)
-                               thrust::device_ptr<const IndexType> rowConfig) { // Rows to process for each bin
-            IndexType assignedOrder = blockIdx.x;
-            IndexType id = threadIdx.x;
+                               thrust::device_ptr<const IndexType> rowConfig,   // Rows to process for each bin
+                               IndexType rowsCount) {                           // Num of rows to process
+
+            static const size_t WARP_SIZE = 32;
+
+            IndexType id = threadIdx.x % threads;
+            IndexType interBlockId = threadIdx.x / threads;
+            IndexType assignedOrder = blockIdx.x * (blockSize / threads) + interBlockId;
+
+            if (assignedOrder >= rowsCount)
+                assignedOrder = rowsCount - 1;
 
             IndexType i = rowConfig[assignedOrder];    // Row to process
 
@@ -51,19 +59,29 @@ namespace cubool {
             __shared__ IndexType tmp_accum[blockSize];
 
             // Initial zero
-            tmp_accum[id] = 0;
+            tmp_accum[threadIdx.x] = 0;
             __syncthreads();
 
             // Each thread accum nnz values
-            for (size_t k = id; k < rowSize; k += blockSize) {
-                tmp_accum[id] |= v[colIndices[rowBegin + k]];
+            for (size_t k = id; k < rowSize; k += threads) {
+                tmp_accum[threadIdx.x] |= v[colIndices[rowBegin + k]];
             }
             __syncthreads();
 
             // Reduce accum to single value
-            for (size_t s = 1; s < blockSize; s *= 2) {
+            for (size_t s = 1; s < threads && warpSize; s *= 2) {
                 if (id % (2 * s) == 0) {
-                    tmp_accum[id] |= tmp_accum[id + s];
+                    tmp_accum[threadIdx.x] |= tmp_accum[threadIdx.x + s];
+                }
+
+                __syncwarp();
+            }
+
+            __syncthreads();
+
+            for (size_t s = WARP_SIZE; s < threads; s *= 2) {
+                if (id % (2 * s) == 0) {
+                    tmp_accum[threadIdx.x] |= tmp_accum[threadIdx.x + s];
                 }
 
                 __syncthreads();
@@ -71,8 +89,8 @@ namespace cubool {
 
             // 0-thread saves result
             if (id == 0) {
-                if (tmp_accum[0] > 0) {
-                    x[i] = tmp_accum[0];
+                if (tmp_accum[threadIdx.x] > 0) {
+                    x[i] = tmp_accum[threadIdx.x];
                 }
             }
         }
@@ -95,11 +113,14 @@ namespace cubool {
                           thrust::device_ptr<const IndexType> rowConfig) {   // Rows to process for each bin)
 
                 EXPAND_SIDE_EFFECTS(
-            (binSizes[Bins::id] > 0?
-                      spgemv<IndexType, Bins::blockSize>
-                      <<<binSizes[Bins::id], Bins::blockSize, 0, streamsWrapper.streams[Bins::id]>>>
-                     (rowOffsets, colIndices, v, x, rowConfig + binOffset[Bins::id])
-                     : void())
+                    (binSizes[Bins::id] > 0?
+                    spgemv<IndexType, Bins::threads, Bins::blockSize>
+                    <<<binSizes[Bins::id] / Bins::dispatchRatio + (binSizes[Bins::id] % Bins::dispatchRatio? 1: 0),
+                    Bins::blockSize,
+                    0,
+                    streamsWrapper.streams[Bins::id]>>>
+                    (rowOffsets, colIndices, v, x, rowConfig + binOffset[Bins::id], binSizes[Bins::id])
+                    : void())
                 );
             }
 
@@ -143,10 +164,13 @@ namespace cubool {
                 // Empty out buffer
                 thrust::fill_n(mOutput.begin(), M, (IndexType) 0);
 
-                using ConfigType = Config<Bin<32, 1,  32, 0>,
-                                          Bin<64, 32, 64, 1>,
-                                          Bin<128,64, 128,2>,
-                                          Bin<256,128,max,3>>;
+                using ConfigType = Config<Bin<4,  32, 1,  8,  0>,
+                                          Bin<8,  32, 8,  16, 1>,
+                                          Bin<16, 32, 16, 32, 2>,
+                                          Bin<32, 32, 32, 64, 3>,
+                                          Bin<64, 64, 64, 128,4>,
+                                          Bin<128,128,128,256,5>,
+                                          Bin<256,256,256,max,6>>;
                 ConfigType config;
 
                 mRowsConfig.resize(M);

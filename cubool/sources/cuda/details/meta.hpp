@@ -46,9 +46,13 @@ namespace cubool {
         cudaStream_t streams[Config::binsCount()] = {};
     };
 
-    template<size_t BlocksSize, size_t Max, size_t Min, size_t Id>
+    template<size_t Threads, size_t BlocksSize, size_t Max, size_t Min, size_t Id>
     struct Bin {
+        static_assert(Threads <= BlocksSize, "Block size must be >= threads in this block");
+
+        static constexpr size_t threads = Threads;
         static constexpr size_t blockSize = BlocksSize;
+        static constexpr size_t dispatchRatio = BlocksSize / Threads;
         static constexpr size_t min = Max;
         static constexpr size_t max = Min;
         static constexpr size_t id = Id;
