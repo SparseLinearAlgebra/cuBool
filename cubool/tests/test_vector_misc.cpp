@@ -32,7 +32,7 @@ TEST(cuBool_Vector, Duplicate) {
 
     testing::Vector tvector = testing::Vector::generateSparse(m, density);
 
-    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_CPU_BACKEND), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
 
     ASSERT_EQ(cuBool_Vector_New(&vector, m), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_Build(vector, tvector.index.data(), tvector.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
@@ -54,7 +54,7 @@ TEST(cuBool_Vector, PropertyQuery) {
 
     testing::Vector tvector = std::move(testing::Vector::generateSparse(m, density));
 
-    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_CPU_BACKEND), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
 
     ASSERT_EQ(cuBool_Vector_New(&vector, m), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_Build(vector, tvector.index.data(), tvector.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
@@ -80,7 +80,7 @@ TEST(cuBool_Vector, ExtractValues) {
 
     testing::Vector tvector = std::move(testing::Vector::generateSparse(m, density));
 
-    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_CPU_BACKEND), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
 
     ASSERT_EQ(cuBool_Vector_New(&vector, m), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_Build(vector, tvector.index.data(), tvector.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
@@ -107,7 +107,7 @@ TEST(cuBool_Vector, Marker) {
     cuBool_Index size = 0;
     char buffer[BUFFER_SIZE];
 
-    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_CPU_BACKEND), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_New(&vector, m), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_SetMarker(vector, marker), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_Marker(vector, nullptr, &size), CUBOOL_STATUS_SUCCESS);
@@ -134,7 +134,7 @@ TEST(cuBool_Vector, MarkerShort) {
     cuBool_Index size = BUFFER_SIZE;
     char buffer[BUFFER_SIZE];
 
-    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_CPU_BACKEND), CUBOOL_STATUS_SUCCESS);
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_New(&vector, m), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_SetMarker(vector, marker), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_Marker(vector, buffer, &size), CUBOOL_STATUS_SUCCESS);

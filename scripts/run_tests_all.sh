@@ -10,3 +10,8 @@
 ./cubool/tests/test_matrix_setup
 ./cubool/tests/test_matrix_element
 ./cubool/tests/test_matrix_transpose
+./cubool/tests/test_vector_misc
+./cubool/tests/test_vector_element
+./cubool/tests/test_vector_ewiseadd
+#./cubool/tests/test_vector_mxv
+#./cubool/tests/test_vector_vxm

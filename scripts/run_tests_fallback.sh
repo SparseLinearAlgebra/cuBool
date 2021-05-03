@@ -10,3 +10,8 @@
 ./cubool/tests/test_matrix_setup --gtest_filter=*.*Fallback
 ./cubool/tests/test_matrix_element --gtest_filter=*.*Fallback
 ./cubool/tests/test_matrix_transpose --gtest_filter=*.*Fallback
+./cubool/tests/test_vector_misc
+./cubool/tests/test_vector_element --gtest_filter=*.*Fallback
+./cubool/tests/test_vector_ewiseadd --gtest_filter=*.*Fallback
+#./cubool/tests/test_vector_mxv --gtest_filter=*.*Fallback
+#./cubool/tests/test_vector_vxm --gtest_filter=*.*Fallback
