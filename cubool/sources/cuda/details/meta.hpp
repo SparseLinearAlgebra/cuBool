@@ -22,39 +22,65 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CUDA_BACKEND_HPP
-#define CUBOOL_CUDA_BACKEND_HPP
+#ifndef CUBOOL_META_HPP
+#define CUBOOL_META_HPP
 
-#include <backend/backend_base.hpp>
-#include <cuda/cuda_instance.hpp>
+#include <cstddef>
 
 namespace cubool {
 
-    /**
-     * Main entry to cuda provided backend implementation.
-     */
-    class CudaBackend final: public BackendBase {
+    template <size_t workersCount, size_t blockSize>
+    struct BinConfig {
+        static const size_t mWorkersCount = workersCount;
+        static const size_t mBlockSize = blockSize;
+    };
+
+    template <size_t minBorder, size_t maxBorder>
+    struct BorderConfig {
+        static const size_t mMinBorder = minBorder;
+        static const size_t mMaxBorder = maxBorder;
+    };
+
+    template <typename ... BinsConfig>
+    class ComputeConfig {
     public:
-        ~CudaBackend() override = default;
 
-        void initialize(hints initHints) override;
-        void finalize() override;
-        bool isInitialized() const override;
-
-        MatrixBase *createMatrix(size_t nrows, size_t ncols) override;
-        VectorBase* createVector(size_t nrows) override;
-        void releaseMatrix(MatrixBase *matrixBase) override;
-        void releaseVector(VectorBase* vectorBase) override;
-        void queryCapabilities(cuBool_DeviceCaps& caps) override;
-
-        CudaInstance& getInstance();
+        template<typename T, typename C>
+        void exec(C& context) {
+            ExecImpl<void, T, BinsConfig...>::exec(0, context);
+        }
 
     private:
-        CudaInstance* mInstance;
-        size_t mMatCount = 0;
-        size_t mVecCount = 0;
+
+        template<typename D, typename T, typename C, typename ... Bins>
+        struct ExecImpl {
+            static void exec(size_t index, C& context) { }
+        };
+
+        template<typename D, typename T, typename C, typename Bin>
+        struct ExecImpl<D, T, C, Bin> {
+            static void exec(size_t index, C& context) {
+                using Timpl = typename T::template function<Bin>;
+
+                Timpl timpl;
+                timpl(index, context);
+            }
+        };
+
+        template<typename D, typename T, typename C, typename Bin, typename ... Bins>
+        struct ExecImpl<D, T, C, Bin, Bins...> {
+            static void exec(size_t index, C& context) {
+                using Timpl = typename T::template function<Bin>;
+
+                Timpl timpl;
+                timpl(index, context);
+
+                ExecImpl<D, T, Bins...>::exec(index + 1, context);
+            }
+        };
+
     };
 
 }
 
-#endif //CUBOOL_CUDA_BACKEND_HPP
+#endif //CUBOOL_META_HPP

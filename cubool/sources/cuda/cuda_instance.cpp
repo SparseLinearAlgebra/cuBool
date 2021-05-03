@@ -34,11 +34,6 @@ namespace cubool {
     CudaInstance::CudaInstance(bool useManagedMemory) {
         gInstance = this;
         mMemoryType = useManagedMemory? Managed: Default;
-
-#ifdef CUBOOL_DEBUG
-        sendMessage(CUBOOL_STATUS_SUCCESS, "Initialize CuBool instance");
-        printDeviceCapabilities();
-#endif // CUBOOL_DEBUG
     }
 
     void CudaInstance::allocate(void* &ptr, size_t size) const {

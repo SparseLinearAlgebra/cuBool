@@ -22,25 +22,39 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/cuda_matrix.hpp>
-#include <utils/data_utils.hpp>
+#ifndef CUBOOL_SP_VECTOR_HPP
+#define CUBOOL_SP_VECTOR_HPP
+
+#include <thrust/device_vector.h>
 
 namespace cubool {
+    namespace details {
 
-    void CudaMatrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
-        if (nvals == 0) {
-            mMatrixImpl.zero_dim();  // no content, empty matrix
-            return;
-        }
+        template<typename IndexType, typename AllocType>
+        struct SpVector {
+        public:
+            typedef bool value_type;
+            typedef IndexType index_type;
+            typedef AllocType alloc_type;
 
-        // Build csr structure and store on cpu side
-        std::vector<index> rowOffsets;
-        std::vector<index> colIndices;
+            SpVector()
+                : m_rows_index{}, m_rows{0}, m_vals{0} {}
 
-        DataUtils::buildFromData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices, isSorted, noDuplicates);
+            SpVector(index_type rows)
+                : m_rows_index{}, m_rows (rows), m_vals{0} {}
 
-        // Move actual data to the matrix implementation
-        this->transferToDevice(rowOffsets, colIndices);
+            SpVector(thrust::device_vector<index_type, alloc_type> rows_index, index_type rows, index_type vals)
+                : m_rows_index{ std::move(rows_index) }, m_rows{ rows }, m_vals{ vals }  {
+                assert(m_rows > 0);
+                assert(m_rows_index.size() == m_vals);
+            }
+
+        public:
+            thrust::device_vector<index_type, alloc_type> m_rows_index;
+            index_type m_rows;
+            index_type m_vals;
+        };
     }
-
 }
+
+#endif //CUBOOL_SP_VECTOR_HPP

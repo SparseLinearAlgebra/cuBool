@@ -22,26 +22,46 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/cuda_matrix.hpp>
-#include <utils/data_utils.hpp>
+#ifndef CUBOOL_CUDA_VECTOR_HPP
+#define CUBOOL_CUDA_VECTOR_HPP
+
+#include <backend/vector_base.hpp>
+#include <cuda/cuda_instance.hpp>
+#include <cuda/details/sp_vector.hpp>
+#include <cuda/details/device_allocator.cuh>
 
 namespace cubool {
 
-    void CudaMatrix::extract(index *rows, index *cols, size_t &nvals) {
-        assert(nvals >= getNvals());
+    class CudaVector final: public VectorBase {
+    public:
+        template<typename T>
+        using DeviceAlloc = details::DeviceAllocator<T>;
+        using VectorImplType = details::SpVector<index, DeviceAlloc<index>>;
 
-        // Set nvals to the exact number of nnz values
-        nvals = getNvals();
+        CudaVector(size_t nrows, CudaInstance& instance);
+        ~CudaVector() override = default;
 
-        if (nvals > 0) {
-            // Copy data to the host
-            std::vector<index> rowOffsets;
-            std::vector<index> colIndices;
+        void setElement(index i) override;
+        void build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) override;
+        void extract(index *rows, size_t &nvals) override;
+        void extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) override;
 
-            this->transferFromDevice(rowOffsets, colIndices);
+        void clone(const VectorBase &otherBase) override;
+        void reduce(index &result, bool checkTime) override;
+        void reduceMatrix(const struct MatrixBase &matrix, bool transpose, bool checkTime) override;
 
-            DataUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices);
-        }
-    }
+        void eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) override;
+        void multiplyVxM(const VectorBase &vBase, const struct MatrixBase &mBase, bool checkTime) override;
+        void multiplyMxV(const struct MatrixBase &mBase, const VectorBase &vBase, bool checkTime) override;
+
+        index getNrows() const override;
+        index getNvals() const override;
+
+    private:
+        mutable VectorImplType mVectorImpl;
+        CudaInstance& mInstance;
+    };
 
 }
+
+#endif //CUBOOL_CUDA_VECTOR_HPP

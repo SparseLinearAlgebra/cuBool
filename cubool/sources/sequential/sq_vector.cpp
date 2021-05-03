@@ -82,7 +82,7 @@ namespace cubool {
     }
 
     void SqVector::reduce(index &result, bool checkTime) {
-        result = mData.nvals;
+        result = getNvals();
     }
 
     void SqVector::reduceMatrix(const MatrixBase &otherBase, bool transpose, bool checkTime) {

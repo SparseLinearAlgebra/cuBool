@@ -25,6 +25,7 @@
 #include <cuda/cuda_matrix.hpp>
 #include <core/error.hpp>
 #include <utils/timer.hpp>
+#include <utils/data_utils.hpp>
 #include <algorithm>
 
 namespace cubool {
@@ -36,6 +37,39 @@ namespace cubool {
 
     void CudaMatrix::setElement(index i, index j) {
         RAISE_ERROR(NotImplemented, "This function is not supported for this matrix class");
+    }
+
+    void CudaMatrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
+        if (nvals == 0) {
+            mMatrixImpl.zero_dim();  // no content, empty matrix
+            return;
+        }
+
+        // Build csr structure and store on cpu side
+        std::vector<index> rowOffsets;
+        std::vector<index> colIndices;
+
+        DataUtils::buildFromData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices, isSorted, noDuplicates);
+
+        // Move actual data to the matrix implementation
+        this->transferToDevice(rowOffsets, colIndices);
+    }
+
+    void CudaMatrix::extract(index *rows, index *cols, size_t &nvals) {
+        assert(nvals >= getNvals());
+
+        // Set nvals to the exact number of nnz values
+        nvals = getNvals();
+
+        if (nvals > 0) {
+            // Copy data to the host
+            std::vector<index> rowOffsets;
+            std::vector<index> colIndices;
+
+            this->transferFromDevice(rowOffsets, colIndices);
+
+            DataUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices);
+        }
     }
 
     void CudaMatrix::clone(const MatrixBase &otherBase) {

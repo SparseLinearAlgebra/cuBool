@@ -137,6 +137,14 @@ namespace cubool {
         }
     }
 
+    bool checkBounds(const std::vector<index> &values, index left, index right) {
+        for (auto v: values) {
+            CHECK_RAISE_ERROR(left <= v && v < right, InvalidArgument, "Index out of vector bounds");
+        }
+
+        return true;
+    }
+
     void DataUtils::buildVectorFromData(size_t nrows, const index *rows, size_t nvals, std::vector<index> &values,
                                         bool isSorted, bool noDuplicates) {
         values.resize(nvals);
@@ -145,19 +153,9 @@ namespace cubool {
         if (nvals == 0)
             return;
 
-        assert(rows);
+        assert(checkBounds(values, 0, nrows));
 
         std::copy(rows, rows + nvals, values.begin());
-
-        auto checkBounds = [&]() {
-            for (auto value: values) {
-                CHECK_RAISE_ERROR(value < nrows, InvalidArgument, "Index out of vector bounds");
-            }
-
-            return true;
-        };
-
-        assert(checkBounds());
 
         if (!isSorted) {
             std::sort(values.begin(), values.end(), [](const index& a, const index& b) {

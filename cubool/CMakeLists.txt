@@ -17,7 +17,15 @@ set(TARGET_NAME cubool)
 set(TARGET_FILE_NAME)
 set(DEFINES_LIST)
 
-# Platform checks
+# Mode
+if (CUBOOL_DEBUG)
+    list(APPEND DEFINES_LIST CUBOOL_DEBUG)
+endif()
+if (CUBOOL_RELEASE)
+    list(APPEND DEFINES_LIST CUBOOL_RELEASE)
+endif()
+
+    # Platform checks
 if(APPLE)
     list(APPEND DEFINES_LIST CUBOOL_PLATFORM_MACOS)
     set(TARGET_FILE_NAME "lib${TARGET_NAME}.dylib")
@@ -111,14 +119,18 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/cuda_instance.cpp
         sources/cuda/cuda_matrix.hpp
         sources/cuda/cuda_matrix.cu
-        sources/cuda/cuda_matrix_build.cu
-        sources/cuda/cuda_matrix_extract.cu
         sources/cuda/cuda_matrix_ewiseadd.cu
         sources/cuda/cuda_matrix_kronecker.cu
         sources/cuda/cuda_matrix_multiply.cu
         sources/cuda/cuda_matrix_transpose.cu
         sources/cuda/cuda_matrix_reduce.cu
         sources/cuda/cuda_matrix_extract_sub_matrix.cu
+        sources/cuda/cuda_vector.hpp
+        sources/cuda/cuda_vector.cu
+        sources/cuda/details/meta.hpp
+        sources/cuda/details/sp_vector.hpp
+        sources/cuda/details/host_allocator.hpp
+        sources/cuda/details/device_allocator.cuh
         sources/cuda/kernels/slow_sort.cuh
         sources/cuda/kernels/bin_search.cuh
         sources/cuda/kernels/sptranspose.cuh

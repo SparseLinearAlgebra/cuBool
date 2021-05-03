@@ -40,7 +40,7 @@ namespace cubool {
         using HostAlloc = details::HostAllocator<T>;
         using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
 
-        explicit CudaMatrix(size_t nrows, size_t ncols, CudaInstance& instance);
+        CudaMatrix(size_t nrows, size_t ncols, CudaInstance& instance);
         ~CudaMatrix() override = default;
 
         void setElement(index i, index j) override;
