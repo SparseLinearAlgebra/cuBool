@@ -93,11 +93,6 @@ namespace cubool {
 
     }
 
-    void CudaVector::multiplyMxV(const struct MatrixBase &mBase, const VectorBase &vBase, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
-
-    }
-
     index CudaVector::getNrows() const {
         return mVectorImpl.m_rows;
     }

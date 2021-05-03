@@ -128,6 +128,7 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/cuda_matrix_extract_sub_matrix.cu
         sources/cuda/cuda_vector.hpp
         sources/cuda/cuda_vector.cu
+        sources/cuda/cuda_vector_mxv.cu
         sources/cuda/cuda_vector_ewiseadd.cu
         sources/cuda/cuda_vector_reduce.cu
         sources/cuda/details/meta.hpp
@@ -136,6 +137,7 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/details/device_allocator.cuh
         sources/cuda/kernels/slow_sort.cuh
         sources/cuda/kernels/bin_search.cuh
+        sources/cuda/kernels/spgemv.cuh
         sources/cuda/kernels/spewiseadd.cuh
         sources/cuda/kernels/sptranspose.cuh
         sources/cuda/kernels/sptranspose2.cuh

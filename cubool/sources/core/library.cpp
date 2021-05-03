@@ -240,6 +240,10 @@ namespace cubool {
 
     void Library::handleError(const std::exception& error) {
         mLogger->log(Logger::Level::Error, error.what());
+
+#ifdef CUBOOL_DEBUG
+        std::cerr << error.what() << std::endl;
+#endif
     }
 
     void Library::queryCapabilities(cuBool_DeviceCaps &caps) {

@@ -22,70 +22,30 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_META_HPP
-#define CUBOOL_META_HPP
-
-#include <thrust/device_vector.h>
-#include <thrust/host_vector.h>
-#include <cstddef>
+#include <cuda/cuda_vector.hpp>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/kernels/spgemv.cuh>
+#include <core/error.hpp>
+#include <cassert>
 
 namespace cubool {
 
-    template <typename Config>
-    struct StreamsWrapper {
-        StreamsWrapper() {
-            for (auto& s: streams)
-                cudaStreamCreate(&s);
-        }
+    void CudaVector::multiplyMxV(const struct MatrixBase &mBase, const VectorBase &vBase, bool checkTime) {
+        const auto* m = dynamic_cast<const CudaMatrix*>(&mBase);
+        const auto* v = dynamic_cast<const CudaVector*>(&vBase);
 
-        ~StreamsWrapper() {
-            for (auto& s: streams)
-                cudaStreamDestroy(s);
-        }
+        CHECK_RAISE_ERROR(m != nullptr, InvalidArgument, "Provided matrix does not belong to cuda matrix class");
+        CHECK_RAISE_ERROR(v != nullptr, InvalidArgument, "Provided vector does not belong to cuda vector class");
 
-        cudaStream_t streams[Config::binsCount()] = {};
-    };
+        assert(m->getNcols() == v->getNrows());
+        assert(m->getNrows() == this->getNrows());
 
-    template<size_t BlocksSize, size_t Max, size_t Min, size_t Id>
-    struct Bin {
-        static constexpr size_t blockSize = BlocksSize;
-        static constexpr size_t min = Max;
-        static constexpr size_t max = Min;
-        static constexpr size_t id = Id;
-    };
+        m->resizeStorageToDim();
 
+        kernels::SpGEMV<index, DeviceAlloc<index>> functor;
+        auto result = functor(m->mMatrixImpl, v->mVectorImpl);
 
-    template <typename ... Bins>
-    struct Config {
-    public:
-
-        static __host__ __device__ size_t selectBin(size_t rowSize) {
-            static constexpr size_t mins[] = { Bins::min... };
-            static constexpr size_t maxs[] = { Bins::max... };
-
-            for (size_t i = 0; i < binsCount(); i++) {
-                if (mins[i] <= rowSize && rowSize <= maxs[i])
-                    return i;
-            }
-
-            return unusedBinId();
-        }
-
-        static __host__ __device__ constexpr size_t binBlockSize(size_t id) {
-            constexpr size_t blockSizes[] = { Bins::blockSize... };
-            return blockSizes[id];
-        }
-
-        static __host__ __device__ constexpr size_t binsCount() {
-            return sizeof...(Bins);
-        }
-
-        static __host__ __device__ constexpr size_t unusedBinId() {
-            return binsCount() + 1;
-        }
-
-    };
+        mVectorImpl = std::move(result);
+    }
 
 }
-
-#endif //CUBOOL_META_HPP

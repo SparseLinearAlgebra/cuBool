@@ -62,7 +62,7 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     ASSERT_EQ(cuBool_Initialize(setup), CUBOOL_STATUS_SUCCESS);
 
     for (size_t i = 0; i < 5; i++) {
-        testMatrixVectorMultiplyAdd(m, n, 0.1f + (0.05f) * ((float) i));
+        testMatrixVectorMultiplyAdd(m, n, 0.01f + (0.5f) * ((float) i + 1.0f) / ((float) n));
     }
 
     // Finalize library
@@ -70,32 +70,32 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
 }
 
 TEST(cuBool_Matrix, MultiplyMatrixVectorSmall) {
-    cuBool_Index m = 60, n = 80;
+    cuBool_Index m = 600, n = 800;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Matrix, MultiplyMatrixVectorMedium) {
-    cuBool_Index m = 500, n = 800;
+    cuBool_Index m = 2500, n = 4000;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Matrix, MultiplyMatrixVectorLarge) {
-    cuBool_Index m = 1000, n = 500;
+    cuBool_Index m = 10000, n = 5000;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Matrix, MultiplyMatrixVectorSmallFallback) {
-    cuBool_Index m = 60, n = 80;
+    cuBool_Index m = 600, n = 800;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Matrix, MultiplyMatrixVectorMediumFallback) {
-    cuBool_Index m = 500, n = 800;
+    cuBool_Index m = 2500, n = 4000;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Matrix, MultiplyMatrixVectorLargeFallback) {
-    cuBool_Index m = 1000, n = 500;
+    cuBool_Index m = 10000, n = 5000;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 

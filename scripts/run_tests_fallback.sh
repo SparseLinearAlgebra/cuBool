@@ -13,5 +13,5 @@
 ./cubool/tests/test_vector_misc
 ./cubool/tests/test_vector_element --gtest_filter=*.*Fallback
 ./cubool/tests/test_vector_ewiseadd --gtest_filter=*.*Fallback
-#./cubool/tests/test_vector_mxv --gtest_filter=*.*Fallback
+./cubool/tests/test_vector_mxv --gtest_filter=*.*Fallback
 #./cubool/tests/test_vector_vxm --gtest_filter=*.*Fallback
