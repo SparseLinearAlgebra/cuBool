@@ -45,8 +45,15 @@ void testMatrixVectorMultiplyAdd(cuBool_Index m, cuBool_Index n, float density) 
     testing::MatrixVectorMultiplyFunctor functor;
     testing::Vector tr = functor(ta, tv);
 
-    // Evaluate r += a x b
-    ASSERT_EQ(cuBool_MxV(r, a, v, CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
+    testing::TimeQuery query;
+
+    for (int i = 0; i < 10; i++) {
+        testing::TimeScope scope(query);
+        // Evaluate r += a x b
+        ASSERT_EQ(cuBool_MxV(r, a, v, CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
+    }
+
+    std::cout << query.getAverageTimeMs() << " ms" << std::endl;
 
     // Compare results
     ASSERT_EQ(tr.areEqual(r), true);

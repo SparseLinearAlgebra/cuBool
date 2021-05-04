@@ -35,6 +35,7 @@ namespace cubool {
      */
     class CudaInstance {
     public:
+
         enum MemType {
             Default,
             Managed

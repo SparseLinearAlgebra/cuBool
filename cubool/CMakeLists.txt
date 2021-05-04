@@ -117,7 +117,6 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/cuda_backend.cu
         sources/cuda/cuda_instance.hpp
         sources/cuda/cuda_instance.cu
-        sources/cuda/cuda_instance.cpp
         sources/cuda/cuda_matrix.hpp
         sources/cuda/cuda_matrix.cu
         sources/cuda/cuda_matrix_ewiseadd.cu

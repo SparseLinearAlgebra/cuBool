@@ -30,6 +30,13 @@
 
 namespace cubool {
 
+    volatile CudaInstance* CudaInstance::gInstance = nullptr;
+
+    CudaInstance::CudaInstance(bool useManagedMemory) {
+        gInstance = this;
+        mMemoryType = useManagedMemory? Managed: Default;
+    }
+
     CudaInstance::~CudaInstance() {
         assert(mHostAllocCount == 0);
         assert(mDeviceAllocCount == 0);
@@ -106,6 +113,31 @@ namespace cubool {
                 deviceCaps.sharedMemoryPerBlockKiBs = deviceProp.sharedMemPerBlock / KiB;
             }
         }
+    }
+
+    void CudaInstance::allocate(void* &ptr, size_t size) const {
+        ptr = malloc(size);
+        CHECK_RAISE_ERROR(ptr != nullptr, MemOpFailed, "Failed to allocate memory on the CPU");
+        mHostAllocCount++;
+    }
+
+    void CudaInstance::deallocate(void* ptr) const {
+        CHECK_RAISE_ERROR(ptr != nullptr, InvalidArgument, "Passed null ptr to free");
+        free(ptr);
+        mHostAllocCount--;
+    }
+
+    CudaInstance& CudaInstance::getInstanceRef() {
+        CHECK_RAISE_ERROR(gInstance != nullptr, InvalidState, "No instance in the system");
+        return (CudaInstance&) *gInstance;
+    }
+
+    CudaInstance* CudaInstance::getInstancePtr() {
+        return (CudaInstance* ) gInstance;
+    }
+
+    bool CudaInstance::isInstancePresent() {
+        return gInstance != nullptr;
     }
 
 }
