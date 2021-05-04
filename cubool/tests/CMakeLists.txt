@@ -13,8 +13,8 @@ target_link_libraries(test_matrix_misc PUBLIC testing)
 add_executable(test_matrix_transpose test_matrix_transpose.cpp)
 target_link_libraries(test_matrix_transpose PUBLIC testing)
 
-add_executable(test_matrix_extract_sub_matrix test_matrix_extract_sub_matrix.cpp)
-target_link_libraries(test_matrix_extract_sub_matrix PUBLIC testing)
+add_executable(test_matrix_sub_matrix test_matrix_sub_matrix.cpp)
+target_link_libraries(test_matrix_sub_matrix PUBLIC testing)
 
 add_executable(test_matrix_reduce test_matrix_reduce.cpp)
 target_link_libraries(test_matrix_reduce PUBLIC testing)
@@ -42,3 +42,6 @@ target_link_libraries(test_vector_mxv PUBLIC testing)
 
 add_executable(test_vector_vxm test_vector_vxm.cpp)
 target_link_libraries(test_vector_vxm PUBLIC testing)
+
+add_executable(test_vector_sub_vector test_vector_sub_vector.cpp)
+target_link_libraries(test_vector_sub_vector PUBLIC testing)

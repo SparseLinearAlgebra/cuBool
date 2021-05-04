@@ -25,6 +25,7 @@
 #include <cuda/cuda_vector.hpp>
 #include <core/error.hpp>
 #include <utils/data_utils.hpp>
+#include <limits>
 
 namespace cubool {
 
@@ -70,8 +71,61 @@ namespace cubool {
     }
 
     void CudaVector::extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        const auto* v = dynamic_cast<const CudaVector*>(&otherBase);
 
+        CHECK_RAISE_ERROR(v != nullptr, InvalidArgument, "Passed vector does not belong to cuda vector class");
+
+        assert(i + nrows <= v->getNrows());
+        assert(getNrows() == nrows);
+        assert(nrows > 0);
+
+        // If source is empty
+        if (v->getNvals() == 0) {
+            mVectorImpl = std::move(VectorImplType(nrows));
+            return;
+        }
+
+        // If source has too small values
+        index last = v->mVectorImpl.m_rows_index.back();
+        if (i > last) {
+            mVectorImpl = std::move(VectorImplType(nrows));
+            return;
+        }
+
+        auto& vec = v->mVectorImpl;
+
+        thrust::device_vector<index, DeviceAlloc<index>> region(2);
+        thrust::fill_n(region.begin(), 1, std::numeric_limits<index>::max());
+        thrust::fill_n(region.begin() + 1, 1, 0);
+
+        thrust::for_each(thrust::counting_iterator<index>(0), thrust::counting_iterator<index>(vec.m_vals),
+                         [first = region.data(), size = region.data() + 1,
+                          i = i, last = i + nrows, rowIndex = vec.m_rows_index.data()]
+                         __device__ (index id) {
+            auto rowId = rowIndex[id];
+
+            if (i <= rowId && rowId < last) {
+                atomicAdd(size.get(), 1);
+                atomicMin(first.get(), id);
+            }
+        });
+
+        index resultSize = region.back();
+
+        // If no values for result
+        if (resultSize == 0) {
+            mVectorImpl = std::move(VectorImplType(nrows));
+            return;
+        }
+
+        // Copy region to the result
+        index firstToCopy = region.front();
+
+        VectorImplType::container_type result(resultSize);
+        thrust::copy(vec.m_rows_index.begin() + firstToCopy, vec.m_rows_index.begin() + firstToCopy + resultSize, result.begin());
+
+        // Update this impl data
+        mVectorImpl = std::move(VectorImplType(std::move(result), nrows, resultSize));
     }
 
     void CudaVector::clone(const VectorBase &otherBase) {

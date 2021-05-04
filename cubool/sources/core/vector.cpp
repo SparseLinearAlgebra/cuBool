@@ -85,7 +85,34 @@ namespace cubool {
     }
 
     void Vector::extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
+        const auto* other = dynamic_cast<const Vector*>(&otherBase);
+
+        CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed vector does not belong to core vector class");
+
+        auto bI = i + nrows;
+
+        CHECK_RAISE_ERROR(nrows > 0, InvalidArgument, "Cannot extract sub-vector with zero dimension");
+        CHECK_RAISE_ERROR(bI <= other->getNrows(), InvalidArgument, "Provided sub-vector range must be within matrix bounds");
+        CHECK_RAISE_ERROR(nrows == this->getNrows(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
+
+        other->commitCache();
+        this->releaseCache(); // Values of this vector won't be used any more
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->extractSubVector(*other->mHnd, i, nrows, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Vector::extractSubVector: "
+                   << this->getDebugMarker() << " =subvector( "
+                   << i << ", shape=(" << nrows << ") "
+                   << other->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->extractSubVector(*other->mHnd, i, nrows, false);
     }
 
     void Vector::clone(const VectorBase &otherBase) {
