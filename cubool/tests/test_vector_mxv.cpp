@@ -41,19 +41,12 @@ void testMatrixVectorMultiplyAdd(cuBool_Index m, cuBool_Index n, float density) 
     ASSERT_EQ(cuBool_Matrix_Build(a, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED & CUBOOL_HINT_NO_DUPLICATES), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_Build(v, tv.index.data(), tv.nvals, CUBOOL_HINT_VALUES_SORTED & CUBOOL_HINT_NO_DUPLICATES), CUBOOL_STATUS_SUCCESS);
 
-    // Evaluate naive r += a x b on the cpu to compare results
+    // Evaluate naive on the cpu to compare results
     testing::MatrixVectorMultiplyFunctor functor;
     testing::Vector tr = functor(ta, tv);
 
-    testing::TimeQuery query;
-
-    for (int i = 0; i < 10; i++) {
-        testing::TimeScope scope(query);
-        // Evaluate r += a x b
-        ASSERT_EQ(cuBool_MxV(r, a, v, CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
-    }
-
-    std::cout << query.getAverageTimeMs() << " ms" << std::endl;
+    // Evaluate r = M x v
+    ASSERT_EQ(cuBool_MxV(r, a, v, CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
 
     // Compare results
     ASSERT_EQ(tr.areEqual(r), true);

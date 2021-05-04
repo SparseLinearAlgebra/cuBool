@@ -14,4 +14,4 @@
 ./cubool/tests/test_vector_element
 ./cubool/tests/test_vector_ewiseadd
 ./cubool/tests/test_vector_mxv
-#./cubool/tests/test_vector_vxm
+./cubool/tests/test_vector_vxm

@@ -22,8 +22,8 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_SPGEMV_CUH
-#define CUBOOL_SPGEMV_CUH
+#ifndef CUBOOL_SPGEMTV_HPP
+#define CUBOOL_SPGEMTV_HPP
 
 #include <cuda/details/sp_vector.hpp>
 #include <cuda/details/meta.hpp>
@@ -35,12 +35,11 @@ namespace cubool {
     namespace kernels {
 
         template<typename IndexType, size_t threads, size_t blockSize>
-        __global__ void __spgemv(thrust::device_ptr<const IndexType> rowOffsets,  // Input csr matrix rows
-                                 thrust::device_ptr<const IndexType> colIndices,  // Input csr matrix col indices
-                                 thrust::device_ptr<const IndexType> v,           // Input dense v vector
-                                 thrust::device_ptr<IndexType> x,                 // Output dense x vector (x = M*v)
-                                 thrust::device_ptr<const IndexType> rowConfig,   // Rows to process for each bin
-                                 IndexType rowsCount) {                           // Num of rows to process
+        __global__ void __spgemtv(thrust::device_ptr<const IndexType> rowOffsets,  // Input csr matrix rows
+                                  thrust::device_ptr<const IndexType> colIndices,  // Input csr matrix col indices
+                                  thrust::device_ptr<IndexType> x,                 // Output dense x vector (x = M*v)
+                                  thrust::device_ptr<const IndexType> rowConfig,   // Rows to process for each bin
+                                  IndexType rowsCount) {                           // Num of rows to process
             // Split block into number of groups of size `threads`.
             // Each group process its own row.
 
@@ -56,45 +55,14 @@ namespace cubool {
             size_t rowSize = rowOffsets[i + 1] - rowOffsets[i];
             size_t rowBegin = rowOffsets[i];
 
-            __shared__ IndexType tmp_accum[blockSize];
-
-            // Initial zero
-            tmp_accum[threadIdx.x] = 0;
-
-            // Each thread accum nnz values
+            // Add value to result
             for (size_t k = id; k < rowSize; k += threads) {
-                tmp_accum[threadIdx.x] |= v[colIndices[rowBegin + k]];
-            }
-
-            // Reduce accum to single value
-            #pragma unroll
-            for (size_t s = 1; s < threads && warpSize; s *= 2) {
-                __syncwarp();
-
-                if (id % (2 * s) == 0) {
-                    tmp_accum[threadIdx.x] |= tmp_accum[threadIdx.x + s];
-                }
-            }
-
-            #pragma unroll
-            for (size_t s = warpSize; s < threads; s *= 2) {
-                __syncthreads();
-
-                if (id % (2 * s) == 0) {
-                    tmp_accum[threadIdx.x] |= tmp_accum[threadIdx.x + s];
-                }
-            }
-
-            // 0-thread for each min-thread group saves result
-            if (id == 0) {
-                if (tmp_accum[threadIdx.x] > 0) {
-                    x[i] = tmp_accum[threadIdx.x];
-                }
+                x[colIndices[rowBegin + k]] = 0x1u;
             }
         }
 
         template<typename IndexType, typename AllocType>
-        struct SpGEMV {
+        struct SpGEMtV {
             template<typename T>
             using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
             using MatrixType = nsparse::matrix<bool, IndexType, AllocType>;
@@ -104,7 +72,6 @@ namespace cubool {
             void dispatch(StreamsWrapper<Config<Bins...>> &streamsWrapper,
                           thrust::device_ptr<const IndexType> rowOffsets,    // Input csr matrix rows
                           thrust::device_ptr<const IndexType> colIndices,    // Input csr matrix col indices
-                          thrust::device_ptr<const IndexType> v,             // Input dense v vector
                           thrust::device_ptr<IndexType> x,                   // Output dense x vector (x = M*v)
                           const std::vector<IndexType> &binSizes,            // Size of bin in rowConfig
                           const std::vector<IndexType> &binOffset,           // Offset of bin in rowConfig
@@ -112,78 +79,67 @@ namespace cubool {
 
                 EXPAND_SIDE_EFFECTS(
                         (binSizes[Bins::id] > 0 ?
-                         __spgemv<IndexType, Bins::threads, Bins::blockSize>
+                         __spgemtv<IndexType, Bins::threads, Bins::blockSize>
                          <<<binSizes[Bins::id] / Bins::dispatchRatio +
                             (binSizes[Bins::id] % Bins::dispatchRatio ? 1 : 0),
                          Bins::blockSize,
                          0,
                          streamsWrapper.streams[Bins::id]>>>
-                                 (rowOffsets, colIndices, v, x, rowConfig + binOffset[Bins::id], binSizes[Bins::id])
+                                 (rowOffsets, colIndices, x, rowConfig + binOffset[Bins::id], binSizes[Bins::id])
                                                 : void())
                 );
             }
 
             /**
-             * Compute r = M x v
+             * Compute r = M^t x v
              *
              * Matrix-vector multiplication algorithm:
              * 1. Assign for each row its computation group (group defines number of threads used for processing)
              * 2. Run each group (larger row - more threads must be assigned)
              *
-             * @param m Sparse matrix
              * @param v Sparse vector
+             * @param m Sparse matrix
              *
              * @return Sparse vector
              */
-            VectorType operator()(const MatrixType &m, const VectorType &v) {
+            VectorType operator()(const VectorType &v, const MatrixType &m) {
                 static constexpr size_t max = std::numeric_limits<size_t>::max();
 
-                auto M = m.m_rows;
                 auto N = m.m_cols;
+                auto vnvals = v.m_vals;
 
-                assert(N == v.m_rows);
+                assert(m.m_rows == v.m_rows);
 
                 // Empty result case
                 if (v.m_vals == 0 || m.m_vals == 0)
-                    return VectorType(M);
+                    return VectorType(N);
 
-                // Resize cached buffers to store v and r as dense vectors
-                if (mInput.size() < N)
-                    mInput.resize(N);
-
-                if (mOutput.size() < M)
-                    mOutput.resize(M);
-
-                // Copy v to dense vector
-                thrust::fill_n(mInput.begin(), N, (IndexType) 0);
-                thrust::for_each(v.m_rows_index.begin(), v.m_rows_index.end(),
-                [input = mInput.data()]
-                        __device__(IndexType
-                i) {
-                    input[i] = 1;
-                });
+                // Resize cached buffers to store r as dense vectors
+                if (mOutput.size() < N)
+                    mOutput.resize(N);
 
                 // Empty out buffer
-                thrust::fill_n(mOutput.begin(), M, (IndexType) 0);
+                thrust::fill_n(mOutput.begin(), N, (IndexType) 0);
 
                 using ConfigType = Config<Bin<4, 32, 1, 8, 0>,
-                        Bin<8, 32, 8, 16, 1>,
-                        Bin<16, 32, 16, 32, 2>,
-                        Bin<32, 32, 32, 64, 3>,
-                        Bin<64, 64, 64, 128, 4>,
-                        Bin<128, 128, 128, 256, 5>,
-                        Bin<256, 256, 256, max, 6>>;
+                                          Bin<8, 32, 8, 16, 1>,
+                                          Bin<16, 32, 16, 32, 2>,
+                                          Bin<32, 32, 32, 64, 3>,
+                                          Bin<64, 64, 64, 128, 4>,
+                                          Bin<128, 128, 128, 256, 5>,
+                                          Bin<256, 256, 256, max, 6>>;
                 ConfigType config;
 
-                mRowsConfig.resize(M);
+                // Process only rows, where vec value is non-zero
+                mRowsConfig.resize(vnvals);
 
                 mBinsSize.resize(config.binsCount());
                 mBinsOffsets.resize(config.binsCount());
 
                 thrust::fill(mBinsSize.begin(), mBinsSize.end(), (IndexType) 0);
 
-                // Eval bins size for each row
-                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(M),
+                // Eval bins size for each row (look-up row by vector value)
+                thrust::for_each(v.m_rows_index.begin(), v.m_rows_index.end(),
                                  [config, binSize = mBinsSize.data(), rowsIndices = m.m_row_index.data()]
                                          __device__(IndexType i) {
                                      auto valsInRow = rowsIndices[i + 1] - rowsIndices[i];
@@ -197,14 +153,13 @@ namespace cubool {
                                  });
 
                 // Offsets for each bin (each bin will have its own section in permutation buffer)
-                thrust::exclusive_scan(mBinsSize.begin(), mBinsSize.end(), mBinsOffsets.begin(), 0,
-                                       thrust::plus<IndexType>());
+                thrust::exclusive_scan(mBinsSize.begin(), mBinsSize.end(), mBinsOffsets.begin(), 0, thrust::plus<IndexType>());
 
                 // Reset bin sizes (use as offsets for permutation id assignments)
                 thrust::fill(mBinsSize.begin(), mBinsSize.end(), (IndexType) 0);
 
-                // Assign rows for its bins
-                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(M),
+                // Assign rows () for its bins
+                thrust::for_each(v.m_rows_index.begin(), v.m_rows_index.end(),
                                  [config, binSize = mBinsSize.data(), binOffset = mBinsOffsets.data(), rowsConfig = mRowsConfig.data(),
                                          rowsIndices = m.m_row_index.data()]
                                          __device__(IndexType i) {
@@ -232,7 +187,6 @@ namespace cubool {
                 dispatch(streamsWrapper,
                          m.m_row_index.data(),
                          m.m_col_index.data(),
-                         mInput.data(),
                          mOutput.data(),
                          binSizes,
                          binOffsets,
@@ -250,7 +204,7 @@ namespace cubool {
                 thrust::fill(order.begin(), order.end(), (IndexType) 0);
 
                 // For each value of the output write in the result buffer if it not zero
-                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(M),
+                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(N),
                                  [output = mOutput.data(), result = result.data(), order = order.data()]
                                          __device__(IndexType i) {
                                      if (output[i] > 0) {
@@ -265,18 +219,17 @@ namespace cubool {
                 // Sort indices
                 thrust::sort(result.begin(), result.end());
 
-                return VectorType(std::move(result), M, resultSize);
+                return VectorType(std::move(result), N, resultSize);
             }
 
         private:
             ContainerType<index> mRowsConfig;
             ContainerType<index> mBinsSize;
             ContainerType<index> mBinsOffsets;
-            ContainerType<index> mInput;
             ContainerType<index> mOutput;
         };
 
     }
 }
 
-#endif //CUBOOL_SPGEMV_CUH
+#endif //CUBOOL_SPGEMTV_HPP

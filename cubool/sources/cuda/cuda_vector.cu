@@ -88,11 +88,6 @@ namespace cubool {
         result = getNvals();
     }
 
-    void CudaVector::multiplyVxM(const VectorBase &vBase, const struct MatrixBase &mBase, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
-
-    }
-
     index CudaVector::getNrows() const {
         return mVectorImpl.m_rows;
     }
