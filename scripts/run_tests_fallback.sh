@@ -15,3 +15,4 @@
 ./cubool/tests/test_vector_ewiseadd --gtest_filter=*.*Fallback
 ./cubool/tests/test_vector_mxv --gtest_filter=*.*Fallback
 ./cubool/tests/test_vector_vxm --gtest_filter=*.*Fallback
+./cubool/tests/test_vector_sub_vector --gtest_filter=*.*Fallback
