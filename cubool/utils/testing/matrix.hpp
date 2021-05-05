@@ -139,6 +139,35 @@ namespace testing {
             return vec;
         }
 
+        Vector extractRow(cuBool_Index i) {
+            computeRowOffsets();
+
+            Vector r;
+
+            for (size_t k = rowOffsets[i]; k < rowOffsets[i + 1]; k++) {
+                r.index.push_back(colsIndex[k]);
+            }
+
+            r.nvals = r.index.size();
+            r.nrows = ncols;
+
+            return r;
+        }
+
+        Vector extractCol(cuBool_Index j) {
+            Vector r;
+
+            for (size_t k = 0; k < nvals; k++) {
+                if (colsIndex[k] == j)
+                    r.index.push_back(rowsIndex[k]);
+            }
+
+            r.nvals = r.index.size();
+            r.nrows = nrows;
+
+            return r;
+        }
+
         Matrix subMatrix(cuBool_Index i, cuBool_Index j, cuBool_Index m, cuBool_Index n) const {
             Matrix result;
             result.nrows = m;

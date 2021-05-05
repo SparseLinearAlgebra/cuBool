@@ -8,6 +8,7 @@
 ./cubool/tests/test_matrix_reduce
 ./cubool/tests/test_matrix_setup
 ./cubool/tests/test_matrix_sub_matrix
+./cubool/tests/test_matrix_extract_vector
 ./cubool/tests/test_matrix_element
 ./cubool/tests/test_matrix_transpose
 ./cubool/tests/test_vector_misc

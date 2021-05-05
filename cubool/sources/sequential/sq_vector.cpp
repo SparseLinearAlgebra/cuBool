@@ -30,6 +30,7 @@
 #include <sequential/sq_spgemv.hpp>
 #include <utils/data_utils.hpp>
 #include <core/error.hpp>
+#include <algorithm>
 #include <cassert>
 
 namespace cubool {
@@ -68,6 +69,58 @@ namespace cubool {
         assert(this->getNrows() == nrows);
 
         sq_subvector(other->mData, i, nrows, this->mData);
+    }
+
+    void SqVector::extractRow(const class MatrixBase &matrixBase, index i) {
+        auto matrix = dynamic_cast<const SqMatrix*>(&matrixBase);
+
+        CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+
+        assert(getNrows() == matrix->getNcols());
+        assert(i <= matrix->getNrows());
+
+        auto& m = matrix->mData;
+
+        VecData r;
+        r.nrows = m.ncols;
+        r.nvals = m.rowOffsets[i + 1] - m.rowOffsets[i];
+        r.indices.reserve(r.nvals);
+
+        for (index k = m.rowOffsets[i]; k < m.rowOffsets[i + 1]; k++)
+            r.indices.push_back(m.colIndices[k]);
+
+        mData = std::move(r);
+    }
+
+    void SqVector::extractCol(const class MatrixBase &matrixBase, index j) {
+        auto matrix = dynamic_cast<const SqMatrix*>(&matrixBase);
+
+        CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+
+        assert(getNrows() == matrix->getNrows());
+        assert(j <= matrix->getNcols());
+
+        auto& m = matrix->mData;
+
+        VecData r;
+        r.nrows = m.nrows;
+
+        for (index i = 0; i < m.nrows; i++) {
+            auto beginOffset = m.rowOffsets[i];
+            auto endOffset = m.rowOffsets[i + 1];
+
+            auto begin = m.colIndices.begin() + beginOffset;
+            auto end = m.colIndices.begin() + endOffset;
+
+            auto res = std::lower_bound(begin, end, j);
+
+            if (res != end && *res == j)
+                r.indices.push_back(i);
+        }
+
+        r.nvals = r.indices.size();
+
+        mData = std::move(r);
     }
 
     void SqVector::clone(const VectorBase &otherBase) {

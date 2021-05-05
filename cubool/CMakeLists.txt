@@ -75,6 +75,8 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Matrix_Marker.cpp
     sources/cuBool_Matrix_ExtractPairs.cpp
     sources/cuBool_Matrix_ExtractSubMatrix.cpp
+    sources/cuBool_Matrix_ExtractRow.cpp
+    sources/cuBool_Matrix_ExtractCol.cpp
     sources/cuBool_Matrix_Duplicate.cpp
     sources/cuBool_Matrix_Transpose.cpp
     sources/cuBool_Matrix_Nvals.cpp

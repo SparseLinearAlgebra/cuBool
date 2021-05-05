@@ -115,6 +115,30 @@ namespace cubool {
         mHnd->extractSubVector(*other->mHnd, i, nrows, false);
     }
 
+    void Vector::extractRow(const class MatrixBase &matrixBase, index i) {
+        const auto* matrix = dynamic_cast<const Matrix*>(&matrixBase);
+
+        CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+        CHECK_RAISE_ERROR(i < matrix->getNrows(), InvalidArgument, "Row index must be within matrix bounds");
+
+        matrix->commitCache();
+        this->releaseCache();
+
+        mHnd->extractRow(*matrix->mHnd, i);
+    }
+
+    void Vector::extractCol(const class MatrixBase &matrixBase, index j) {
+        const auto* matrix = dynamic_cast<const Matrix*>(&matrixBase);
+
+        CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+        CHECK_RAISE_ERROR(j < matrix->getNcols(), InvalidArgument, "Column index must be within matrix bounds");
+
+        matrix->commitCache();
+        this->releaseCache();
+
+        mHnd->extractCol(*matrix->mHnd, j);
+    }
+
     void Vector::clone(const VectorBase &otherBase) {
         const auto* other = dynamic_cast<const Vector*>(&otherBase);
 

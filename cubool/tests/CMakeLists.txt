@@ -16,6 +16,9 @@ target_link_libraries(test_matrix_transpose PUBLIC testing)
 add_executable(test_matrix_sub_matrix test_matrix_sub_matrix.cpp)
 target_link_libraries(test_matrix_sub_matrix PUBLIC testing)
 
+add_executable(test_matrix_extract_vector test_matrix_extract_vector.cpp)
+target_link_libraries(test_matrix_extract_vector PUBLIC testing)
+
 add_executable(test_matrix_reduce test_matrix_reduce.cpp)
 target_link_libraries(test_matrix_reduce PUBLIC testing)
 

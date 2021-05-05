@@ -43,6 +43,8 @@ namespace cubool {
         void build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) override;
         void extract(index *rows, size_t &nvals) override;
         void extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) override;
+        void extractRow(const class MatrixBase& matrixBase, index i) override;
+        void extractCol(const class MatrixBase& matrixBase, index j) override;
 
         void clone(const VectorBase &otherBase) override;
         void reduce(index &result, bool checkTime) override;

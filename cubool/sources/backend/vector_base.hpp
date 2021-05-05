@@ -40,6 +40,8 @@ namespace cubool {
         virtual void build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) = 0;
         virtual void extract(index* rows, size_t &nvals) = 0;
         virtual void extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) = 0;
+        virtual void extractRow(const class MatrixBase& matrixBase, index i) = 0;
+        virtual void extractCol(const class MatrixBase& matrixBase, index j) = 0;
 
         virtual void clone(const VectorBase& otherBase) = 0;
         virtual void reduce(index &result, bool checkTime) = 0;

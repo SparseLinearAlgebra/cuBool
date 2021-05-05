@@ -8,6 +8,7 @@
 ./cubool/tests/test_matrix_reduce --gtest_filter=*.*Fallback
 ./cubool/tests/test_matrix_setup --gtest_filter=*.*Fallback
 ./cubool/tests/test_matrix_sub_matrix --gtest_filter=*.*Fallback
+./cubool/tests/test_matrix_extract_vector --gtest_filter=*.*Fallback
 ./cubool/tests/test_matrix_element --gtest_filter=*.*Fallback
 ./cubool/tests/test_matrix_transpose --gtest_filter=*.*Fallback
 ./cubool/tests/test_vector_misc

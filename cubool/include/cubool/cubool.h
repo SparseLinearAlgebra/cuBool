@@ -364,6 +364,48 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractSubMatrix(
 );
 
 /**
+ * Extract specified matrix row as vector.
+ *
+ * @note Vector and matrix must have compatible size.
+ *       dim(matrix) = M x N
+ *       dim(vector) = N
+ *
+ * @param result Vector handle where to store extracted row
+ * @param matrix Source matrix
+ * @param i Index of the matrix row to extract
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractRow(
+    cuBool_Vector result,
+    cuBool_Matrix matrix,
+    cuBool_Index i,
+    cuBool_Hints hints
+);
+
+/**
+ * Extract specified matrix col as vector.
+ *
+ * @note Vector and matrix must have compatible size.
+ *       dim(matrix) = M x N
+ *       dim(vector) = M
+ *
+ * @param result Vector handle where to store extracted column
+ * @param matrix Source matrix
+ * @param j Index of the matrix column to extract
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractCol(
+    cuBool_Vector result,
+    cuBool_Matrix matrix,
+    cuBool_Index j,
+    cuBool_Hints hints
+);
+
+/**
  * Creates new sparse matrix, duplicates content and stores handle in the provided pointer.
  * 
  * @param matrix Matrix handle to perform operation on
