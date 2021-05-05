@@ -81,13 +81,15 @@ namespace cubool {
 
         auto& m = matrix->mData;
 
+        auto begin = m.rowOffsets[i];
+        auto end = m.rowOffsets[i + 1];
+
         VecData r;
         r.nrows = m.ncols;
-        r.nvals = m.rowOffsets[i + 1] - m.rowOffsets[i];
-        r.indices.reserve(r.nvals);
+        r.nvals = end - begin;
+        r.indices.resize(r.nvals);
 
-        for (index k = m.rowOffsets[i]; k < m.rowOffsets[i + 1]; k++)
-            r.indices.push_back(m.colIndices[k]);
+        std::copy(m.colIndices.begin() + begin, m.colIndices.begin() + end, r.indices.begin());
 
         mData = std::move(r);
     }
