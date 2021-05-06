@@ -22,48 +22,41 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/cuda_instance.hpp>
-#include <core/error.hpp>
-#include <string>
-#include <cstdlib>
+#ifndef CUBOOL_SP_VECTOR_HPP
+#define CUBOOL_SP_VECTOR_HPP
+
+#include <thrust/device_vector.h>
 
 namespace cubool {
+    namespace details {
 
-    volatile CudaInstance* CudaInstance::gInstance = nullptr;
+        template<typename IndexType, typename AllocType>
+        struct SpVector {
+        public:
+            typedef bool value_type;
+            typedef IndexType index_type;
+            typedef AllocType alloc_type;
+            typedef thrust::device_vector<IndexType, AllocType> container_type;
 
-    CudaInstance::CudaInstance(bool useManagedMemory) {
-        gInstance = this;
-        mMemoryType = useManagedMemory? Managed: Default;
 
-#ifdef CUBOOL_DEBUG
-        sendMessage(CUBOOL_STATUS_SUCCESS, "Initialize CuBool instance");
-        printDeviceCapabilities();
-#endif // CUBOOL_DEBUG
+            SpVector()
+                : m_rows_index{}, m_rows{0}, m_vals{0} {}
+
+            SpVector(index_type rows)
+                : m_rows_index{}, m_rows (rows), m_vals{0} {}
+
+            SpVector(thrust::device_vector<index_type, alloc_type> rows_index, index_type rows, index_type vals)
+                : m_rows_index{ std::move(rows_index) }, m_rows{ rows }, m_vals{ vals }  {
+                assert(m_rows > 0);
+                assert(m_rows_index.size() == m_vals);
+            }
+
+        public:
+            thrust::device_vector<index_type, alloc_type> m_rows_index;
+            index_type m_rows;
+            index_type m_vals;
+        };
     }
-
-    void CudaInstance::allocate(void* &ptr, size_t size) const {
-        ptr = malloc(size);
-        CHECK_RAISE_ERROR(ptr != nullptr, MemOpFailed, "Failed to allocate memory on the CPU");
-        mHostAllocCount++;
-    }
-
-    void CudaInstance::deallocate(void* ptr) const {
-        CHECK_RAISE_ERROR(ptr != nullptr, InvalidArgument, "Passed null ptr to free");
-        free(ptr);
-        mHostAllocCount--;
-    }
-
-    CudaInstance& CudaInstance::getInstanceRef() {
-        CHECK_RAISE_ERROR(gInstance != nullptr, InvalidState, "No instance in the system");
-        return (CudaInstance&) *gInstance;
-    }
-
-    CudaInstance* CudaInstance::getInstancePtr() {
-        return (CudaInstance* ) gInstance;
-    }
-
-    bool CudaInstance::isInstancePresent() {
-        return gInstance != nullptr;
-    }
-
 }
+
+#endif //CUBOOL_SP_VECTOR_HPP

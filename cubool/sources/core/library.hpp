@@ -39,7 +39,9 @@ namespace cubool {
         static void validate();
         static void setupLogging(const char* logFileName, cuBool_Hints hints);
         static class Matrix *createMatrix(size_t nrows, size_t ncols);
+        static class Vector *createVector(size_t nrows);
         static void releaseMatrix(class Matrix *matrix);
+        static void releaseVector(class Vector *vector);
         static void handleError(const std::exception& error);
         static void queryCapabilities(cuBool_DeviceCaps& caps);
         static void logDeviceInfo();
@@ -47,7 +49,8 @@ namespace cubool {
         static class Logger* getLogger();
 
     private:
-        static std::unordered_set<class Matrix*> mAllocated;
+        static std::unordered_set<class Matrix*> mAllocMatrices;
+        static std::unordered_set<class Vector*> mAllocVectors;
         static std::shared_ptr<class BackendBase> mBackend;
         static std::shared_ptr<class Logger> mLogger;
         static bool mRelaxedRelease;

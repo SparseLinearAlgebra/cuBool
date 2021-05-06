@@ -26,6 +26,8 @@
 #define CUBOOL_CONFIG_HPP
 
 #include <cubool/cubool.h>
+#include <cinttypes>
+#include <cstddef>
 
 namespace cubool {
     using index = cuBool_Index;

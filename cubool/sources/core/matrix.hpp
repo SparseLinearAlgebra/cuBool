@@ -26,6 +26,7 @@
 #define CUBOOL_MATRIX_HPP
 
 #include <core/config.hpp>
+#include <core/object.hpp>
 #include <backend/matrix_base.hpp>
 #include <backend/backend_base.hpp>
 #include <vector>
@@ -36,7 +37,7 @@ namespace cubool {
      * Proxy matrix for the actual backend matrix implementation.
      * Behaves as validation/auxiliary layer.
      */
-    class Matrix final: public MatrixBase {
+    class Matrix final: public MatrixBase, public Object {
     public:
         Matrix(size_t nrows, size_t ncols, BackendBase& backend);
         ~Matrix() override;
@@ -59,21 +60,14 @@ namespace cubool {
         index getNcols() const override;
         index getNvals() const override;
 
-        void setDebugMarker(const char* marker);
-        const char* getDebugMarker() const;
-        index getDebugMarkerSizeWithNullT() const;
-
     private:
-
+        friend class Vector;
         void releaseCache() const;
         void commitCache() const;
 
         // Cached values by the set functions
         mutable std::vector<index> mCachedI;
         mutable std::vector<index> mCachedJ;
-
-        // Marker for debugging
-        std::string mMarker;
 
         // Implementation handle references
         MatrixBase* mHnd = nullptr;

@@ -40,7 +40,7 @@ namespace cubool {
         using HostAlloc = details::HostAllocator<T>;
         using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
 
-        explicit CudaMatrix(size_t nrows, size_t ncols, CudaInstance& instance);
+        CudaMatrix(size_t nrows, size_t ncols, CudaInstance& instance);
         ~CudaMatrix() override = default;
 
         void setElement(index i, index j) override;
@@ -61,9 +61,10 @@ namespace cubool {
         index getNvals() const override;
 
     private:
+        friend class CudaVector;
+
         void resizeStorageToDim() const;
         void clearAndResizeStorageToDim() const;
-        bool isStorageEmpty() const;
         bool isMatrixEmpty() const;
         void transferToDevice(const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) const;
         void transferFromDevice(std::vector<index> &rowOffsets, std::vector<index> &colIndices) const;

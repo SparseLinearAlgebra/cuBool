@@ -34,6 +34,8 @@
 #include <testing/matrix_ewiseadd.hpp>
 #include <testing/matrix_mxm.hpp>
 #include <testing/matrix_kronecker.hpp>
+#include <testing/vector.hpp>
+#include <testing/vector_functors.hpp>
 
 // Put in the end of the unit test file
 #define CUBOOL_GTEST_MAIN                                                       \

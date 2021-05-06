@@ -31,6 +31,8 @@
 #include <core/error.hpp>
 #include <core/library.hpp>
 #include <core/matrix.hpp>
+#include <core/vector.hpp>
+#include <cstring>
 
 // State validation
 #define CUBOOL_VALIDATE_LIBRARY                                                         \

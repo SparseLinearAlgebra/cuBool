@@ -238,13 +238,13 @@ def load_and_configure(cubool_lib_path: str):
     ]
 
     lib.cuBool_Matrix_Nvals.restype = status_t
-    lib.cuBool_Matrix_Nvals.cuBool_Matrix_Reduce = [
+    lib.cuBool_Matrix_Nvals.cuBool_Matrix_Reduce2 = [
         matrix_p,
         ctypes.POINTER(ctypes.c_size_t)
     ]
 
-    lib.cuBool_Matrix_Reduce.restype = status_t
-    lib.cuBool_Matrix_Reduce.argtype = [
+    lib.cuBool_Matrix_Reduce2.restype = status_t
+    lib.cuBool_Matrix_Reduce2.argtype = [
         matrix_p,
         matrix_p,
         hints_t

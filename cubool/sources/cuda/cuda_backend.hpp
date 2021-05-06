@@ -42,7 +42,9 @@ namespace cubool {
         bool isInitialized() const override;
 
         MatrixBase *createMatrix(size_t nrows, size_t ncols) override;
+        VectorBase* createVector(size_t nrows) override;
         void releaseMatrix(MatrixBase *matrixBase) override;
+        void releaseVector(VectorBase* vectorBase) override;
         void queryCapabilities(cuBool_DeviceCaps& caps) override;
 
         CudaInstance& getInstance();
@@ -50,6 +52,7 @@ namespace cubool {
     private:
         CudaInstance* mInstance;
         size_t mMatCount = 0;
+        size_t mVecCount = 0;
     };
 
 }

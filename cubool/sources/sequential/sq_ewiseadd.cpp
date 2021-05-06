@@ -23,7 +23,7 @@
 /**********************************************************************************/
 
 #include <sequential/sq_ewiseadd.hpp>
-#include <utils/exclusive_scan.hpp>
+#include <utils/algo_utils.hpp>
 
 namespace cubool {
 
@@ -114,6 +114,77 @@ namespace cubool {
                 k++;
                 br++;
             }
+        }
+    }
+
+    void sq_ewiseadd(const VecData& a, const VecData& b, VecData& out) {
+        size_t nnz = 0;
+
+        const index* ar = a.indices.data();
+        const index* br = b.indices.data();
+
+        const index* arend = a.indices.data() + a.nvals;
+        const index* brend = b.indices.data() + b.nvals;
+
+        // Count nnz
+        while (ar != arend && br != brend) {
+            if (*ar == *br) {
+                ar++;
+                br++;
+            }
+            else if (*ar < *br) {
+                ar++;
+            }
+            else {
+                br++;
+            }
+
+            nnz++;
+        }
+
+        while (ar != arend) {
+            nnz++;
+            ar++;
+        }
+
+        while (br != brend) {
+            nnz++;
+            br++;
+        }
+
+        // Allocate data
+        out.indices.clear();
+        out.indices.reserve(nnz);
+        out.nvals = nnz;
+
+        // Fill data
+        ar = a.indices.data();
+        br = b.indices.data();
+
+        while (ar != arend && br != brend) {
+            if (*ar == *br) {
+                out.indices.push_back(*ar);
+                ar++;
+                br++;
+            }
+            else if (*ar < *br) {
+                out.indices.push_back(*ar);
+                ar++;
+            }
+            else {
+                out.indices.push_back(*br);
+                br++;
+            }
+        }
+
+        while (ar != arend) {
+            out.indices.push_back(*ar);
+            ar++;
+        }
+
+        while (br != brend) {
+            out.indices.push_back(*br);
+            br++;
         }
     }
 

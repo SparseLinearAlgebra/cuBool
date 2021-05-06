@@ -25,7 +25,7 @@
 #ifndef CUBOOL_SQ_SUBMATRIX_HPP
 #define CUBOOL_SQ_SUBMATRIX_HPP
 
-#include <sequential/sq_csr_data.hpp>
+#include <sequential/sq_data.hpp>
 
 namespace cubool {
 

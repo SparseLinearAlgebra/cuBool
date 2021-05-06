@@ -22,22 +22,14 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_EXCLUSIVE_SCAN_HPP
-#define CUBOOL_EXCLUSIVE_SCAN_HPP
+#include <cuBool_Common.hpp>
 
-namespace cubool {
-
-    template <typename FirstT, typename LastT, typename T>
-    void exclusive_scan(FirstT firstT, LastT lastT, T initial) {
-        T sum = initial;
-        while (firstT != lastT) {
-            T next = sum + *firstT;
-            *firstT = sum;
-            sum = next;
-            firstT++;
-        }
-    }
-
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Free(
+        cuBool_Vector vector
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        auto v = (cubool::Vector *) vector;
+        cubool::Library::releaseVector(v);
+    CUBOOL_END_BODY
 }
-
-#endif //CUBOOL_EXCLUSIVE_SCAN_HPP

@@ -24,10 +24,10 @@
 
 #include <sequential/sq_backend.hpp>
 #include <sequential/sq_matrix.hpp>
+#include <sequential/sq_vector.hpp>
 #include <core/library.hpp>
 #include <io/logger.hpp>
 #include <cassert>
-
 
 namespace cubool {
 
@@ -37,11 +37,18 @@ namespace cubool {
 
     void SqBackend::finalize() {
         assert(mMatCount == 0);
+        assert(mVecCount == 0);
 
         if (mMatCount > 0) {
             LogStream stream(*Library::getLogger());
             stream << Logger::Level::Error
                    << "Lost some (" << mMatCount << ") matrix objects" << LogStream::cmt;
+        }
+
+        if (mVecCount > 0) {
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Error
+                   << "Lost some (" << mVecCount << ") vector objects" << LogStream::cmt;
         }
     }
 
@@ -54,9 +61,19 @@ namespace cubool {
         return new SqMatrix(nrows, ncols);
     }
 
+    VectorBase* SqBackend::createVector(size_t nrows) {
+        mVecCount++;
+        return new SqVector(nrows);
+    }
+
     void SqBackend::releaseMatrix(MatrixBase *matrixBase) {
         mMatCount--;
         delete matrixBase;
+    }
+
+    void SqBackend::releaseVector(VectorBase *vectorBase) {
+        mVecCount--;
+        delete vectorBase;
     }
 
     void SqBackend::queryCapabilities(cuBool_DeviceCaps &caps) {

@@ -23,7 +23,8 @@
 /**********************************************************************************/
 
 #include <sequential/sq_reduce.hpp>
-#include <utils/exclusive_scan.hpp>
+#include <utils/algo_utils.hpp>
+#include <limits>
 
 namespace cubool {
 
@@ -43,6 +44,54 @@ namespace cubool {
         out.nvals = out.rowOffsets.back();
         out.colIndices.clear();
         out.colIndices.resize(out.nvals, 0);
+    }
+
+    void sq_reduce(const CsrData& a, VecData& out) {
+        size_t size = 0;
+
+        for (index i = 0; i < a.nrows; i++) {
+            index nnz = a.rowOffsets[i + 1] - a.rowOffsets[i];
+
+            if (nnz > 0) {
+                size += 1;
+            }
+        }
+
+        out.indices.reserve(size);
+        out.nvals = size;
+
+        for (index i = 0; i < a.nrows; i++) {
+            index nnz = a.rowOffsets[i + 1] - a.rowOffsets[i];
+
+            if (nnz > 0) {
+                out.indices.push_back(i);
+            }
+        }
+    }
+
+    void sq_reduce_transposed(const CsrData& a, VecData& out) {
+        const auto max = std::numeric_limits<index>::max();
+        std::vector<index> mask(a.ncols, max);
+
+        for (auto j: a.colIndices) {
+            mask[j] = j;
+        }
+
+        size_t size = 0;
+        for (auto v: mask) {
+            if (v != max) {
+                size += 1;
+            }
+        }
+
+        out.indices.reserve(size);
+        out.nvals = size;
+
+        for (auto v: mask) {
+            if (v != max) {
+                out.indices.push_back(v);
+            }
+        }
     }
 
 }

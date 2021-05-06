@@ -22,18 +22,18 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <utils/csr_utils.hpp>
-#include <utils/exclusive_scan.hpp>
+#include <utils/data_utils.hpp>
+#include <utils/algo_utils.hpp>
 #include <core/error.hpp>
 #include <algorithm>
 #include <cassert>
 
 namespace cubool {
 
-    void CsrUtils::buildFromData(size_t nrows, size_t ncols,
-                                 const index *rows, const index *cols, size_t nvals,
-                                 std::vector<index> &rowOffsets, std::vector<index> &colIndices,
-                                 bool isSorted, bool noDuplicates) {
+    void DataUtils::buildFromData(size_t nrows, size_t ncols,
+                                  const index *rows, const index *cols, size_t nvals,
+                                  std::vector<index> &rowOffsets, std::vector<index> &colIndices,
+                                  bool isSorted, bool noDuplicates) {
 
         rowOffsets.resize(nrows + 1, 0);
         colIndices.resize(nvals);
@@ -121,9 +121,9 @@ namespace cubool {
         }
     }
 
-    void CsrUtils::extractData(size_t nrows, size_t ncols,
-                               index *rows, index *cols, size_t nvals,
-                               const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) {
+    void DataUtils::extractData(size_t nrows, size_t ncols,
+                                index *rows, index *cols, size_t nvals,
+                                const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) {
         assert(rows);
         assert(cols);
 
@@ -134,6 +134,60 @@ namespace cubool {
                 cols[id] = colIndices[k];
                 id += 1;
             }
+        }
+    }
+
+    bool checkBounds(const std::vector<index> &values, index left, index right) {
+        for (auto v: values) {
+            CHECK_RAISE_ERROR(left <= v && v < right, InvalidArgument, "Index out of vector bounds");
+        }
+
+        return true;
+    }
+
+    void DataUtils::buildVectorFromData(size_t nrows, const index *rows, size_t nvals, std::vector<index> &values,
+                                        bool isSorted, bool noDuplicates) {
+        values.resize(nvals);
+        std::copy(rows, rows + nvals, values.begin());
+
+        if (nvals == 0)
+            return;
+
+        assert(checkBounds(values, 0, nrows));
+
+        std::copy(rows, rows + nvals, values.begin());
+
+        if (!isSorted) {
+            std::sort(values.begin(), values.end(), [](const index& a, const index& b) {
+                return a < b;
+            });
+        }
+
+        if (!noDuplicates) {
+            size_t unique = 0;
+            index prev = std::numeric_limits<index>::max();
+
+            for (auto value : values) {
+                if (prev != value) {
+                    unique += 1;
+                }
+
+                prev = value;
+            }
+
+            std::vector<index> reduced;
+            reduced.reserve(unique);
+
+            prev = std::numeric_limits<index>::max();
+            for (auto value : values) {
+                if (prev != value) {
+                    reduced.push_back(value);
+                }
+
+                prev = value;
+            }
+
+            std::swap(values, reduced);
         }
     }
 

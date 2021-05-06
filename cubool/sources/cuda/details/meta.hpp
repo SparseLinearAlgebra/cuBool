@@ -22,26 +22,74 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/cuda_matrix.hpp>
-#include <utils/csr_utils.hpp>
+#ifndef CUBOOL_META_HPP
+#define CUBOOL_META_HPP
+
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
+#include <cstddef>
 
 namespace cubool {
 
-    void CudaMatrix::extract(index *rows, index *cols, size_t &nvals) {
-        assert(nvals >= getNvals());
-
-        // Set nvals to the exact number of nnz values
-        nvals = getNvals();
-
-        if (nvals > 0) {
-            // Copy data to the host
-            std::vector<index> rowOffsets;
-            std::vector<index> colIndices;
-
-            this->transferFromDevice(rowOffsets, colIndices);
-
-            CsrUtils::extractData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices);
+    template <typename Config>
+    struct StreamsWrapper {
+        StreamsWrapper() {
+            for (auto& s: streams)
+                cudaStreamCreate(&s);
         }
-    }
+
+        ~StreamsWrapper() {
+            for (auto& s: streams)
+                cudaStreamDestroy(s);
+        }
+
+        cudaStream_t streams[Config::binsCount()] = {};
+    };
+
+    template<size_t Threads, size_t BlocksSize, size_t Max, size_t Min, size_t Id>
+    struct Bin {
+        static_assert(Threads <= BlocksSize, "Block size must be >= threads in this block");
+
+        static constexpr size_t threads = Threads;
+        static constexpr size_t blockSize = BlocksSize;
+        static constexpr size_t dispatchRatio = BlocksSize / Threads;
+        static constexpr size_t min = Max;
+        static constexpr size_t max = Min;
+        static constexpr size_t id = Id;
+    };
+
+
+    template <typename ... Bins>
+    struct Config {
+    public:
+
+        static __host__ __device__ size_t selectBin(size_t rowSize) {
+            static constexpr size_t mins[] = { Bins::min... };
+            static constexpr size_t maxs[] = { Bins::max... };
+
+            for (size_t i = 0; i < binsCount(); i++) {
+                if (mins[i] <= rowSize && rowSize <= maxs[i])
+                    return i;
+            }
+
+            return unusedBinId();
+        }
+
+        static __host__ __device__ constexpr size_t binBlockSize(size_t id) {
+            constexpr size_t blockSizes[] = { Bins::blockSize... };
+            return blockSizes[id];
+        }
+
+        static __host__ __device__ constexpr size_t binsCount() {
+            return sizeof...(Bins);
+        }
+
+        static __host__ __device__ constexpr size_t unusedBinId() {
+            return binsCount() + 1;
+        }
+
+    };
 
 }
+
+#endif //CUBOOL_META_HPP

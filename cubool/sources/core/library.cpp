@@ -25,6 +25,7 @@
 #include <core/library.hpp>
 #include <core/error.hpp>
 #include <core/matrix.hpp>
+#include <core/vector.hpp>
 #include <backend/backend_base.hpp>
 #include <backend/matrix_base.hpp>
 #include <io/logger.hpp>
@@ -44,9 +45,10 @@
 
 namespace cubool {
 
-    std::unordered_set<class Matrix*> Library::mAllocated;
+    std::unordered_set<class Matrix*> Library::mAllocMatrices;
+    std::unordered_set<class Vector*> Library::mAllocVectors;
     std::shared_ptr<class BackendBase> Library::mBackend = nullptr;
-    std::shared_ptr<class Logger>  Library::mLogger = std::make_shared<DummyLogger>();
+    std::shared_ptr<class Logger> Library::mLogger = std::make_shared<DummyLogger>();
     bool Library::mRelaxedRelease = false;
 
     void Library::initialize(hints initHints) {
@@ -95,16 +97,22 @@ namespace cubool {
                 LogStream stream(*getLogger());
                 stream << Logger::Level::Info << "Enabled relaxed library finalize" << LogStream::cmt;
 
-                for (auto m: mAllocated) {
+                for (auto m: mAllocMatrices) {
                     stream << Logger::Level::Warning << "Implicitly release matrix " << m->getDebugMarker() << LogStream::cmt;
                     delete m;
                 }
 
-                mAllocated.clear();
+                for (auto v: mAllocVectors) {
+                    stream << Logger::Level::Warning << "Implicitly release vector " << v->getDebugMarker() << LogStream::cmt;
+                    delete v;
+                }
+
+                mAllocMatrices.clear();
+                mAllocVectors.clear();
             }
 
             // Some final message
-            mLogger->logInfo("** cuBool:Finalize backend **");
+            mLogger->logInfo("*** cuBool:Finalize backend ***");
 
             // Remember to finalize backend
             mBackend->finalize();
@@ -122,11 +130,11 @@ namespace cubool {
     void Library::setupLogging(const char *logFileName, cuBool_Hints hints) {
         CHECK_RAISE_ERROR(logFileName != nullptr, InvalidArgument, "Null file name is not allowed");
 
-        auto lofFile = std::make_shared<std::ofstream>();
+        auto logFile = std::make_shared<std::ofstream>();
 
-        lofFile->open(logFileName, std::ios::out);
+        logFile->open(logFileName, std::ios::out);
 
-        if (!lofFile->is_open()) {
+        if (!logFile->is_open()) {
             RAISE_ERROR(InvalidArgument, "Failed to create logging file");
         }
 
@@ -144,7 +152,7 @@ namespace cubool {
         });
 
         textLogger->addOnLoggerAction([=](size_t id, Logger::Level level, const std::string& message) {
-            auto& file = *lofFile;
+            auto& file = *logFile;
 
             const auto idSize = 10;
             const auto levelSize = 20;
@@ -184,7 +192,7 @@ namespace cubool {
         CHECK_RAISE_ERROR(ncols > 0, InvalidArgument, "Cannot create matrix with zero dimension");
 
         auto m = new Matrix(nrows, ncols, *mBackend);
-        mAllocated.emplace(m);
+        mAllocMatrices.emplace(m);
 
         LogStream stream(*getLogger());
         stream << Logger::Level::Info << "Create Matrix " << m->getDebugMarker()
@@ -193,20 +201,49 @@ namespace cubool {
         return m;
     }
 
+    class Vector * Library::createVector(size_t nrows) {
+        CHECK_RAISE_ERROR(nrows > 0, InvalidArgument, "Cannot create vector with zero dimension");
+
+        auto v = new Vector(nrows, *mBackend);
+        mAllocVectors.emplace(v);
+
+        LogStream stream(*getLogger());
+        stream << Logger::Level::Info << "Create Vector " << v->getDebugMarker()
+               << " (" << nrows << ")" << LogStream::cmt;
+
+        return v;
+    }
+
     void Library::releaseMatrix(Matrix *matrix) {
         if (mRelaxedRelease && !mBackend) return;
 
-        CHECK_RAISE_ERROR(mAllocated.find(matrix) != mAllocated.end(), InvalidArgument, "No such matrix was allocated");
+        CHECK_RAISE_ERROR(mAllocMatrices.find(matrix) != mAllocMatrices.end(), InvalidArgument, "No such matrix was allocated");
 
         LogStream stream(*getLogger());
         stream << Logger::Level::Info << "Release Matrix " << matrix->getDebugMarker() << LogStream::cmt;
 
-        mAllocated.erase(matrix);
+        mAllocMatrices.erase(matrix);
         delete matrix;
+    }
+
+    void Library::releaseVector(class Vector *vector) {
+        if (mRelaxedRelease && !mBackend) return;
+
+        CHECK_RAISE_ERROR(mAllocVectors.find(vector) != mAllocVectors.end(), InvalidArgument, "No such vector was allocated");
+
+        LogStream stream(*getLogger());
+        stream << Logger::Level::Info << "Release Vector " << vector->getDebugMarker() << LogStream::cmt;
+
+        mAllocVectors.erase(vector);
+        delete vector;
     }
 
     void Library::handleError(const std::exception& error) {
         mLogger->log(Logger::Level::Error, error.what());
+
+#ifdef CUBOOL_DEBUG
+        std::cerr << error.what() << std::endl;
+#endif
     }
 
     void Library::queryCapabilities(cuBool_DeviceCaps &caps) {

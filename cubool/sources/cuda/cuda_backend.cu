@@ -24,8 +24,11 @@
 
 #include <cuda/cuda_backend.hpp>
 #include <cuda/cuda_matrix.hpp>
+#include <cuda/cuda_vector.hpp>
 #include <core/library.hpp>
 #include <io/logger.hpp>
+
+#include <iostream>
 
 namespace cubool {
 
@@ -34,16 +37,28 @@ namespace cubool {
             mInstance = new CudaInstance(initHints & CUBOOL_HINT_GPU_MEM_MANAGED);
         }
 
-        // No device. Cannot init this backend
+#ifdef CUBOOL_DEBUG
+        if (mInstance == nullptr) {
+            // No device. Cannot init this backend
+            std::cerr << "Failed to initialize Cuda-backend" << std::endl;
+        }
+#endif
     }
 
     void CudaBackend::finalize() {
         assert(mMatCount == 0);
+        assert(mVecCount == 0);
 
         if (mMatCount > 0) {
             LogStream stream(*Library::getLogger());
             stream << Logger::Level::Error
                    << "Lost some (" << mMatCount << ") matrix objects" << LogStream::cmt;
+        }
+
+        if (mVecCount > 0) {
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Error
+                   << "Lost some (" << mVecCount << ") vector objects" << LogStream::cmt;
         }
 
         if (mInstance) {
@@ -61,9 +76,19 @@ namespace cubool {
         return new CudaMatrix(nrows, ncols, getInstance());
     }
 
+    VectorBase* CudaBackend::createVector(size_t nrows) {
+        mVecCount++;
+        return new CudaVector(nrows, getInstance());
+    }
+
     void CudaBackend::releaseMatrix(MatrixBase *matrixBase) {
         mMatCount--;
         delete matrixBase;
+    }
+
+    void CudaBackend::releaseVector(VectorBase *vectorBase) {
+        mVecCount--;
+        delete vectorBase;
     }
 
     void CudaBackend::queryCapabilities(cuBool_DeviceCaps &caps) {

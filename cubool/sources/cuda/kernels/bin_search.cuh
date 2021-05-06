@@ -54,6 +54,31 @@ namespace cubool {
             return range;
         }
 
+        template<typename IndexType, typename Iter>
+        __host__ __device__ Iter find(Iter begin, Iter end, IndexType v) {
+            auto s = thrust::distance(begin, end);
+
+            if (s == 0)
+                return end;
+
+            auto l = 0;
+            auto r = s - 1;
+
+            while (l <= r) {
+                auto k =  (l + r) / 2;
+                auto i = begin + k;
+
+                if (*i < v)
+                    l = k + 1;
+                else if (*i > v)
+                    r = k - 1;
+                else
+                    return i;
+            }
+
+            return end;
+        }
+
     }
 }
 

@@ -25,7 +25,7 @@
 #ifndef CUBOOL_SQ_EWISEADD_HPP
 #define CUBOOL_SQ_EWISEADD_HPP
 
-#include <sequential/sq_csr_data.hpp>
+#include <sequential/sq_data.hpp>
 
 namespace cubool {
 
@@ -37,6 +37,15 @@ namespace cubool {
      * @param[out] out Where to store the result
      */
     void sq_ewiseadd(const CsrData& a, const CsrData& b, CsrData& out);
+
+    /**
+     * Element-wise addition of the vectors `a` and `b`.
+     *
+     * @param a Input vector
+     * @param b Input vector
+     * @param[out] out Where to store the result
+     */
+    void sq_ewiseadd(const VecData& a, const VecData& b, VecData& out);
 
 }
 

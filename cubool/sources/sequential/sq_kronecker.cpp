@@ -23,7 +23,7 @@
 /**********************************************************************************/
 
 #include <sequential/sq_kronecker.hpp>
-#include <utils/exclusive_scan.hpp>
+#include <utils/algo_utils.hpp>
 
 namespace cubool {
 

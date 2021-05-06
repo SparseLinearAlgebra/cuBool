@@ -27,6 +27,7 @@
 
 #include <cubool/cubool.h>
 #include <testing/pair.hpp>
+#include <testing/vector.hpp>
 #include <testing/matrix_generator.hpp>
 #include <algorithm>
 #include <chrono>
@@ -116,6 +117,55 @@ namespace testing {
             }
 
             return std::move(result);
+        }
+
+        Vector reduceToVector() const {
+            Vector vec;
+
+            std::vector<cuBool_Index> mask(nrows, 0);
+
+            for (auto r: rowsIndex) {
+                mask[r] |= 0x1u;
+            }
+
+            for (cuBool_Index i = 0; i < nrows; i++) {
+                if (mask[i] > 0)
+                    vec.index.push_back(i);
+            }
+
+            vec.nrows = nrows;
+            vec.nvals = vec.index.size();
+
+            return vec;
+        }
+
+        Vector extractRow(cuBool_Index i) {
+            computeRowOffsets();
+
+            Vector r;
+
+            for (size_t k = rowOffsets[i]; k < rowOffsets[i + 1]; k++) {
+                r.index.push_back(colsIndex[k]);
+            }
+
+            r.nvals = r.index.size();
+            r.nrows = ncols;
+
+            return r;
+        }
+
+        Vector extractCol(cuBool_Index j) {
+            Vector r;
+
+            for (size_t k = 0; k < nvals; k++) {
+                if (colsIndex[k] == j)
+                    r.index.push_back(rowsIndex[k]);
+            }
+
+            r.nvals = r.index.size();
+            r.nrows = nrows;
+
+            return r;
         }
 
         Matrix subMatrix(cuBool_Index i, cuBool_Index j, cuBool_Index m, cuBool_Index n) const {
@@ -222,7 +272,7 @@ namespace testing {
             Matrix out;
             out.nrows = nrows;
             out.ncols = ncols;
-            return std::move(out);
+            return out;
         }
 
     };

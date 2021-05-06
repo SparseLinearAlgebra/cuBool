@@ -97,7 +97,9 @@ typedef enum cuBool_Hint {
     /** No duplicates in the build data */
     CUBOOL_HINT_NO_DUPLICATES = 256,
     /** Performs time measurement and logs elapsed operation time */
-    CUBOOL_HINT_TIME_CHECK = 512
+    CUBOOL_HINT_TIME_CHECK = 512,
+    /** Transpose matrix before operation */
+    CUBOOL_HINT_TRANSPOSE = 1024
 } cuBool_Hint;
 
 /** Hit mask */
@@ -106,8 +108,11 @@ typedef uint32_t cuBool_Hints;
 /** Alias integer type for indexing operations */
 typedef uint32_t cuBool_Index;
 
-/** Cubool sparse boolean matrix handle */
+/** cuBool sparse boolean matrix handle */
 typedef struct cuBool_Matrix_t* cuBool_Matrix;
+
+/** cuBool sparse boolean vector handle */
+typedef struct cuBool_Vector_t* cuBool_Vector;
 
 /** Cuda device capabilities */
 typedef struct cuBool_DeviceCaps {
@@ -232,8 +237,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_New(
 /**
  * Build sparse matrix from provided pairs array. Pairs are supposed to be stored
  * as (rows[i],cols[i]) for pair with i-th index.
+ * By default automatically sorts values and reduces duplicates in the input arrays.
  *
- * @note This function automatically reduces duplicates
  * @note Pass `CUBOOL_HINT_VALUES_SORTED` if values already in the row-col order.
  * @note Pass `CUBOOL_HINT_NO_DUPLICATES` if values has no duplicates
  *
@@ -241,7 +246,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_New(
  * @param rows Array of pairs row indices
  * @param cols Array of pairs column indices
  * @param nvals Number of the pairs passed
- * @param hints Hits flags for processing.
+ * @param hints Hits flags for processing
  *
  * @return Error code on this operation
  */
@@ -359,6 +364,48 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractSubMatrix(
 );
 
 /**
+ * Extract specified matrix row as vector.
+ *
+ * @note Vector and matrix must have compatible size.
+ *       dim(matrix) = M x N
+ *       dim(vector) = N
+ *
+ * @param result Vector handle where to store extracted row
+ * @param matrix Source matrix
+ * @param i Index of the matrix row to extract
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractRow(
+    cuBool_Vector result,
+    cuBool_Matrix matrix,
+    cuBool_Index i,
+    cuBool_Hints hints
+);
+
+/**
+ * Extract specified matrix col as vector.
+ *
+ * @note Vector and matrix must have compatible size.
+ *       dim(matrix) = M x N
+ *       dim(vector) = M
+ *
+ * @param result Vector handle where to store extracted column
+ * @param matrix Source matrix
+ * @param j Index of the matrix column to extract
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractCol(
+    cuBool_Vector result,
+    cuBool_Matrix matrix,
+    cuBool_Index j,
+    cuBool_Hints hints
+);
+
+/**
  * Creates new sparse matrix, duplicates content and stores handle in the provided pointer.
  * 
  * @param matrix Matrix handle to perform operation on
@@ -407,7 +454,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Nvals(
  *
  * @param matrix Matrix handle to perform operation on
  * @param nrows[out] Pointer to the place where to store number of matrix rows
- * 
+ *
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Nrows(
@@ -431,12 +478,33 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Ncols(
 /**
  * Deletes sparse matrix object.
  *
- * @param matrix Matrix handle to delete the matrix
+ * @param matrix Matrix handle to delete
  *
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Free(
     cuBool_Matrix matrix
+);
+
+/**
+ * Reduce the source matrix to the column vector.
+ * Pass optionally transpose hint to transpose matrix before the reduce.
+ * Formally: result = sum(cols of matrix M), where
+ *   M = matrix, or M = matrix^T (if passed transpose hint)
+ *
+ * @note Pass `CUBOOL_HINT_TRANSPOSE` hint to reduce transposed matrix
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
+ * @param[out] result Vector handle where to store result
+ * @param matrix Source matrix to reduce
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
+    cuBool_Vector result,
+    cuBool_Matrix matrix,
+    cuBool_Hints hints
 );
 
 /**
@@ -449,13 +517,13 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Free(
  *
  * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
  *
- * @param result[out] Matrix hnd where to store result
+ * @param[out] result Matrix handle where to store result
  * @param matrix Source matrix to reduce
  * @param hints Hints for the operation
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce2(
     cuBool_Matrix result,
     cuBool_Matrix matrix,
     cuBool_Hints hints
@@ -471,7 +539,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
  *
  * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
  *
- * @param result[out] Destination matrix for add-and-assign operation
+ * @param result[out] Destination matrix to store result
  * @param left Source matrix to be added
  * @param right Source matrix to be added
  * @param hints Hints for the operation
@@ -483,6 +551,229 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
     cuBool_Matrix left,
     cuBool_Matrix right,
     cuBool_Hints hints
+);
+
+/**
+ * Creates new sparse vector with specified size.
+ *
+ * @param vector Pointer where to store created vector
+ * @param nrows Vector rows count
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_New(
+    cuBool_Vector* vector,
+    cuBool_Index nrows
+);
+
+/**
+ * Build sparse vector from provided indices array.
+ * By default automatically sorts values and reduces duplicates in the input array.
+ *
+ * @note Pass `CUBOOL_HINT_VALUES_SORTED` if values already in the row-col order.
+ * @note Pass `CUBOOL_HINT_NO_DUPLICATES` if values has no duplicates
+ *
+ * @param vector Vector handle to perform operation on
+ * @param rows Array of row indices
+ * @param nvals Number of the indices passed
+ * @param hints Hits flags for processing
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Build(
+    cuBool_Vector vector,
+    const cuBool_Index* rows,
+    cuBool_Index nvals,
+    cuBool_Hints hints
+);
+
+/**
+ * Sets specified (j) value of the vector to True.
+ *
+ * @note This function automatically reduces duplicates
+ *
+ * @param vector Vector handle to perform operation on
+ * @param i Row index
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_SetElement(
+    cuBool_Vector vector,
+    cuBool_Index i
+);
+
+/**
+ * Sets to the vector specific debug string marker.
+ * This marker will appear in the log messages as string identifier of the vector.
+ *
+ * @param vector Vector handle to perform operation on
+ * @param marker UTF-8 encoded null-terminated string marker name.
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_SetMarker(
+    cuBool_Vector vector,
+    const char* marker
+);
+
+/**
+ * Allows to get vector debug string marker.
+ *
+ * @note Pass null marker if you want to retrieve only the required marker buffer size.
+ * @note After the function call the actual size of the marker is stored in the size variable.
+ *
+ * @note size is set to the actual marker length plus null terminator symbol.
+ *       For marker "vector" size variable will be set to 7.
+ *
+ * @param vector Vector handle to perform operation on
+ * @param[in,out] marker Where to store null-terminated UTF-8 encoded marker string.
+ * @param[in,out] size Size of the provided buffer in bytes to save marker string.
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Marker(
+    cuBool_Vector vector,
+    char* marker,
+    cuBool_Index* size
+);
+
+/**
+ * Reads vector data to the host visible CPU buffer as an array of indices.
+ *
+ * The array must be provided by the user and the size of this array must
+ * be greater or equal the values count of the vector.
+ *
+ * @param vector Matrix handle to perform operation on
+ * @param[in,out] rows Buffer to store row indices
+ * @param[in,out] nvals Total number of the indices
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_ExtractValues(
+    cuBool_Vector vector,
+    cuBool_Index* rows,
+    cuBool_Index* nvals
+);
+
+/**
+ * Extracts sub-vector of the input vector and stores it into result vector.
+ *
+ * @note The result sub-vector have nrows dimension,
+ *       and includes [i;i+nrow) rows of the input vector.
+ *
+ * @note Result vector must have compatible size
+ *          dim(result) = nrows
+ *
+ * @note Provided sub-vector region must be within the input vector.
+ *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
+ * @param result[out] Vector handle where to store result of the operation
+ * @param vector Input vector to extract values from
+ * @param i First row id to extract
+ * @param nrows Number of rows to extract
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_ExtractSubVector(
+    cuBool_Vector result,
+    cuBool_Vector vector,
+    cuBool_Index i,
+    cuBool_Index nrows,
+    cuBool_Hints hints
+);
+
+/**
+ * Creates new sparse vector, duplicates content and stores handle in the provided pointer.
+ *
+ * @param vector Vector handle to perform operation on
+ * @param duplicated[out] Pointer to the vector handle where to create and store created vector
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Duplicate(
+    cuBool_Vector vector,
+    cuBool_Vector* duplicated
+);
+
+/**
+ * Query number of non-zero values of the vector.
+ *
+ * @param vector Vector handle to perform operation on
+ * @param nvals[out] Pointer to the place where to store number of the non-zero elements of the vector
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Nvals(
+    cuBool_Vector vector,
+    cuBool_Index* nvals
+);
+
+/**
+ * Query number of rows in the vector.
+ *
+ * @param vector Vector handle to perform operation on
+ * @param nrows[out] Pointer to the place where to store number of vector rows
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Nrows(
+    cuBool_Vector vector,
+    cuBool_Index* nrows
+);
+
+/**
+ * Deletes sparse vector object.
+ *
+ * @param vector Vector handle to delete
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Free(
+    cuBool_Vector vector
+);
+
+
+/**
+ * Reduces vector to single value (equals nnz of the vector for boolean case).
+ *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
+ * @param result Pointer to index value where to store result
+ * @param vector Vector handle to perform operation on
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Reduce(
+    cuBool_Index* result,
+    cuBool_Vector vector,
+    cuBool_Hints hints
+);
+
+/**
+ * Performs result = left + right, where '+' is boolean semiring operation.
+ *
+ * @note Matrices must be compatible
+ *          dim(result) = M
+ *          dim(left) = M
+ *          dim(right) = M
+ *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
+ * @param result[out]Destination vector to store result
+ * @param left Source vector to be added
+ * @param right Source vector to be added
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_EWiseAdd(
+        cuBool_Vector result,
+        cuBool_Vector left,
+        cuBool_Vector right,
+        cuBool_Hints hints
 );
 
 /**
@@ -507,6 +798,56 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxM(
     cuBool_Matrix result,
     cuBool_Matrix left,
+    cuBool_Matrix right,
+    cuBool_Hints hints
+);
+
+/**
+ * Performs result = left x right evaluation, where source '+' and 'x' are boolean semiring operations.
+ * Formally: column vector `right` multiplied to the matrix `left`. The result is column vector.
+ *
+ * @note To perform this operation matrix and vector must be compatible
+ *          dim(left) = M x N
+ *          dim(right) = N
+ *          dim(result) = M
+ *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
+ * @param result[out] Vector handle where to store operation result
+ * @param left Input left matrix
+ * @param right Input right vector
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxV(
+    cuBool_Vector result,
+    cuBool_Matrix left,
+    cuBool_Vector right,
+    cuBool_Hints hints
+);
+
+/**
+ * Performs result = left x right evaluation, where source '+' and 'x' are boolean semiring operations.
+ * Formally: row vector `left` multiplied to the matrix `right`. The result is row vector.
+ *
+ * @note To perform this operation matrix and vector must be compatible
+ *          dim(left) = M
+ *          dim(right) = M x N
+ *          dim(result) = N
+ *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
+ * @param result[out] Vector handle where to store operation result
+ * @param left Input left vector
+ * @param right Input right matrix
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_VxM(
+    cuBool_Vector result,
+    cuBool_Vector left,
     cuBool_Matrix right,
     cuBool_Hints hints
 );

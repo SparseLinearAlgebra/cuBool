@@ -26,7 +26,6 @@
 #define CUBOOL_MATRIX_BASE_HPP
 
 #include <core/config.hpp>
-#include <string>
 
 namespace cubool {
 
@@ -40,8 +39,7 @@ namespace cubool {
         virtual void setElement(index i, index j) = 0;
         virtual void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) = 0;
         virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void
-        extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols, bool checkTime) = 0;
+        virtual void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols, bool checkTime) = 0;
 
         virtual void clone(const MatrixBase& otherBase) = 0;
         virtual void transpose(const MatrixBase &otherBase, bool checkTime) = 0;

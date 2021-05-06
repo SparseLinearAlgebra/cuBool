@@ -22,26 +22,19 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CSR_UTILS_HPP
-#define CUBOOL_CSR_UTILS_HPP
+#include <cuBool_Common.hpp>
 
-#include <core/config.hpp>
-#include <vector>
-
-namespace cubool {
-
-    class CsrUtils {
-    public:
-        static void buildFromData(size_t nrows, size_t ncols,
-                                  const index* rows, const index* cols, size_t nvals,
-                                  std::vector<index>& rowOffsets, std::vector<index>& colIndices,
-                                  bool isSorted, bool noDuplicates);
-
-        static void extractData(size_t nrows, size_t ncols,
-                                index* rows, index* cols, size_t nvals,
-                                const std::vector<index>& rowOffsets, const std::vector<index>& colIndices);
-    };
-
+cuBool_Status cuBool_Vector_Duplicate(
+        cuBool_Vector vector,
+        cuBool_Vector* duplicated
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(vector)
+        CUBOOL_ARG_NOT_NULL(duplicated)
+        auto v = (cubool::Vector *) vector;
+        auto d = cubool::Library::createVector(v->getNrows());
+        d->clone(*v);
+        *duplicated = (cuBool_Vector_t *) d;
+    CUBOOL_END_BODY
 }
-
-#endif //CUBOOL_CSR_UTILS_HPP

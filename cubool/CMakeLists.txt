@@ -17,6 +17,14 @@ set(TARGET_NAME cubool)
 set(TARGET_FILE_NAME)
 set(DEFINES_LIST)
 
+# Mode
+if (CUBOOL_DEBUG)
+    list(APPEND DEFINES_LIST CUBOOL_DEBUG)
+endif()
+if (CUBOOL_RELEASE)
+    list(APPEND DEFINES_LIST CUBOOL_RELEASE)
+endif()
+
 # Platform checks
 if(APPLE)
     list(APPEND DEFINES_LIST CUBOOL_PLATFORM_MACOS)
@@ -38,14 +46,18 @@ set(CUBOOL_SOURCES
     sources/core/error.hpp
     sources/core/library.cpp
     sources/core/library.hpp
+    sources/core/object.cpp
+    sources/core/object.hpp
     sources/core/matrix.cpp
     sources/core/matrix.hpp
+    sources/core/vector.cpp
+    sources/core/vector.hpp
     sources/io/logger.cpp
     sources/io/logger.hpp
-    sources/utils/exclusive_scan.hpp
+    sources/utils/algo_utils.hpp
     sources/utils/timer.hpp
-    sources/utils/csr_utils.cpp
-    sources/utils/csr_utils.hpp)
+    sources/utils/data_utils.cpp
+    sources/utils/data_utils.hpp)
 
 set(CUBOOL_C_API_SOURCES
     include/cubool/cubool.h
@@ -63,6 +75,8 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Matrix_Marker.cpp
     sources/cuBool_Matrix_ExtractPairs.cpp
     sources/cuBool_Matrix_ExtractSubMatrix.cpp
+    sources/cuBool_Matrix_ExtractRow.cpp
+    sources/cuBool_Matrix_ExtractCol.cpp
     sources/cuBool_Matrix_Duplicate.cpp
     sources/cuBool_Matrix_Transpose.cpp
     sources/cuBool_Matrix_Nvals.cpp
@@ -70,13 +84,30 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Matrix_Ncols.cpp
     sources/cuBool_Matrix_Free.cpp
     sources/cuBool_Matrix_Reduce.cpp
+    sources/cuBool_Matrix_Reduce2.cpp
     sources/cuBool_Matrix_EWiseAdd.cpp
+    sources/cuBool_Vector_New.cpp
+    sources/cuBool_Vector_Build.cpp
+    sources/cuBool_Vector_SetElement.cpp
+    sources/cuBool_Vector_SetMarker.cpp
+    sources/cuBool_Vector_Marker.cpp
+    sources/cuBool_Vector_ExtractValues.cpp
+    sources/cuBool_Vector_ExtractSubVector.cpp
+    sources/cuBool_Vector_Duplicate.cpp
+    sources/cuBool_Vector_Nvals.cpp
+    sources/cuBool_Vector_Nrows.cpp
+    sources/cuBool_Vector_Free.cpp
+    sources/cuBool_Vector_Reduce.cpp
+    sources/cuBool_Vector_EWiseAdd.cpp
     sources/cuBool_MxM.cpp
+    sources/cuBool_MxV.cpp
+    sources/cuBool_VxM.cpp
     sources/cuBool_Kronecker.cpp)
 
 set(CUBOOL_BACKEND_SOURCES
     sources/backend/backend_base.hpp
-    sources/backend/matrix_base.hpp)
+    sources/backend/matrix_base.hpp
+    sources/backend/vector_base.hpp)
 
 set(CUBOOL_CUDA_SOURCES)
 set(CUBOOL_SEQUENTIAL_SOURCES)
@@ -88,19 +119,29 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/cuda_backend.cu
         sources/cuda/cuda_instance.hpp
         sources/cuda/cuda_instance.cu
-        sources/cuda/cuda_instance.cpp
         sources/cuda/cuda_matrix.hpp
         sources/cuda/cuda_matrix.cu
-        sources/cuda/cuda_matrix_build.cu
-        sources/cuda/cuda_matrix_extract.cu
         sources/cuda/cuda_matrix_ewiseadd.cu
         sources/cuda/cuda_matrix_kronecker.cu
         sources/cuda/cuda_matrix_multiply.cu
         sources/cuda/cuda_matrix_transpose.cu
         sources/cuda/cuda_matrix_reduce.cu
         sources/cuda/cuda_matrix_extract_sub_matrix.cu
+        sources/cuda/cuda_vector.hpp
+        sources/cuda/cuda_vector.cu
+        sources/cuda/cuda_vector_mxv.cu
+        sources/cuda/cuda_vector_vxm.cu
+        sources/cuda/cuda_vector_ewiseadd.cu
+        sources/cuda/cuda_vector_reduce.cu
+        sources/cuda/details/meta.hpp
+        sources/cuda/details/sp_vector.hpp
+        sources/cuda/details/host_allocator.hpp
+        sources/cuda/details/device_allocator.cuh
         sources/cuda/kernels/slow_sort.cuh
         sources/cuda/kernels/bin_search.cuh
+        sources/cuda/kernels/spgemv.cuh
+        sources/cuda/kernels/spgemtv.cuh
+        sources/cuda/kernels/spewiseadd.cuh
         sources/cuda/kernels/sptranspose.cuh
         sources/cuda/kernels/sptranspose2.cuh
         sources/cuda/kernels/spkron.cuh
@@ -116,7 +157,9 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_backend.hpp
         sources/sequential/sq_matrix.cpp
         sources/sequential/sq_matrix.hpp
-        sources/sequential/sq_csr_data.hpp
+        sources/sequential/sq_vector.cpp
+        sources/sequential/sq_vector.hpp
+        sources/sequential/sq_data.hpp
         sources/sequential/sq_transpose.cpp
         sources/sequential/sq_transpose.hpp
         sources/sequential/sq_kronecker.cpp
@@ -125,10 +168,14 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_ewiseadd.hpp
         sources/sequential/sq_spgemm.cpp
         sources/sequential/sq_spgemm.hpp
+        sources/sequential/sq_spgemv.cpp
+        sources/sequential/sq_spgemv.hpp
         sources/sequential/sq_reduce.cpp
         sources/sequential/sq_reduce.hpp
         sources/sequential/sq_submatrix.cpp
-        sources/sequential/sq_submatrix.hpp)
+        sources/sequential/sq_submatrix.hpp
+        sources/sequential/sq_subvector.cpp
+        sources/sequential/sq_subvector.hpp)
 endif()
 
 # Shared library object config

@@ -22,25 +22,31 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/cuda_matrix.hpp>
-#include <utils/csr_utils.hpp>
+#include <cuBool_Common.hpp>
 
-namespace cubool {
+cuBool_Status cuBool_Vector_Marker(
+        cuBool_Vector vector,
+        char* marker,
+        cuBool_Index* size
+) {
+    CUBOOL_BEGIN_BODY
+        CUBOOL_VALIDATE_LIBRARY
+        CUBOOL_ARG_NOT_NULL(vector)
+        CUBOOL_ARG_NOT_NULL(size)
 
-    void CudaMatrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
-        if (nvals == 0) {
-            mMatrixImpl.zero_dim();  // no content, empty matrix
-            return;
+        auto v = (cubool::Vector*) vector;
+        auto actualSize = v->getDebugMarkerSizeWithNullT();
+        auto toCopy = std::min(*size, actualSize);
+
+        if (marker != nullptr && toCopy > 0) {
+            // C str (with \0)
+            const auto* text = v->getDebugMarker();
+            std::memcpy(marker, text, toCopy);
+
+            // Explicitly terminate (for case size < actualSize)
+            marker[toCopy - 1] = '\0';
         }
 
-        // Build csr structure and store on cpu side
-        std::vector<index> rowOffsets;
-        std::vector<index> colIndices;
-
-        CsrUtils::buildFromData(getNrows(), getNcols(), rows, cols, nvals, rowOffsets, colIndices, isSorted, noDuplicates);
-
-        // Move actual data to the matrix implementation
-        this->transferToDevice(rowOffsets, colIndices);
-    }
-
+        *size = actualSize;
+    CUBOOL_END_BODY
 }
