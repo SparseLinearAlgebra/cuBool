@@ -40,7 +40,7 @@ class Matrix:
     - equality check
 
     Debug features:
-    - String markers
+    - string markers
     """
 
     __slots__ = ["hnd"]
