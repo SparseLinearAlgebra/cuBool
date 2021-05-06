@@ -99,6 +99,17 @@ def get_reduce_hints(time_check):
     return hints
 
 
+def get_reduce_vector_hints(transpose, time_check):
+    hints = _hint_no
+
+    if transpose:
+        hints |= _hint_transpose
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
 def get_kronecker_hints(time_check):
     hints = _hint_no
 
@@ -120,6 +131,15 @@ def get_mxm_hints(is_accumulated, time_check):
 
 
 def get_vxm_hints(time_check):
+    hints = _hint_no
+
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
+def get_mxv_hints(time_check):
     hints = _hint_no
 
     if time_check:

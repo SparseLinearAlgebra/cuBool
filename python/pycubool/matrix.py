@@ -7,6 +7,7 @@ import random
 
 from . import wrapper
 from . import bridge
+from . import vector
 
 
 __all__ = [
@@ -490,6 +491,34 @@ class Matrix:
         bridge.check(status)
         return out
 
+    def extract_row(self, i, out=None):
+        if out is None:
+            out = Vector.empty(self.ncols)
+
+        status = wrapper.loaded_dll.cuBool_Matrix_ExtractRow(
+            out.hnd,
+            self.hnd,
+            ctypes.c_uint(i),
+            ctypes.c_uint(0)
+        )
+
+        bridge.check(status)
+        return out
+
+    def extract_col(self, j, out=None):
+        if out is None:
+            out = Vector.empty(self.nrows)
+
+        status = wrapper.loaded_dll.cuBool_Matrix_ExtractCol(
+            out.hnd,
+            self.hnd,
+            ctypes.c_uint(j),
+            ctypes.c_uint(0)
+        )
+
+        bridge.check(status)
+        return out
+
     def mxm(self, other, out=None, accumulate=False, time_check=False):
         """
         Matrix-matrix multiplication in boolean semiring with "x = and" and "+ = or" operations.
@@ -527,6 +556,20 @@ class Matrix:
             self.hnd,
             other.hnd,
             ctypes.c_uint(bridge.get_mxm_hints(is_accumulated=accumulate, time_check=time_check))
+        )
+
+        bridge.check(status)
+        return out
+
+    def mxv(self, other, out=None, time_check=False):
+        if out is None:
+            out = Vector.empty(self.nrows)
+
+        status = wrapper.loaded_dll.cuBool_MxV(
+            out.hnd,
+            self.hnd,
+            other.hnd,
+            ctypes.c_uint(bridge.get_mxv_hints(time_check=time_check))
         )
 
         bridge.check(status)
@@ -638,6 +681,20 @@ class Matrix:
             out.hnd,
             self.hnd,
             ctypes.c_uint(bridge.get_reduce_hints(time_check=time_check))
+        )
+
+        bridge.check(status)
+        return out
+
+    def reduce_vector(self, out=None, transpose=False, time_check=False):
+        if out is None:
+            nrows = self.ncols if transpose else self.nrows
+            out = Vector.empty(nrows)
+
+        status = wrapper.loaded_dll.cuBool_Matrix_Reduce(
+            out.hnd,
+            self.hnd,
+            ctypes.c_uint(bridge.get_reduce_vector_hints(transpose=transpose, time_check=time_check))
         )
 
         bridge.check(status)
