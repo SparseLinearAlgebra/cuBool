@@ -269,7 +269,6 @@ class Matrix:
         )
 
         bridge.check(status)
-        return None
 
     @property
     def marker(self):
@@ -533,7 +532,7 @@ class Matrix:
         bridge.check(status)
         return out
 
-    def kronecker(self, other, time_check=False):
+    def kronecker(self, other, out=None, time_check=False):
         """
         Matrix-matrix kronecker product with boolean "x = and" operation.
         Returns kronecker product of `self` and `other` matrices.
@@ -556,12 +555,14 @@ class Matrix:
         '
 
         :param other: Input matrix
+        :param out: Optional out matrix to store result
         :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Matrices kronecker product matrix
         """
 
-        shape = (self.nrows * other.nrows, self.ncols * other.ncols)
-        out = Matrix.empty(shape)
+        if out is None:
+            shape = (self.nrows * other.nrows, self.ncols * other.ncols)
+            out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Kronecker(
             out.hnd,
@@ -573,7 +574,7 @@ class Matrix:
         bridge.check(status)
         return out
 
-    def ewiseadd(self, other, time_check=False):
+    def ewiseadd(self, other, out=None, time_check=False):
         """
         Element-wise matrix-matrix addition with boolean "+ = or" operation.
         Returns element-wise sum of `self` and `other` matrix.
@@ -591,12 +592,14 @@ class Matrix:
         '
 
         :param other: Input matrix to sum
+        :param out: Optional out matrix to store result
         :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Element-wise matrix-matrix sum
         """
 
-        shape = (self.nrows, self.ncols)
-        out = Matrix.empty(shape)
+        if out is None:
+            shape = (self.nrows, self.ncols)
+            out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_EWiseAdd(
             out.hnd,
@@ -643,7 +646,6 @@ class Matrix:
     def equals(self, other) -> bool:
         """
         Compare two matrices. Returns true if they are equal.
-        todo: Add this method into C API
 
         :param other: Other matrix to compare
         :return: True if matrices are equal

@@ -72,6 +72,15 @@ def get_sub_matrix_hints(time_check):
     return hints
 
 
+def get_sub_vector_hints(time_check):
+    hints = _hint_no
+
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
 def get_transpose_hints(time_check):
     hints = _hint_no
 
@@ -104,6 +113,15 @@ def get_mxm_hints(is_accumulated, time_check):
 
     if is_accumulated:
         hints |= _hint_accumulate
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
+def get_vxm_hints(time_check):
+    hints = _hint_no
+
     if time_check:
         hints |= _hint_time_check
 
