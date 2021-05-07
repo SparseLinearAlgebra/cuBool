@@ -124,8 +124,8 @@ namespace cubool {
         index firstToCopy = region.front();
 
         VectorImplType::container_type result(resultSize);
-        thrust::copy(vec.m_rows_index.begin() + firstToCopy, vec.m_rows_index.begin() + firstToCopy + resultSize,
-                     result.begin());
+        thrust::transform(vec.m_rows_index.begin() + firstToCopy, vec.m_rows_index.begin() + firstToCopy + resultSize,result.begin(),
+                          [i]__device__(index id) { return id - i; });
 
         // Update this impl data
         mVectorImpl = std::move(VectorImplType(std::move(result), nrows, resultSize));

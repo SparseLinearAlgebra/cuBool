@@ -109,6 +109,12 @@ TEST(cuBool_Vector, Marker) {
 
     ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_New(&vector, m), CUBOOL_STATUS_SUCCESS);
+
+    ASSERT_EQ(cuBool_Vector_Marker(vector, nullptr, &size), CUBOOL_STATUS_SUCCESS);
+    ASSERT_LE(size, BUFFER_SIZE);
+    ASSERT_EQ(cuBool_Vector_Marker(vector, buffer, &size), CUBOOL_STATUS_SUCCESS);
+    std::cout << "Default marker: " << buffer << std::endl;
+
     ASSERT_EQ(cuBool_Vector_SetMarker(vector, marker), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_Marker(vector, nullptr, &size), CUBOOL_STATUS_SUCCESS);
     ASSERT_LE(size, BUFFER_SIZE);
