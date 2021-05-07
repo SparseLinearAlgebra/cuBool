@@ -111,5 +111,20 @@ vals = a.to_list()
 print(vals)
 print(a.equals(a))
 
-matrix = pycubool.Matrix.generate(shape=(4, 4), density=0.5)
-print(matrix)
+matrix = pycubool.Matrix.generate(shape=(5, 4), density=0.5)
+print(matrix, matrix.extract_row(1), matrix.extract_col(2), sep="\n")
+
+matrix = pycubool.Matrix.generate(shape=(5, 4), density=0.5)
+vector = pycubool.Vector.generate(nrows=4, density=0.6)
+print(matrix, vector, matrix.mxv(vector), sep="\n")
+
+matrix = pycubool.Matrix.generate(shape=(5, 4), density=0.5)
+vector = pycubool.Vector.generate(nrows=5, density=0.6)
+print(matrix, vector, vector.vxm(matrix), sep="\n")
+
+matrix = pycubool.Matrix.generate(shape=(10, 6), density=0.2)
+print(matrix, matrix.reduce_vector(transpose=False), matrix.reduce_vector(transpose=True), sep="\n")
+
+
+
+

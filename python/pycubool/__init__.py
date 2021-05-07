@@ -21,6 +21,7 @@ License:
 from .wrapper import *
 from .utils import *
 from .matrix import *
+from .vector import *
 from .io import *
 from .gviz import *
 

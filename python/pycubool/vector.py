@@ -229,6 +229,9 @@ class Vector:
             ctypes.c_uint(bridge.get_ewiseadd_hints(time_check=time_check))
         )
 
+        bridge.check(status)
+        return out
+
     def reduce(self, time_check=False):
         value = ctypes.c_uint(0)
 

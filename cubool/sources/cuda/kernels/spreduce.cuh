@@ -143,7 +143,6 @@ namespace cubool {
             using VectorType = details::SpVector<IndexType, AllocType>;
 
             VectorType operator()(const MatrixType& m) {
-                auto nrows = m.m_rows;
                 auto ncols = m.m_cols;
                 auto nvals = m.m_vals;
 
@@ -156,7 +155,7 @@ namespace cubool {
                          __device__ (IndexType i) {
                          auto j = colIndex[i];
 
-                         atomicOr((mask + j).get(), (IndexType) 1);
+                         mask[j] = 0x1u;
                      }
                 );
 
@@ -164,17 +163,15 @@ namespace cubool {
                 auto resultSize = thrust::reduce(mask.begin(), mask.end(), (IndexType) 0);
 
                 ContainerType<index> result(resultSize);
-                ContainerType<index> offsets(mask.size());
-
-                // Evaluate write offsets of the result
-                thrust::exclusive_scan(mask.begin(), mask.end(), offsets.begin(), (IndexType) 0, thrust::plus<IndexType>());
+                ContainerType<index> order(1);
+                thrust::fill(order.begin(), order.end(), (IndexType) 0);
 
                 // For each value of the mask write in the result buffer if it not zero
                 thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(ncols),
-                     [mask = mask.data(), result = result.data(), offsets = offsets.data()]
+                     [mask = mask.data(), result = result.data(), order = order.data()]
                          __device__ (IndexType i) {
                         if (mask[i] > 0) {
-                            auto offset = offsets[i];
+                            auto offset = atomicAdd(order.get(), (IndexType) 1);
                             auto colId = i;
 
                             result[offset] = colId;
@@ -182,7 +179,10 @@ namespace cubool {
                      }
                 );
 
-                return VectorType(std::move(result), nrows, resultSize);
+                // Sort values within vector
+                thrust::sort(result.begin(), result.end());
+
+                return VectorType(std::move(result), ncols, resultSize);
             }
 
         };

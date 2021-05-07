@@ -493,7 +493,7 @@ class Matrix:
 
     def extract_row(self, i, out=None):
         if out is None:
-            out = Vector.empty(self.ncols)
+            out = vector.Vector.empty(self.ncols)
 
         status = wrapper.loaded_dll.cuBool_Matrix_ExtractRow(
             out.hnd,
@@ -507,7 +507,7 @@ class Matrix:
 
     def extract_col(self, j, out=None):
         if out is None:
-            out = Vector.empty(self.nrows)
+            out = vector.Vector.empty(self.nrows)
 
         status = wrapper.loaded_dll.cuBool_Matrix_ExtractCol(
             out.hnd,
@@ -563,7 +563,7 @@ class Matrix:
 
     def mxv(self, other, out=None, time_check=False):
         if out is None:
-            out = Vector.empty(self.nrows)
+            out = vector.Vector.empty(self.nrows)
 
         status = wrapper.loaded_dll.cuBool_MxV(
             out.hnd,
@@ -689,7 +689,7 @@ class Matrix:
     def reduce_vector(self, out=None, transpose=False, time_check=False):
         if out is None:
             nrows = self.ncols if transpose else self.nrows
-            out = Vector.empty(nrows)
+            out = vector.Vector.empty(nrows)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Reduce(
             out.hnd,
