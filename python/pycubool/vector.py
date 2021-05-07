@@ -48,6 +48,12 @@ class Vector:
 
     @classmethod
     def empty(cls, nrows):
+        """
+        Creates empty vector of specified `nrows` size.
+
+        :param nrows: Vector dimension
+        :return: Created empty vector
+        """
 
         hnd = ctypes.c_void_p(0)
 
@@ -61,12 +67,48 @@ class Vector:
 
     @classmethod
     def from_list(cls, nrows, rows, is_sorted=False, no_duplicates=False):
+        """
+        Create vector from provided `nrows` size and specified non-zero indices.
+
+        >>> vector = Vector.from_list(4, [0, 1, 3], is_sorted=True, no_duplicates=True)
+        >>> print(vector)
+        '
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   . |   2
+          3 |   1 |   3
+        '
+
+        :param nrows: Vector dimension
+        :param rows: List with indices of non-zero vector values
+        :param is_sorted: True if values are sorted
+        :param no_duplicates: True if provided values has no duplicates
+        :return: Created vector filled with data
+        """
+
         out = cls.empty(nrows)
         out.build(rows, is_sorted=is_sorted, no_duplicates=no_duplicates)
         return out
 
     @classmethod
     def generate(cls, nrows, density: float):
+        """
+        Generate vector of specified size with desired values density.
+
+        >>> vector = Vector.generate(nrows=4, density=0.5)
+        >>> print(vector)
+        '
+          0 |   1 |   0
+          1 |   . |   1
+          2 |   . |   2
+          3 |   1 |   3
+        '
+
+        :param nrows: Vector dimension
+        :param density: Vector values density, must be within [0, 1]
+        :return: Generated vector
+        """
+
         density = min(1.0, max(density, 0.0))
         nvals_max = nrows
         nvals_to_gen = int(nvals_max * density)
@@ -80,6 +122,24 @@ class Vector:
         return Vector.from_list(nrows=nrows, rows=rows, is_sorted=False, no_duplicates=False)
 
     def build(self, rows, is_sorted=False, no_duplicates=False):
+        """
+        Build sparse vector of boolean values from provided array of non-zero values.
+
+        >>> vector = Vector.empty(4)
+        >>> vector.build([0, 1, 3], is_sorted=True, no_duplicates=True)
+        >>> print(vector)
+        '
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   . |   2
+          3 |   1 |   3
+        '
+
+        :param rows: Array of vector values
+        :param is_sorted: True if values are sorted
+        :param no_duplicates: True if provided values has no duplicates
+        :return:
+        """
 
         nvals = len(rows)
         t_rows = (ctypes.c_uint * len(rows))(*rows)
@@ -93,6 +153,28 @@ class Vector:
         bridge.check(status)
 
     def dup(self):
+        """
+        Creates new vector instance, the exact copy of the `self`.
+
+        >>> a = Vector.from_list(4, [0, 1, 3], is_sorted=True, no_duplicates=True)
+        >>> b = a.dup()
+        >>> b[2] = True
+        >>> print(a, b, sep="")
+        '
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   . |   2
+          3 |   1 |   3
+
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   1 |   2
+          3 |   1 |   3
+        '
+
+        :return: New vector instance with `self` copied data
+        """
+
         hnd = ctypes.c_void_p(0)
 
         status = wrapper.loaded_dll.cuBool_Vector_Duplicate(
@@ -103,6 +185,21 @@ class Vector:
         return Vector(hnd)
 
     def set_marker(self, marker: str):
+        """
+        Sets to the vector specific debug string marker.
+        This marker will appear in the log messages as string identifier of the vector.
+
+        >>> a = Vector.empty(nrows=4)
+        >>> print(a.marker)
+        '0x2590a78'
+        >>> a.set_marker("meow")
+        >>> print(a.marker)
+        'meow (0x2590a78)'
+
+        :param marker: String marker to set
+        :return:
+        """
+
         assert marker is not None
 
         status = wrapper.loaded_dll.cuBool_Vector_SetMarker(
@@ -113,6 +210,19 @@ class Vector:
 
     @property
     def marker(self):
+        """
+        Allows to get vector debug string marker.
+
+        >>> a = Vector.empty(nrows=4)
+        >>> print(a.marker)
+        '0x1a767b0'
+        >>> a.set_marker("meow")
+        >>> print(a.marker)
+        'meow (0x1a767b0)'
+
+        :return: String vector marker.
+        """
+
         size = ctypes.c_uint(0)
         status = wrapper.loaded_dll.cuBool_Vector_Marker(
             self.hnd, ctypes.POINTER(ctypes.c_char)(), ctypes.byref(size)
@@ -130,6 +240,11 @@ class Vector:
 
     @property
     def nrows(self) -> int:
+        """
+        Query number of rows of the `self` vector.
+        :return: Number of rows
+        """
+
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.cuBool_Vector_Nrows(
@@ -141,6 +256,11 @@ class Vector:
 
     @property
     def nvals(self) -> int:
+        """
+        Query number of non-zero values of the `self` vector.
+        :return: Number of non-zero values
+        """
+
         result = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.cuBool_Vector_Nvals(
@@ -151,6 +271,20 @@ class Vector:
         return int(result.value)
 
     def to_list(self):
+        """
+        Read vector data as list of non-zero vector indices.
+
+        >>> a = Vector.empty(nrows=4)
+        >>> a[0] = True
+        >>> a[2] = True
+        >>> a[3] = True
+        >>> rows = a.to_list()
+        >>> print(list(rows))
+        '[0, 2, 3]'
+
+        :return: List of indices
+        """
+
         count = self.nvals
 
         rows = (ctypes.c_uint * count)()
@@ -165,6 +299,22 @@ class Vector:
         return rows
 
     def to_string(self, width=3):
+        """
+        Return a string representation of the vector.
+
+        >>> vector = Vector.from_list(4, [0, 1, 3], is_sorted=True, no_duplicates=True)
+        >>> print(vector)
+        '
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   . |   2
+          3 |   1 |   3
+        '
+
+        :param width: Width of the field in chars where to put numbers of rows
+        :return: Vector string representation
+        """
+
         nrows = self.nrows
         nvals = self.nvals
         rows = self.to_list()
@@ -191,6 +341,24 @@ class Vector:
         return result
 
     def extract_vector(self, i, nrows, out=None, time_check=False):
+        """
+        Extract a sub-vector.
+
+        >>> vector = Vector.from_list(5, [0, 1, 3])
+        >>> print(vector.extract_vector(1, nrows=3))
+        '
+          0 |   1 |   0
+          1 |   . |   1
+          2 |   1 |   2
+        '
+
+        :param i: First row index to extract
+        :param nrows: Number of row of the sub-vector
+        :param out: Optional out vector to store result
+        :param time_check: Pass True to measure and log elapsed time of the operation
+        :return: Sub-vector
+        """
+
         if out is None:
             out = Vector.empty(nrows)
 
@@ -205,6 +373,22 @@ class Vector:
         return out
 
     def vxm(self, other, out=None, time_check=False):
+        """
+        Vector-matrix multiply.
+
+        Multiply this row vector by `other` matrix `on the left`.
+        For column matrix-vector multiplication "on the right" see `Matrix.mxv`.
+
+        >>> matrix = Matrix.from_lists((5, 4), [0, 1, 2, 4], [0, 1, 1, 3])
+        >>> vector = Vector.from_list(5, [2, 3, 4])
+        >>> print(vector.vxm(matrix))
+
+        :param other: Input matrix for multiplication
+        :param out: Optional out vector to store result
+        :param time_check: Pass True to measure and log elapsed time of the operation
+        :return: Vector-matrix multiplication result
+        """
+
         if out is None:
             out = Vector.empty(other.ncols)
 
@@ -219,6 +403,26 @@ class Vector:
         return out
 
     def ewiseadd(self, other, out=None, time_check=False):
+        """
+        Element-wise vector-vector addition with boolean "+ = or" operation.
+        Returns element-wise sum of `self` and `other` vector.
+
+        >>> a = Vector.from_list(4, [0, 1, 3])
+        >>> b = Vector.from_list(4, [1, 2, 3])
+        >>> print(a.ewiseadd(b))
+        '
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   1 |   2
+          3 |   1 |   3
+        '
+
+        :param other: Input vector to sum
+        :param out: Optional out vector to store result
+        :param time_check: Pass True to measure and log elapsed time of the operation
+        :return: Element-wise vector-vector sum
+        """
+
         if out is None:
             out = Vector.empty(self.nrows)
 
@@ -233,6 +437,17 @@ class Vector:
         return out
 
     def reduce(self, time_check=False):
+        """
+        Reduce vector to int value.
+
+        >>> vector = Vector.from_list(5, [2, 3, 4])
+        >>> print(vector.reduce())
+        '3'
+
+        :param time_check: Pass True to measure and log elapsed time of the operation
+        :return: Int sum of vector values
+        """
+
         value = ctypes.c_uint(0)
 
         status = wrapper.loaded_dll.cuBool_Vector_Reduce(
@@ -245,6 +460,13 @@ class Vector:
         return int(value.value)
 
     def equals(self, other) -> bool:
+        """
+        Compare two vectors. Returns true if they are equal.
+
+        :param other: Other vector to compare
+        :return: True if vectors are equal
+        """
+
         if not self.nrows == other.nrows:
             return False
         if not self.nvals == other.nvals:
@@ -263,9 +485,39 @@ class Vector:
         return self.to_string()
 
     def __iter__(self):
-        return self.to_list()
+        """
+        Iterate over (i) values if the vector.
+
+        >>> vector = Vector.from_list(5, [1, 3, 4])
+        >>> print(list(iter(vector)))
+        '[1, 3, 4]'
+
+        :return: Vector non-zero indices iterator
+        """
+
+        return iter(self.to_list())
 
     def __getitem__(self, item):
+        """
+        Extract sub-vector from `self`.
+        Supported `item` as slice. Step in slices is not supported.
+
+        >>> vector = Vector.from_list(5, [1, 3, 4])
+        >>> print(vector[0:3], vector[2:], sep="")
+        '
+          0 |   . |   0
+          1 |   1 |   1
+          2 |   . |   2
+
+          0 |   . |   0
+          1 |   1 |   1
+          2 |   1 |   2
+        '
+
+        :param item: Slice for rows region
+        :return: Extracted sub-vector
+        """
+
         if isinstance(item, slice):
             i = item.start
             nrows = item.stop
@@ -285,6 +537,26 @@ class Vector:
         raise Exception("Invalid vector slicing")
 
     def __setitem__(self, key, value):
+        """
+        Sets specifies vector index as True.
+
+        >>> vector = Vector.empty(4)
+        >>> vector[0] = True
+        >>> vector[2] = True
+        >>> vector[3] = True
+        >>> print(vector)
+        '
+          0 |   1 |   0
+          1 |   . |   1
+          2 |   1 |   2
+          3 |   1 |   3
+        '
+
+        :param key: Index of the vector row to set True.
+        :param value: Must be True always.
+        :return:
+        """
+
         assert value is True
 
         if isinstance(key, int):

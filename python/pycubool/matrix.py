@@ -77,7 +77,7 @@ class Matrix:
     @classmethod
     def from_lists(cls, shape, rows, cols, is_sorted=False, no_duplicates=False):
         """
-        Build matrix from provided `shape` and non-zero values data.
+        Create matrix from provided `shape` and non-zero values data.
 
         >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True, no_duplicates=True)
         >>> print(matrix)
@@ -260,7 +260,7 @@ class Matrix:
         'meow (0x1a767b0)'
 
         :param marker: String marker to set
-        :return: None
+        :return:
         """
 
         assert marker is not None
@@ -492,6 +492,23 @@ class Matrix:
         return out
 
     def extract_row(self, i, out=None):
+        """
+        Extract specified `self` matrix row as sparse vector.
+
+        >>> matrix = Matrix.from_lists((5, 4), [0, 1, 2, 4], [0, 1, 1, 3])
+        >>> print(matrix.extract_row(1))
+        '
+          0 |   . |   0
+          1 |   1 |   1
+          2 |   . |   2
+          3 |   . |   3
+        '
+
+        :param i: Row index to extract
+        :param out: Optional out vector to store result
+        :return: Return extracted row
+        """
+
         if out is None:
             out = vector.Vector.empty(self.ncols)
 
@@ -506,6 +523,24 @@ class Matrix:
         return out
 
     def extract_col(self, j, out=None):
+        """
+        Extract specified `self` matrix column as sparse vector.
+
+        >>> matrix = Matrix.from_lists((5, 4), [0, 1, 2, 4], [0, 1, 1, 3])
+        >>> print(matrix.extract_col(1))
+        '
+          0 |   . |   0
+          1 |   1 |   1
+          2 |   1 |   2
+          3 |   . |   3
+          4 |   . |   4
+        '
+
+        :param j: Column index to extract
+        :param out: Optional out vector to store result
+        :return: Return extracted column
+        """
+
         if out is None:
             out = vector.Vector.empty(self.nrows)
 
@@ -562,6 +597,29 @@ class Matrix:
         return out
 
     def mxv(self, other, out=None, time_check=False):
+        """
+        Matrix-vector multiply.
+
+        Multiply `this` matrix by column `other` vector `on the right`.
+        For row vector-matrix multiplication "on the left" see `Vector.vxm`.
+
+        >>> matrix = Matrix.from_lists((5, 4), [0, 1, 2, 4], [0, 1, 1, 3])
+        >>> vector = Vector.from_list(4, [0, 1, 2])
+        >>> print(matrix.mxv(vector))
+        '
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   1 |   2
+          3 |   . |   3
+          4 |   . |   4
+        '
+
+        :param other: Input matrix for multiplication
+        :param out: Optional out vector to store result
+        :param time_check: Pass True to measure and log elapsed time of the operation
+        :return: Vector-matrix multiplication result
+        """
+
         if out is None:
             out = vector.Vector.empty(self.nrows)
 
@@ -654,9 +712,9 @@ class Matrix:
         bridge.check(status)
         return out
 
-    def reduce(self, time_check=False):
+    def reduce(self, out=None, time_check=False):
         """
-        Reduce matrix to vector with boolean "+ = or" operation.
+        Reduce matrix to column matrix with boolean "+ = or" operation.
         Return `self` reduced matrix.
 
         >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 2], [0, 1, 0, 2])
@@ -670,12 +728,14 @@ class Matrix:
                   0
         '
 
+        :param out: Optional out matrix to store result
         :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Reduced matrix (matrix with M x 1 shape)
         """
 
-        shape = (self.nrows, 1)
-        out = Matrix.empty(shape)
+        if out is None:
+            shape = (self.nrows, 1)
+            out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Reduce2(
             out.hnd,
@@ -687,6 +747,31 @@ class Matrix:
         return out
 
     def reduce_vector(self, out=None, transpose=False, time_check=False):
+        """
+        Reduce matrix to column vector with boolean "+ = or" operation.
+        Return `self` reduced matrix.
+
+        >>> matrix = Matrix.from_lists((5, 4), [0, 1, 2, 4], [0, 1, 1, 3])
+        >>> print(matrix.reduce_vector(), matrix.reduce_vector(transpose=True), sep="")
+        '
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   1 |   2
+          3 |   . |   3
+          4 |   1 |   4
+
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   . |   2
+          3 |   1 |   3
+        '
+
+        :param out: Optional out matrix to store result
+        :param transpose: Pass True to reduce matrix to row vector
+        :param time_check: Pass True to measure and log elapsed time of the operation
+        :return: Reduced matrix (matrix with M x 1 shape)
+        """
+
         if out is None:
             nrows = self.ncols if transpose else self.nrows
             out = vector.Vector.empty(nrows)
@@ -795,7 +880,7 @@ class Matrix:
 
     def __setitem__(self, key, value):
         """
-        Sets Sets specified `key` = (i, j) value of the matrix to True.
+        Sets specified `key` = (i, j) value of the matrix to True.
 
         >>> matrix = Matrix.empty(shape=(4, 4))
         >>> matrix[0, 0] = True
