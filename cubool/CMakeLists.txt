@@ -140,7 +140,7 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/kernels/slow_sort.cuh
         sources/cuda/kernels/bin_search.cuh
         sources/cuda/kernels/spgemv.cuh
-            sources/cuda/kernels/spgemv_t.cuh
+        sources/cuda/kernels/spgemv_t.cuh
         sources/cuda/kernels/spewiseadd.cuh
         sources/cuda/kernels/sptranspose.cuh
         sources/cuda/kernels/sptranspose2.cuh

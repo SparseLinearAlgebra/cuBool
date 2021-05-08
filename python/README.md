@@ -154,9 +154,9 @@ Script can be rendered by any [gviz tool](https://dreampuf.github.io/GraphvizOnl
 @MISC{cuBool,
   author = {Orachyov, Egor and Alimov, Pavel and Grigorev, Semyon},
   title = {cuBool: sparse Boolean linear algebra for Nvidia Cuda},
-  year = 2020,
+  year = 2021,
   url = {https://github.com/JetBrains-Research/cuBool},
-  note = {Version 1.0.0}
+  note = {Version 1.1.0}
 }
 ```
 

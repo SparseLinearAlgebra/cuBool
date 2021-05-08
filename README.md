@@ -5,7 +5,7 @@
 [![JB Research](https://jb.gg/badges/research-flat-square.svg)](https://research.jetbrains.org/)
 [![Ubuntu](https://github.com/JetBrains-Research/cuBool/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/JetBrains-Research/cuBool/actions)
 [![License](https://img.shields.io/badge/license-MIT-orange)](https://github.com/JetBrains-Research/cuBool/blob/master/LICENSE)
-[![Package](https://img.shields.io/badge/pypi%20package-1.0.0-%233776ab)](https://pypi.org/project/pycubool/)
+[![Package](https://img.shields.io/badge/pypi%20package-1.1.0-%233776ab)](https://pypi.org/project/pycubool/)
 
 **cuBool** is a linear Boolean algebra library primitives and operations for 
 work with sparse matrices written on the NVIDIA CUDA platform. The primary 
@@ -327,18 +327,17 @@ cuBool
 @MISC{cuBool,
   author = {Orachyov, Egor and Alimov, Pavel and Grigorev, Semyon},
   title = {cuBool: sparse Boolean linear algebra for Nvidia Cuda},
-  year = 2020,
+  year = 2021,
   url = {https://github.com/JetBrains-Research/cuBool},
-  note = {Version 1.0.0}
+  note = {Version 1.1.0}
 }
 ```
 
 ## Algorithms
 
-In this section listed all the related papers, articles and links, which
-were used as an algorithmic foundation for implementation of sparse linear
-boolean algebra operations (sparse matrix-matrix multiplication, sparse matrix-vector
-multiplication, sparse vector-matrix multiplication, matrix-matrix element-wise addition and etc.):
+In this section listed all the related papers, which were used as an algorithmic foundation for 
+implementation of sparse linear boolean algebra operations (sparse matrix-matrix multiplication, 
+sparse matrix-vector multiplication, sparse vector-matrix multiplication, matrix-matrix element-wise addition and etc.):
 
 - High-performance and Memory-saving Sparse General Matrix-Matrix Multiplication for NVIDIA Pascal GPU, 
 Yusuke Nagasaka, Akira Nukada, Satoshi Matsuoka

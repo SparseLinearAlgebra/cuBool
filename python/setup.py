@@ -20,11 +20,11 @@ for entry in os.listdir(SOURCE_PATH.parent / "pycubool"):
 
 setuptools.setup(
     name="pycubool",
-    version="1.0.0",
+    version="1.1.0",
     author="Egor Orachyov",
     author_email="egororachyov@gmail.com",
     license="MIT",
-    description="cuBool library python bindings.",
+    description="cuBool library python bindings",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/JetBrains-Research/cuBool",
