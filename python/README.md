@@ -19,32 +19,35 @@ The library provides C-compatible API, written in the GraphBLAS style.
 cuBool library C API. This package exports library features and primitives 
 in high-level format with automated resources management and fancy syntax sugar.
 
-**The primary library primitive** is a sparse boolean matrix. The library provides 
-the most popular operations for matrix manipulation, such as construction from
-values, transpose, sub-matrix extraction, matrix-to-vector reduce, matrix-matrix
-element-wise addition, matrix-matrix multiplication and Kronecker product.  
+**The primary library primitives** are sparse matrix and sparse vector of boolean values. 
+The library provides the most popular operations for matrix manipulation, 
+such as construction from values, transpose, sub-matrix/sub-vector extraction, matrix-to-vector reduce, 
+element-wise addition, matrix-matrix, matrix-vector, vector-matrix multiplication, and Kronecker product.  
 
 **As a fallback** library provides sequential backend for mentioned above operations
 for computations on CPU side only. This backend is selected automatically
 if Cuda compatible device is not presented in the system. This can be quite handy for 
 prototyping algorithms on a local computer for later running on a powerful server.   
 
-## Features
+### Features
 
 - C API for performance-critical computations
 - Python package for every-day tasks
 - Cuda backend for computations
 - Cpu backend for computations
-- Matrix creation (empty, from data, with random data)
+- Matrix/vector creation (empty, from data, with random data)
 - Matrix-matrix operations (multiplication, element-wise addition, kronecker product)
+- Matrix-vector operations (matrix-vector and vector-matrix multiplication)
+- Vector-vector operations (element-wise addition)
 - Matrix operations (equality, transpose, reduce to vector, extract sub-matrix)
-- Matrix data extraction (as lists, as list of pairs)
-- Matrix syntax sugar (pretty string printing, slicing, iterating through non-zero values)
+- Vector operations (equality, reduce to value, extract sub-vector)
+- Matrix/vector data extraction (as lists, as list of pairs)
+- Matrix/vector syntax sugar (pretty string printing, slicing, iterating through non-zero values)
 - IO (import/export matrix from/to `.mtx` file format)
 - GraphViz (export single matrix or set of matrices as a graph with custom color and label settings)
 - Debug (matrix string debug markers, logging)
 
-## Simple example
+### Simple example
 
 Create sparse matrices, compute matrix-matrix product and print the result to the output:
 
@@ -64,7 +67,31 @@ b[2, 1] = True
 print(a, b, a.mxm(b), sep="\n")
 ```
 
-## Transitive closure example
+### Vector example
+
+Create sparse matrix and vector, compute matrix-vector and vector-matrix products and print the result:
+
+```python
+import pycubool as cb
+
+m = cb.Matrix.empty(shape=(3, 4))
+m[0, 1] = True
+m[1, 0] = True
+m[1, 3] = True
+m[2, 2] = True
+
+v = cb.Vector.empty(nrows=4)
+v[0] = True
+v[2] = True
+
+t = cb.Vector.empty(nrows=3) 
+t[0] = True
+t[2] = True
+
+print(m.mxv(v), t.vxm(m), sep="\n")
+```
+
+### Transitive closure example
 
 Compute the transitive closure problem for the directed graph and print the result:
 
@@ -88,7 +115,7 @@ while total != t.nvals:
 print(a, t, sep="\n")
 ```
 
-## GraphViz example
+### GraphViz example
 
 Generate GraphViz graph script for a graph stored as a set of adjacency matrices:
 

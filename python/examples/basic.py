@@ -17,6 +17,26 @@ b[2, 1] = True
 print(a, b, a.mxm(b), sep="\n")
 
 #
+# Vector example
+#
+
+m = cb.Matrix.empty(shape=(3, 4))
+m[0, 1] = True
+m[1, 0] = True
+m[1, 3] = True
+m[2, 2] = True
+
+v = cb.Vector.empty(nrows=4)
+v[0] = True
+v[2] = True
+
+t = cb.Vector.empty(nrows=3)
+t[0] = True
+t[2] = True
+
+print(m.mxv(v), t.vxm(m), sep="\n")
+
+#
 # Transitive closure example
 #
 
