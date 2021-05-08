@@ -40,11 +40,6 @@ namespace cubool {
     Vector::Vector(size_t nrows, BackendBase &backend) {
         mHnd = backend.createVector(nrows);
         mProvider = &backend;
-
-        // By default marker is the address of the vector
-        std::stringstream s;
-        s << this;
-        mMarker = s.str();
     }
 
     Vector::~Vector() {

@@ -6,12 +6,12 @@ from pycubool import io
 class TestMatrixEWiseAdd(unittest.TestCase):
 
     def setUp(self) -> None:
-        matrices, self.total = cfg.get_test_cases("ewiseadd", 3)
+        matrices, self.total = cfg.get_test_cases("matrix_ewiseadd", 3)
         self.input_matrices_0, self.input_matrices_1, self.result_matrices = matrices[0], matrices[1], matrices[2]
 
     def test_add(self):
         """
-        Unit test for addition of two matrices
+        Unit test for element-wise addition of two matrices
         """
         for i in range(self.total):
             first = io.import_matrix_from_mtx(self.input_matrices_0[i])

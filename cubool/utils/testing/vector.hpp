@@ -46,7 +46,7 @@ namespace testing {
 
             for (auto v: index) {
                 if (i <= v && v < (i + m))
-                    out.index.push_back(v);
+                    out.index.push_back(v - i);
             }
 
             out.nrows = m;

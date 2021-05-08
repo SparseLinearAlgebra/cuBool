@@ -36,6 +36,7 @@ _hint_log_warning = 64
 _hint_log_all = 128
 _hint_no_duplicates = 256
 _hint_time_check = 512
+_hint_transpose = 1024
 
 
 def get_log_hints(default=True, error=False, warning=False):
@@ -71,6 +72,15 @@ def get_sub_matrix_hints(time_check):
     return hints
 
 
+def get_sub_vector_hints(time_check):
+    hints = _hint_no
+
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
 def get_transpose_hints(time_check):
     hints = _hint_no
 
@@ -83,6 +93,17 @@ def get_transpose_hints(time_check):
 def get_reduce_hints(time_check):
     hints = _hint_no
 
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
+def get_reduce_vector_hints(transpose, time_check):
+    hints = _hint_no
+
+    if transpose:
+        hints |= _hint_transpose
     if time_check:
         hints |= _hint_time_check
 
@@ -103,6 +124,24 @@ def get_mxm_hints(is_accumulated, time_check):
 
     if is_accumulated:
         hints |= _hint_accumulate
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
+def get_vxm_hints(time_check):
+    hints = _hint_no
+
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
+def get_mxv_hints(time_check):
+    hints = _hint_no
+
     if time_check:
         hints |= _hint_time_check
 
@@ -136,7 +175,10 @@ def load_and_configure(cubool_lib_path: str):
     index_t = ctypes.c_uint
     hints_t = ctypes.c_uint
     matrix_p = ctypes.c_void_p
+    vector_p = ctypes.c_void_p
+
     p_to_matrix_p = ctypes.POINTER(matrix_p)
+    p_to_vector_p = ctypes.POINTER(vector_p)
 
     lib.cuBool_SetupLogging.restype = status_t
     lib.cuBool_SetupLogging.argtypes = [
@@ -155,8 +197,8 @@ def load_and_configure(cubool_lib_path: str):
     lib.cuBool_Matrix_New.restype = status_t
     lib.cuBool_Matrix_New.argtypes = [
         p_to_matrix_p,
-        ctypes.c_uint,
-        ctypes.c_uint
+        index_t,
+        index_t
     ]
 
     lib.cuBool_Matrix_Free.restype = status_t
@@ -167,17 +209,17 @@ def load_and_configure(cubool_lib_path: str):
     lib.cuBool_Matrix_Build.restype = status_t
     lib.cuBool_Matrix_Build.argtypes = [
         matrix_p,
-        ctypes.POINTER(ctypes.c_uint),
-        ctypes.POINTER(ctypes.c_uint),
-        ctypes.c_uint,
+        ctypes.POINTER(index_t),
+        ctypes.POINTER(index_t),
+        index_t,
         hints_t
     ]
 
     lib.cuBool_Matrix_SetElement.restype = status_t
     lib.cuBool_Matrix_SetElement.argtypes = [
         matrix_p,
-        ctypes.c_uint,
-        ctypes.c_uint
+        index_t,
+        index_t
     ]
 
     lib.cuBool_Matrix_SetMarker.restype = status_t
@@ -190,15 +232,15 @@ def load_and_configure(cubool_lib_path: str):
     lib.cuBool_Matrix_Marker.argtypes = [
         matrix_p,
         ctypes.POINTER(ctypes.c_char),
-        ctypes.POINTER(ctypes.c_uint)
+        ctypes.POINTER(index_t)
     ]
 
     lib.cuBool_Matrix_ExtractPairs.restype = status_t
     lib.cuBool_Matrix_ExtractPairs.argtypes = [
         matrix_p,
-        ctypes.POINTER(ctypes.c_uint),
-        ctypes.POINTER(ctypes.c_uint),
-        ctypes.POINTER(ctypes.c_uint)
+        ctypes.POINTER(index_t),
+        ctypes.POINTER(index_t),
+        ctypes.POINTER(index_t)
     ]
 
     lib.cuBool_Matrix_ExtractSubMatrix.restype = status_t
@@ -208,6 +250,22 @@ def load_and_configure(cubool_lib_path: str):
         index_t,
         index_t,
         index_t,
+        index_t,
+        hints_t
+    ]
+
+    lib.cuBool_Matrix_ExtractRow.restype = status_t
+    lib.cuBool_Matrix_ExtractRow.argtypes = [
+        vector_p,
+        matrix_p,
+        index_t,
+        hints_t
+    ]
+
+    lib.cuBool_Matrix_ExtractCol.restype = status_t
+    lib.cuBool_Matrix_ExtractCol.argtypes = [
+        vector_p,
+        matrix_p,
         index_t,
         hints_t
     ]
@@ -228,19 +286,26 @@ def load_and_configure(cubool_lib_path: str):
     lib.cuBool_Matrix_Nrows.restype = status_t
     lib.cuBool_Matrix_Nrows.argtype = [
         matrix_p,
-        ctypes.POINTER(ctypes.c_uint)
+        ctypes.POINTER(index_t)
     ]
 
     lib.cuBool_Matrix_Ncols.restype = status_t
     lib.cuBool_Matrix_Ncols.argtype = [
         matrix_p,
-        ctypes.POINTER(ctypes.c_uint)
+        ctypes.POINTER(index_t)
     ]
 
     lib.cuBool_Matrix_Nvals.restype = status_t
     lib.cuBool_Matrix_Nvals.cuBool_Matrix_Reduce2 = [
         matrix_p,
         ctypes.POINTER(ctypes.c_size_t)
+    ]
+
+    lib.cuBool_Matrix_Reduce.restype = status_t
+    lib.cuBool_Matrix_Reduce.argtype = [
+        vector_p,
+        matrix_p,
+        hints_t
     ]
 
     lib.cuBool_Matrix_Reduce2.restype = status_t
@@ -258,10 +323,113 @@ def load_and_configure(cubool_lib_path: str):
         hints_t
     ]
 
+    lib.cuBool_Vector_New.restype = status_t
+    lib.cuBool_Vector_New.argtypes = [
+        p_to_vector_p,
+        index_t
+    ]
+
+    lib.cuBool_Vector_Build.restype = status_t
+    lib.cuBool_Vector_Build.argtypes = [
+        vector_p,
+        ctypes.POINTER(index_t),
+        index_t,
+        hints_t
+    ]
+
+    lib.cuBool_Vector_SetElement.restype = status_t
+    lib.cuBool_Vector_SetElement.argtypes = [
+        vector_p,
+        index_t
+    ]
+
+    lib.cuBool_Vector_SetMarker.restype = status_t
+    lib.cuBool_Vector_SetMarker.argtypes = [
+        vector_p,
+        ctypes.POINTER(ctypes.c_char)
+    ]
+
+    lib.cuBool_Vector_Marker.restype = status_t
+    lib.cuBool_Vector_Marker.argtypes = [
+        vector_p,
+        ctypes.POINTER(ctypes.c_char),
+        ctypes.POINTER(index_t)
+    ]
+
+    lib.cuBool_Vector_ExtractValues.restype = status_t
+    lib.cuBool_Vector_ExtractValues.argtypes = [
+        vector_p,
+        ctypes.POINTER(index_t),
+        ctypes.POINTER(index_t)
+    ]
+
+    lib.cuBool_Vector_ExtractSubVector.restype = status_t
+    lib.cuBool_Vector_ExtractSubVector.argtypes = [
+        vector_p,
+        vector_p,
+        index_t,
+        index_t,
+        hints_t
+    ]
+
+    lib.cuBool_Vector_Duplicate.restype = status_t
+    lib.cuBool_Vector_Duplicate.argtypes = [
+        vector_p,
+        p_to_vector_p
+    ]
+
+    lib.cuBool_Vector_Nvals.restype = status_t
+    lib.cuBool_Vector_Nvals.argtypes = [
+        vector_p,
+        ctypes.POINTER(index_t)
+    ]
+
+    lib.cuBool_Vector_Nrows.restype = status_t
+    lib.cuBool_Vector_Nrows.argtypes = [
+        vector_p,
+        ctypes.POINTER(index_t)
+    ]
+
+    lib.cuBool_Vector_Free.restype = status_t
+    lib.cuBool_Vector_Free.argtypes = [
+        vector_p
+    ]
+
+    lib.cuBool_Vector_Reduce.restype = status_t
+    lib.cuBool_Vector_Reduce.argtypes = [
+        ctypes.POINTER(index_t),
+        vector_p,
+        hints_t
+    ]
+
+    lib.cuBool_Vector_EWiseAdd.restype = status_t
+    lib.cuBool_Vector_EWiseAdd.argtypes = [
+        vector_p,
+        vector_p,
+        vector_p,
+        hints_t
+    ]
+
     lib.cuBool_MxM.restype = status_t
     lib.cuBool_MxM.argtypes = [
         matrix_p,
         matrix_p,
+        matrix_p,
+        hints_t
+    ]
+
+    lib.cuBool_MxV.restype = status_t
+    lib.cuBool_MxV.argtypes = [
+        vector_p,
+        matrix_p,
+        vector_p,
+        hints_t
+    ]
+
+    lib.cuBool_VxM.restype = status_t
+    lib.cuBool_VxM.argtypes = [
+        vector_p,
+        vector_p,
         matrix_p,
         hints_t
     ]

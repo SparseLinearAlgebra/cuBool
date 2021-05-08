@@ -32,6 +32,7 @@ namespace cubool {
 
     class Object {
     public:
+        Object();
         void setDebugMarker(const char* marker);
         const char* getDebugMarker() const;
         index getDebugMarkerSizeWithNullT() const;

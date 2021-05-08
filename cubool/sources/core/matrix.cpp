@@ -40,11 +40,6 @@ namespace cubool {
     Matrix::Matrix(size_t nrows, size_t ncols, BackendBase &backend) {
         mHnd = backend.createMatrix(nrows, ncols);
         mProvider = &backend;
-
-        // By default marker is the address of the matrix
-        std::stringstream s;
-        s << this;
-        mMarker = s.str();
     }
 
     Matrix::~Matrix() {

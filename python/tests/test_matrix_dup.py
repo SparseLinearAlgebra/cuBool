@@ -6,7 +6,7 @@ from pycubool import io
 class TestMatrixDuplicate(unittest.TestCase):
 
     def setUp(self) -> None:
-        matrices, self.total = cfg.get_test_cases("dup", 2)
+        matrices, self.total = cfg.get_test_cases("matrix_dup", 2)
         self.input_matrices_0, self.result_matrices = matrices[0], matrices[1]
 
     def test_duplicate(self):

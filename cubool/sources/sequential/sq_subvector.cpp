@@ -48,7 +48,7 @@ namespace cubool {
 
         for (auto v: a.indices) {
             if (first <= v && v < last) {
-                out.indices.push_back(v);
+                out.indices.push_back(v - i);
             }
         }
     }

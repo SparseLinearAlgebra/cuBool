@@ -65,9 +65,6 @@ namespace cubool {
         // Cached values by the set functions
         mutable std::vector<index> mCachedI;
 
-        // Marker for debugging
-        std::string mMarker;
-
         // Implementation handle references
         VectorBase* mHnd = nullptr;
         BackendBase* mProvider = nullptr;

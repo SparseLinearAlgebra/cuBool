@@ -76,7 +76,7 @@ cuBool_Status TransitiveClosure(cuBool_Matrix A, cuBool_Matrix* T) {
     return CUBOOL_STATUS_SUCCESS;
 }
 
-TEST(cuBool, Example) {
+TEST(cuBool, TsExample) {
     cuBool_Matrix A = nullptr;
     cuBool_Matrix T = nullptr;
 

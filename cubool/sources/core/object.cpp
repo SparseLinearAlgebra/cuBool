@@ -27,6 +27,13 @@
 
 namespace cubool {
 
+    Object::Object() {
+        // By default marker is the address of the object
+        std::stringstream s;
+        s << this;
+        mMarker = s.str();
+    }
+
     void Object::setDebugMarker(const char *marker) {
         CHECK_RAISE_ERROR(marker, InvalidArgument, "Null pointer marker string");
 

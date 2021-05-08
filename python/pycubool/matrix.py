@@ -7,6 +7,7 @@ import random
 
 from . import wrapper
 from . import bridge
+from . import vector
 
 
 __all__ = [
@@ -40,7 +41,7 @@ class Matrix:
     - equality check
 
     Debug features:
-    - String markers
+    - string markers
     """
 
     __slots__ = ["hnd"]
@@ -76,7 +77,7 @@ class Matrix:
     @classmethod
     def from_lists(cls, shape, rows, cols, is_sorted=False, no_duplicates=False):
         """
-        Build matrix from provided `shape` and non-zero values data.
+        Create matrix from provided `shape` and non-zero values data.
 
         >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 3], [0, 1, 2, 0], is_sorted=True, no_duplicates=True)
         >>> print(matrix)
@@ -259,7 +260,7 @@ class Matrix:
         'meow (0x1a767b0)'
 
         :param marker: String marker to set
-        :return: None
+        :return:
         """
 
         assert marker is not None
@@ -269,7 +270,6 @@ class Matrix:
         )
 
         bridge.check(status)
-        return None
 
     @property
     def marker(self):
@@ -491,6 +491,69 @@ class Matrix:
         bridge.check(status)
         return out
 
+    def extract_row(self, i, out=None):
+        """
+        Extract specified `self` matrix row as sparse vector.
+
+        >>> matrix = Matrix.from_lists((5, 4), [0, 1, 2, 4], [0, 1, 1, 3])
+        >>> print(matrix.extract_row(1))
+        '
+          0 |   . |   0
+          1 |   1 |   1
+          2 |   . |   2
+          3 |   . |   3
+        '
+
+        :param i: Row index to extract
+        :param out: Optional out vector to store result
+        :return: Return extracted row
+        """
+
+        if out is None:
+            out = vector.Vector.empty(self.ncols)
+
+        status = wrapper.loaded_dll.cuBool_Matrix_ExtractRow(
+            out.hnd,
+            self.hnd,
+            ctypes.c_uint(i),
+            ctypes.c_uint(0)
+        )
+
+        bridge.check(status)
+        return out
+
+    def extract_col(self, j, out=None):
+        """
+        Extract specified `self` matrix column as sparse vector.
+
+        >>> matrix = Matrix.from_lists((5, 4), [0, 1, 2, 4], [0, 1, 1, 3])
+        >>> print(matrix.extract_col(1))
+        '
+          0 |   . |   0
+          1 |   1 |   1
+          2 |   1 |   2
+          3 |   . |   3
+          4 |   . |   4
+        '
+
+        :param j: Column index to extract
+        :param out: Optional out vector to store result
+        :return: Return extracted column
+        """
+
+        if out is None:
+            out = vector.Vector.empty(self.nrows)
+
+        status = wrapper.loaded_dll.cuBool_Matrix_ExtractCol(
+            out.hnd,
+            self.hnd,
+            ctypes.c_uint(j),
+            ctypes.c_uint(0)
+        )
+
+        bridge.check(status)
+        return out
+
     def mxm(self, other, out=None, accumulate=False, time_check=False):
         """
         Matrix-matrix multiplication in boolean semiring with "x = and" and "+ = or" operations.
@@ -533,7 +596,44 @@ class Matrix:
         bridge.check(status)
         return out
 
-    def kronecker(self, other, time_check=False):
+    def mxv(self, other, out=None, time_check=False):
+        """
+        Matrix-vector multiply.
+
+        Multiply `this` matrix by column `other` vector `on the right`.
+        For row vector-matrix multiplication "on the left" see `Vector.vxm`.
+
+        >>> matrix = Matrix.from_lists((5, 4), [0, 1, 2, 4], [0, 1, 1, 3])
+        >>> vector = Vector.from_list(4, [0, 1, 2])
+        >>> print(matrix.mxv(vector))
+        '
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   1 |   2
+          3 |   . |   3
+          4 |   . |   4
+        '
+
+        :param other: Input matrix for multiplication
+        :param out: Optional out vector to store result
+        :param time_check: Pass True to measure and log elapsed time of the operation
+        :return: Vector-matrix multiplication result
+        """
+
+        if out is None:
+            out = vector.Vector.empty(self.nrows)
+
+        status = wrapper.loaded_dll.cuBool_MxV(
+            out.hnd,
+            self.hnd,
+            other.hnd,
+            ctypes.c_uint(bridge.get_mxv_hints(time_check=time_check))
+        )
+
+        bridge.check(status)
+        return out
+
+    def kronecker(self, other, out=None, time_check=False):
         """
         Matrix-matrix kronecker product with boolean "x = and" operation.
         Returns kronecker product of `self` and `other` matrices.
@@ -556,12 +656,14 @@ class Matrix:
         '
 
         :param other: Input matrix
+        :param out: Optional out matrix to store result
         :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Matrices kronecker product matrix
         """
 
-        shape = (self.nrows * other.nrows, self.ncols * other.ncols)
-        out = Matrix.empty(shape)
+        if out is None:
+            shape = (self.nrows * other.nrows, self.ncols * other.ncols)
+            out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Kronecker(
             out.hnd,
@@ -573,7 +675,7 @@ class Matrix:
         bridge.check(status)
         return out
 
-    def ewiseadd(self, other, time_check=False):
+    def ewiseadd(self, other, out=None, time_check=False):
         """
         Element-wise matrix-matrix addition with boolean "+ = or" operation.
         Returns element-wise sum of `self` and `other` matrix.
@@ -591,12 +693,14 @@ class Matrix:
         '
 
         :param other: Input matrix to sum
+        :param out: Optional out matrix to store result
         :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Element-wise matrix-matrix sum
         """
 
-        shape = (self.nrows, self.ncols)
-        out = Matrix.empty(shape)
+        if out is None:
+            shape = (self.nrows, self.ncols)
+            out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_EWiseAdd(
             out.hnd,
@@ -608,9 +712,9 @@ class Matrix:
         bridge.check(status)
         return out
 
-    def reduce(self, time_check=False):
+    def reduce(self, out=None, time_check=False):
         """
-        Reduce matrix to vector with boolean "+ = or" operation.
+        Reduce matrix to column matrix with boolean "+ = or" operation.
         Return `self` reduced matrix.
 
         >>> matrix = Matrix.from_lists((4, 4), [0, 1, 2, 2], [0, 1, 0, 2])
@@ -624,12 +728,14 @@ class Matrix:
                   0
         '
 
+        :param out: Optional out matrix to store result
         :param time_check: Pass True to measure and log elapsed time of the operation
         :return: Reduced matrix (matrix with M x 1 shape)
         """
 
-        shape = (self.nrows, 1)
-        out = Matrix.empty(shape)
+        if out is None:
+            shape = (self.nrows, 1)
+            out = Matrix.empty(shape)
 
         status = wrapper.loaded_dll.cuBool_Matrix_Reduce2(
             out.hnd,
@@ -640,10 +746,48 @@ class Matrix:
         bridge.check(status)
         return out
 
+    def reduce_vector(self, out=None, transpose=False, time_check=False):
+        """
+        Reduce matrix to column vector with boolean "+ = or" operation.
+        Return `self` reduced matrix.
+
+        >>> matrix = Matrix.from_lists((5, 4), [0, 1, 2, 4], [0, 1, 1, 3])
+        >>> print(matrix.reduce_vector(), matrix.reduce_vector(transpose=True), sep="")
+        '
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   1 |   2
+          3 |   . |   3
+          4 |   1 |   4
+
+          0 |   1 |   0
+          1 |   1 |   1
+          2 |   . |   2
+          3 |   1 |   3
+        '
+
+        :param out: Optional out matrix to store result
+        :param transpose: Pass True to reduce matrix to row vector
+        :param time_check: Pass True to measure and log elapsed time of the operation
+        :return: Reduced matrix (matrix with M x 1 shape)
+        """
+
+        if out is None:
+            nrows = self.ncols if transpose else self.nrows
+            out = vector.Vector.empty(nrows)
+
+        status = wrapper.loaded_dll.cuBool_Matrix_Reduce(
+            out.hnd,
+            self.hnd,
+            ctypes.c_uint(bridge.get_reduce_vector_hints(transpose=transpose, time_check=time_check))
+        )
+
+        bridge.check(status)
+        return out
+
     def equals(self, other) -> bool:
         """
         Compare two matrices. Returns true if they are equal.
-        todo: Add this method into C API
 
         :param other: Other matrix to compare
         :return: True if matrices are equal
@@ -736,7 +880,7 @@ class Matrix:
 
     def __setitem__(self, key, value):
         """
-        Sets Sets specified `key` = (i, j) value of the matrix to True.
+        Sets specified `key` = (i, j) value of the matrix to True.
 
         >>> matrix = Matrix.empty(shape=(4, 4))
         >>> matrix[0, 0] = True
