@@ -111,15 +111,11 @@ namespace cubool {
                           thrust::device_ptr<const IndexType> rowConfig) {   // Rows to process for each bin)
 
                 EXPAND_SIDE_EFFECTS(
-                        (binSizes[Bins::id] > 0 ?
-                         __spgemv<IndexType, Bins::threads, Bins::blockSize>
-                         <<<binSizes[Bins::id] / Bins::dispatchRatio +
-                            (binSizes[Bins::id] % Bins::dispatchRatio ? 1 : 0),
-                         Bins::blockSize,
-                         0,
-                         streamsWrapper.streams[Bins::id]>>>
-                                 (rowOffsets, colIndices, v, x, rowConfig + binOffset[Bins::id], binSizes[Bins::id])
-                                                : void())
+                    (binSizes[Bins::id] > 0 ?
+                    __spgemv<IndexType, Bins::threads, Bins::blockSize>
+                    <<<binSizes[Bins::id] / Bins::dispatchRatio + (binSizes[Bins::id] % Bins::dispatchRatio ? 1 : 0), Bins::blockSize, 0, streamsWrapper.streams[Bins::id]>>>
+                    (rowOffsets, colIndices, v, x, rowConfig + binOffset[Bins::id], binSizes[Bins::id])
+                    : void())
                 );
             }
 

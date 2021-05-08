@@ -333,6 +333,22 @@ cuBool
 }
 ```
 
+## Algorithms
+
+In this section listed all the related papers, articles and links, which
+were used as an algorithmic foundation for implementation of sparse linear
+boolean algebra operations (sparse matrix-matrix multiplication, sparse matrix-vector
+multiplication, sparse vector-matrix multiplication, matrix-matrix element-wise addition and etc.):
+
+- High-performance and Memory-saving Sparse General Matrix-Matrix Multiplication for NVIDIA Pascal GPU, 
+Yusuke Nagasaka, Akira Nukada, Satoshi Matsuoka
+- GPU Merge Path - A GPU Merging Algorithm, 
+Oded Green, Robert McColl, David A. Bader
+- Efficient Sparse Matrix-Vector Multiplication on GPUs using the CSR Storage Format, 
+Joseph L. Greathouse, Mayank Daga
+- Atomic Reduction Based Sparse Matrix-Transpose Vector Multiplication on GPUs, 
+Yuan Tao, Yangdong Deng, Shuai Mu, Mingfa Zhu, Limin Xiao, Li Ruan, Zhibin Huang
+
 ## License
 
 This project is licensed under MIT License. License text can be found in the 

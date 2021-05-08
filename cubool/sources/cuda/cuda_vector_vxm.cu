@@ -24,7 +24,7 @@
 
 #include <cuda/cuda_vector.hpp>
 #include <cuda/cuda_matrix.hpp>
-#include <cuda/kernels/spgemtv.cuh>
+#include <cuda/kernels/spgemv_t.cuh>
 #include <core/error.hpp>
 #include <cassert>
 
@@ -42,7 +42,7 @@ namespace cubool {
 
         m->resizeStorageToDim();
 
-        kernels::SpGEMtV<index, DeviceAlloc<index>> functor;
+        kernels::SpGEMVT<index, DeviceAlloc<index>> functor;
         auto result = functor(v->mVectorImpl, m->mMatrixImpl);
 
         mVectorImpl = std::move(result);

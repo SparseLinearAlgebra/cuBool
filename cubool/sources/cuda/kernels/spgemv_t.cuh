@@ -35,11 +35,11 @@ namespace cubool {
     namespace kernels {
 
         template<typename IndexType, size_t threads, size_t blockSize>
-        __global__ void __spgemtv(thrust::device_ptr<const IndexType> rowOffsets,  // Input csr matrix rows
-                                  thrust::device_ptr<const IndexType> colIndices,  // Input csr matrix col indices
-                                  thrust::device_ptr<IndexType> x,                 // Output dense x vector (x = M*v)
-                                  thrust::device_ptr<const IndexType> rowConfig,   // Rows to process for each bin
-                                  IndexType rowsCount) {                           // Num of rows to process
+        __global__ void __spgemv_t(thrust::device_ptr<const IndexType> rowOffsets,  // Input csr matrix rows
+                                   thrust::device_ptr<const IndexType> colIndices,  // Input csr matrix col indices
+                                   thrust::device_ptr<IndexType> x,                 // Output dense x vector (x = M*v)
+                                   thrust::device_ptr<const IndexType> rowConfig,   // Rows to process for each bin
+                                   IndexType rowsCount) {                           // Num of rows to process
             // Split block into number of groups of size `threads`.
             // Each group process its own row.
 
@@ -62,7 +62,7 @@ namespace cubool {
         }
 
         template<typename IndexType, typename AllocType>
-        struct SpGEMtV {
+        struct SpGEMVT {
             template<typename T>
             using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
             using MatrixType = nsparse::matrix<bool, IndexType, AllocType>;
@@ -78,15 +78,11 @@ namespace cubool {
                           thrust::device_ptr<const IndexType> rowConfig) {   // Rows to process for each bin)
 
                 EXPAND_SIDE_EFFECTS(
-                        (binSizes[Bins::id] > 0 ?
-                         __spgemtv<IndexType, Bins::threads, Bins::blockSize>
-                         <<<binSizes[Bins::id] / Bins::dispatchRatio +
-                            (binSizes[Bins::id] % Bins::dispatchRatio ? 1 : 0),
-                         Bins::blockSize,
-                         0,
-                         streamsWrapper.streams[Bins::id]>>>
-                                 (rowOffsets, colIndices, x, rowConfig + binOffset[Bins::id], binSizes[Bins::id])
-                                                : void())
+                    (binSizes[Bins::id] > 0 ?
+                    __spgemv_t<IndexType, Bins::threads, Bins::blockSize>
+                    <<<binSizes[Bins::id] / Bins::dispatchRatio + (binSizes[Bins::id] % Bins::dispatchRatio ? 1 : 0), Bins::blockSize, 0, streamsWrapper.streams[Bins::id]>>>
+                    (rowOffsets, colIndices, x, rowConfig + binOffset[Bins::id], binSizes[Bins::id])
+                    : void())
                 );
             }
 
