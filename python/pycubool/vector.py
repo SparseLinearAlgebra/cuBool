@@ -382,6 +382,12 @@ class Vector:
         >>> matrix = Matrix.from_lists((5, 4), [0, 1, 2, 4], [0, 1, 1, 3])
         >>> vector = Vector.from_list(5, [2, 3, 4])
         >>> print(vector.vxm(matrix))
+        '
+          0 |   . |   0
+          1 |   1 |   1
+          2 |   . |   2
+          3 |   1 |   3
+        '
 
         :param other: Input matrix for multiplication
         :param out: Optional out vector to store result

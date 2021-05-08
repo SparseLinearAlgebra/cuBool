@@ -1,6 +1,6 @@
 import random
 import pycubool
-from tests import test_transitive_closure
+from examples import transitive_closure as ts
 
 
 def lists_to_pairs(rows, cols):
@@ -59,7 +59,7 @@ res_set = lists_to_pairs(rows, cols)
 
 print(b_set.union(a_set) == res_set)
 
-t = test_transitive_closure.transitive_closure(a)
+t = ts.transitive_closure(a)
 
 print(a.nvals, a.shape)
 print(t.nvals, t.shape)
