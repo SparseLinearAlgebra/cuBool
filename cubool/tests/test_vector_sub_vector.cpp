@@ -61,55 +61,55 @@ void testRun(cuBool_Index m, float step, cuBool_Hints setup) {
     EXPECT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(cuBool_Matrix, SubVectorExtractSmall) {
+TEST(cuBool_Vector, SubVectorExtractSmall) {
     cuBool_Index m = 10000;
     float step = 0.05f;
     testRun(m, step, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, SubVectorExtractMedium) {
+TEST(cuBool_Vector, SubVectorExtractMedium) {
     cuBool_Index m = 50000;
     float step = 0.05f;
     testRun(m, step, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, SubVectorExtractLarge) {
+TEST(cuBool_Vector, SubVectorExtractLarge) {
     cuBool_Index m = 100000;
     float step = 0.05f;
     testRun(m, step, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, SubVectorExtractSmallFallback) {
+TEST(cuBool_Vector, SubVectorExtractSmallFallback) {
     cuBool_Index m = 10000;
     float step = 0.05f;
     testRun(m, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
-TEST(cuBool_Matrix, SubVectorExtractMediumFallback) {
+TEST(cuBool_Vector, SubVectorExtractMediumFallback) {
     cuBool_Index m = 50000;
     float step = 0.05f;
     testRun(m, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
-TEST(cuBool_Matrix, SubVectorExtractLargeFallback) {
+TEST(cuBool_Vector, SubVectorExtractLargeFallback) {
     cuBool_Index m = 100000;
     float step = 0.05f;
     testRun(m, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
-TEST(cuBool_Matrix, SubVectorExtractSmallManaged) {
+TEST(cuBool_Vector, SubVectorExtractSmallManaged) {
     cuBool_Index m = 10000;
     float step = 0.05f;
     testRun(m, step, CUBOOL_HINT_GPU_MEM_MANAGED);
 }
 
-TEST(cuBool_Matrix, SubVectorExtractMediumManaged) {
+TEST(cuBool_Vector, SubVectorExtractMediumManaged) {
     cuBool_Index m = 50000;
     float step = 0.05f;
     testRun(m, step, CUBOOL_HINT_GPU_MEM_MANAGED);
 }
 
-TEST(cuBool_Matrix, SubVectorExtractLargeManaged) {
+TEST(cuBool_Vector, SubVectorExtractLargeManaged) {
     cuBool_Index m = 100000;
     float step = 0.05f;
     testRun(m, step, CUBOOL_HINT_GPU_MEM_MANAGED);
