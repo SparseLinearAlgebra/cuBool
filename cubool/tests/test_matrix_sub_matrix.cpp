@@ -100,4 +100,22 @@ TEST(cuBool_Matrix, SubMatrixExtractLargeFallback) {
     testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
+TEST(cuBool_Matrix, SubMatrixExtractSmallManaged) {
+    cuBool_Index m = 100, n = 200;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, SubMatrixExtractMediumManaged) {
+    cuBool_Index m = 400, n = 700;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, SubMatrixExtractLargeManaged) {
+    cuBool_Index m = 2000, n = 4000;
+    float step = 0.01f;
+    testRun(m, n, step, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
 CUBOOL_GTEST_MAIN

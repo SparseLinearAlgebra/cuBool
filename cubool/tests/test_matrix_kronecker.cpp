@@ -109,4 +109,25 @@ TEST(cuBool_Matrix, KroneckerLargeFallback) {
     testRun(m, n, k, t, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
+TEST(cuBool_Matrix, KroneckerSmallManaged) {
+    cuBool_Index m = 10, n = 20;
+    cuBool_Index k = 5, t = 15;
+    float step = 0.05f;
+    testRun(m, n, k, t, step, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, KroneckerMediumManaged) {
+    cuBool_Index m = 100, n = 40;
+    cuBool_Index k = 30, t = 80;
+    float step = 0.02f;
+    testRun(m, n, k, t, step, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, KroneckerLargeManaged) {
+    cuBool_Index m = 1000, n = 400;
+    cuBool_Index k = 300, t = 800;
+    float step = 0.001f;
+    testRun(m, n, k, t, step, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
 CUBOOL_GTEST_MAIN

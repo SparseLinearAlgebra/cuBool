@@ -97,4 +97,19 @@ TEST(cuBool_Matrix, EWiseAddLargeFallback) {
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
+TEST(cuBool_Matrix, EWiseAddSmallManaged) {
+    cuBool_Index m = 60, n = 80;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, EWiseAddMediumManaged) {
+    cuBool_Index m = 500, n = 800;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, EWiseAddLargeManaged) {
+    cuBool_Index m = 2500, n = 1500;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
 CUBOOL_GTEST_MAIN
