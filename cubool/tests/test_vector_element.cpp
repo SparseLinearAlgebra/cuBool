@@ -164,4 +164,19 @@ TEST(cuBool_Vector, SetElementLargeFallback) {
     testRun(m, CUBOOL_HINT_CPU_BACKEND);
 }
 
+TEST(cuBool_Vector, SetElementSmallManaged) {
+    cuBool_Index m = 1000;
+    testRun(m, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Vector, SetElementMediumManaged) {
+    cuBool_Index m = 20000;
+    testRun(m, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Vector, SetElementLargeManaged) {
+    cuBool_Index m = 90000;
+    testRun(m, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
 CUBOOL_GTEST_MAIN

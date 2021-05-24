@@ -223,6 +223,21 @@ $ python3 -m unittest discover -v
 inside the build directory in the folder with python wrapper `python/pycubool/`. 
 So, the wrapper will be able to automatically locate required lib file.
 
+### Python package runtime config
+
+**Pycubool** Python-package can be configured before import by the following environment variables: 
+
+- `CUBOOL_PATH` - custom path to compiled cubool library object. 
+Without that variable by default the package will try to find library in the package folder.
+
+- `CUBOOL_BACKEND` - allows to select backend for execution. 
+By default library selects cuda if present. Pass value `cpu` to force cpu computations,
+even if cuda backend is presented and supported for selection.
+
+- `CUBOOL_MEM` - type of the memory to use if run computations in cuda backend.
+By default library uses device memory. If pass in the variable value `managed`, then
+backend will be configured to use cuda managed memory for resources allocation.
+
 ## Usage 
 
 The following C++ code snipped demonstrates, how library functions and

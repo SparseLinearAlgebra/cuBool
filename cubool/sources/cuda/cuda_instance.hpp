@@ -53,6 +53,7 @@ namespace cubool {
         void deallocateOnGpu(void* ptr) const;
 
         void syncHostDevice() const;
+        MemType getMemoryType() const;
 
         static bool isCudaDeviceSupported();
         static void queryDeviceCapabilities(cuBool_DeviceCaps& deviceCaps);

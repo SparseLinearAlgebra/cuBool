@@ -119,4 +119,19 @@ TEST(cuBool_Matrix, MatrixExtractVectorLargeFallback) {
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
+TEST(cuBool_Matrix, MatrixExtractVectorSmallManaged) {
+    cuBool_Index m = 1000, n = 2000;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, MatrixExtractVectorMediumManaged) {
+    cuBool_Index m = 4000, n = 7000;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, MatrixExtractVectorLargeManaged) {
+    cuBool_Index m = 8000, n = 10000;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
 CUBOOL_GTEST_MAIN

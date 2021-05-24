@@ -137,4 +137,19 @@ TEST(cuBool_Matrix, MultiplyLargeFallback) {
     testRun(m, t, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
+TEST(cuBool_Matrix, MultiplySmallManaged) {
+    cuBool_Index m = 60, t = 100, n = 80;
+    testRun(m, t, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, MultiplyMediumManaged) {
+    cuBool_Index m = 500, t = 1000, n = 800;
+    testRun(m, t, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, MultiplyLargeManaged) {
+    cuBool_Index m = 1000, t = 2000, n = 500;
+    testRun(m, t, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
 CUBOOL_GTEST_MAIN

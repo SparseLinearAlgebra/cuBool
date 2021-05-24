@@ -69,34 +69,49 @@ void testRun(cuBool_Index m, cuBool_Index n, cuBool_Hints setup) {
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
-TEST(cuBool_Matrix, MultiplyMatrixVectorSmall) {
+TEST(cuBool_Vector, MultiplyMatrixVectorSmall) {
     cuBool_Index m = 600, n = 800;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, MultiplyMatrixVectorMedium) {
+TEST(cuBool_Vector, MultiplyMatrixVectorMedium) {
     cuBool_Index m = 2500, n = 4000;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, MultiplyMatrixVectorLarge) {
+TEST(cuBool_Vector, MultiplyMatrixVectorLarge) {
     cuBool_Index m = 10000, n = 5000;
     testRun(m, n, CUBOOL_HINT_NO);
 }
 
-TEST(cuBool_Matrix, MultiplyMatrixVectorSmallFallback) {
+TEST(cuBool_Vector, MultiplyMatrixVectorSmallFallback) {
     cuBool_Index m = 600, n = 800;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
-TEST(cuBool_Matrix, MultiplyMatrixVectorMediumFallback) {
+TEST(cuBool_Vector, MultiplyMatrixVectorMediumFallback) {
     cuBool_Index m = 2500, n = 4000;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
-TEST(cuBool_Matrix, MultiplyMatrixVectorLargeFallback) {
+TEST(cuBool_Vector, MultiplyMatrixVectorLargeFallback) {
     cuBool_Index m = 10000, n = 5000;
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
+}
+
+TEST(cuBool_Vector, MultiplyMatrixVectorSmallManaged) {
+    cuBool_Index m = 600, n = 800;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Vector, MultiplyMatrixVectorMediumManaged) {
+    cuBool_Index m = 2500, n = 4000;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Vector, MultiplyMatrixVectorLargeManaged) {
+    cuBool_Index m = 10000, n = 5000;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
 }
 
 CUBOOL_GTEST_MAIN

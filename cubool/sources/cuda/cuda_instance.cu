@@ -52,7 +52,7 @@ namespace cubool {
                 error = cudaMalloc(&ptr, size);
                 break;
             case MemType::Managed:
-                error = cudaMallocManaged(&ptr, size);
+                error = cudaMallocManaged(&ptr, size, cudaMemAttachGlobal);
                 break;
             default:
                 RAISE_ERROR(MemOpFailed, "Failed to fined suitable allocator");
@@ -84,6 +84,10 @@ namespace cubool {
             std::string message = std::string{"Failed to synchronize host and device: "} + cudaGetErrorString(error);
             RAISE_ERROR(DeviceError, message);
         }
+    }
+
+    CudaInstance::MemType CudaInstance::getMemoryType() const {
+        return mMemoryType;
     }
 
     bool CudaInstance::isCudaDeviceSupported() {

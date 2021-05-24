@@ -142,4 +142,22 @@ TEST(cuBool_Matrix, ReduceLargeFallback) {
     testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
+TEST(cuBool_Matrix, ReduceSmallManaged) {
+    cuBool_Index m = 100, n = 200;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, ReduceMediumManaged) {
+    cuBool_Index m = 400, n = 700;
+    float step = 0.05f;
+    testRun(m, n, step, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, ReduceLargeManaged) {
+    cuBool_Index m = 2000, n = 4000;
+    float step = 0.01f;
+    testRun(m, n, step, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
 CUBOOL_GTEST_MAIN

@@ -278,7 +278,7 @@ namespace cubool {
                    << " sharedMemoryPerBlockKiBs: " << caps.sharedMemoryPerBlockKiBs;
         }
         else {
-            stream << "Cuda device is not presented";
+            stream << "Cuda device is not presented (fallback to cpu backend)";
         }
 
         stream << LogStream::cmt;

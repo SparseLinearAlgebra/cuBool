@@ -92,4 +92,19 @@ TEST(cuBool_Matrix, TransposeLargeFallback) {
     testRun(m, n, CUBOOL_HINT_CPU_BACKEND);
 }
 
+TEST(cuBool_Matrix, TransposeSmallManaged) {
+    cuBool_Index m = 60, n = 80;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, TransposeMediumManaged) {
+    cuBool_Index m = 500, n = 800;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
+TEST(cuBool_Matrix, TransposeLargeManaged) {
+    cuBool_Index m = 2500, n = 1500;
+    testRun(m, n, CUBOOL_HINT_GPU_MEM_MANAGED);
+}
+
 CUBOOL_GTEST_MAIN

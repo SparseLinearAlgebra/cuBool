@@ -27,6 +27,7 @@
 
 #include <cuda/details/sp_vector.hpp>
 #include <cuda/details/meta.hpp>
+#include <cuda/kernels/bin_search.cuh>
 #include <nsparse/matrix.h>
 #include <nsparse/detail/meta.h>
 #include <limits>
@@ -34,10 +35,20 @@
 namespace cubool {
     namespace kernels {
 
+        template<typename IndexType>
+        __device__ IndexType __get_vec_value(thrust::device_ptr<const IndexType> v, IndexType vSize, IndexType value) {
+            auto begin = v;
+            auto end = v + vSize;
+            auto result = kernels::find(begin, end, value);
+
+            return result == end? 0x0u: 0x1;
+        }
+
         template<typename IndexType, size_t threads, size_t blockSize>
         __global__ void __spgemv(thrust::device_ptr<const IndexType> rowOffsets,  // Input csr matrix rows
                                  thrust::device_ptr<const IndexType> colIndices,  // Input csr matrix col indices
-                                 thrust::device_ptr<const IndexType> v,           // Input dense v vector
+                                 thrust::device_ptr<const IndexType> v,           // Input sparse v vector
+                                 IndexType vSize,                                 // Input sparse v vector size
                                  thrust::device_ptr<IndexType> x,                 // Output dense x vector (x = M*v)
                                  thrust::device_ptr<const IndexType> rowConfig,   // Rows to process for each bin
                                  IndexType rowsCount) {                           // Num of rows to process
@@ -48,22 +59,22 @@ namespace cubool {
             IndexType interBlockId = threadIdx.x / threads;                                 // id of the group (number of `threads` belong to the same group)
             IndexType assignedOrder = blockIdx.x * (blockSize / threads) + interBlockId;    // row, which is process by number of `threads`
 
+            __shared__ IndexType tmp_accum[blockSize];
+
             if (assignedOrder >= rowsCount)
                 assignedOrder = rowsCount - 1;
 
             IndexType i = rowConfig[assignedOrder];    // Row to process
 
-            size_t rowSize = rowOffsets[i + 1] - rowOffsets[i];
             size_t rowBegin = rowOffsets[i];
-
-            __shared__ IndexType tmp_accum[blockSize];
+            size_t rowSize = rowOffsets[i + 1] - rowBegin;
 
             // Initial zero
             tmp_accum[threadIdx.x] = 0;
 
             // Each thread accum nnz values
             for (size_t k = id; k < rowSize; k += threads) {
-                tmp_accum[threadIdx.x] |= v[colIndices[rowBegin + k]];
+                tmp_accum[threadIdx.x] |= __get_vec_value<IndexType>(v, vSize, colIndices[rowBegin + k]);
             }
 
             // Reduce accum to single value
@@ -104,7 +115,8 @@ namespace cubool {
             void dispatch(StreamsWrapper<Config<Bins...>> &streamsWrapper,
                           thrust::device_ptr<const IndexType> rowOffsets,    // Input csr matrix rows
                           thrust::device_ptr<const IndexType> colIndices,    // Input csr matrix col indices
-                          thrust::device_ptr<const IndexType> v,             // Input dense v vector
+                          thrust::device_ptr<const IndexType> v,             // Input sparse v vector
+                          IndexType vSize,                                   // Input sparse v vector size
                           thrust::device_ptr<IndexType> x,                   // Output dense x vector (x = M*v)
                           const std::vector<IndexType> &binSizes,            // Size of bin in rowConfig
                           const std::vector<IndexType> &binOffset,           // Offset of bin in rowConfig
@@ -114,7 +126,7 @@ namespace cubool {
                     (binSizes[Bins::id] > 0 ?
                     __spgemv<IndexType, Bins::threads, Bins::blockSize>
                     <<<binSizes[Bins::id] / Bins::dispatchRatio + (binSizes[Bins::id] % Bins::dispatchRatio ? 1 : 0), Bins::blockSize, 0, streamsWrapper.streams[Bins::id]>>>
-                    (rowOffsets, colIndices, v, x, rowConfig + binOffset[Bins::id], binSizes[Bins::id])
+                    (rowOffsets, colIndices, v, vSize, x, rowConfig + binOffset[Bins::id], binSizes[Bins::id])
                     : void())
                 );
             }
@@ -143,21 +155,9 @@ namespace cubool {
                 if (v.m_vals == 0 || m.m_vals == 0)
                     return VectorType(M);
 
-                // Resize cached buffers to store v and r as dense vectors
-                if (mInput.size() < N)
-                    mInput.resize(N);
-
+                // Resize cached buffers to store r as dense vector
                 if (mOutput.size() < M)
                     mOutput.resize(M);
-
-                // Copy v to dense vector
-                thrust::fill_n(mInput.begin(), N, (IndexType) 0);
-                thrust::for_each(v.m_rows_index.begin(), v.m_rows_index.end(),
-                [input = mInput.data()]
-                        __device__(IndexType
-                i) {
-                    input[i] = 1;
-                });
 
                 // Empty out buffer
                 thrust::fill_n(mOutput.begin(), M, (IndexType) 0);
@@ -228,7 +228,8 @@ namespace cubool {
                 dispatch(streamsWrapper,
                          m.m_row_index.data(),
                          m.m_col_index.data(),
-                         mInput.data(),
+                         v.m_rows_index.data(),
+                         v.m_vals,
                          mOutput.data(),
                          binSizes,
                          binOffsets,
@@ -268,7 +269,6 @@ namespace cubool {
             ContainerType<index> mRowsConfig;
             ContainerType<index> mBinsSize;
             ContainerType<index> mBinsOffsets;
-            ContainerType<index> mInput;
             ContainerType<index> mOutput;
         };
 

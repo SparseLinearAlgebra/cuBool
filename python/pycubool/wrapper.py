@@ -44,6 +44,8 @@ class Wrapper:
 
     def __init__(self):
         self.loaded_dll = None
+        self.is_managed = Wrapper.__get_use_managed_mem()
+        self.force_cpu = Wrapper.__get_force_cpu()
 
         try:
             # Try from config if present
@@ -62,7 +64,9 @@ class Wrapper:
         self.__release_library()
 
     def __setup_library(self):
-        status = self.loaded_dll.cuBool_Initialize(ctypes.c_uint(bridge.get_init_hints(False, False)))
+        status = self.loaded_dll.cuBool_Initialize(ctypes.c_uint(bridge.get_init_hints(
+            force_cpu_backend=self.force_cpu, is_gpu_mem_managed=self.is_managed)))
+
         bridge.check(status)
 
     def __release_library(self):
@@ -76,3 +80,19 @@ class Wrapper:
                 return prefix / entry
 
         return None
+
+    @classmethod
+    def __get_force_cpu(cls):
+        try:
+            memory = os.environ["CUBOOL_BACKEND"]
+            return True if memory.lower() == "cpu" else False
+        except KeyError:
+            return False
+
+    @classmethod
+    def __get_use_managed_mem(cls):
+        try:
+            memory = os.environ["CUBOOL_MEM"]
+            return True if memory.lower() == "managed" else False
+        except KeyError:
+            return False
