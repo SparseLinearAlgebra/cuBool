@@ -25,5 +25,28 @@
 #ifndef CUBOOL_SQ_EWISEMULT_HPP
 #define CUBOOL_SQ_EWISEMULT_HPP
 
+#include <sequential/sq_data.hpp>
+
+namespace cubool {
+
+    /**
+     * Element-wise multiplication of the matrices `a` and `b`.
+     *
+     * @param a Input matrix
+     * @param b Input matrix
+     * @param[out] out Where to store the result
+     */
+    void sq_ewisemult(const CsrData& a, const CsrData& b, CsrData& out);
+
+    /**
+     * Element-wise multiplication of the vectors `a` and `b`.
+     *
+     * @param a Input vector
+     * @param b Input vector
+     * @param[out] out Where to store the result
+     */
+    void sq_ewisemult(const VecData& a, const VecData& b, VecData& out);
+
+}
 
 #endif //CUBOOL_SQ_EWISEMULT_HPP

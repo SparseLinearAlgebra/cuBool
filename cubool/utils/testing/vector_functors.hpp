@@ -55,6 +55,29 @@ namespace testing {
         }
     };
 
+    struct VectorEWiseMultFunctor {
+    public:
+        Vector operator()(const Vector& a, const Vector& b) {
+            std::unordered_set<cuBool_Index> values;
+            std::vector<cuBool_Index> result;
+
+            for (auto v: a.index)
+                values.emplace(v);
+
+            for (auto v: b.index) {
+                if (values.find(v) != values.end())
+                    result.push_back(v);
+            }
+
+            Vector out;
+            out.nrows = a.nrows;
+            out.nvals = result.size();
+            out.index = std::move(result);
+
+            return out;
+        }
+    };
+
     struct MatrixVectorMultiplyFunctor {
     public:
         Vector operator()(const Matrix& m, const Vector& v) {

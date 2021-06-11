@@ -23,3 +23,37 @@
 /**********************************************************************************/
 
 #include <sequential/sq_ewisemult.hpp>
+
+namespace cubool {
+
+    void sq_ewisemult(const CsrData& a, const CsrData& b, CsrData& out) {
+
+    }
+
+    void sq_ewisemult(const VecData& a, const VecData& b, VecData& out) {
+        out.nrows = a.nrows;
+
+        const index* aP = a.indices.data();
+        const index* bP = b.indices.data();
+
+        const index* aEnd = a.indices.data() + a.indices.size();
+        const index* bEnd = b.indices.data() + b.indices.size();
+
+        while (aP != aEnd && bP != bEnd) {
+            if (*aP == *bP) {
+                out.indices.push_back(*aP);
+                aP++;
+                bP++;
+            }
+            else if (*aP < *bP) {
+                aP++;
+            }
+            else {
+                bP++;
+            }
+        }
+
+        out.nvals = out.indices.size();
+    }
+
+}

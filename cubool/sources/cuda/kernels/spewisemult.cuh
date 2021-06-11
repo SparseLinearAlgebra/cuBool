@@ -25,4 +25,47 @@
 #ifndef CUBOOL_SPEWISEMULT_CUH
 #define CUBOOL_SPEWISEMULT_CUH
 
+#include <cuda/details/sp_vector.hpp>
+#include <cmath>
+
+namespace cubool {
+    namespace kernels {
+
+        template <typename IndexType, typename AllocType>
+        struct SpVectorEWiseMult {
+            template<typename T>
+            using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
+            using VectorType = details::SpVector<IndexType, AllocType>;
+
+            VectorType operator()(const VectorType& a, const VectorType& b) {
+                auto aNvals = a.m_vals;
+                auto bNvals = b.m_vals;
+                auto worst = std::max(aNvals, bNvals);
+
+                // Allocate memory for the worst case scenario
+                if (mCacheBuffer.size() < worst)
+                    mCacheBuffer.resize(worst);
+
+                // Intersect sorted arrays
+                auto out = thrust::set_intersection(a.m_rows_index.begin(), a.m_rows_index.end(),
+                                                    b.m_rows_index.begin(), b.m_rows_index.end(),
+                                                    mCacheBuffer.begin());
+
+                // Count result nvals count
+                auto nvals = thrust::distance(mCacheBuffer.begin(), out);
+
+                // Fill the result buffer
+                ContainerType<index> rowIndex(nvals);
+                thrust::copy(mCacheBuffer.begin(), out, rowIndex.begin());
+
+                return VectorType(std::move(rowIndex), a.m_rows, nvals);
+            }
+
+        private:
+            ContainerType<index> mCacheBuffer;
+        };
+
+    }
+}
+
 #endif //CUBOOL_SPEWISEMULT_CUH

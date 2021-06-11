@@ -30,7 +30,17 @@
 namespace cubool {
 
     void CudaVector::eWiseMult(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
-        RAISE_ERROR(NotImplemented, "This function is not implemented");
-    }
+        const auto* a = dynamic_cast<const CudaVector*>(&aBase);
+        const auto* b = dynamic_cast<const CudaVector*>(&bBase);
+
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided vector does not belong to cuda vector class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided vector does not belong to cuda vector class");
+
+        assert(a->getNrows() == b->getNrows());
+
+        kernels::SpVectorEWiseMult<index, DeviceAlloc<index>> functor;
+        auto result = functor(a->mVectorImpl, b->mVectorImpl);
+
+        mVectorImpl = std::move(result);    }
 
 }
