@@ -22,41 +22,49 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/cuda_matrix.hpp>
-#include <cuda/kernels/spewisemult.cuh>
+#ifndef CUBOOL_MATRIX_EWISEMULT_HPP
+#define CUBOOL_MATRIX_EWISEMULT_HPP
 
-namespace cubool {
+#include <testing/matrix.hpp>
 
-    void CudaMatrix::eWiseMult(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
-        auto a = dynamic_cast<const CudaMatrix*>(&aBase);
-        auto b = dynamic_cast<const CudaMatrix*>(&bBase);
+namespace testing {
 
-        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
-        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+    struct MatrixEWiseMultFunctor {
+        Matrix operator()(const Matrix& a, const Matrix& b) {
+            assert(a.nrows == b.nrows);
+            assert(a.ncols == b.ncols);
 
-        index M = this->getNrows();
-        index N = this->getNcols();
+            std::unordered_set<uint64_t> values;
 
-        assert(a->getNrows() == M);
-        assert(a->getNcols() == N);
+            for (size_t i = 0; i < a.nvals; i++) {
+                uint64_t row = a.rowsIndex[i];
+                uint64_t col = a.colsIndex[i];
+                uint64_t index = row * a.ncols + col;
 
-        assert(b->getNrows() == M);
-        assert(b->getNcols() == N);
+                values.insert(index);
+            }
 
-        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
-            this->clearAndResizeStorageToDim();
-            return;
+            Matrix out;
+            out.nrows = a.nrows;
+            out.ncols = a.ncols;
+
+            for (size_t i = 0; i < b.nvals; i++) {
+                uint64_t row = b.rowsIndex[i];
+                uint64_t col = b.colsIndex[i];
+                uint64_t index = row * b.ncols + col;
+
+                if (values.find(index) != values.end()) {
+                    out.rowsIndex.push_back(row);
+                    out.colsIndex.push_back(col);
+                }
+            }
+
+            out.nvals = out.rowsIndex.size();
+
+            return out;
         }
-
-        // Ensure csr proper csr format even if empty
-        a->resizeStorageToDim();
-        b->resizeStorageToDim();
-
-        kernels::SpMatrixEWiseMult<index, DeviceAlloc<index>> spFunctor;
-        auto result = spFunctor(a->mMatrixImpl, b->mMatrixImpl);
-
-        // Assign the actual impl result to this storage
-        this->mMatrixImpl = std::move(result);
-    }
+    };
 
 }
+
+#endif //CUBOOL_MATRIX_EWISEMULT_HPP

@@ -27,6 +27,7 @@
 #include <sequential/sq_submatrix.hpp>
 #include <sequential/sq_kronecker.hpp>
 #include <sequential/sq_ewiseadd.hpp>
+#include <sequential/sq_ewisemult.hpp>
 #include <sequential/sq_spgemm.hpp>
 #include <sequential/sq_reduce.hpp>
 #include <utils/data_utils.hpp>
@@ -211,8 +212,27 @@ namespace cubool {
         this->mData = std::move(out);
     }
 
-    void SqMatrix::eWiseMult(const MatrixBase &a, const MatrixBase &b, bool checkTime) {
-        // todo
+    void SqMatrix::eWiseMult(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+        auto a = dynamic_cast<const SqMatrix*>(&aBase);
+        auto b = dynamic_cast<const SqMatrix*>(&bBase);
+
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
+
+        assert(a->getNrows() == this->getNrows());
+        assert(a->getNcols() == this->getNcols());
+        assert(a->getNrows() == b->getNrows());
+        assert(a->getNcols() == b->getNcols());
+
+        CsrData out;
+        out.nrows = this->getNrows();
+        out.ncols = this->getNcols();
+
+        a->allocateStorage();
+        b->allocateStorage();
+        sq_ewisemult(a->mData, b->mData, out);
+
+        this->mData = std::move(out);
     }
 
     index SqMatrix::getNrows() const {

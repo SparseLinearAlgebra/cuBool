@@ -32,6 +32,7 @@
 #include <testing/matrix_printing.hpp>
 #include <testing/matrix_generator.hpp>
 #include <testing/matrix_ewiseadd.hpp>
+#include <testing/matrix_ewisemult.hpp>
 #include <testing/matrix_mxm.hpp>
 #include <testing/matrix_kronecker.hpp>
 #include <testing/vector.hpp>
