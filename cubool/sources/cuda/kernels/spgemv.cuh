@@ -147,9 +147,8 @@ namespace cubool {
                 static constexpr size_t max = std::numeric_limits<size_t>::max();
 
                 auto M = m.m_rows;
-                auto N = m.m_cols;
 
-                assert(N == v.m_rows);
+                assert(m.m_cols == v.m_rows);
 
                 // Empty result case
                 if (v.m_vals == 0 || m.m_vals == 0)

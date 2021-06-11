@@ -3,7 +3,19 @@
 All notable changes to this project are documented in this file.
 Changes format: version name and date, minor notes, new features, fixes, what removed.
 
-Release are available at [link](https://github.com/JetBrains-Research/cuBool/releases). 
+Releases are available at [link](https://github.com/JetBrains-Research/cuBool/releases). 
+
+## v1.2.0 - June 11, 2021
+
+### Summary 
+
+Python-package update: support backend type and memory type selection within
+package by environment variables. Update docs, add performance comparison section.
+
+#### New features
+
+- Backend type config in pycubool
+- GPU memory type config in pycubool
 
 ## v1.1.0 - May 8, 2021
 

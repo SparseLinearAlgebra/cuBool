@@ -20,7 +20,7 @@ for entry in os.listdir(SOURCE_PATH.parent / "pycubool"):
 
 setuptools.setup(
     name="pycubool",
-    version="1.1.0",
+    version="1.2.0",
     author="Egor Orachyov",
     author_email="egororachyov@gmail.com",
     license="MIT",
