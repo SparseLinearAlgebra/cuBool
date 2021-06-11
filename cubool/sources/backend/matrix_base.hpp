@@ -48,6 +48,7 @@ namespace cubool {
         virtual void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) = 0;
         virtual void kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) = 0;
         virtual void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) = 0;
+        virtual void eWiseMult(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) = 0;
 
         virtual index getNrows() const = 0;
         virtual index getNcols() const = 0;

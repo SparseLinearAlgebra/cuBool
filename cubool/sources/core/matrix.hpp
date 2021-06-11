@@ -55,6 +55,7 @@ namespace cubool {
         void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) override;
         void kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
         void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
+        void eWiseMult(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
 
         index getNrows() const override;
         index getNcols() const override;

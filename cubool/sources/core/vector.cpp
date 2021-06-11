@@ -203,6 +203,39 @@ namespace cubool {
         mHnd->reduceMatrix(*matrix->mHnd, transpose, false);
     }
 
+    void Vector::eWiseMult(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
+        const auto* a = dynamic_cast<const Vector*>(&aBase);
+        const auto* b = dynamic_cast<const Vector*>(&bBase);
+
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed vector does not belong to core vector class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed vector does not belong to core vector class");
+
+        index M = a->getNrows();
+
+        CHECK_RAISE_ERROR(M == b->getNrows(), InvalidArgument, "Passed vectors have incompatible size");
+        CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Vector has incompatible size for operation result");
+
+        a->commitCache();
+        b->commitCache();
+        this->releaseCache();
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->eWiseMult(*a->mHnd, *b->mHnd, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Vector::eWiseMult: "
+                   << this->getDebugMarker() << " = "
+                   << a->getDebugMarker() << " & "
+                   << b->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->eWiseMult(*a->mHnd, *b->mHnd, false);
+    }
+
     void Vector::eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
         const auto* a = dynamic_cast<const Vector*>(&aBase);
         const auto* b = dynamic_cast<const Vector*>(&bBase);

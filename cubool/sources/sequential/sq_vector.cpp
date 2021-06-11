@@ -163,6 +163,10 @@ namespace cubool {
         mData = std::move(out);
     }
 
+    void SqVector::eWiseMult(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
+
+    }
+
     void SqVector::eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
         auto a = dynamic_cast<const SqVector*>(&aBase);
         auto b = dynamic_cast<const SqVector*>(&bBase);

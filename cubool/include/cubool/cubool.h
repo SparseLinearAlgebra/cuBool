@@ -531,7 +531,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce2(
 );
 
 /**
- * Performs result = left + right, where '+' is boolean semiring operation.
+ * Performs result = left + right, where '+' is boolean semiring 'or' operation.
  *
  * @note Matrices must be compatible
  *          dim(result) = M x N
@@ -548,6 +548,30 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce2(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
+    cuBool_Matrix result,
+    cuBool_Matrix left,
+    cuBool_Matrix right,
+    cuBool_Hints hints
+);
+
+/**
+ * Performs result = left * right, where '*' is boolean semiring 'and' operation.
+ *
+ * @note Matrices must be compatible
+ *          dim(result) = M x N
+ *          dim(left) = M x N
+ *          dim(right) = M x N
+ *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
+ * @param result[out] Destination matrix to store result
+ * @param left Source matrix to be multiplied
+ * @param right Source matrix to be multiplied
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseMult(
     cuBool_Matrix result,
     cuBool_Matrix left,
     cuBool_Matrix right,
@@ -754,7 +778,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Reduce(
 );
 
 /**
- * Performs result = left + right, where '+' is boolean semiring operation.
+ * Performs result = left + right, where '+' is boolean semiring 'or' operation.
  *
  * @note Matrices must be compatible
  *          dim(result) = M
@@ -771,10 +795,34 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Reduce(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_EWiseAdd(
-        cuBool_Vector result,
-        cuBool_Vector left,
-        cuBool_Vector right,
-        cuBool_Hints hints
+    cuBool_Vector result,
+    cuBool_Vector left,
+    cuBool_Vector right,
+    cuBool_Hints hints
+);
+
+/**
+ * Performs result = left * right, where '*' is boolean semiring 'and' operation.
+ *
+ * @note Matrices must be compatible
+ *          dim(result) = M
+ *          dim(left) = M
+ *          dim(right) = M
+ *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
+ * @param result[out]Destination vector to store result
+ * @param left Source vector to be multiplied
+ * @param right Source vector to be multiplied
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_EWiseMult(
+    cuBool_Vector result,
+    cuBool_Vector left,
+    cuBool_Vector right,
+    cuBool_Hints hints
 );
 
 /**

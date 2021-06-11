@@ -47,6 +47,7 @@ namespace cubool {
         virtual void reduce(index &result, bool checkTime) = 0;
         virtual void reduceMatrix(const class MatrixBase& matrix, bool transpose, bool checkTime) = 0;
 
+        virtual void eWiseMult(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) = 0;
         virtual void eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) = 0;
         virtual void multiplyVxM(const VectorBase& vBase, const class MatrixBase& mBase, bool checkTime) = 0;
         virtual void multiplyMxV(const class MatrixBase& mBase, const VectorBase& vBase, bool checkTime) = 0;

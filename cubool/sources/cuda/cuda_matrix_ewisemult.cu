@@ -22,49 +22,28 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_CUDA_VECTOR_HPP
-#define CUBOOL_CUDA_VECTOR_HPP
-
-#include <backend/vector_base.hpp>
-#include <cuda/cuda_instance.hpp>
-#include <cuda/details/sp_vector.hpp>
-#include <cuda/details/device_allocator.cuh>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/kernels/spewisemult.cuh>
 
 namespace cubool {
 
-    class CudaVector final: public VectorBase {
-    public:
-        template<typename T>
-        using DeviceAlloc = details::DeviceAllocator<T>;
-        using VectorImplType = details::SpVector<index, DeviceAlloc<index>>;
+    void CudaMatrix::eWiseMult(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+        auto a = dynamic_cast<const CudaMatrix*>(&aBase);
+        auto b = dynamic_cast<const CudaMatrix*>(&bBase);
 
-        CudaVector(size_t nrows, CudaInstance& instance);
-        ~CudaVector() override = default;
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
 
-        void setElement(index i) override;
-        void build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) override;
-        void extract(index *rows, size_t &nvals) override;
-        void extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) override;
-        void extractRow(const class MatrixBase& matrixBase, index i) override;
-        void extractCol(const class MatrixBase& matrixBase, index j) override;
+        index M = this->getNrows();
+        index N = this->getNcols();
 
-        void clone(const VectorBase &otherBase) override;
-        void reduce(index &result, bool checkTime) override;
-        void reduceMatrix(const struct MatrixBase &matrix, bool transpose, bool checkTime) override;
+        assert(a->getNrows() == M);
+        assert(a->getNcols() == N);
 
-        void eWiseMult(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) override;
-        void eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) override;
-        void multiplyVxM(const VectorBase &vBase, const struct MatrixBase &mBase, bool checkTime) override;
-        void multiplyMxV(const struct MatrixBase &mBase, const VectorBase &vBase, bool checkTime) override;
+        assert(b->getNrows() == M);
+        assert(b->getNcols() == N);
 
-        index getNrows() const override;
-        index getNvals() const override;
-
-    private:
-        mutable VectorImplType mVectorImpl;
-        CudaInstance& mInstance;
-    };
+        // todo
+    }
 
 }
-
-#endif //CUBOOL_CUDA_VECTOR_HPP

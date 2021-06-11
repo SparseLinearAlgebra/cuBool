@@ -211,6 +211,10 @@ namespace cubool {
         this->mData = std::move(out);
     }
 
+    void SqMatrix::eWiseMult(const MatrixBase &a, const MatrixBase &b, bool checkTime) {
+        // todo
+    }
+
     index SqMatrix::getNrows() const {
         return mData.nrows;
     }
