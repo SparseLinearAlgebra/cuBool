@@ -22,7 +22,6 @@ Added new vector C API, exposed vector primitive into python-package.
 - Vector creation (empty, from data, with random data)
 - Matrix-vector operations (matrix-vector and vector-matrix multiplication)
 - Vector-vector operations (element-wise addition)
-- Matrix operations (equality, reduce to value, extract sub-vector)
 - Vector data extraction (as list of indices)
 - Vector syntax sugar (pretty string printing, slicing, iterating through non-zero indices)
 - Matrix operations (extract row or matrix column as sparse vector, reduce matrix (optionally transposed) to vector)

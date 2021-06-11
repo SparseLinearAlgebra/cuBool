@@ -86,17 +86,7 @@ namespace cubool {
         }
     }
 
-    CudaInstance::MemType CudaInstance::getMemoryType() const {
-        return mMemoryType;
-    }
-
-    bool CudaInstance::isCudaDeviceSupported() {
-        int device;
-        cudaError error = cudaGetDevice(&device);
-        return error == cudaSuccess;
-    }
-
-    void CudaInstance::queryDeviceCapabilities(cuBool_DeviceCaps &deviceCaps) {
+    void CudaInstance::queryDeviceCapabilities(cuBool_DeviceCaps &deviceCaps) const {
         const unsigned long long KiB = 1024;
 
         int device;
@@ -109,6 +99,7 @@ namespace cubool {
             if (error == cudaSuccess) {
                 strcpy(deviceCaps.name, deviceProp.name);
                 deviceCaps.cudaSupported = true;
+                deviceCaps.managedMem = mMemoryType == MemType::Managed;
                 deviceCaps.minor = deviceProp.minor;
                 deviceCaps.major = deviceProp.major;
                 deviceCaps.warp = deviceProp.warpSize;
@@ -117,6 +108,16 @@ namespace cubool {
                 deviceCaps.sharedMemoryPerBlockKiBs = deviceProp.sharedMemPerBlock / KiB;
             }
         }
+    }
+
+    CudaInstance::MemType CudaInstance::getMemoryType() const {
+        return mMemoryType;
+    }
+
+    bool CudaInstance::isCudaDeviceSupported() {
+        int device;
+        cudaError error = cudaGetDevice(&device);
+        return error == cudaSuccess;
     }
 
     void CudaInstance::allocate(void* &ptr, size_t size) const {
