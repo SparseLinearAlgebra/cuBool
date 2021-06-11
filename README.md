@@ -51,8 +51,8 @@ prototyping algorithms on a local computer for later running on a powerful serve
 ### Platforms
 
 - Linux based OS (tested on Ubuntu 20.04)
-- Windows (not tested yet)
-- macOS (not tested yet)
+- Windows (coming soon)
+- macOS (coming soon)
 
 ### Simple example
 
@@ -74,9 +74,32 @@ b[2, 1] = True
 print(a, b, a.mxm(b), sep="\n")
 ```
 
+### Performance
+
+Sparse Boolean matrix-matrix multiplication evaluation results are listed bellow.
+Machine configuration: PC with Ubuntu 20.04, Intel Core i7-6700 3.40GHz CPU, DDR4 64Gb RAM, GeForce GTX 1070 GPU with 8Gb VRAM. 
+
+![time](https://github.com/JetBrains-Research/cuBool/raw/master/docs/pictures/mxm-perf-time.svg?raw=true&sanitize=true)
+![mem](https://github.com/JetBrains-Research/cuBool/raw/master/docs/pictures/mxm-perf-mem.svg?raw=true&sanitize=true)
+
+The matrix data is selected from the SuiteSparse Matrix Collection [link](https://sparse.tamu.edu).
+
+| Matrix name              | # Rows      | Nnz M       | Nnz/row   | Max Nnz/row | Nnz M^2     |
+|---                       |---:         |---:         |---:       |---:         |---:         |
+| SNAP/amazon0312          | 400,727     | 3,200,440   | 7.9       | 10          | 14,390,544  |
+| LAW/amazon-2008          | 735,323     | 5,158,388   | 7.0       | 10          | 25,366,745  |
+| SNAP/web-Google          | 916,428     | 5,105,039   | 5.5       | 456         | 29,710,164  |
+| SNAP/roadNet-PA          | 1,090,920   | 3,083,796   | 2.8       | 9           | 7,238,920   |
+| SNAP/roadNet-TX	       | 1,393,383   | 3,843,320   | 2.7       | 12          | 8,903,897   |
+| SNAP/roadNet-CA	       | 1,971,281   | 5,533,214   | 2.8       | 12          | 12,908,450  |
+| DIMACS10/netherlands_osm | 2,216,688   | 4,882,476   | 2.2       | 7           | 8,755,758   |
+  
+Detailed comparison is available in the full paper text at 
+[link](https://github.com/YaccConstructor/articles/blob/master/2021/GRAPL/Sparse_Boolean_Algebra_on_GPGPU/Sparse_Boolean_Algebra_on_GPGPU.pdf).
+
 ### Installation
 
-If you are running **Linux based** OS (tested on Ubuntu 20.04) you can download the official
+If you are running **Linux-based** OS (tested on Ubuntu 20.04) you can download the official
 PyPI **pycubool** python package, which includes compiled library source code
 with Cuda and Sequential computations support. Installation process 
 requires only `python3` to be installed on your machine. Python can be installed 
@@ -102,7 +125,7 @@ These steps are required if you want to build library for your specific platform
 
 ### Requirements
 
-- Linux based OS (tested on Ubuntu 20.04)
+- Linux-based OS (tested on Ubuntu 20.04)
 - CMake Version 3.15 or higher
 - CUDA Compatible GPU device (to run Cuda computations)
 - GCC Compiler 
