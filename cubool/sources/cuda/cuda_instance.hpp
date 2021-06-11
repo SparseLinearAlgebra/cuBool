@@ -51,12 +51,12 @@ namespace cubool {
         void allocateOnGpu(void* &ptr, size_t s) const;
         void deallocate(void* ptr) const;
         void deallocateOnGpu(void* ptr) const;
+        void queryDeviceCapabilities(cuBool_DeviceCaps& deviceCaps) const;
 
         void syncHostDevice() const;
         MemType getMemoryType() const;
 
         static bool isCudaDeviceSupported();
-        static void queryDeviceCapabilities(cuBool_DeviceCaps& deviceCaps);
         static CudaInstance& getInstanceRef();
         static CudaInstance* getInstancePtr();
         static bool isInstancePresent();

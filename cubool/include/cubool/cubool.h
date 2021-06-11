@@ -118,6 +118,7 @@ typedef struct cuBool_Vector_t* cuBool_Vector;
 typedef struct cuBool_DeviceCaps {
     char name[256];
     bool cudaSupported;
+    bool managedMem;
     int major;
     int minor;
     int warp;

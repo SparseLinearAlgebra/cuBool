@@ -249,6 +249,7 @@ namespace cubool {
     void Library::queryCapabilities(cuBool_DeviceCaps &caps) {
         caps.name[0] = '\0';
         caps.cudaSupported = false;
+        caps.managedMem = false;
         caps.major = 0;
         caps.minor = 0;
         caps.warp = 0;
@@ -272,6 +273,7 @@ namespace cubool {
                    << " name: " << caps.name << ","
                    << " major: " << caps.major << ","
                    << " minor: " << caps.minor << ","
+                   << " mem type: " << (caps.managedMem? "managed": "default") << ","
                    << " warp size: " << caps.warp << ","
                    << " globalMemoryKiBs: " << caps.globalMemoryKiBs << ","
                    << " sharedMemoryPerMultiProcKiBs: " << caps.sharedMemoryPerMultiProcKiBs << ","

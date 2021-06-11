@@ -92,7 +92,7 @@ namespace cubool {
     }
 
     void CudaBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
-        CudaInstance::queryDeviceCapabilities(caps);
+        mInstance->queryDeviceCapabilities(caps);
     }
 
     CudaInstance & CudaBackend::getInstance() {
