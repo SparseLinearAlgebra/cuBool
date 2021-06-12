@@ -27,6 +27,7 @@ class Generator:
         config = [
             ("matrix_dup", self.__matrix_dup, 1),
             ("matrix_ewiseadd", self.__matrix_ewiseadd, 2),
+            ("matrix_ewisemult", self.__matrix_ewisemult, 2),
             ("kronecker", self.__kronecker, 2),
             ("mxm", self.__mxm, 2),
             ("mxv", self.__mxv, 2),
@@ -35,12 +36,14 @@ class Generator:
             ("transpose", self.__transpose, 1),
             ("vector_dup", self.__vector_dup, 1),
             ("vector_ewiseadd", self.__vector_ewiseadd, 2),
+            ("vector_ewisemult", self.__vector_ewisemult, 2),
             ("vxm", self.__vxm, 2),
         ]
 
         # Number of shapes of matrices per test to generate
         shapes = [
             [[(50, 60)], [(500, 600)], [(1000, 2000)]],
+            [[(50, 60), (50, 60)], [(500, 600), (500, 600)], [(1000, 2000), (1000, 2000)]],
             [[(50, 60), (50, 60)], [(500, 600), (500, 600)], [(1000, 2000), (1000, 2000)]],
             [[(10, 20), (50, 60)], [(20, 30), (200, 300)], [(40, 60), (400, 600)]],
             [[(50, 60), (60, 80)], [(500, 600), (600, 700)], [(1000, 2000), (2000, 1500)]],
@@ -49,6 +52,7 @@ class Generator:
             [[(50, 60)], [(500, 600)], [(1000, 2000)]],
             [[(50, 60)], [(500, 600)], [(1000, 2000)]],
             [[(1, 60)], [(1, 600)], [(1, 2000)]],
+            [[(1, 60), (1, 60)], [(1, 600), (1, 600)], [(1, 2000), (1, 2000)]],
             [[(1, 60), (1, 60)], [(1, 600), (1, 600)], [(1, 2000), (1, 2000)]],
             [[(1, 60), (60, 50)], [(1, 600), (600, 500)], [(1, 2000), (2000, 1000)]]
         ]
@@ -63,6 +67,8 @@ class Generator:
             [0.5, 0.05, 0.005],
             [0.5, 0.05, 0.005],
             [0.5, 0.05, 0.005],
+            [0.5, 0.05, 0.005],
+            [0.5, 0.5, 0.5],
             [0.5, 0.5, 0.5],
             [0.5, 0.5, 0.5],
             [0.5, 0.05, 0.005]
@@ -70,6 +76,8 @@ class Generator:
 
         # Number of test runs per each shape family
         cases = [
+            [20, 10, 5],
+            [20, 10, 5],
             [20, 10, 5],
             [20, 10, 5],
             [20, 10, 5],
@@ -131,6 +139,12 @@ class Generator:
         return first_matrix.ewiseadd(second_matrix)
 
     @staticmethod
+    def __matrix_ewisemult(matrices):
+        first_matrix = matrices[0]
+        second_matrix = matrices[1]
+        return first_matrix.ewisemult(second_matrix)
+
+    @staticmethod
     def __kronecker(matrices):
         first_matrix = matrices[0]
         second_matrix = matrices[1]
@@ -173,6 +187,12 @@ class Generator:
         first_vector = matrices[0].extract_row(0)
         second_vector = matrices[1].extract_row(0)
         return row_matrix_from_vec(first_vector.ewiseadd(second_vector))
+
+    @staticmethod
+    def __vector_ewisemult(matrices):
+        first_vector = matrices[0].extract_row(0)
+        second_vector = matrices[1].extract_row(0)
+        return row_matrix_from_vec(first_vector.ewisemult(second_vector))
 
     @staticmethod
     def __vxm(matrices):
