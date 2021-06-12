@@ -720,7 +720,7 @@ class Matrix:
 
         >>> a = Matrix.from_lists((4, 4), [0, 1, 2, 3], [2, 3, 0, 1])
         >>> b = Matrix.from_lists((4, 4), [0, 1, 3, 3], [2, 3, 0, 2])
-        >>> print(a.ewiseadd(b))
+        >>> print(a.ewisemult(b))
         '
                 0   1   2   3
           0 |   .   .   1   . |   0
