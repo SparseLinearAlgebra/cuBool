@@ -22,6 +22,7 @@ __all__ = [
     "get_kronecker_hints",
     "get_mxm_hints",
     "get_ewiseadd_hints",
+    "get_ewisemult_hints",
     "check"
 ]
 
@@ -149,6 +150,15 @@ def get_mxv_hints(time_check):
 
 
 def get_ewiseadd_hints(time_check):
+    hints = _hint_no
+
+    if time_check:
+        hints |= _hint_time_check
+
+    return hints
+
+
+def get_ewisemult_hints(time_check):
     hints = _hint_no
 
     if time_check:
@@ -323,6 +333,14 @@ def load_and_configure(cubool_lib_path: str):
         hints_t
     ]
 
+    lib.cuBool_Matrix_EWiseMult.restype = status_t
+    lib.cuBool_Matrix_EWiseMult.argtypes = [
+        matrix_p,
+        matrix_p,
+        matrix_p,
+        hints_t
+    ]
+
     lib.cuBool_Vector_New.restype = status_t
     lib.cuBool_Vector_New.argtypes = [
         p_to_vector_p,
@@ -404,6 +422,14 @@ def load_and_configure(cubool_lib_path: str):
 
     lib.cuBool_Vector_EWiseAdd.restype = status_t
     lib.cuBool_Vector_EWiseAdd.argtypes = [
+        vector_p,
+        vector_p,
+        vector_p,
+        hints_t
+    ]
+
+    lib.cuBool_Vector_EWiseMult.restype = status_t
+    lib.cuBool_Vector_EWiseMult.argtypes = [
         vector_p,
         vector_p,
         vector_p,

@@ -198,3 +198,7 @@ vector[0] = True
 vector[2] = True
 vector[3] = True
 print(vector)
+
+a = pycubool.Vector.from_list(4, [0, 1, 3])
+b = pycubool.Vector.from_list(4, [1, 2, 3])
+print(a.ewisemult(b))
