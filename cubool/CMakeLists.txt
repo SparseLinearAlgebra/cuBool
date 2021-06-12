@@ -86,6 +86,7 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Matrix_Reduce.cpp
     sources/cuBool_Matrix_Reduce2.cpp
     sources/cuBool_Matrix_EWiseAdd.cpp
+    sources/cuBool_Matrix_EWiseMult.cpp
     sources/cuBool_Vector_New.cpp
     sources/cuBool_Vector_Build.cpp
     sources/cuBool_Vector_SetElement.cpp
@@ -99,6 +100,7 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Vector_Free.cpp
     sources/cuBool_Vector_Reduce.cpp
     sources/cuBool_Vector_EWiseAdd.cpp
+    sources/cuBool_Vector_EWiseMult.cpp
     sources/cuBool_MxM.cpp
     sources/cuBool_MxV.cpp
     sources/cuBool_VxM.cpp
@@ -122,6 +124,7 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/cuda_matrix.hpp
         sources/cuda/cuda_matrix.cu
         sources/cuda/cuda_matrix_ewiseadd.cu
+        sources/cuda/cuda_matrix_ewisemult.cu
         sources/cuda/cuda_matrix_kronecker.cu
         sources/cuda/cuda_matrix_multiply.cu
         sources/cuda/cuda_matrix_transpose.cu
@@ -132,6 +135,7 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/cuda_vector_mxv.cu
         sources/cuda/cuda_vector_vxm.cu
         sources/cuda/cuda_vector_ewiseadd.cu
+        sources/cuda/cuda_vector_ewisemult.cu
         sources/cuda/cuda_vector_reduce.cu
         sources/cuda/details/meta.hpp
         sources/cuda/details/sp_vector.hpp
@@ -142,6 +146,7 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/kernels/spgemv.cuh
         sources/cuda/kernels/spgemv_t.cuh
         sources/cuda/kernels/spewiseadd.cuh
+        sources/cuda/kernels/spewisemult.cuh
         sources/cuda/kernels/sptranspose.cuh
         sources/cuda/kernels/sptranspose2.cuh
         sources/cuda/kernels/spkron.cuh
@@ -166,6 +171,8 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_kronecker.hpp
         sources/sequential/sq_ewiseadd.cpp
         sources/sequential/sq_ewiseadd.hpp
+        sources/sequential/sq_ewisemult.cpp
+        sources/sequential/sq_ewisemult.hpp
         sources/sequential/sq_spgemm.cpp
         sources/sequential/sq_spgemm.hpp
         sources/sequential/sq_spgemv.cpp

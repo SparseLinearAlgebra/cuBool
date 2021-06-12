@@ -312,6 +312,43 @@ namespace cubool {
         mHnd->eWiseAdd(*a->mHnd, *b->mHnd, false);
     }
 
+    void Matrix::eWiseMult(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+        const auto* a = dynamic_cast<const Matrix*>(&aBase);
+        const auto* b = dynamic_cast<const Matrix*>(&bBase);
+
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
+
+        index M = a->getNrows();
+        index N = a->getNcols();
+
+        CHECK_RAISE_ERROR(M == b->getNrows(), InvalidArgument, "Passed matrices have incompatible size");
+        CHECK_RAISE_ERROR(N == b->getNcols(), InvalidArgument, "Passed matrices have incompatible size");
+
+        CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Matrix has incompatible size for operation result");
+        CHECK_RAISE_ERROR(N == this->getNcols(), InvalidArgument, "Matrix has incompatible size for operation result");
+
+        a->commitCache();
+        b->commitCache();
+        this->releaseCache();
+
+        if (checkTime) {
+            TIMER_ACTION(timer, mHnd->eWiseMult(*a->mHnd, *b->mHnd, false));
+
+            LogStream stream(*Library::getLogger());
+            stream << Logger::Level::Info
+                   << "Time: " << timer.getElapsedTimeMs() << " ms "
+                   << "Matrix::eWiseMult: "
+                   << this->getDebugMarker() << " = "
+                   << a->getDebugMarker() << " + "
+                   << b->getDebugMarker() << LogStream::cmt;
+
+            return;
+        }
+
+        mHnd->eWiseMult(*a->mHnd, *b->mHnd, false);
+    }
+
     index Matrix::getNrows() const {
         return mHnd->getNrows();
     }

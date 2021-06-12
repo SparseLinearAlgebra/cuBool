@@ -37,9 +37,9 @@ prototyping algorithms on a local computer for later running on a powerful serve
 - Cuda backend for computations
 - Cpu backend for computations
 - Matrix/vector creation (empty, from data, with random data)
-- Matrix-matrix operations (multiplication, element-wise addition, kronecker product)
+- Matrix-matrix operations (multiplication, element-wise addition, element-wise multiplication, kronecker product)
 - Matrix-vector operations (matrix-vector and vector-matrix multiplication)
-- Vector-vector operations (element-wise addition)
+- Vector-vector operations (element-wise addition, element-wise multiplication)
 - Matrix operations (equality, transpose, reduce to vector, extract sub-matrix)
 - Vector operations (equality, reduce to value, extract sub-vector)
 - Matrix/vector data extraction (as lists, as list of pairs)
@@ -367,7 +367,7 @@ cuBool
   title = {cuBool: sparse Boolean linear algebra for Nvidia Cuda},
   year = 2021,
   url = {https://github.com/JetBrains-Research/cuBool},
-  note = {Version 1.1.0}
+  note = {Version 1.2.0}
 }
 ```
 

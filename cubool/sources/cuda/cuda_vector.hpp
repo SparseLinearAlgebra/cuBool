@@ -52,6 +52,7 @@ namespace cubool {
         void reduce(index &result, bool checkTime) override;
         void reduceMatrix(const struct MatrixBase &matrix, bool transpose, bool checkTime) override;
 
+        void eWiseMult(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) override;
         void eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) override;
         void multiplyVxM(const VectorBase &vBase, const struct MatrixBase &mBase, bool checkTime) override;
         void multiplyMxV(const struct MatrixBase &mBase, const VectorBase &vBase, bool checkTime) override;

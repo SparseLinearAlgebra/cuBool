@@ -31,6 +31,9 @@ target_link_libraries(test_matrix_kronecker PUBLIC testing)
 add_executable(test_matrix_ewiseadd test_matrix_ewiseadd.cpp)
 target_link_libraries(test_matrix_ewiseadd PUBLIC testing)
 
+add_executable(test_matrix_ewisemult test_matrix_ewisemult.cpp)
+target_link_libraries(test_matrix_ewisemult PUBLIC testing)
+
 add_executable(test_vector_misc test_vector_misc.cpp)
 target_link_libraries(test_vector_misc PUBLIC testing)
 
@@ -39,6 +42,9 @@ target_link_libraries(test_vector_element PUBLIC testing)
 
 add_executable(test_vector_ewiseadd test_vector_ewiseadd.cpp)
 target_link_libraries(test_vector_ewiseadd PUBLIC testing)
+
+add_executable(test_vector_ewisemult test_vector_ewisemult.cpp)
+target_link_libraries(test_vector_ewisemult PUBLIC testing)
 
 add_executable(test_vector_mxv test_vector_mxv.cpp)
 target_link_libraries(test_vector_mxv PUBLIC testing)

@@ -29,6 +29,7 @@ class Vector:
     Vector operations:
     - vxm
     - ewiseadd
+    - ewisemult
     - reduce
     - vector extraction
 
@@ -437,6 +438,40 @@ class Vector:
             self.hnd,
             other.hnd,
             ctypes.c_uint(bridge.get_ewiseadd_hints(time_check=time_check))
+        )
+
+        bridge.check(status)
+        return out
+
+    def ewisemult(self, other, out=None, time_check=False):
+        """
+        Element-wise vector-vector multiplication with boolean "* = and" operation.
+        Returns element-wise multiplication (intersection) of `self` and `other` vector.
+
+        >>> a = Vector.from_list(4, [0, 1, 3])
+        >>> b = Vector.from_list(4, [1, 2, 3])
+        >>> print(a.ewisemult(b))
+        '
+          0 |   . |   0
+          1 |   1 |   1
+          2 |   . |   2
+          3 |   1 |   3
+        '
+
+        :param other: Input vector to multiply
+        :param out: Optional out vector to store result
+        :param time_check: Pass True to measure and log elapsed time of the operation
+        :return: Element-wise vector-vector multiplication
+        """
+
+        if out is None:
+            out = Vector.empty(self.nrows)
+
+        status = wrapper.loaded_dll.cuBool_Vector_EWiseMult(
+            out.hnd,
+            self.hnd,
+            other.hnd,
+            ctypes.c_uint(bridge.get_ewisemult_hints(time_check=time_check))
         )
 
         bridge.check(status)

@@ -3,7 +3,7 @@ from tests.config import cfg
 from pycubool import io
 
 
-class TestVectorEWiseAadd(unittest.TestCase):
+class TestVectorEWiseAdd(unittest.TestCase):
 
     def setUp(self) -> None:
         matrices, self.total = cfg.get_test_cases("vector_ewiseadd", 3)
@@ -11,7 +11,7 @@ class TestVectorEWiseAadd(unittest.TestCase):
 
     def test_add(self):
         """
-        Unit test for element-wise addition of two vectors
+        Unit test for element-wise multiplication of two vectors
         """
         for i in range(self.total):
             first = io.import_matrix_from_mtx(self.input_vectors_0[i]).extract_row(0)

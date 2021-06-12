@@ -38,7 +38,6 @@ namespace cubool {
             typedef AllocType alloc_type;
             typedef thrust::device_vector<IndexType, AllocType> container_type;
 
-
             SpVector()
                 : m_rows_index{}, m_rows{0}, m_vals{0} {}
 

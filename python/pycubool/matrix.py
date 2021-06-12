@@ -30,6 +30,7 @@ class Matrix:
     Matrix operations:
     - mxm
     - ewiseadd
+    - ewisemult
     - kronecker
     - reduce
     - transpose
@@ -707,6 +708,43 @@ class Matrix:
             self.hnd,
             other.hnd,
             ctypes.c_uint(bridge.get_ewiseadd_hints(time_check=time_check))
+        )
+
+        bridge.check(status)
+        return out
+
+    def ewisemult(self, other, out=None, time_check=False):
+        """
+        Element-wise matrix-matrix multiplication with boolean "* = and" operation.
+        Returns element-wise multiplication (intersection) of `self` and `other` matrix.
+
+        >>> a = Matrix.from_lists((4, 4), [0, 1, 2, 3], [2, 3, 0, 1])
+        >>> b = Matrix.from_lists((4, 4), [0, 1, 3, 3], [2, 3, 0, 2])
+        >>> print(a.ewisemult(b))
+        '
+                0   1   2   3
+          0 |   .   .   1   . |   0
+          1 |   .   .   .   1 |   1
+          2 |   .   .   .   . |   2
+          3 |   .   .   .   . |   3
+                0   1   2   3
+        '
+
+        :param other: Input matrix to multiply
+        :param out: Optional out matrix to store result
+        :param time_check: Pass True to measure and log elapsed time of the operation
+        :return: Element-wise matrix-matrix multiplication
+        """
+
+        if out is None:
+            shape = (self.nrows, self.ncols)
+            out = Matrix.empty(shape)
+
+        status = wrapper.loaded_dll.cuBool_Matrix_EWiseMult(
+            out.hnd,
+            self.hnd,
+            other.hnd,
+            ctypes.c_uint(bridge.get_ewisemult_hints(time_check=time_check))
         )
 
         bridge.check(status)
