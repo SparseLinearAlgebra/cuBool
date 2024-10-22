@@ -246,14 +246,14 @@ if (CUBOOL_BUILD_TESTS)
 endif()
 
 # Copy cubool library after build if allowed
-if (CUBOOL_COPY_TO_PY_PACKAGE)
-    set(LIBRARY_FILE_NAME ${TARGET_FILE_NAME})
-
-    add_custom_command(
-        TARGET cubool POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E
-        copy
-        "${CMAKE_BINARY_DIR}/cubool/${LIBRARY_FILE_NAME}"
-        "${CMAKE_BINARY_DIR}/python/pycubool"
-        COMMENT "Copy ${LIBRARY_FILE_NAME} compiled lib into python folder")
-endif()
+# if (CUBOOL_COPY_TO_PY_PACKAGE)
+#     set(LIBRARY_FILE_NAME ${TARGET_FILE_NAME})
+# 
+#     add_custom_command(
+#         TARGET cubool POST_BUILD
+#         COMMAND "${CMAKE_COMMAND}" -E
+#         copy
+#         "${CMAKE_BINARY_DIR}/cubool/${LIBRARY_FILE_NAME}"
+#         "${CMAKE_BINARY_DIR}/python/pycubool"
+#         COMMENT "Copy ${LIBRARY_FILE_NAME} compiled lib into python folder")
+# endif()

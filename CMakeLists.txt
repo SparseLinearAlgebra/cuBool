@@ -58,7 +58,7 @@ endif()
 add_subdirectory(cubool)
 
 # Copy scripts into binary directory
-file(COPY scripts DESTINATION ${CMAKE_BINARY_DIR}/)
+# file(COPY scripts DESTINATION ${CMAKE_BINARY_DIR}/)
 
 # Copy python related stuff
-file(COPY python DESTINATION ${CMAKE_BINARY_DIR}/)
+# file(COPY python DESTINATION ${CMAKE_BINARY_DIR}/)
