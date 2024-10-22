@@ -27,6 +27,7 @@
 
 #include <core/config.hpp>
 #include <vector>
+#include <limits>
 
 namespace cubool {
 

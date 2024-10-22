@@ -27,6 +27,8 @@
 
 #include <cuda/details/sp_vector.hpp>
 
+#include <thrust/set_operations.h>
+
 namespace cubool {
     namespace kernels {
 
