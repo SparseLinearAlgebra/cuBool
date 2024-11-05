@@ -22,42 +22,42 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
-
-#include <core/config.hpp>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/kernels/spewisemultinverted.cuh>
 
 namespace cubool {
 
-    /**
-     * Base class for boolean matrix representation.
-     */
-    class MatrixBase {
-    public:
-        virtual ~MatrixBase() = default;
+    void CudaMatrix::eWiseMultInverted(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+        auto a = dynamic_cast<const CudaMatrix*>(&aBase);
+        auto b = dynamic_cast<const CudaMatrix*>(&bBase);
 
-        virtual void setElement(index i, index j) = 0;
-        virtual void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols, bool checkTime) = 0;
+        CHECK_RAISE_ERROR(a != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
+        CHECK_RAISE_ERROR(b != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
 
-        virtual void clone(const MatrixBase& otherBase) = 0;
-        virtual void transpose(const MatrixBase &otherBase, bool checkTime) = 0;
-        virtual void reduce(const MatrixBase &otherBase, bool checkTime) = 0;
+        index M = this->getNrows();
+        index N = this->getNcols();
 
-        virtual void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) = 0;
-        virtual void kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) = 0;
-        virtual void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) = 0;
-        virtual void eWiseMult(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) = 0;
-        virtual void eWiseMultInverted(const MatrixBase &matrix, const MatrixBase &mask, bool checkTime) = 0;
 
-        virtual index getNrows() const = 0;
-        virtual index getNcols() const = 0;
-        virtual index getNvals() const = 0;
+        assert(a->getNrows() == M);
+        assert(a->getNcols() == N);
 
-        bool isZeroDim() const { return (size_t)getNrows() * (size_t)getNcols() == 0; }
-    };
+        assert(b->getNrows() == M);
+        assert(b->getNcols() == N);
+
+        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
+            this->clearAndResizeStorageToDim();
+            return;
+        }
+
+        // Ensure csr proper csr format even if empty
+        a->resizeStorageToDim();
+        b->resizeStorageToDim();
+
+        kernels::SpVectorEWiseMultInverted<index, DeviceAlloc<index>> spFunctor;
+        auto result = spFunctor(a->mMatrixImpl, b->mMatrixImpl);
+
+        // Assign the actual impl result to this storage
+        this->mMatrixImpl = std::move(result);
+    }
 
 }
-
-#endif //CUBOOL_MATRIX_BASE_HPP

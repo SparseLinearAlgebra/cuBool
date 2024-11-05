@@ -925,4 +925,30 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Kronecker(
     cuBool_Hints hints
 );
 
+/**
+ * Performs result = left + ~right, where
+ *     '+' is boolean semiring 'or' operation
+ *     '~' is operation for invert matrix (0 swaps to 1 and 1 to 0)
+ *
+ * @note Matrices must be compatible
+ *          dim(result) = M x N
+ *          dim(left) = M x N
+ *          dim(right) = M x N
+ *
+ * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
+ *
+ * @param result[out] Destination matrix to store result
+ * @param left Source matrix to be added
+ * @param right Source matrix to be inverted and added
+ * @param hints Hints for the operation
+ *
+ * @return Error code on this operation
+ */
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseMulInverted(
+    cuBool_Matrix result,
+    cuBool_Matrix matrix,
+    cuBool_Matrix mask,
+    cuBool_Hints hints
+);
+
 #endif //CUBOOL_CUBOOL_H
