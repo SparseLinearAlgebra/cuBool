@@ -219,7 +219,7 @@ endforeach()
 if (CUBOOL_WITH_CUDA)
     set_target_properties(cubool PROPERTIES CUDA_STANDARD 14)
     set_target_properties(cubool PROPERTIES CUDA_STANDARD_REQUIRED ON)
-    set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    # set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     # Settings: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
 
