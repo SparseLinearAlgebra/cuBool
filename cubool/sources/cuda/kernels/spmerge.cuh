@@ -29,9 +29,13 @@
 #include <nsparse/matrix.h>
 #include <nsparse/detail/merge.h>
 
+#include <cuda/kernels/bin_search.cuh>
+#include <thrust/set_operations.h>
+
 namespace cubool {
     namespace kernels {
 
+#if CUBOOL_USE_NSPARSE_MERGE_FUNCTOR
         template <typename IndexType, typename AllocType>
         class SpMergeFunctor {
         public:
@@ -77,6 +81,73 @@ namespace cubool {
         private:
             nsparse::unique_merge_functor_t<IndexType, AllocType> uniqueMergeFunctor;
         };
+#else
+        template <typename IndexType, typename AllocType>
+        class SpMergeFunctor {
+        public:
+            template<typename T>
+            using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
+            using MatrixType = nsparse::matrix<bool, IndexType, AllocType>;
+            using LargeIndexType = unsigned long;
+
+            static void fillIndices(const MatrixType& m, ContainerType<LargeIndexType>& out) {
+                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(m.m_vals),
+                        [rowOffset=m.m_row_index.data(), colIndex=m.m_col_index.data(),
+                         outIndices=out.data(), nrows=m.m_rows, ncols=m.m_cols] __device__ (IndexType valueId) {
+                    LargeIndexType row = findNearestRowIdx<index>(valueId, nrows, rowOffset);
+                    LargeIndexType col = colIndex[valueId];
+                    LargeIndexType index = row * ncols + col;
+                    outIndices[valueId] = index;
+                });
+            }
+
+            MatrixType operator()(const MatrixType& a, const MatrixType& b) {
+                auto aNvals = a.m_vals;
+                auto bNvals = b.m_vals;
+                // auto worst = std::min(aNvals, bNvals);
+                auto worst = aNvals + bNvals;
+
+                // Allocate memory for the worst case scenario
+                ContainerType<LargeIndexType> inputA(aNvals);
+                ContainerType<LargeIndexType> inputB(bNvals);
+
+                fillIndices(a, inputA);
+                fillIndices(b, inputB);
+
+                ContainerType<LargeIndexType> intersected(worst);
+
+                auto out = thrust::set_union(inputA.begin(), inputA.end(),
+                                             inputB.begin(), inputB.end(),
+                                             intersected.begin());
+
+                // Count result nvals count
+                auto nvals = thrust::distance(intersected.begin(), out);
+
+                ContainerType<index> rowOffsetTmp(a.m_rows + 1);
+                ContainerType<index> colIndex(nvals);
+
+                thrust::fill(rowOffsetTmp.begin(), rowOffsetTmp.end(), 0);
+
+                thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(nvals),
+                        [rowOffset=rowOffsetTmp.data(), colIndex=colIndex.data(), intersected=intersected.data(),
+                         nrows=a.m_rows, ncols=a.m_cols] __device__ (IndexType valueId) {
+                    LargeIndexType i = intersected[valueId];
+                    LargeIndexType row = i / ncols;
+                    LargeIndexType col = i % ncols;
+                    atomicAdd((rowOffset + row).get(), 1);
+                    colIndex[valueId] = (IndexType) col;
+                });
+
+                ContainerType<index> rowOffset(a.m_rows + 1);
+                thrust::exclusive_scan(rowOffsetTmp.begin(), rowOffsetTmp.end(), rowOffset.begin(), 0, thrust::plus<index>());
+
+                assert(nvals == rowOffset.back());
+
+                return MatrixType(std::move(colIndex), std::move(rowOffset), a.m_rows, a.m_cols, nvals);
+            }
+        };
+
+#endif
 
     }
 }

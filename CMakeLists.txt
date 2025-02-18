@@ -11,6 +11,8 @@ option(CUBOOL_WITH_NAIVE         "Build library with naive and naive-shared dens
 option(CUBOOL_BUILD_TESTS        "Build project unit-tests with gtest" ON)
 option(CUBOOL_COPY_TO_PY_PACKAGE "Copy compiled shared library into python package folder (for package use purposes)" ON)
 
+option(CUBOOL_USE_NSPARSE_MERGE_FUNCTOR "Use nsparse optimiztion for matrix addition function" ON)
+
 set(CUBOOL_VERSION_MAJOR 1)
 set(CUBOOL_VERSION_MINOR 0)
 set(CUBOOL_VERSION_SUB 0)

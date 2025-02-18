@@ -206,6 +206,8 @@ target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_MAJOR=${CUBOOL_VERSION_
 target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_MINOR=${CUBOOL_VERSION_MINOR})
 target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_SUB=${CUBOOL_VERSION_SUB})
 
+target_compile_definitions(cubool PRIVATE CUBOOL_USE_NSPARSE_MERGE_FUNCTOR=$<BOOL:${CUBOOL_USE_NSPARSE_MERGE_FUNCTOR}>)
+
 target_compile_features(cubool PUBLIC cxx_std_17)
 
 set_target_properties(cubool PROPERTIES CXX_STANDARD 17)
