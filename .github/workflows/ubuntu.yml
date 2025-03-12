@@ -4,7 +4,7 @@ name: Ubuntu
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, self-hosted-runner ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -12,7 +12,7 @@ on:
 jobs:
   build:
     name: Build ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
-    runs-on: ${{ matrix.os }}
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
