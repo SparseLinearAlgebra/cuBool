@@ -19,7 +19,7 @@ jobs:
         include:
           - os: ubuntu-24.04
             cuda: "12.8"
-            gcc: 11
+            gcc: 14.2
     env:
       build_dir: "build"
       config: "Release"
@@ -39,12 +39,12 @@ jobs:
         run: source ./scripts/install_cuda_ubuntu.sh
         shell: bash
 
-      # - name: Install and configure GCC and GXX
-      #   run: |
-      #     sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
-      #     echo "СС=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
-      #     echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
-      #     echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+      - name: Install and configure GCC and GXX
+        run: |
+          sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
+          export СС=/usr/bin/gcc-${{ matrix.gcc }}
+          export CXX=/usr/bin/g++-${{ matrix.gcc }}
+          export CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}
 
       # - name: Configure CMake build
       #   run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=YES
