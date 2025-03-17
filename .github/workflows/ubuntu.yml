@@ -36,7 +36,7 @@ jobs:
       - name: Install CUDA
         env:
           cuda: ${{ matrix.cuda }}
-        run: ./scripts/install_cuda_ubuntu.sh
+        run: source ./scripts/install_cuda_ubuntu.sh
         shell: bash
 
       # - name: Install and configure GCC and GXX
