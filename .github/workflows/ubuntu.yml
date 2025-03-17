@@ -42,9 +42,9 @@ jobs:
       #     sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
       - name: Export gcc and g++ variables
         run: |
-          export СС=/usr/bin/gcc-${{ matrix.gcc }}
-          export CXX=/usr/bin/g++-${{ matrix.gcc }}
-          export CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}
+          echo "СС=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+          echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
 
       - name: Configure CMake build
         run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=YES
