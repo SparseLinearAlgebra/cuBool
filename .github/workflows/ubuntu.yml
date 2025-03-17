@@ -19,7 +19,7 @@ jobs:
         include:
           - os: ubuntu-24.04
             cuda: "12.8"
-            gcc: 14.2
+            gcc: 14
     env:
       build_dir: "build"
       config: "Release"
@@ -39,19 +39,19 @@ jobs:
         run: source ./scripts/install_cuda_ubuntu.sh
         shell: bash
 
-      - name: Install and configure GCC and GXX
+      #     sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
+      - name: Export gcc and g++ variables
         run: |
-          sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
           export СС=/usr/bin/gcc-${{ matrix.gcc }}
           export CXX=/usr/bin/g++-${{ matrix.gcc }}
           export CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}
 
-      # - name: Configure CMake build
-      #   run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=YES
+      - name: Configure CMake build
+        run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=YES
 
-      # - name: Build library sources
-      #   working-directory: ${{ env.build_dir }}
-      #   run: cmake --build . --target all --verbose -j `nproc`
+      - name: Build library sources
+        working-directory: ${{ env.build_dir }}
+        run: cmake --build . --target all --verbose -j `nproc`
 
       # - name: Run unit-tests (sequential backend)
       #   working-directory: ${{ env.build_dir }}
