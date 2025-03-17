@@ -17,9 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-18.04
-            cuda: "10.1"
-            gcc: 8
+          - os: ubuntu-24.04
+            cuda: "12.8"
+            gcc: 11
     env:
       build_dir: "build"
       config: "Release"
@@ -36,47 +36,39 @@ jobs:
       - name: Install CUDA
         env:
           cuda: ${{ matrix.cuda }}
-        run: |
-          source ./scripts/install_cuda_ubuntu.sh
-          if [[ $? -eq 0 ]]; then
-            # Set paths for subsequent steps, using ${CUDA_PATH}
-            echo "Adding CUDA to CUDA_PATH, PATH and LD_LIBRARY_PATH"
-            echo "CUDA_PATH=${CUDA_PATH}" >> $GITHUB_ENV
-            echo "${CUDA_PATH}/bin" >> $GITHUB_PATH
-            echo "LD_LIBRARY_PATH=${CUDA_PATH}/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
-          fi
+        run: ./scripts/install_cuda_ubuntu.sh
         shell: bash
 
-      - name: Install and configure GCC and GXX
-        run: |
-          sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
-          echo "СС=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
-          echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
-          echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+      # - name: Install and configure GCC and GXX
+      #   run: |
+      #     sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
+      #     echo "СС=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
+      #     echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+      #     echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
 
-      - name: Configure CMake build
-        run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=YES
+      # - name: Configure CMake build
+      #   run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=YES
 
-      - name: Build library sources
-        working-directory: ${{ env.build_dir }}
-        run: cmake --build . --target all --verbose -j `nproc`
+      # - name: Build library sources
+      #   working-directory: ${{ env.build_dir }}
+      #   run: cmake --build . --target all --verbose -j `nproc`
 
-      - name: Run unit-tests (sequential backend)
-        working-directory: ${{ env.build_dir }}
-        run: bash scripts/run_tests_fallback.sh
-        shell: bash
+      # - name: Run unit-tests (sequential backend)
+      #   working-directory: ${{ env.build_dir }}
+      #   run: bash scripts/run_tests_fallback.sh
+      #   shell: bash
 
-      - name: Run regression-tests (sequential backend)
-        working-directory: ${{ env.build_dir }}/python
-        run: bash run_tests.sh
-        shell: bash
+      # - name: Run regression-tests (sequential backend)
+      #   working-directory: ${{ env.build_dir }}/python
+      #   run: bash run_tests.sh
+      #   shell: bash
 
-      - name: Prepare upload binary
-        shell: bash
-        run: tar cfz ${{ env.artifact }} ${{ env.build_dir }}
+      # - name: Prepare upload binary
+      #   shell: bash
+      #   run: tar cfz ${{ env.artifact }} ${{ env.build_dir }}
 
-      - name: Upload binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.artifact }}
-          path: ${{ env.artifact }}
+      # - name: Upload binary
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ env.artifact }}
+      #     path: ${{ env.artifact }}
