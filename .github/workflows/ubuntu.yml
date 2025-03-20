@@ -54,14 +54,14 @@ jobs:
         working-directory: ${{ env.build_dir }}
         run: cmake --build . --target all --verbose -j `nproc`
 
-      - name: Run unit-tests (sequential backend)
+      - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
-        run: bash ../scripts/run_tests_fallback.sh
+        run: bash scripts/run_tests_fallback.sh
         shell: bash
 
-      - name: Run regression-tests (sequential backend)
-        working-directory: python
-        run: bash ./run_tests.sh
+      - name: Run regression-tests
+        working-directory: ${{ env.build_dir }}/python
+        run: bash run_tests.sh
         shell: bash
 
       - name: Prepare upload binary
