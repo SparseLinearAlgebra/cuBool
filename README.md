@@ -214,7 +214,7 @@ $ bash ./scripts/run_tests_all.sh
 By default, the following cmake options will be automatically enabled:
 
 - `CUBOOL_WITH_CUDA` - build library with actual cuda backend
-- `CUBOOL_WITH_SEQUENTIAL` - build library witt cpu based backend
+- `CUBOOL_WITH_SEQUENTIAL` - build library with cpu based backend
 - `CUBOOL_WITH_TESTS` - build library unit-tests collection
 
 > Note: in order to provide correct GCC version for CUDA sources compiling,
