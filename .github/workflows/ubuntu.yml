@@ -54,22 +54,22 @@ jobs:
         working-directory: ${{ env.build_dir }}
         run: cmake --build . --target all --verbose -j `nproc`
 
-      # - name: Run unit-tests (sequential backend)
-      #   working-directory: ${{ env.build_dir }}
-      #   run: bash scripts/run_tests_fallback.sh
-      #   shell: bash
+      - name: Run unit-tests (sequential backend)
+        working-directory: ${{ env.build_dir }}
+        run: bash scripts/run_tests_fallback.sh
+        shell: bash
 
-      # - name: Run regression-tests (sequential backend)
-      #   working-directory: ${{ env.build_dir }}/python
-      #   run: bash run_tests.sh
-      #   shell: bash
+      - name: Run regression-tests (sequential backend)
+        working-directory: ${{ env.build_dir }}/python
+        run: bash run_tests.sh
+        shell: bash
 
-      # - name: Prepare upload binary
-      #   shell: bash
-      #   run: tar cfz ${{ env.artifact }} ${{ env.build_dir }}
+      - name: Prepare upload binary
+        shell: bash
+        run: tar cfz ${{ env.artifact }} ${{ env.build_dir }}
 
-      # - name: Upload binary
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ${{ env.artifact }}
-      #     path: ${{ env.artifact }}
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.artifact }}
+          path: ${{ env.artifact }}
