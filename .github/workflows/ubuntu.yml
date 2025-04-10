@@ -47,7 +47,7 @@ jobs:
           echo "СС=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
           echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
           echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
-#          echo "CUDACXX=/usr/local/cuda-${{ matrix.cuda }}/bin/nvcc" >> $GITHUB_ENV
+          echo "CUDACXX=/usr/local/cuda-${{ matrix.cuda }}/bin/nvcc" >> $GITHUB_ENV
 
       - name: Configure CMake build
         run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON
