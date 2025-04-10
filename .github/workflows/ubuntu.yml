@@ -9,10 +9,15 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+env:
+  build_dir: "build"
+  config: "Release"
+  artifact: "cubool-ubuntu-build.tar.xz"
+
 jobs:
   build:
     name: Build ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
-    runs-on: self-hosted
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -20,49 +25,36 @@ jobs:
           - os: ubuntu-24.04
             cuda: "12.8"
             gcc: 13
-    env:
-      build_dir: "build"
-      config: "Release"
-      artifact: "cubool-ubuntu-build.tar.xz"
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      # - uses: actions/setup-python@v5
-      #   with:
-      #     python-version: '3.7'
 
-      # - name: Install CUDA
-      #   env:
-      #     cuda: ${{ matrix.cuda }}
-      #   run: source ./scripts/install_cuda_ubuntu.sh
-      #   shell: bash
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.7'
 
-      #     sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
+      - name: Install CUDA
+        env:
+          cuda: ${{ matrix.cuda }}
+        run: source ./scripts/install_cuda_ubuntu.sh
+        shell: bash
+
       - name: Export gcc and g++ variables
         run: |
+          sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
           echo "СС=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
           echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
           echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
-          echo "CUDACXX=/usr/local/cuda-${{ matrix.cuda }}/bin/nvcc" >> $GITHUB_ENV
+#          echo "CUDACXX=/usr/local/cuda-${{ matrix.cuda }}/bin/nvcc" >> $GITHUB_ENV
 
       - name: Configure CMake build
         run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON
 
-      - name: Build library sources
+      - name: Build librarnamey sources
         working-directory: ${{ env.build_dir }}
         run: cmake --build . --target all --verbose -j `nproc`
-
-      - name: Run unit-tests
-        working-directory: ${{ env.build_dir }}
-        run: bash scripts/run_tests_fallback.sh
-        shell: bash
-
-      - name: Run regression-tests
-        working-directory: ${{ env.build_dir }}/python
-        run: bash run_tests.sh
-        shell: bash
 
       - name: Prepare upload binary
         shell: bash
@@ -73,3 +65,36 @@ jobs:
         with:
           name: ${{ env.artifact }}
           path: ${{ env.artifact }}
+
+    
+  test:
+    name: Test ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
+    runs-on: self-hosted
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            cuda: "12.8"
+            gcc: 13
+
+    steps:
+      - name: Download binary artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.artifact }}
+        
+      - name: Unarchive artifact
+        run: |
+          tar xzf ${{ env.artifact }}
+          rm ${{ env.artifact }}
+      
+      - name: Run unit-tests
+        working-directory: ${{ env.build_dir }}
+        run: bash scripts/run_tests_fallback.sh
+        shell: bash
+
+      - name: Run regression-tests
+        working-directory: ${{ env.build_dir }}/python
+        run: bash run_tests.sh
+        shell: bash
