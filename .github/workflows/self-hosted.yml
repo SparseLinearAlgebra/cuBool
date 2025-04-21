@@ -61,11 +61,17 @@ jobs:
 
     steps:
       - name: Run unit-tests
+        id: unit-test
         working-directory: ${{ env.build_dir }}
         run: bash scripts/run_tests_fallback.sh
         shell: bash
 
       - name: Run regression-tests
+        id: regression-test
         working-directory: ${{ env.build_dir }}/python
         run: bash run_tests.sh
         shell: bash
+
+      - name: Return test code
+        if: ${{ steps.unit-test.outcome == 'failure' || steps.regression-test.outcome == 'failure' }}
+        run: exit 1
