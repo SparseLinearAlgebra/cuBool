@@ -4,7 +4,7 @@ name: Ubuntu
 
 on:
   push:
-    branches: [ master, self-hosted-runner ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -17,24 +17,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: [ubuntu-18.04, ubuntu-24.04]
-            cuda: ["10.1", "12.8"]
-            gcc: [8, 13]
+          - os: ubuntu-18.04
+            cuda: "10.1"
+            gcc: 8
     env:
       build_dir: "build"
       config: "Release"
-      artifact: "cubool-${{ matrix.os }}-build.tar.xz"
+      artifact: "cubool-ubuntu-build.tar.xz"
 
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
-
+          submodules: true
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Install CUDA
+        env:
+          cuda: ${{ matrix.cuda }}
         run: |
           source ./scripts/install_cuda_ubuntu.sh
           if [[ $? -eq 0 ]]; then
@@ -52,7 +53,6 @@ jobs:
           echo "СС=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
           echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
           echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
-          echo "CUDACXX=/usr/local/cuda-${{ matrix.cuda }}/bin/nvcc" >> $GITHUB_ENV
 
       - name: Configure CMake build
         run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON

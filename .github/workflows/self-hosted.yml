@@ -1,6 +1,6 @@
 # Original script from https://github.com/ptheywood/cuda-cmake-github-actions
 
-name: Ubuntu
+name: Self-Hosted
 
 on:
   push:
@@ -15,13 +15,13 @@ env:
 
 jobs:
   build:
-    name: Build ${{ matrix.self-hosted }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
-    runs-on: ${{ matrix.self-hosted }}
+    name: Build ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
         include:
-          - self-hosted: ubuntu-24.04
+          - os: ubuntu-24.04
             cuda: "12.8"
             gcc: 13
 
@@ -56,14 +56,14 @@ jobs:
         run: cmake --build . --target all --verbose -j `nproc`
     
   test:
-    name: Test ${{ matrix.self-hosted }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
+    name: Test ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
     needs: build
-    runs-on: ${{ matrix.self-hosted }}
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
         include:
-          - self-hosted: ubuntu-24.04
+          - os: ubuntu-24.04
             cuda: "12.8"
             gcc: 13
 
