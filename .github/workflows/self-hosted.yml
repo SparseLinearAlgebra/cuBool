@@ -9,21 +9,21 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+env:
+  build_dir: "build"
+  config: "Release"
+
 jobs:
   build:
-    name: Build ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
-    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.self-hosted }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
+    runs-on: ${{ matrix.self-hosted }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: [ubuntu-18.04, ubuntu-24.04]
-            cuda: ["10.1", "12.8"]
-            gcc: [8, 13]
-    env:
-      build_dir: "build"
-      config: "Release"
-      artifact: "cubool-${{ matrix.os }}-build.tar.xz"
+          - self-hosted: ubuntu-24.04
+            cuda: "12.8"
+            gcc: 13
 
     steps:
       - uses: actions/checkout@v4
@@ -35,18 +35,12 @@ jobs:
           python-version: '3.12'
 
       - name: Install CUDA
-        run: |
-          source ./scripts/install_cuda_ubuntu.sh
-          if [[ $? -eq 0 ]]; then
-            # Set paths for subsequent steps, using ${CUDA_PATH}
-            echo "Adding CUDA to CUDA_PATH, PATH and LD_LIBRARY_PATH"
-            echo "CUDA_PATH=${CUDA_PATH}" >> $GITHUB_ENV
-            echo "${CUDA_PATH}/bin" >> $GITHUB_PATH
-            echo "LD_LIBRARY_PATH=${CUDA_PATH}/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
-          fi
+        env:
+          cuda: ${{ matrix.cuda }}
+        run: source ./scripts/install_cuda_ubuntu.sh
         shell: bash
 
-      - name: Install and configure GCC and GXX
+      - name: Export gcc and g++ variables
         run: |
           sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
           echo "СС=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
@@ -60,13 +54,26 @@ jobs:
       - name: Build library sources
         working-directory: ${{ env.build_dir }}
         run: cmake --build . --target all --verbose -j `nproc`
+    
+  test:
+    name: Test ${{ matrix.self-hosted }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
+    needs: build
+    runs-on: ${{ matrix.self-hosted }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - self-hosted: ubuntu-24.04
+            cuda: "12.8"
+            gcc: 13
 
-      - name: Prepare upload binary
+    steps:
+      - name: Run unit-tests
+        working-directory: ${{ env.build_dir }}
+        run: bash scripts/run_tests_fallback.sh
         shell: bash
-        run: tar cfz ${{ env.artifact }} ${{ env.build_dir }}
 
-      - name: Upload binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.artifact }}
-          path: ${{ env.artifact }}
+      - name: Run regression-tests
+        working-directory: ${{ env.build_dir }}/python
+        run: bash run_tests.sh
+        shell: bash
