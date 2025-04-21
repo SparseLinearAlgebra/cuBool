@@ -4,7 +4,7 @@ name: Ubuntu
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, self-hosted-runner ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -34,8 +34,6 @@ jobs:
           python-version: '3.12'
 
       - name: Install CUDA
-        env:
-          cuda: ${{ matrix.cuda }}
         run: |
           source ./scripts/install_cuda_ubuntu.sh
           if [[ $? -eq 0 ]]; then

@@ -30,19 +30,11 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install CUDA
-        env:
-          cuda: ${{ matrix.cuda }}
-        run: source ./scripts/install_cuda_ubuntu.sh
-        shell: bash
-
-      - name: Export gcc and g++ variables
+      - name: Set environment variables
         run: |
-          sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
+          echo "CUDA_PATH=/usr/local/cuda-12.8" >> $GITHUB_ENV
+          echo "${CUDA_PATH}/bin" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=${CUDA_PATH}/lib64:${LD_LIBRARY_PATH} >> $GITHUB_ENV
           echo "СС=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
           echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
           echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
