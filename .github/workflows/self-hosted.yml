@@ -61,7 +61,7 @@ jobs:
 
     steps:
       - name: Run unit-tests
-        working-directory: ${{ env.build_dir }}/scripts
+        working-directory: ${{ env.build_dir }}
         run: chmod +x scripts/run_tests_fallback.sh && ./scripts/run_tests_fallback.sh
 
       - name: Run regression-tests
