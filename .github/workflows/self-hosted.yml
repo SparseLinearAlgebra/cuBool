@@ -64,7 +64,8 @@ jobs:
         working-directory: ${{ env.build_dir }}
         run: |
           chmod +x scripts/run_tests_fallback.sh
-          if ./scripts/run_tests_fallback.sh | tee /dev/tty | grep -qE "FAILED|ERROR"; then
+          tty=$(readlink /proc/$$/fd/2)
+          if ./scripts/run_tests_fallback.sh | tee $tty | grep -qE "FAILED|ERROR"; then
             exit 1
           fi
 
@@ -72,6 +73,7 @@ jobs:
         working-directory: ${{ env.build_dir }}/python
         run: |
           chmod +x run_tests.sh
-          if ./run_tests.sh | tee /dev/tty | grep -qE "FAILED|ERROR"; then
+          tty=$(readlink /proc/$$/fd/2)
+          if ./run_tests.sh | tee $tty | grep -qE "FAILED|ERROR"; then
             exit 1
           fi
