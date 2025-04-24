@@ -62,18 +62,16 @@ jobs:
     steps:
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
-        run: |
-          output=$(chmod +x scripts/run_tests_fallback.sh && ./scripts/run_tests_fallback.sh)
-          echo $output
-          if echo "$output" | grep -qE "FAILED|ERROR"; then
+        run:
+          chmod +x scripts/run_tests_fallback.sh
+          if ./scripts/run_tests_fallback.sh | tee /dev/tty | grep -qE "FAILED|ERROR"; then
             exit 1
           fi
 
       - name: Run regression-tests
         working-directory: ${{ env.build_dir }}/python
         run: |
-          output=$(chmod +x run_tests.sh && ./run_tests.sh)
-          echo $output
-          if echo "$output" | grep -qE "FAILED|ERROR"; then
+          chmod +x run_tests.sh
+          if ./run_tests.sh | tee /dev/tty | grep -qE "FAILED|ERROR"; then
             exit 1
           fi
