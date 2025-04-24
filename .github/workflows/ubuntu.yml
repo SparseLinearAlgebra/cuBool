@@ -17,9 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-24.04
-            cuda: "12.8"
-            gcc: 13
+          - os: ubuntu-20.04
+            cuda: "10.1"
+            gcc: 8
     env:
       build_dir: "build"
       config: "Release"

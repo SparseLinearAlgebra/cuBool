@@ -62,8 +62,12 @@ jobs:
     steps:
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
-        run: chmod +x scripts/run_tests_fallback.sh && ./scripts/run_tests_fallback.sh
+        run: chmod +x scripts/run_tests_all.sh && ./scripts/run_tests_all.sh
 
       - name: Run regression-tests
         working-directory: ${{ env.build_dir }}/python
-        run: chmod +x run_tests.sh && ./run_tests.sh
+        run: |
+          echo "PYTHONPATH=`pwd`:$PYTHONPATH" >> $GITHUB_ENV
+          cd tests
+          python3 -m unittest discover -v
+        # chmod +x run_tests.sh && ./run_tests.sh
