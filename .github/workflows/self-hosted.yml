@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
-        run:
+        run: |
           chmod +x scripts/run_tests_fallback.sh
           if ./scripts/run_tests_fallback.sh | tee /dev/tty | grep -qE "FAILED|ERROR"; then
             exit 1
