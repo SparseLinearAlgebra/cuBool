@@ -46,7 +46,7 @@ jobs:
       - name: Build library sources
         working-directory: ${{ env.build_dir }}
         run: cmake --build . --target all --verbose -j `nproc`
-    
+
   test:
     name: Test ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
     needs: build
@@ -62,12 +62,18 @@ jobs:
     steps:
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
-        run: chmod +x scripts/run_tests_fallback.sh && ./scripts/run_tests_fallback.sh
+        run: |
+          output=$(chmod +x scripts/run_tests_fallback.sh && ./scripts/run_tests_fallback.sh)
+          echo $output
+          if echo "$output" | grep -qE "FAILED|ERROR"; then
+            exit 1
+          fi
 
       - name: Run regression-tests
         working-directory: ${{ env.build_dir }}/python
         run: |
-          echo "PYTHONPATH=`pwd`:$PYTHONPATH" >> $GITHUB_ENV
-          cd tests
-          python3 -m unittest discover -v
-        # chmod +x run_tests.sh && ./run_tests.sh
+          output=$(chmod +x run_tests.sh && ./run_tests.sh)
+          echo $output
+          if echo "$output" | grep -qE "FAILED|ERROR"; then
+            exit 1
+          fi
