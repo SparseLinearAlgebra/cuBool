@@ -19,7 +19,7 @@ jobs:
         include:
           - os: ubuntu-22.04
             cuda: "11.7"
-            gcc: 10
+            gcc: 9
     env:
       build_dir: "build"
       config: "Release"

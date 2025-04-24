@@ -64,8 +64,8 @@ jobs:
         working-directory: ${{ env.build_dir }}
         run: |
           chmod +x scripts/run_tests_fallback.sh
-          ./scripts/run_tests_fallback.sh | tee >(grep -E "FAILED|ERROR" && echo "HAS_ERRORS=true" >> $GITHUB_ENV)
-          if [ $HAS_ERRORS == true ]; then
+          ./scripts/run_tests_fallback.sh | tee >(grep -qE "FAILED|ERROR" && echo "HAS_ERRORS=true" >> $GITHUB_ENV)
+          if [[ $HAS_ERRORS == "true" ]]; then
             exit 1
           fi
 
@@ -73,7 +73,7 @@ jobs:
         working-directory: ${{ env.build_dir }}/python
         run: |
           chmod +x run_tests.sh
-          ./run_tests.sh | tee >(grep -E "FAILED|ERROR" && echo "HAS_ERRORS=true" >> $GITHUB_ENV)
-          if [ $HAS_ERRORS == true ]; then
+          ./run_tests.sh | tee >(grep -qE "FAILED|ERROR" && echo "HAS_ERRORS=true" >> $GITHUB_ENV)
+          if [[ $HAS_ERRORS == "true" ]]; then
             exit 1
           fi
