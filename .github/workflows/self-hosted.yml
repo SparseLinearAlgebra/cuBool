@@ -51,6 +51,9 @@ jobs:
     name: Test ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
     needs: build
     runs-on: self-hosted
+    env:
+      unit-test-file: test_fallback.txt
+      regression-test-file: test_regression.txt
     strategy:
       fail-fast: false
       matrix:
@@ -64,16 +67,28 @@ jobs:
         working-directory: ${{ env.build_dir }}
         run: |
           chmod +x scripts/run_tests_fallback.sh
-          ./scripts/run_tests_fallback.sh | tee >(grep -qE "FAILED|ERROR" && echo "HAS_ERRORS=true" >> $GITHUB_ENV)
-          if [[ $HAS_ERRORS == "true" ]]; then
+          ./scripts/run_tests_fallback.sh | tee ${{ env.unit-test-file }}
+          if cat ${{ env.unit-test-file }} | grep -q "FAILED"; then
             exit 1
           fi
+
+      - name: Upload unit tests resutls
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.unit-test-file }}
+          path: ${{ env.build_dir }}/${{ env.unit-test-file }}
 
       - name: Run regression-tests
         working-directory: ${{ env.build_dir }}/python
         run: |
           chmod +x run_tests.sh
-          ./run_tests.sh | tee >(grep -qE "FAILED|ERROR" && echo "HAS_ERRORS=true" >> $GITHUB_ENV)
-          if [[ $HAS_ERRORS == "true" ]]; then
+          ./run_tests.sh | tee ${{ env.regression-test-file }}
+          if cat ${{ env.regression-test-file }} | grep -q "FAILED"; then
             exit 1
           fi
+
+      - name: Upload regression tests resutls
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.regression-test-file }}
+          path: ${{ env.build_dir }}/python/${{ env.regression-test-file }}
