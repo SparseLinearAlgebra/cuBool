@@ -4,31 +4,6 @@
 
 using DataMatrix = std::vector<std::vector<int>>;
 
-static void printTestingMatrix(const testing::Matrix &matrix, std::string name = "") {
-    if (name != "") {
-        std::cout << name << std::endl;
-    }
-
-    for (int i = 0; i < matrix.nvals; i++) {
-        printf("(%d, %d)\n", matrix.rowsIndex[i], matrix.colsIndex[i]);
-    }
-}
-
-static void printCuboolMatrix(cuBool_Matrix matrix, std::string name = "") {
-    if (name != "") {
-        std::cout << name << std::endl;
-    }
-
-    cuBool_Index nvals;
-    cuBool_Matrix_Nvals(matrix, &nvals);
-    std::vector<cuBool_Index> rows(nvals), cols(nvals);
-    cuBool_Matrix_ExtractPairs(matrix, rows.data(), cols.data(), &nvals);
-
-    for (int i = 0; i < nvals; i++) {
-        printf("(%d, %d)\n", rows[i], cols[i]);
-    }
-}
-
 void testApplyNotMask(const DataMatrix &matrix_data, const DataMatrix &mask_data) {
     cuBool_Index nrows, ncols;
     nrows = matrix_data.size();

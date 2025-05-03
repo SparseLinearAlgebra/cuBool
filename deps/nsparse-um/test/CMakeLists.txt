@@ -3,7 +3,6 @@ project(nsparse_um_test CXX CUDA)
 
 add_executable(${PROJECT_NAME} src/nsparse_test.cu src/utils.cpp)
 
-# target_link_libraries(${PROJECT_NAME} PRIVATE gtest_main nsparse_um cub)
 target_link_libraries(${PROJECT_NAME} PRIVATE gtest_main nsparse_um)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_14)
 

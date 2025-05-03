@@ -104,7 +104,6 @@ namespace cubool {
             MatrixType operator()(const MatrixType& a, const MatrixType& b) {
                 auto aNvals = a.m_vals;
                 auto bNvals = b.m_vals;
-                // auto worst = std::min(aNvals, bNvals);
                 auto worst = aNvals + bNvals;
 
                 // Allocate memory for the worst case scenario

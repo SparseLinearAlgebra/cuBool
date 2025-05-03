@@ -370,21 +370,19 @@ namespace cubool {
         msk->commitCache();
         this->releaseCache();
 
-        /*
         if (checkTime) {
-            TIMER_ACTION(timer, mHnd->eWiseMult(*a->mHnd, *b->mHnd, false));
+            TIMER_ACTION(timer, mHnd->eWiseMultInverted(*mat->mHnd, *msk->mHnd, false));
 
             LogStream stream(*Library::getLogger());
             stream << Logger::Level::Info
                    << "Time: " << timer.getElapsedTimeMs() << " ms "
-                   << "Matrix::eWiseMult: "
+                   << "Matrix::eWiseMultInverted: "
                    << this->getDebugMarker() << " = "
-                   << a->getDebugMarker() << " + "
-                   << b->getDebugMarker() << LogStream::cmt;
+                   << mat->getDebugMarker() << " + "
+                   << msk->getDebugMarker() << LogStream::cmt;
 
             return;
         }
-        */
 
         mHnd->eWiseMultInverted(*mat->mHnd, *msk->mHnd, false);
     }
