@@ -2,7 +2,7 @@ name: Self-Hosted-GPU
 
 on:
   push:
-    branches: [ master, self-hosted-runner ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -79,7 +79,7 @@ jobs:
       - name: Check for unit tests results
         working-directory: ${{ env.build_dir }}
         run: |
-          if cat ${{ env.unit-test-file }} | grep -q "FAILED"; then
+          if grep -q "FAILED" ${{ env.unit-test-file }}; then
             exit 1
           fi
 
@@ -98,6 +98,6 @@ jobs:
       - name: Check for regression tests results
         working-directory: ${{ env.build_dir }}/python
         run: |
-          if cat ${{ env.regression-test-file }} | grep -q "FAILED"; then
+          if grep -q "FAILED" ${{ env.regression-test-file }}; then
             exit 1
           fi
