@@ -1,4 +1,4 @@
-name: Self-Hosted-GPU
+name: Self-Hosted
 
 on:
   push:
@@ -100,6 +100,7 @@ jobs:
   
   clean:
     name: Cleanup workspace
+    needs: test
     if: always()
     runs-on: self-hosted
 
