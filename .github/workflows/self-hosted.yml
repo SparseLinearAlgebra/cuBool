@@ -24,11 +24,6 @@ jobs:
             gcc: 13
 
     steps:
-      - name: Cleanup workspace
-        run: |
-          rm -rf ${{ github.workspace }}/*
-          rm -rf ${{ github.workspace }}/.*
-
       - uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -67,8 +62,7 @@ jobs:
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
         run: |
-          chmod +x scripts/run_tests_all.sh
-          ./scripts/run_tests_all.sh | tee ${{ env.unit-test-file }}
+          source scripts/run_tests_all.sh | tee ${{ env.unit-test-file }}
 
       - name: Upload unit tests resutls
         uses: actions/upload-artifact@v4
@@ -86,8 +80,7 @@ jobs:
       - name: Run regression-tests
         working-directory: ${{ env.build_dir }}/python
         run: |
-          chmod +x run_tests.sh
-          ./run_tests.sh | tee ${{ env.regression-test-file }}
+          source run_tests.sh | tee ${{ env.regression-test-file }}
 
       - name: Upload regression tests resutls
         uses: actions/upload-artifact@v4
@@ -101,3 +94,14 @@ jobs:
           if grep -q "FAILED" ${{ env.regression-test-file }}; then
             exit 1
           fi
+  
+  clean:
+    name: Cleanup workspace
+    if: always()
+    runs-on: self-hosted
+
+    steps:
+      - name: Cleanup workspace
+        run: |
+          rm -rf ${{ github.workspace }}/*
+          rm -rf ${{ github.workspace }}/.*
