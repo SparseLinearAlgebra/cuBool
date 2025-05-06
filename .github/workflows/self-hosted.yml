@@ -9,7 +9,6 @@ on:
 
 env:
   build_dir: "build"
-  config: "Release"
 
 jobs:
   build:
@@ -22,6 +21,8 @@ jobs:
           - os: ubuntu-24.04
             cuda: "12.8"
             gcc: 13
+    env:
+      config: "Release"
 
     steps:
       - uses: actions/checkout@v4
@@ -46,17 +47,18 @@ jobs:
         run: cmake --build . --target all --verbose -j `nproc`
 
   test:
-    name: Test ${{ matrix.gpu }}
+    name: Test GPU ${{ matrix.gpu }} CUDA ${{ matrix.cuda }}
     needs: build
     runs-on: self-hosted
     env:
-      unit-test-file: test_all.log
-      regression-test-file: test_regression.log
+      unit-test-file: gpu_test_all.log
+      regression-test-file: gpu_test_regression.log
     strategy:
       fail-fast: false
       matrix:
         include:
           - gpu: NVIDIA-GeForce-GT-1030
+            cuda: "12.9"
 
     steps:
       - name: Run unit-tests
@@ -94,7 +96,7 @@ jobs:
           if grep -q "FAILED" ${{ env.regression-test-file }}; then
             exit 1
           fi
-  
+
   clean:
     name: Cleanup workspace
     needs: test

@@ -9,6 +9,9 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+env:
+  build_dir: "build"
+
 jobs:
   build:
     name: Build ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
@@ -21,7 +24,6 @@ jobs:
             cuda: "11.7"
             gcc: 9
     env:
-      build_dir: "build"
       config: "Release"
       artifact: "cubool-ubuntu-build.tar.xz"
 
@@ -30,33 +32,11 @@ jobs:
         with:
           submodules: true
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install CUDA
-        env:
-          cuda: ${{ matrix.cuda }}
-        run: |
-          source ./scripts/install_cuda_ubuntu.sh
-          if [[ $? -eq 0 ]]; then
-            # Set paths for subsequent steps, using ${CUDA_PATH}
-            echo "Adding CUDA to CUDA_PATH, PATH and LD_LIBRARY_PATH"
-            echo "CUDA_PATH=${CUDA_PATH}" >> $GITHUB_ENV
-            echo "${CUDA_PATH}/bin" >> $GITHUB_PATH
-            echo "LD_LIBRARY_PATH=${CUDA_PATH}/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
-          fi
-        shell: bash
-
-      - name: Install and configure GCC and GXX
-        run: |
-          sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
-          echo "CC=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
-          echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
-          echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+      - name: Check CPU
+        run: cat /proc/cpuinfo
 
       - name: Configure CMake build
-        run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON
+        run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON -DCUBOOL_WITH_CUDA=OFF
 
       - name: Build library sources
         working-directory: ${{ env.build_dir }}
@@ -71,3 +51,52 @@ jobs:
         with:
           name: ${{ env.artifact }}
           path: ${{ env.artifact }}
+
+  test:
+    name: Test CPU
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+    env:
+      unit-test-file: cpu_test_all.log
+      regression-test-file: cpu_test_regression.log
+
+    steps:
+      - name: Run unit-tests
+        working-directory: ${{ env.build_dir }}
+        run: |
+          source scripts/run_tests_all.sh | tee ${{ env.unit-test-file }}
+
+      - name: Upload unit tests resutls
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.unit-test-file }}
+          path: ${{ env.build_dir }}/${{ env.unit-test-file }}
+
+      - name: Check for unit tests results
+        working-directory: ${{ env.build_dir }}
+        run: |
+          if grep -q "FAILED" ${{ env.unit-test-file }}; then
+            exit 1
+          fi
+
+      - name: Run regression-tests
+        working-directory: ${{ env.build_dir }}/python
+        run: |
+          source run_tests.sh 2>&1 | tee ${{ env.regression-test-file }}
+
+      - name: Upload regression tests resutls
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.regression-test-file }}
+          path: ${{ env.build_dir }}/python/${{ env.regression-test-file }}
+
+      - name: Check for regression tests results
+        working-directory: ${{ env.build_dir }}/python
+        run: |
+          if grep -q "FAILED" ${{ env.regression-test-file }}; then
+            exit 1
+          fi
