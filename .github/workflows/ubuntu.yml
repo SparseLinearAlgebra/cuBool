@@ -11,6 +11,7 @@ on:
 
 env:
   build_dir: "build"
+  artifact: "cubool-ubuntu-build.tar.xz"
 
 jobs:
   build:
@@ -25,7 +26,6 @@ jobs:
             gcc: 9
     env:
       config: "Release"
-      artifact: "cubool-ubuntu-build.tar.xz"
 
     steps:
       - uses: actions/checkout@v4
@@ -63,6 +63,16 @@ jobs:
       regression-test-file: cpu_test_regression.log
 
     steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.artifact }}
+
+      - name: Unarchive artifact
+        run: |
+          tar xzf ${{ env.artifact }}
+          rm ${{ env.artifact }}
+          ls
+
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
         run: |
