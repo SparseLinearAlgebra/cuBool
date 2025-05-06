@@ -33,16 +33,13 @@ jobs:
           submodules: true
 
       - name: Configure CMake build
-        shell: bash
         run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON -DCUBOOL_WITH_CUDA=OFF
 
       - name: Build library sources
         working-directory: ${{ env.build_dir }}
-        shell: bash
         run: cmake --build . --target all --verbose -j `nproc`
 
       - name: Prepare upload binary
-        shell: bash
         run: tar cfz ${{ env.artifact }} ${{ env.build_dir }}
 
       - name: Upload binary
@@ -68,7 +65,6 @@ jobs:
     steps:
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
-        shell: bash
         run: |
           source scripts/run_tests_all.sh | tee ${{ env.unit-test-file }}
 
@@ -80,7 +76,6 @@ jobs:
 
       - name: Check for unit tests results
         working-directory: ${{ env.build_dir }}
-        shell: bash
         run: |
           if grep -q "FAILED" ${{ env.unit-test-file }}; then
             exit 1
@@ -88,7 +83,6 @@ jobs:
 
       - name: Run regression-tests
         working-directory: ${{ env.build_dir }}/python
-        shell: bash
         run: |
           source run_tests.sh 2>&1 | tee ${{ env.regression-test-file }}
 
@@ -100,7 +94,6 @@ jobs:
 
       - name: Check for regression tests results
         working-directory: ${{ env.build_dir }}/python
-        shell: bash
         run: |
           if grep -q "FAILED" ${{ env.regression-test-file }}; then
             exit 1

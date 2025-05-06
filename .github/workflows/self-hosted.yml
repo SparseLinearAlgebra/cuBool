@@ -28,7 +28,6 @@ jobs:
           submodules: recursive
 
       - name: Set environment variables
-        shell: bash
         run: |
           echo "CUDA_PATH=/usr/local/cuda-12.8" >> $GITHUB_ENV
           echo "${CUDA_PATH}/bin" >> $GITHUB_PATH
@@ -39,12 +38,10 @@ jobs:
           echo "CUDACXX=/usr/local/cuda-${{ matrix.cuda }}/bin/nvcc" >> $GITHUB_ENV
 
       - name: Configure CMake build
-        shell: bash
         run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON
 
       - name: Build library sources
         working-directory: ${{ env.build_dir }}
-        shell: bash
         run: cmake --build . --target all --verbose -j `nproc`
 
   test:
@@ -64,7 +61,6 @@ jobs:
     steps:
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
-        shell: bash
         run: |
           source scripts/run_tests_all.sh | tee ${{ env.unit-test-file }}
 
@@ -76,7 +72,6 @@ jobs:
 
       - name: Check for unit tests results
         working-directory: ${{ env.build_dir }}
-        shell: bash
         run: |
           if grep -q "FAILED" ${{ env.unit-test-file }}; then
             exit 1
@@ -84,7 +79,6 @@ jobs:
 
       - name: Run regression-tests
         working-directory: ${{ env.build_dir }}/python
-        shell: bash
         run: |
           source run_tests.sh 2>&1 | tee ${{ env.regression-test-file }}
 
@@ -96,7 +90,6 @@ jobs:
 
       - name: Check for regression tests results
         working-directory: ${{ env.build_dir }}/python
-        shell: bash
         run: |
           if grep -q "FAILED" ${{ env.regression-test-file }}; then
             exit 1
@@ -110,7 +103,6 @@ jobs:
 
     steps:
       - name: Cleanup workspace
-        shell: bash
         run: |
           rm -rf ${{ github.workspace }}/*
           rm -rf ${{ github.workspace }}/.*
