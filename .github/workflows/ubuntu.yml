@@ -1,5 +1,3 @@
-# Original script from https://github.com/ptheywood/cuda-cmake-github-actions
-
 name: Ubuntu
 
 on:
@@ -15,15 +13,13 @@ env:
 
 jobs:
   build:
-    name: Build ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
+    name: Build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-22.04
-            cuda: "11.7"
-            gcc: 9
     env:
       config: "Release"
 
@@ -33,14 +29,17 @@ jobs:
           submodules: true
 
       - name: Configure CMake build
-        run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON -DCUBOOL_WITH_CUDA=OFF
+        run: |
+          cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON -DCUBOOL_WITH_CUDA=OFF
 
       - name: Build library sources
         working-directory: ${{ env.build_dir }}
-        run: cmake --build . --target all --verbose -j `nproc`
+        run: |
+          cmake --build . --target all --verbose -j `nproc`
 
       - name: Prepare upload binary
-        run: tar cfz ${{ env.artifact }} ${{ env.build_dir }}
+        run: |
+          tar cfz ${{ env.artifact }} ${{ env.build_dir }}
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
@@ -71,7 +70,6 @@ jobs:
         run: |
           tar xzf ${{ env.artifact }}
           rm ${{ env.artifact }}
-          ls
 
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
