@@ -1,3 +1,4 @@
+#!/bin/bash
 # Original script from https://github.com/ptheywood/cuda-cmake-github-actions
 
 CUDA_PACKAGES_IN=(
@@ -17,7 +18,7 @@ function version_ge() {
 # returns 0 (true) if a > b
 function version_gt() {
     [ "$#" != "2" ] && echo "${FUNCNAME[0]} requires exactly 2 arguments." && exit 1
-    [ "$1" = "$2" ] && return 1 || version_ge $1 $2
+    [ "$1" = "$2" ] && return 1 || version_ge "$1" "$2"
 }
 # returns 0 (true) if a <= b
 function version_le() {
@@ -27,13 +28,13 @@ function version_le() {
 # returns 0 (true) if a < b
 function version_lt() {
     [ "$#" != "2" ] && echo "${FUNCNAME[0]} requires exactly 2 arguments." && exit 1
-    [ "$1" = "$2" ] && return 1 || version_le $1 $2
+    [ "$1" = "$2" ] && return 1 || version_le "$1" "$2"
 }
 
 ## Select CUDA version
 
 # Get the cuda version from the environment as $cuda.
-CUDA_VERSION_MAJOR_MINOR=${cuda}
+CUDA_VERSION_MAJOR_MINOR=${cuda:=12.8}
 
 # Split the version.
 # We (might/probably) don't know PATCH at this point - it depends which version gets installed.
@@ -60,7 +61,7 @@ if [ -z "${CUDA_MINOR}" ] ; then
     exit 1
 fi
 # If we don't know the Ubuntu version, error.
-if [ -z ${UBUNTU_VERSION} ]; then
+if [ -z "${UBUNTU_VERSION}" ]; then
     echo "Error: Unknown Ubuntu version. Aborting."
     exit 1
 fi
@@ -112,7 +113,7 @@ echo "KEYRING_PACKAGE_URL ${KEYRING_PACKAGE_URL}"
 
 # Detect if the script is being run as root, storing true/false in is_root.
 is_root=false
-if (( $EUID == 0)); then
+if (( EUID == 0)); then
    is_root=true
 fi
 # Find if sudo is available
@@ -120,7 +121,7 @@ has_sudo=false
 if command -v sudo &> /dev/null ; then
     has_sudo=true
 fi
-# Decide if we can proceed or not (root or sudo is required) and if so store whether sudo should be used or not. 
+# Decide if we can proceed or not (root or sudo is required) and if so store whether sudo should be used or not.
 if [ "$is_root" = false ] && [ "$has_sudo" = false ]; then 
     echo "Root or sudo is required. Aborting."
     exit 1
@@ -136,16 +137,15 @@ $USE_SUDO apt-get update
 
 ## Install
 echo "Adding CUDA Repository"
-wget ${PIN_URL}
-$USE_SUDO mv ${PIN_FILENAME} /etc/apt/preferences.d/cuda-repository-pin-600
-wget ${KEYRING_PACKAGE_URL} && ${USE_SUDO} dpkg -i ${KERYRING_PACKAGE_FILENAME} && rm ${KERYRING_PACKAGE_FILENAME}
+wget "${PIN_URL}"
+$USE_SUDO mv "${PIN_FILENAME}" /etc/apt/preferences.d/cuda-repository-pin-600
+wget "${KEYRING_PACKAGE_URL}" && ${USE_SUDO} dpkg -i ${KERYRING_PACKAGE_FILENAME} && rm ${KERYRING_PACKAGE_FILENAME}
 $USE_SUDO add-apt-repository "deb ${REPO_URL} /"
 $USE_SUDO apt-get update
 
 echo "Installing CUDA packages ${CUDA_PACKAGES}"
-$USE_SUDO apt-get -y install ${CUDA_PACKAGES}
 
-if [[ $? -ne 0 ]]; then
+if ! $USE_SUDO apt-get -y install "${CUDA_PACKAGES}"; then
     echo "CUDA Installation Error."
     exit 1
 fi

@@ -33,9 +33,8 @@ jobs:
           cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON -DCUBOOL_WITH_CUDA=OFF
 
       - name: Build library sources
-        working-directory: ${{ env.build_dir }}
         run: |
-          cmake --build . --target all --verbose -j `nproc`
+          cmake --build ${{ env.build_dir }} --target all --verbose -j `nproc`
 
       - name: Prepare upload binary
         run: |
@@ -74,7 +73,8 @@ jobs:
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
         run: |
-          source scripts/run_tests_all.sh | tee ${{ env.unit-test-file }}
+          bash scripts/run_tests_all.sh | tee ${{ env.unit-test-file }}
+        shell: bash
 
       - name: Upload unit tests resutls
         uses: actions/upload-artifact@v4
@@ -85,14 +85,13 @@ jobs:
       - name: Check for unit tests results
         working-directory: ${{ env.build_dir }}
         run: |
-          if grep -q "FAILED" ${{ env.unit-test-file }}; then
-            exit 1
-          fi
+          ! grep -q "FAILED" ${{ env.unit-test-file }}
 
       - name: Run regression-tests
         working-directory: ${{ env.build_dir }}/python
         run: |
-          source run_tests.sh 2>&1 | tee ${{ env.regression-test-file }}
+          bash run_tests.sh 2>&1 | tee ${{ env.regression-test-file }}
+        shell: bash
 
       - name: Upload regression tests resutls
         uses: actions/upload-artifact@v4
@@ -103,6 +102,4 @@ jobs:
       - name: Check for regression tests results
         working-directory: ${{ env.build_dir }}/python
         run: |
-          if grep -q "FAILED" ${{ env.regression-test-file }}; then
-            exit 1
-          fi
+          ! grep -q "FAILED" ${{ env.regression-test-file }}
