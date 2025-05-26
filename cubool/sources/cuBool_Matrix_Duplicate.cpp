@@ -25,16 +25,15 @@
 #include <cuBool_Common.hpp>
 
 cuBool_Status cuBool_Matrix_Duplicate(
-        cuBool_Matrix matrix,
-        cuBool_Matrix *duplicated
-) {
+        cuBool_Matrix  matrix,
+        cuBool_Matrix* duplicated) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        CUBOOL_ARG_NOT_NULL(duplicated)
-        auto m = (cubool::Matrix *) matrix;
-        auto d = cubool::Library::createMatrix(m->getNrows(), m->getNcols());
-        d->clone(*m);
-        *duplicated = (cuBool_Matrix_t *) d;
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(matrix)
+    CUBOOL_ARG_NOT_NULL(duplicated)
+    auto m = (cubool::Matrix*) matrix;
+    auto d = cubool::Library::createMatrix(m->getNrows(), m->getNcols());
+    d->clone(*m);
+    *duplicated = (cuBool_Matrix_t*) d;
     CUBOOL_END_BODY
 }

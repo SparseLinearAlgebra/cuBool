@@ -27,7 +27,7 @@
 
 namespace cubool {
 
-    void CudaMatrix::reduce(const MatrixBase &otherBase, bool checkTime) {
+    void CudaMatrix::reduce(const MatrixBase& otherBase, bool checkTime) {
         auto other = dynamic_cast<const CudaMatrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
@@ -40,9 +40,9 @@ namespace cubool {
         other->resizeStorageToDim();
 
         kernels::SpReduceFunctor<index, details::DeviceAllocator<index>> spReduceFunctor;
-        auto result = spReduceFunctor(other->mMatrixImpl);
+        auto                                                             result = spReduceFunctor(other->mMatrixImpl);
 
         mMatrixImpl = std::move(result);
     }
 
-}
+}// namespace cubool

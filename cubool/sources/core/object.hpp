@@ -33,15 +33,15 @@ namespace cubool {
     class Object {
     public:
         Object();
-        void setDebugMarker(const char* marker);
+        void        setDebugMarker(const char* marker);
         const char* getDebugMarker() const;
-        index getDebugMarkerSizeWithNullT() const;
+        index       getDebugMarkerSizeWithNullT() const;
 
     protected:
         // Marker for debugging
         std::string mMarker;
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_OBJECT_HPP
+#endif//CUBOOL_OBJECT_HPP

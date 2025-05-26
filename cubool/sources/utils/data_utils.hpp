@@ -26,8 +26,8 @@
 #define CUBOOL_DATA_UTILS_HPP
 
 #include <core/config.hpp>
-#include <vector>
 #include <limits>
+#include <vector>
 
 namespace cubool {
 
@@ -47,6 +47,6 @@ namespace cubool {
                                         bool isSorted, bool noDuplicates);
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_DATA_UTILS_HPP
+#endif//CUBOOL_DATA_UTILS_HPP

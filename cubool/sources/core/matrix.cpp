@@ -22,30 +22,30 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <core/matrix.hpp>
+#include <cassert>
 #include <core/error.hpp>
 #include <core/library.hpp>
+#include <core/matrix.hpp>
 #include <io/logger.hpp>
 #include <utils/timer.hpp>
-#include <cassert>
 
-#define TIMER_ACTION(timer, action)              \
-    Timer timer;                                 \
-    timer.start();                               \
-    action;                                      \
+#define TIMER_ACTION(timer, action) \
+    Timer timer;                    \
+    timer.start();                  \
+    action;                         \
     timer.end()
 
 namespace cubool {
 
-    Matrix::Matrix(size_t nrows, size_t ncols, BackendBase &backend) {
-        mHnd = backend.createMatrix(nrows, ncols);
+    Matrix::Matrix(size_t nrows, size_t ncols, BackendBase& backend) {
+        mHnd      = backend.createMatrix(nrows, ncols);
         mProvider = &backend;
     }
 
     Matrix::~Matrix() {
         if (mHnd) {
             mProvider->releaseMatrix(mHnd);
-            mHnd = nullptr;
+            mHnd      = nullptr;
             mProvider = nullptr;
         }
     }
@@ -59,7 +59,7 @@ namespace cubool {
         mCachedJ.push_back(j);
     }
 
-    void Matrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
+    void Matrix::build(const index* rows, const index* cols, size_t nvals, bool isSorted, bool noDuplicates) {
         CHECK_RAISE_ERROR(rows != nullptr || nvals == 0, InvalidArgument, "Null ptr rows array");
         CHECK_RAISE_ERROR(cols != nullptr || nvals == 0, InvalidArgument, "Null ptr cols array");
 
@@ -74,7 +74,7 @@ namespace cubool {
         mHnd->build(rows, cols, nvals, isSorted, noDuplicates);
     }
 
-    void Matrix::extract(index *rows, index *cols, size_t &nvals) {
+    void Matrix::extract(index* rows, index* cols, size_t& nvals) {
         CHECK_RAISE_ERROR(rows != nullptr || getNvals() == 0, InvalidArgument, "Null ptr rows array");
         CHECK_RAISE_ERROR(cols != nullptr || getNvals() == 0, InvalidArgument, "Null ptr cols array");
         CHECK_RAISE_ERROR(getNvals() <= nvals, InvalidArgument, "Passed arrays size must be more or equal to the nvals of the matrix");
@@ -83,7 +83,7 @@ namespace cubool {
         mHnd->extract(rows, cols, nvals);
     }
 
-    void Matrix::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols, bool checkTime) {
+    void Matrix::extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols, bool checkTime) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
@@ -101,7 +101,7 @@ namespace cubool {
         CHECK_RAISE_ERROR(ncols == this->getNcols(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
 
         other->commitCache();
-        this->releaseCache(); // Values of this matrix won't be used any more
+        this->releaseCache();// Values of this matrix won't be used any more
 
         if (checkTime) {
             TIMER_ACTION(timer, mHnd->extractSubMatrix(*other->mHnd, i, j, nrows, ncols, false));
@@ -120,7 +120,7 @@ namespace cubool {
         mHnd->extractSubMatrix(*other->mHnd, i, j, nrows, ncols, false);
     }
 
-    void Matrix::clone(const MatrixBase &otherBase) {
+    void Matrix::clone(const MatrixBase& otherBase) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
@@ -135,12 +135,12 @@ namespace cubool {
         CHECK_RAISE_ERROR(N == this->getNcols(), InvalidArgument, "Cloned matrix has incompatible size");
 
         other->commitCache();
-        this->releaseCache(); // Values of this matrix won't be used any more
+        this->releaseCache();// Values of this matrix won't be used any more
 
         mHnd->clone(*other->mHnd);
     }
 
-    void Matrix::transpose(const MatrixBase &otherBase, bool checkTime) {
+    void Matrix::transpose(const MatrixBase& otherBase, bool checkTime) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
@@ -152,7 +152,7 @@ namespace cubool {
         CHECK_RAISE_ERROR(N == this->getNrows(), InvalidArgument, "Transposed matrix has incompatible size");
 
         this->commitCache();
-        this->releaseCache(); // Values of this matrix won't be used any more
+        this->releaseCache();// Values of this matrix won't be used any more
 
         if (checkTime) {
             TIMER_ACTION(timer, mHnd->transpose(*other->mHnd, false));
@@ -170,7 +170,7 @@ namespace cubool {
         mHnd->transpose(*other->mHnd, false);
     }
 
-    void Matrix::reduce(const MatrixBase &otherBase, bool checkTime) {
+    void Matrix::reduce(const MatrixBase& otherBase, bool checkTime) {
         const auto* other = dynamic_cast<const Matrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
@@ -181,7 +181,7 @@ namespace cubool {
         CHECK_RAISE_ERROR(1 == this->getNcols(), InvalidArgument, "Matrix has incompatible size");
 
         other->commitCache();
-        this->releaseCache(); // Values of this matrix won't be used any more
+        this->releaseCache();// Values of this matrix won't be used any more
 
         if (checkTime) {
             TIMER_ACTION(timer, mHnd->reduce(*other->mHnd, false));
@@ -199,7 +199,7 @@ namespace cubool {
         mHnd->reduce(*other->mHnd, false);
     }
 
-    void Matrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) {
+    void Matrix::multiply(const MatrixBase& aBase, const MatrixBase& bBase, bool accumulate, bool checkTime) {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
@@ -229,7 +229,7 @@ namespace cubool {
             stream << Logger::Level::Info
                    << "Time: " << timer.getElapsedTimeMs() << " ms "
                    << "Matrix::multiply: "
-                   << this->getDebugMarker() << (accumulate? " += ": " = ")
+                   << this->getDebugMarker() << (accumulate ? " += " : " = ")
                    << a->getDebugMarker() << " x "
                    << b->getDebugMarker() << LogStream::cmt;
 
@@ -239,7 +239,7 @@ namespace cubool {
         mHnd->multiply(*a->mHnd, *b->mHnd, accumulate, false);
     }
 
-    void Matrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+    void Matrix::kronecker(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
@@ -275,7 +275,7 @@ namespace cubool {
         mHnd->kronecker(*a->mHnd, *b->mHnd, false);
     }
 
-    void Matrix::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+    void Matrix::eWiseAdd(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
@@ -312,7 +312,7 @@ namespace cubool {
         mHnd->eWiseAdd(*a->mHnd, *b->mHnd, false);
     }
 
-    void Matrix::eWiseMult(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+    void Matrix::eWiseMult(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) {
         const auto* a = dynamic_cast<const Matrix*>(&aBase);
         const auto* b = dynamic_cast<const Matrix*>(&bBase);
 
@@ -349,7 +349,7 @@ namespace cubool {
         mHnd->eWiseMult(*a->mHnd, *b->mHnd, false);
     }
 
-    void Matrix::eWiseMultInverted(const MatrixBase &matrix, const MatrixBase &mask, bool checkTime) {
+    void Matrix::eWiseMultInverted(const MatrixBase& matrix, const MatrixBase& mask, bool checkTime) {
 
         const auto* mat = dynamic_cast<const Matrix*>(&matrix);
         const auto* msk = dynamic_cast<const Matrix*>(&mask);
@@ -388,7 +388,6 @@ namespace cubool {
     }
 
 
-
     index Matrix::getNrows() const {
         return mHnd->getNrows();
     }
@@ -416,7 +415,7 @@ namespace cubool {
         if (cachedNvals == 0)
             return;
 
-        bool isSorted = false;
+        bool isSorted     = false;
         bool noDuplicates = false;
 
         if (mHnd->getNvals() > 0) {
@@ -427,8 +426,7 @@ namespace cubool {
             tmp->build(mCachedI.data(), mCachedJ.data(), cachedNvals, isSorted, noDuplicates);
             mHnd->eWiseAdd(*mHnd, *tmp, false);
             mProvider->releaseMatrix(tmp);
-        }
-        else {
+        } else {
             // Otherwise, new values are used to build matrix content
             mHnd->build(mCachedI.data(), mCachedJ.data(), cachedNvals, isSorted, noDuplicates);
         }
@@ -436,4 +434,4 @@ namespace cubool {
         // Clear arrays
         releaseCache();
     }
-}
+}// namespace cubool

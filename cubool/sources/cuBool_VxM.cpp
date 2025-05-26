@@ -25,19 +25,18 @@
 #include <cuBool_Common.hpp>
 
 cuBool_Status cuBool_VxM(
-    cuBool_Vector result,
-    cuBool_Vector vector,
-    cuBool_Matrix matrix,
-    cuBool_Hints hints
-) {
+        cuBool_Vector result,
+        cuBool_Vector vector,
+        cuBool_Matrix matrix,
+        cuBool_Hints  hints) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(vector)
-        CUBOOL_ARG_NOT_NULL(matrix)
-        auto resultV = (cubool::Vector *) result;
-        auto left = (cubool::Vector *) vector;
-        auto right = (cubool::Matrix *) matrix;
-        resultV->multiplyVxM(*left, *right, hints & CUBOOL_HINT_TIME_CHECK);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(result)
+    CUBOOL_ARG_NOT_NULL(vector)
+    CUBOOL_ARG_NOT_NULL(matrix)
+    auto resultV = (cubool::Vector*) result;
+    auto left    = (cubool::Vector*) vector;
+    auto right   = (cubool::Matrix*) matrix;
+    resultV->multiplyVxM(*left, *right, hints & CUBOOL_HINT_TIME_CHECK);
     CUBOOL_END_BODY
 }

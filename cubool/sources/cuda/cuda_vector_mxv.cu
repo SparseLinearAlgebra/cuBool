@@ -22,15 +22,15 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/cuda_vector.hpp>
-#include <cuda/cuda_matrix.hpp>
-#include <cuda/kernels/spgemv.cuh>
-#include <core/error.hpp>
 #include <cassert>
+#include <core/error.hpp>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/cuda_vector.hpp>
+#include <cuda/kernels/spgemv.cuh>
 
 namespace cubool {
 
-    void CudaVector::multiplyMxV(const struct MatrixBase &mBase, const VectorBase &vBase, bool checkTime) {
+    void CudaVector::multiplyMxV(const struct MatrixBase& mBase, const VectorBase& vBase, bool checkTime) {
         const auto* m = dynamic_cast<const CudaMatrix*>(&mBase);
         const auto* v = dynamic_cast<const CudaVector*>(&vBase);
 
@@ -43,9 +43,9 @@ namespace cubool {
         m->resizeStorageToDim();
 
         kernels::SpGEMV<index, DeviceAlloc<index>> functor;
-        auto result = functor(m->mMatrixImpl, v->mVectorImpl);
+        auto                                       result = functor(m->mMatrixImpl, v->mVectorImpl);
 
         mVectorImpl = std::move(result);
     }
 
-}
+}// namespace cubool

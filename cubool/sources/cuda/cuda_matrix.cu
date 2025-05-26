@@ -22,15 +22,15 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/cuda_matrix.hpp>
-#include <core/error.hpp>
-#include <utils/timer.hpp>
-#include <utils/data_utils.hpp>
 #include <algorithm>
+#include <core/error.hpp>
+#include <cuda/cuda_matrix.hpp>
+#include <utils/data_utils.hpp>
+#include <utils/timer.hpp>
 
 namespace cubool {
 
-    CudaMatrix::CudaMatrix(size_t nrows, size_t ncols, CudaInstance &instance) : mInstance(instance) {
+    CudaMatrix::CudaMatrix(size_t nrows, size_t ncols, CudaInstance& instance) : mInstance(instance) {
         mNrows = nrows;
         mNcols = ncols;
     }
@@ -39,9 +39,9 @@ namespace cubool {
         RAISE_ERROR(NotImplemented, "This function is not supported for this matrix class");
     }
 
-    void CudaMatrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
+    void CudaMatrix::build(const index* rows, const index* cols, size_t nvals, bool isSorted, bool noDuplicates) {
         if (nvals == 0) {
-            mMatrixImpl.zero_dim();  // no content, empty matrix
+            mMatrixImpl.zero_dim();// no content, empty matrix
             return;
         }
 
@@ -55,7 +55,7 @@ namespace cubool {
         this->transferToDevice(rowOffsets, colIndices);
     }
 
-    void CudaMatrix::extract(index *rows, index *cols, size_t &nvals) {
+    void CudaMatrix::extract(index* rows, index* cols, size_t& nvals) {
         assert(nvals >= getNvals());
 
         // Set nvals to the exact number of nnz values
@@ -72,7 +72,7 @@ namespace cubool {
         }
     }
 
-    void CudaMatrix::clone(const MatrixBase &otherBase) {
+    void CudaMatrix::clone(const MatrixBase& otherBase) {
         auto other = dynamic_cast<const CudaMatrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
@@ -125,7 +125,7 @@ namespace cubool {
         return mMatrixImpl.m_vals == 0;
     }
 
-    void CudaMatrix::transferToDevice(const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) const {
+    void CudaMatrix::transferToDevice(const std::vector<index>& rowOffsets, const std::vector<index>& colIndices) const {
         // Create device buffers and copy data from the cpu side
         thrust::device_vector<index, DeviceAlloc<index>> rowsDeviceVec(rowOffsets.size());
         thrust::device_vector<index, DeviceAlloc<index>> colsDeviceVec(colIndices.size());
@@ -137,7 +137,7 @@ namespace cubool {
         mMatrixImpl = std::move(MatrixImplType(std::move(colsDeviceVec), std::move(rowsDeviceVec), getNrows(), getNcols(), colIndices.size()));
     }
 
-    void CudaMatrix::transferFromDevice(std::vector<index> &rowOffsets, std::vector<index> &colIndices) const {
+    void CudaMatrix::transferFromDevice(std::vector<index>& rowOffsets, std::vector<index>& colIndices) const {
         rowOffsets.resize(mMatrixImpl.m_row_index.size());
         colIndices.resize(mMatrixImpl.m_col_index.size());
 
@@ -145,4 +145,4 @@ namespace cubool {
         thrust::copy(mMatrixImpl.m_col_index.begin(), mMatrixImpl.m_col_index.end(), colIndices.begin());
     }
 
-}
+}// namespace cubool

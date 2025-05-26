@@ -26,13 +26,12 @@
 
 cuBool_Status cuBool_Matrix_Nrows(
         cuBool_Matrix matrix,
-        cuBool_Index *nrows
-) {
+        cuBool_Index* nrows) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        CUBOOL_ARG_NOT_NULL(nrows)
-        auto m = (cubool::Matrix *) matrix;
-        *nrows = m->getNrows();
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(matrix)
+    CUBOOL_ARG_NOT_NULL(nrows)
+    auto m = (cubool::Matrix*) matrix;
+    *nrows = m->getNrows();
     CUBOOL_END_BODY
 }

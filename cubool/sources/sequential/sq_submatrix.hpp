@@ -41,6 +41,6 @@ namespace cubool {
      */
     void sq_submatrix(const CsrData& a, CsrData& sub, index i, index j, index nrows, index ncols);
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_SQ_SUBMATRIX_HPP
+#endif//CUBOOL_SQ_SUBMATRIX_HPP

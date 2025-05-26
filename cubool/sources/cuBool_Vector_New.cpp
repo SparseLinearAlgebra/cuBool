@@ -26,11 +26,10 @@
 
 cuBool_Status cuBool_Vector_New(
         cuBool_Vector* vector,
-        cuBool_Index nrows
-) {
+        cuBool_Index   nrows) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(vector)
-        *vector = (cuBool_Vector_t *) cubool::Library::createVector(nrows);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(vector)
+    *vector = (cuBool_Vector_t*) cubool::Library::createVector(nrows);
     CUBOOL_END_BODY
 }

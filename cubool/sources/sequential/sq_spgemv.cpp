@@ -42,11 +42,9 @@ namespace cubool {
                 if (*ar == *vr) {
                     nonZero = true;
                     break;
-                }
-                else if (*ar < *vr) {
+                } else if (*ar < *vr) {
                     ar++;
-                }
-                else {
+                } else {
                     vr++;
                 }
             }
@@ -56,14 +54,14 @@ namespace cubool {
             }
         }
 
-        out.nvals = result.size();
+        out.nvals   = result.size();
         out.indices = std::move(result);
     }
 
     void sq_spgemv_transposed(const CsrData& a, const VecData& b, VecData& out) {
         std::vector<bool> mask(a.ncols, false);
 
-        for (index i: b.indices) {
+        for (index i : b.indices) {
             for (index k = a.rowOffsets[i]; k < a.rowOffsets[i + 1]; k++) {
                 mask[a.colIndices[k]] = true;
             }
@@ -76,8 +74,8 @@ namespace cubool {
                 result.push_back(i);
         }
 
-        out.nvals = result.size();
+        out.nvals   = result.size();
         out.indices = std::move(result);
     }
 
-}
+}// namespace cubool

@@ -22,34 +22,34 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <core/library.hpp>
-#include <core/error.hpp>
-#include <core/matrix.hpp>
-#include <core/vector.hpp>
 #include <backend/backend_base.hpp>
 #include <backend/matrix_base.hpp>
+#include <core/error.hpp>
+#include <core/library.hpp>
+#include <core/matrix.hpp>
+#include <core/vector.hpp>
 #include <io/logger.hpp>
 
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <memory>
-#include <iomanip>
 
 #ifdef CUBOOL_WITH_CUDA
-#include <cuda/cuda_backend.hpp>
+    #include <cuda/cuda_backend.hpp>
 #endif
 
 #ifdef CUBOOL_WITH_SEQUENTIAL
-#include <sequential/sq_backend.hpp>
+    #include <sequential/sq_backend.hpp>
 #endif
 
 namespace cubool {
 
-    std::unordered_set<class Matrix*> Library::mAllocMatrices;
-    std::unordered_set<class Vector*> Library::mAllocVectors;
-    std::shared_ptr<class BackendBase> Library::mBackend = nullptr;
-    std::shared_ptr<class Logger> Library::mLogger = std::make_shared<DummyLogger>();
-    bool Library::mRelaxedRelease = false;
+    std::unordered_set<class Matrix*>  Library::mAllocMatrices;
+    std::unordered_set<class Vector*>  Library::mAllocVectors;
+    std::shared_ptr<class BackendBase> Library::mBackend        = nullptr;
+    std::shared_ptr<class Logger>      Library::mLogger         = std::make_shared<DummyLogger>();
+    bool                               Library::mRelaxedRelease = false;
 
     void Library::initialize(hints initHints) {
         CHECK_RAISE_CRITICAL_ERROR(mBackend == nullptr, InvalidState, "Library already initialized");
@@ -97,12 +97,12 @@ namespace cubool {
                 LogStream stream(*getLogger());
                 stream << Logger::Level::Info << "Enabled relaxed library finalize" << LogStream::cmt;
 
-                for (auto m: mAllocMatrices) {
+                for (auto m : mAllocMatrices) {
                     stream << Logger::Level::Warning << "Implicitly release matrix " << m->getDebugMarker() << LogStream::cmt;
                     delete m;
                 }
 
-                for (auto v: mAllocVectors) {
+                for (auto v : mAllocVectors) {
                     stream << Logger::Level::Warning << "Implicitly release vector " << v->getDebugMarker() << LogStream::cmt;
                     delete v;
                 }
@@ -127,7 +127,7 @@ namespace cubool {
         CHECK_RAISE_CRITICAL_ERROR(mBackend != nullptr || mRelaxedRelease, InvalidState, "Library is not initialized");
     }
 
-    void Library::setupLogging(const char *logFileName, cuBool_Hints hints) {
+    void Library::setupLogging(const char* logFileName, cuBool_Hints hints) {
         CHECK_RAISE_ERROR(logFileName != nullptr, InvalidArgument, "Null file name is not allowed");
 
         auto logFile = std::make_shared<std::ofstream>();
@@ -142,19 +142,19 @@ namespace cubool {
         auto textLogger = std::make_shared<TextLogger>();
 
         textLogger->addFilter([=](Logger::Level level, const std::string& message) -> bool {
-            bool all = hints == 0x0 || (hints & CUBOOL_HINT_LOG_ALL);
-            bool error = hints & CUBOOL_HINT_LOG_ERROR;
+            bool all     = hints == 0x0 || (hints & CUBOOL_HINT_LOG_ALL);
+            bool error   = hints & CUBOOL_HINT_LOG_ERROR;
             bool warning = hints & CUBOOL_HINT_LOG_WARNING;
 
             return all ||
-                    (error && level == Logger::Level::Error) ||
-                    (warning && level == Logger::Level::Warning);
+                   (error && level == Logger::Level::Error) ||
+                   (warning && level == Logger::Level::Warning);
         });
 
         textLogger->addOnLoggerAction([=](size_t id, Logger::Level level, const std::string& message) {
             auto& file = *logFile;
 
-            const auto idSize = 10;
+            const auto idSize    = 10;
             const auto levelSize = 20;
 
             file << "[" << std::setw(idSize) << id << std::setw(-1) << "]";
@@ -187,7 +187,7 @@ namespace cubool {
             logDeviceInfo();
     }
 
-    Matrix *Library::createMatrix(size_t nrows, size_t ncols) {
+    Matrix* Library::createMatrix(size_t nrows, size_t ncols) {
         CHECK_RAISE_ERROR(nrows > 0, InvalidArgument, "Cannot create matrix with zero dimension");
         CHECK_RAISE_ERROR(ncols > 0, InvalidArgument, "Cannot create matrix with zero dimension");
 
@@ -201,7 +201,7 @@ namespace cubool {
         return m;
     }
 
-    class Vector * Library::createVector(size_t nrows) {
+    class Vector* Library::createVector(size_t nrows) {
         CHECK_RAISE_ERROR(nrows > 0, InvalidArgument, "Cannot create vector with zero dimension");
 
         auto v = new Vector(nrows, *mBackend);
@@ -214,7 +214,7 @@ namespace cubool {
         return v;
     }
 
-    void Library::releaseMatrix(Matrix *matrix) {
+    void Library::releaseMatrix(Matrix* matrix) {
         if (mRelaxedRelease && !mBackend) return;
 
         CHECK_RAISE_ERROR(mAllocMatrices.find(matrix) != mAllocMatrices.end(), InvalidArgument, "No such matrix was allocated");
@@ -226,7 +226,7 @@ namespace cubool {
         delete matrix;
     }
 
-    void Library::releaseVector(class Vector *vector) {
+    void Library::releaseVector(class Vector* vector) {
         if (mRelaxedRelease && !mBackend) return;
 
         CHECK_RAISE_ERROR(mAllocVectors.find(vector) != mAllocVectors.end(), InvalidArgument, "No such vector was allocated");
@@ -246,15 +246,15 @@ namespace cubool {
 #endif
     }
 
-    void Library::queryCapabilities(cuBool_DeviceCaps &caps) {
-        caps.name[0] = '\0';
-        caps.cudaSupported = false;
-        caps.managedMem = false;
-        caps.major = 0;
-        caps.minor = 0;
-        caps.warp = 0;
-        caps.globalMemoryKiBs = 0;
-        caps.sharedMemoryPerBlockKiBs = 0;
+    void Library::queryCapabilities(cuBool_DeviceCaps& caps) {
+        caps.name[0]                      = '\0';
+        caps.cudaSupported                = false;
+        caps.managedMem                   = false;
+        caps.major                        = 0;
+        caps.minor                        = 0;
+        caps.warp                         = 0;
+        caps.globalMemoryKiBs             = 0;
+        caps.sharedMemoryPerBlockKiBs     = 0;
         caps.sharedMemoryPerMultiProcKiBs = 0;
 
         mBackend->queryCapabilities(caps);
@@ -273,13 +273,12 @@ namespace cubool {
                    << " name: " << caps.name << ","
                    << " major: " << caps.major << ","
                    << " minor: " << caps.minor << ","
-                   << " mem type: " << (caps.managedMem? "managed": "default") << ","
+                   << " mem type: " << (caps.managedMem ? "managed" : "default") << ","
                    << " warp size: " << caps.warp << ","
                    << " globalMemoryKiBs: " << caps.globalMemoryKiBs << ","
                    << " sharedMemoryPerMultiProcKiBs: " << caps.sharedMemoryPerMultiProcKiBs << ","
                    << " sharedMemoryPerBlockKiBs: " << caps.sharedMemoryPerBlockKiBs;
-        }
-        else {
+        } else {
             stream << "Cuda device is not presented (fallback to cpu backend)";
         }
 
@@ -290,8 +289,8 @@ namespace cubool {
         return mBackend != nullptr;
     }
 
-    class Logger * Library::getLogger() {
+    class Logger* Library::getLogger() {
         return mLogger.get();
     }
 
-}
+}// namespace cubool

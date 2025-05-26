@@ -22,17 +22,17 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <utils/data_utils.hpp>
-#include <utils/algo_utils.hpp>
-#include <core/error.hpp>
 #include <algorithm>
 #include <cassert>
+#include <core/error.hpp>
+#include <utils/algo_utils.hpp>
+#include <utils/data_utils.hpp>
 
 namespace cubool {
 
     void DataUtils::buildFromData(size_t nrows, size_t ncols,
-                                  const index *rows, const index *cols, size_t nvals,
-                                  std::vector<index> &rowOffsets, std::vector<index> &colIndices,
+                                  const index* rows, const index* cols, size_t nvals,
+                                  std::vector<index>& rowOffsets, std::vector<index>& colIndices,
                                   bool isSorted, bool noDuplicates) {
 
         rowOffsets.resize(nrows + 1, 0);
@@ -70,7 +70,7 @@ namespace cubool {
         if (!isSorted) {
             for (size_t i = 0; i < nrows; i++) {
                 auto begin = rowOffsets[i];
-                auto end = rowOffsets[i + 1];
+                auto end   = rowOffsets[i + 1];
 
                 // Sort col values within row
                 std::sort(colIndices.begin() + begin, colIndices.begin() + end, [](const index& a, const index& b) {
@@ -122,8 +122,8 @@ namespace cubool {
     }
 
     void DataUtils::extractData(size_t nrows, size_t ncols,
-                                index *rows, index *cols, size_t nvals,
-                                const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) {
+                                index* rows, index* cols, size_t nvals,
+                                const std::vector<index>& rowOffsets, const std::vector<index>& colIndices) {
         assert(rows);
         assert(cols);
 
@@ -137,15 +137,15 @@ namespace cubool {
         }
     }
 
-    bool checkBounds(const std::vector<index> &values, index left, index right) {
-        for (auto v: values) {
+    bool checkBounds(const std::vector<index>& values, index left, index right) {
+        for (auto v : values) {
             CHECK_RAISE_ERROR(left <= v && v < right, InvalidArgument, "Index out of vector bounds");
         }
 
         return true;
     }
 
-    void DataUtils::buildVectorFromData(size_t nrows, const index *rows, size_t nvals, std::vector<index> &values,
+    void DataUtils::buildVectorFromData(size_t nrows, const index* rows, size_t nvals, std::vector<index>& values,
                                         bool isSorted, bool noDuplicates) {
         values.resize(nvals);
         std::copy(rows, rows + nvals, values.begin());
@@ -165,7 +165,7 @@ namespace cubool {
 
         if (!noDuplicates) {
             size_t unique = 0;
-            index prev = std::numeric_limits<index>::max();
+            index  prev   = std::numeric_limits<index>::max();
 
             for (auto value : values) {
                 if (prev != value) {
@@ -191,4 +191,4 @@ namespace cubool {
         }
     }
 
-}
+}// namespace cubool

@@ -22,19 +22,19 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/cuda_instance.hpp>
-#include <core/error.hpp>
-#include <string>
 #include <cassert>
+#include <core/error.hpp>
 #include <cstring>
+#include <cuda/cuda_instance.hpp>
+#include <string>
 
 namespace cubool {
 
     volatile CudaInstance* CudaInstance::gInstance = nullptr;
 
     CudaInstance::CudaInstance(bool useManagedMemory) {
-        gInstance = this;
-        mMemoryType = useManagedMemory? Managed: Default;
+        gInstance   = this;
+        mMemoryType = useManagedMemory ? Managed : Default;
     }
 
     CudaInstance::~CudaInstance() {
@@ -44,7 +44,7 @@ namespace cubool {
         gInstance = nullptr;
     }
 
-    void CudaInstance::allocateOnGpu(void* &ptr, size_t size) const {
+    void CudaInstance::allocateOnGpu(void*& ptr, size_t size) const {
         cudaError error;
 
         switch (mMemoryType) {
@@ -86,10 +86,10 @@ namespace cubool {
         }
     }
 
-    void CudaInstance::queryDeviceCapabilities(cuBool_DeviceCaps &deviceCaps) const {
+    void CudaInstance::queryDeviceCapabilities(cuBool_DeviceCaps& deviceCaps) const {
         const unsigned long long KiB = 1024;
 
-        int device;
+        int       device;
         cudaError error = cudaGetDevice(&device);
 
         if (error == cudaSuccess) {
@@ -98,14 +98,14 @@ namespace cubool {
 
             if (error == cudaSuccess) {
                 strcpy(deviceCaps.name, deviceProp.name);
-                deviceCaps.cudaSupported = true;
-                deviceCaps.managedMem = mMemoryType == MemType::Managed;
-                deviceCaps.minor = deviceProp.minor;
-                deviceCaps.major = deviceProp.major;
-                deviceCaps.warp = deviceProp.warpSize;
-                deviceCaps.globalMemoryKiBs = deviceProp.totalGlobalMem / KiB;
+                deviceCaps.cudaSupported                = true;
+                deviceCaps.managedMem                   = mMemoryType == MemType::Managed;
+                deviceCaps.minor                        = deviceProp.minor;
+                deviceCaps.major                        = deviceProp.major;
+                deviceCaps.warp                         = deviceProp.warpSize;
+                deviceCaps.globalMemoryKiBs             = deviceProp.totalGlobalMem / KiB;
                 deviceCaps.sharedMemoryPerMultiProcKiBs = deviceProp.sharedMemPerMultiprocessor / KiB;
-                deviceCaps.sharedMemoryPerBlockKiBs = deviceProp.sharedMemPerBlock / KiB;
+                deviceCaps.sharedMemoryPerBlockKiBs     = deviceProp.sharedMemPerBlock / KiB;
             }
         }
     }
@@ -115,12 +115,12 @@ namespace cubool {
     }
 
     bool CudaInstance::isCudaDeviceSupported() {
-        int device;
+        int       device;
         cudaError error = cudaGetDevice(&device);
         return error == cudaSuccess;
     }
 
-    void CudaInstance::allocate(void* &ptr, size_t size) const {
+    void CudaInstance::allocate(void*& ptr, size_t size) const {
         ptr = malloc(size);
         CHECK_RAISE_ERROR(ptr != nullptr, MemOpFailed, "Failed to allocate memory on the CPU");
         mHostAllocCount++;
@@ -138,11 +138,11 @@ namespace cubool {
     }
 
     CudaInstance* CudaInstance::getInstancePtr() {
-        return (CudaInstance* ) gInstance;
+        return (CudaInstance*) gInstance;
     }
 
     bool CudaInstance::isInstancePresent() {
         return gInstance != nullptr;
     }
 
-}
+}// namespace cubool

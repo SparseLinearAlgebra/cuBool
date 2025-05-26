@@ -34,18 +34,18 @@ namespace cubool {
     public:
         std::vector<index> rowOffsets;
         std::vector<index> colIndices;
-        index nrows = 0;
-        index ncols = 0;
-        index nvals = 0;
+        index              nrows = 0;
+        index              ncols = 0;
+        index              nvals = 0;
     };
 
     class VecData {
     public:
         std::vector<index> indices;
-        index nrows = 0;
-        index nvals = 0;
+        index              nrows = 0;
+        index              nvals = 0;
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_SQ_DATA_HPP
+#endif//CUBOOL_SQ_DATA_HPP

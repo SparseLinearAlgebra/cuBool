@@ -26,12 +26,11 @@
 
 cuBool_Status cuBool_Vector_SetElement(
         cuBool_Vector vector,
-        cuBool_Index i
-) {
+        cuBool_Index  i) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(vector)
-        auto v = (cubool::Vector*) vector;
-        v->setElement(i);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(vector)
+    auto v = (cubool::Vector*) vector;
+    v->setElement(i);
     CUBOOL_END_BODY
 }

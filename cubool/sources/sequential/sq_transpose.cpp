@@ -55,4 +55,4 @@ namespace cubool {
         exclusive_scan(at.rowOffsets.begin(), at.rowOffsets.end(), 0);
     }
 
-}
+}// namespace cubool

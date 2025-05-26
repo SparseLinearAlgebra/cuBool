@@ -26,16 +26,16 @@
 
 const char* cuBool_GetAbout() {
     static const char about[] =
-        "CuBool is a linear boolean algebra library primitives and operations for \n"
-        "work with dense and sparse matrices written on the NVIDIA CUDA platform. The primary \n"
-        "goal of the library is implementation, testing and profiling algorithms for\n"
-        "solving *formal-language-constrained problems*, such as *context-free* \n"
-        "and *recursive* path queries with various semantics for graph databases."
-        ""
-        "Contributors:"
-        "- Egor Orachyov (Github: https://github.com/EgorOrachyov)\n"
-        "- Pavel Alimov (Github : https://github.com/Krekep)\n"
-        "- Semyon Grigorev (Github: https://github.com/gsvgit)";
+            "CuBool is a linear boolean algebra library primitives and operations for \n"
+            "work with dense and sparse matrices written on the NVIDIA CUDA platform. The primary \n"
+            "goal of the library is implementation, testing and profiling algorithms for\n"
+            "solving *formal-language-constrained problems*, such as *context-free* \n"
+            "and *recursive* path queries with various semantics for graph databases."
+            ""
+            "Contributors:"
+            "- Egor Orachyov (Github: https://github.com/EgorOrachyov)\n"
+            "- Pavel Alimov (Github : https://github.com/Krekep)\n"
+            "- Semyon Grigorev (Github: https://github.com/gsvgit)";
 
     return about;
 }

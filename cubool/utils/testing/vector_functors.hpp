@@ -25,8 +25,8 @@
 #ifndef CUBOOL_VECTOR_FUNCTORS_HPP
 #define CUBOOL_VECTOR_FUNCTORS_HPP
 
-#include <testing/vector.hpp>
 #include <testing/matrix.hpp>
+#include <testing/vector.hpp>
 
 namespace testing {
 
@@ -35,10 +35,10 @@ namespace testing {
         Vector operator()(const Vector& a, const Vector& b) {
             std::unordered_set<cuBool_Index> values;
 
-            for (auto v: a.index)
+            for (auto v : a.index)
                 values.emplace(v);
 
-            for (auto v: b.index)
+            for (auto v : b.index)
                 values.emplace(v);
 
             std::vector<cuBool_Index> sorted(values.size());
@@ -59,12 +59,12 @@ namespace testing {
     public:
         Vector operator()(const Vector& a, const Vector& b) {
             std::unordered_set<cuBool_Index> values;
-            std::vector<cuBool_Index> result;
+            std::vector<cuBool_Index>        result;
 
-            for (auto v: a.index)
+            for (auto v : a.index)
                 values.emplace(v);
 
-            for (auto v: b.index) {
+            for (auto v : b.index) {
                 if (values.find(v) != values.end())
                     result.push_back(v);
             }
@@ -85,20 +85,20 @@ namespace testing {
 
             std::unordered_set<cuBool_Index> buffer;
 
-            for (auto i: v.index)
+            for (auto i : v.index)
                 buffer.emplace(i);
 
             std::vector<cuBool_Index> result;
 
             for (cuBool_Index i = 0; i < m.nrows; i++) {
-                 for (cuBool_Index k = m.rowOffsets[i]; k < m.rowOffsets[i + 1]; k++) {
-                     cuBool_Index j = m.colsIndex[k];
+                for (cuBool_Index k = m.rowOffsets[i]; k < m.rowOffsets[i + 1]; k++) {
+                    cuBool_Index j = m.colsIndex[k];
 
-                     if (buffer.find(j) != buffer.end()) {
-                         result.push_back(i);
-                         break;
-                     }
-                 }
+                    if (buffer.find(j) != buffer.end()) {
+                        result.push_back(i);
+                        break;
+                    }
+                }
             }
 
             Vector r;
@@ -116,7 +116,7 @@ namespace testing {
 
             std::unordered_set<cuBool_Index> result;
 
-            for (cuBool_Index i: v.index) {
+            for (cuBool_Index i : v.index) {
                 for (cuBool_Index k = m.rowOffsets[i]; k < m.rowOffsets[i + 1]; k++) {
                     result.emplace(m.colsIndex[k]);
                 }
@@ -133,6 +133,6 @@ namespace testing {
         }
     };
 
-}
+}// namespace testing
 
-#endif //CUBOOL_VECTOR_FUNCTORS_HPP
+#endif//CUBOOL_VECTOR_FUNCTORS_HPP

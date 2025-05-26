@@ -30,17 +30,17 @@ void testVectorSetElement(cuBool_Index m, float density) {
 
     testing::Vector tvector = testing::Vector::generateSparse(m, density);
 
-    auto I = tvector.index;
+    auto   I     = tvector.index;
     size_t nvals = tvector.nvals;
-    size_t dups = nvals * 0.10;
+    size_t dups  = nvals * 0.10;
 
     std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
-    auto dist = std::uniform_real_distribution<float>(0.0, 1.0);
+    auto                       dist = std::uniform_real_distribution<float>(0.0, 1.0);
 
     if (nvals > 0) {
         for (size_t k = 0; k < dups; k++) {
             size_t id = std::min<size_t>(dist(engine) * nvals, nvals - 1);
-            auto i = I[id];
+            auto   i  = I[id];
             I.push_back(i);
         }
     }
@@ -68,16 +68,16 @@ void testVectorAppendElement(cuBool_Index m, float density) {
     ASSERT_EQ(cuBool_Vector_Build(vector, tvector.index.data(), (cuBool_Index) tvector.nvals, CUBOOL_HINT_VALUES_SORTED | CUBOOL_HINT_NO_DUPLICATES), CUBOOL_STATUS_SUCCESS);
 
     std::vector<cuBool_Index> I;
-    size_t nvals = tvector.nvals;
-    size_t dups = nvals * 0.20;
+    size_t                    nvals = tvector.nvals;
+    size_t                    dups  = nvals * 0.20;
 
     std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
-    auto dist = std::uniform_real_distribution<float>(0.0, 1.0);
+    auto                       dist = std::uniform_real_distribution<float>(0.0, 1.0);
 
     if (nvals > 0) {
         for (size_t k = 0; k < dups; k++) {
             size_t id = std::min<size_t>(dist(engine) * nvals, nvals - 1);
-            auto i = tvector.index[id];
+            auto   i  = tvector.index[id];
             I.push_back(i);
         }
     }
@@ -95,7 +95,7 @@ void testVectorAppendElement(cuBool_Index m, float density) {
 }
 
 void testVectorPostAppendElement(cuBool_Index m, float density) {
-    cuBool_Vector vector = nullptr;
+    cuBool_Vector vector     = nullptr;
     cuBool_Vector duplicated = nullptr;
 
     testing::Vector tvector = std::move(testing::Vector::generateSparse(m, density));

@@ -47,13 +47,13 @@ namespace testing {
 
             // Count nnz of the result matrix to allocate memory
             for (cuBool_Index i = 0; i < a.nrows; i++) {
-                cuBool_Index ak = a.rowOffsets[i];
-                cuBool_Index bk = b.rowOffsets[i];
+                cuBool_Index ak    = a.rowOffsets[i];
+                cuBool_Index bk    = b.rowOffsets[i];
                 cuBool_Index asize = a.rowOffsets[i + 1] - ak;
                 cuBool_Index bsize = b.rowOffsets[i + 1] - bk;
 
-                const cuBool_Index* ar = &a.colsIndex[ak];
-                const cuBool_Index* br = &b.colsIndex[bk];
+                const cuBool_Index* ar    = &a.colsIndex[ak];
+                const cuBool_Index* br    = &b.colsIndex[bk];
                 const cuBool_Index* arend = ar + asize;
                 const cuBool_Index* brend = br + bsize;
 
@@ -64,19 +64,17 @@ namespace testing {
                         nvalsInRow++;
                         ar++;
                         br++;
-                    }
-                    else if (*ar < *br) {
+                    } else if (*ar < *br) {
                         nvalsInRow++;
                         ar++;
-                    }
-                    else {
+                    } else {
                         nvalsInRow++;
                         br++;
                     }
                 }
 
-                nvalsInRow += (size_t)(arend - ar);
-                nvalsInRow += (size_t)(brend - br);
+                nvalsInRow += (size_t) (arend - ar);
+                nvalsInRow += (size_t) (brend - br);
 
                 nvals += nvalsInRow;
                 out.rowOffsets[i] = nvalsInRow;
@@ -84,10 +82,10 @@ namespace testing {
 
             // Eval row offsets
             cuBool_Index sum = 0;
-            for (auto& rowOffset: out.rowOffsets) {
+            for (auto& rowOffset : out.rowOffsets) {
                 cuBool_Index next = sum + rowOffset;
-                rowOffset = sum;
-                sum = next;
+                rowOffset         = sum;
+                sum               = next;
             }
             out.hasRowOffsets = true;
 
@@ -99,8 +97,8 @@ namespace testing {
             // Fill sorted column indices
             size_t k = 0;
             for (cuBool_Index i = 0; i < a.nrows; i++) {
-                const cuBool_Index* ar = &a.colsIndex[a.rowOffsets[i]];
-                const cuBool_Index* br = &b.colsIndex[b.rowOffsets[i]];
+                const cuBool_Index* ar    = &a.colsIndex[a.rowOffsets[i]];
+                const cuBool_Index* br    = &b.colsIndex[b.rowOffsets[i]];
                 const cuBool_Index* arend = &a.colsIndex[a.rowOffsets[i + 1]];
                 const cuBool_Index* brend = &b.colsIndex[b.rowOffsets[i + 1]];
 
@@ -111,14 +109,12 @@ namespace testing {
                         k++;
                         ar++;
                         br++;
-                    }
-                    else if (*ar < *br) {
+                    } else if (*ar < *br) {
                         out.rowsIndex[k] = i;
                         out.colsIndex[k] = *ar;
                         k++;
                         ar++;
-                    }
-                    else {
+                    } else {
                         out.rowsIndex[k] = i;
                         out.colsIndex[k] = *br;
                         k++;
@@ -145,6 +141,6 @@ namespace testing {
         }
     };
 
-}
+}// namespace testing
 
-#endif //CUBOOL_TESTING_MATRIXEWISEADD_HPP
+#endif//CUBOOL_TESTING_MATRIXEWISEADD_HPP

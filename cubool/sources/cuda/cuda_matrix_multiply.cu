@@ -27,7 +27,7 @@
 
 namespace cubool {
 
-    void CudaMatrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) {
+    void CudaMatrix::multiply(const MatrixBase& aBase, const MatrixBase& bBase, bool accumulate, bool checkTime) {
         auto a = dynamic_cast<const CudaMatrix*>(&aBase);
         auto b = dynamic_cast<const CudaMatrix*>(&bBase);
 
@@ -57,10 +57,10 @@ namespace cubool {
 
         // Call backend r = c + a * b implementation, as C this is passed
         nsparse::spgemm_functor_t<bool, index, DeviceAlloc<index>> spgemmFunctor;
-        auto result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
+        auto                                                       result = spgemmFunctor(mMatrixImpl, a->mMatrixImpl, b->mMatrixImpl);
 
         // Assign result to this
         this->mMatrixImpl = std::move(result);
     }
 
-}
+}// namespace cubool

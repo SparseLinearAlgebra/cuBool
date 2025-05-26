@@ -27,15 +27,14 @@
 cuBool_Status cuBool_Vector_ExtractValues(
         cuBool_Vector vector,
         cuBool_Index* rows,
-        cuBool_Index* nvals
-) {
+        cuBool_Index* nvals) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(vector)
-        CUBOOL_ARG_NOT_NULL(nvals)
-        auto v = (cubool::Vector *) vector;
-        size_t count = *nvals;
-        v->extract(rows, count);
-        *nvals = count;
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(vector)
+    CUBOOL_ARG_NOT_NULL(nvals)
+    auto   v     = (cubool::Vector*) vector;
+    size_t count = *nvals;
+    v->extract(rows, count);
+    *nvals = count;
     CUBOOL_END_BODY
 }

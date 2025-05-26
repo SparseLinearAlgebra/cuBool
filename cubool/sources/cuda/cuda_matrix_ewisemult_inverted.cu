@@ -27,7 +27,7 @@
 
 namespace cubool {
 
-    void CudaMatrix::eWiseMultInverted(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+    void CudaMatrix::eWiseMultInverted(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) {
         auto a = dynamic_cast<const CudaMatrix*>(&aBase);
         auto b = dynamic_cast<const CudaMatrix*>(&bBase);
 
@@ -54,10 +54,10 @@ namespace cubool {
         b->resizeStorageToDim();
 
         kernels::SpVectorEWiseMultInverted<index, DeviceAlloc<index>> spFunctor;
-        auto result = spFunctor(a->mMatrixImpl, b->mMatrixImpl);
+        auto                                                          result = spFunctor(a->mMatrixImpl, b->mMatrixImpl);
 
         // Assign the actual impl result to this storage
         this->mMatrixImpl = std::move(result);
     }
 
-}
+}// namespace cubool

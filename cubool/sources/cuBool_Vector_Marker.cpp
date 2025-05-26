@@ -26,27 +26,26 @@
 
 cuBool_Status cuBool_Vector_Marker(
         cuBool_Vector vector,
-        char* marker,
-        cuBool_Index* size
-) {
+        char*         marker,
+        cuBool_Index* size) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(vector)
-        CUBOOL_ARG_NOT_NULL(size)
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(vector)
+    CUBOOL_ARG_NOT_NULL(size)
 
-        auto v = (cubool::Vector*) vector;
-        auto actualSize = v->getDebugMarkerSizeWithNullT();
-        auto toCopy = std::min(*size, actualSize);
+    auto v          = (cubool::Vector*) vector;
+    auto actualSize = v->getDebugMarkerSizeWithNullT();
+    auto toCopy     = std::min(*size, actualSize);
 
-        if (marker != nullptr && toCopy > 0) {
-            // C str (with \0)
-            const auto* text = v->getDebugMarker();
-            std::memcpy(marker, text, toCopy);
+    if (marker != nullptr && toCopy > 0) {
+        // C str (with \0)
+        const auto* text = v->getDebugMarker();
+        std::memcpy(marker, text, toCopy);
 
-            // Explicitly terminate (for case size < actualSize)
-            marker[toCopy - 1] = '\0';
-        }
+        // Explicitly terminate (for case size < actualSize)
+        marker[toCopy - 1] = '\0';
+    }
 
-        *size = actualSize;
+    *size = actualSize;
     CUBOOL_END_BODY
 }

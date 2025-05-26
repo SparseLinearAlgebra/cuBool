@@ -26,13 +26,12 @@
 
 cuBool_Status cuBool_Vector_SetMarker(
         cuBool_Vector vector,
-        const char* marker
-) {
+        const char*   marker) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(vector)
-        CUBOOL_ARG_NOT_NULL(marker)
-        auto v = (cubool::Vector*) vector;
-        v->setDebugMarker(marker);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(vector)
+    CUBOOL_ARG_NOT_NULL(marker)
+    auto v = (cubool::Vector*) vector;
+    v->setDebugMarker(marker);
     CUBOOL_END_BODY
 }

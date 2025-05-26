@@ -28,7 +28,7 @@
 
 namespace cubool {
 
-    void CudaMatrix::transpose(const MatrixBase &otherBase, bool checkTime) {
+    void CudaMatrix::transpose(const MatrixBase& otherBase, bool checkTime) {
         auto other = dynamic_cast<const CudaMatrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed matrix does not belong to csr matrix class");
@@ -40,10 +40,10 @@ namespace cubool {
         assert(this->getNcols() == M);
 
         kernels::SpTranspose2Functor<index, DeviceAlloc<index>> spTranspose2Functor;
-        auto result = spTranspose2Functor(other->mMatrixImpl);
+        auto                                                    result = spTranspose2Functor(other->mMatrixImpl);
 
         // Assign the actual impl result to this storage
         this->mMatrixImpl = std::move(result);
     }
 
-}
+}// namespace cubool

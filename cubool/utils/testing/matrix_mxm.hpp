@@ -25,10 +25,10 @@
 #ifndef CUBOOL_TESTING_MATRIXMXM_HPP
 #define CUBOOL_TESTING_MATRIXMXM_HPP
 
-#include <testing/matrix.hpp>
-#include <testing/matrix_ewiseadd.hpp>
 #include <algorithm>
 #include <limits>
+#include <testing/matrix.hpp>
+#include <testing/matrix_ewiseadd.hpp>
 
 namespace testing {
 
@@ -75,10 +75,10 @@ namespace testing {
 
             // Row offsets
             cuBool_Index sum = 0;
-            for (auto& rowOffset: out.rowOffsets) {
+            for (auto& rowOffset : out.rowOffsets) {
                 cuBool_Index next = sum + rowOffset;
-                rowOffset = sum;
-                sum = next;
+                rowOffset         = sum;
+                sum               = next;
             }
             out.hasRowOffsets = true;
 
@@ -91,9 +91,9 @@ namespace testing {
             mask.resize(b.ncols, max);
 
             for (cuBool_Index i = 0; i < a.nrows; i++) {
-                size_t id = 0;
+                size_t id    = 0;
                 size_t first = out.rowOffsets[i];
-                size_t last = out.rowOffsets[i + 1];
+                size_t last  = out.rowOffsets[i + 1];
 
                 for (cuBool_Index ak = a.rowOffsets[i]; ak < a.rowOffsets[i + 1]; ak++) {
                     cuBool_Index k = a.colsIndex[ak];
@@ -103,7 +103,7 @@ namespace testing {
 
                         // Do not compute col nnz twice
                         if (mask[j] != i) {
-                            mask[j] = i;
+                            mask[j]                   = i;
                             out.rowsIndex[first + id] = i;
                             out.colsIndex[first + id] = j;
                             id += 1;
@@ -124,6 +124,6 @@ namespace testing {
         }
     };
 
-}
+}// namespace testing
 
-#endif //CUBOOL_TESTING_MATRIXMXM_HPP
+#endif//CUBOOL_TESTING_MATRIXMXM_HPP

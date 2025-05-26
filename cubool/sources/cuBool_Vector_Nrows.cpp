@@ -26,13 +26,12 @@
 
 cuBool_Status cuBool_Vector_Nrows(
         cuBool_Vector vector,
-        cuBool_Index* nrows
-) {
+        cuBool_Index* nrows) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(vector)
-        CUBOOL_ARG_NOT_NULL(nrows)
-        auto v = (cubool::Vector *) vector;
-        *nrows = v->getNrows();
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(vector)
+    CUBOOL_ARG_NOT_NULL(nrows)
+    auto v = (cubool::Vector*) vector;
+    *nrows = v->getNrows();
     CUBOOL_END_BODY
 }

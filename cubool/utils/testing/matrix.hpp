@@ -25,25 +25,25 @@
 #ifndef CUBOOL_TESTING_MATRIX_HPP
 #define CUBOOL_TESTING_MATRIX_HPP
 
+#include <algorithm>
+#include <cassert>
+#include <chrono>
 #include <cubool/cubool.h>
+#include <testing/matrix_generator.hpp>
 #include <testing/pair.hpp>
 #include <testing/vector.hpp>
-#include <testing/matrix_generator.hpp>
-#include <algorithm>
-#include <chrono>
-#include <cassert>
 
 namespace testing {
 
     struct Matrix {
         mutable std::vector<cuBool_Index> rowOffsets;
-        mutable bool hasRowOffsets = false;
+        mutable bool                      hasRowOffsets = false;
 
         std::vector<cuBool_Index> rowsIndex;
         std::vector<cuBool_Index> colsIndex;
-        size_t nvals = 0;
-        size_t nrows = 0;
-        size_t ncols = 0;
+        size_t                    nvals = 0;
+        size_t                    nrows = 0;
+        size_t                    ncols = 0;
 
         void computeRowOffsets() const {
             if (!hasRowOffsets) {
@@ -54,10 +54,10 @@ namespace testing {
                 }
 
                 cuBool_Index sum = 0;
-                for (auto& rowOffset: rowOffsets) {
+                for (auto& rowOffset : rowOffsets) {
                     cuBool_Index next = sum + rowOffset;
-                    rowOffset = sum;
-                    sum = next;
+                    rowOffset         = sum;
+                    sum               = next;
                 }
 
                 hasRowOffsets = true;
@@ -83,7 +83,7 @@ namespace testing {
 
             std::sort(vals.begin(), vals.end(), PairCmp{});
 
-            for (auto& p: vals) {
+            for (auto& p : vals) {
                 result.rowsIndex.push_back(p.i);
                 result.colsIndex.push_back(p.j);
             }
@@ -102,7 +102,7 @@ namespace testing {
                 rows[rowsIndex[i]] |= 0x1u;
             }
 
-            for (auto i: rows) {
+            for (auto i : rows) {
                 result.nvals += i;
             }
 
@@ -124,7 +124,7 @@ namespace testing {
 
             std::vector<cuBool_Index> mask(nrows, 0);
 
-            for (auto r: rowsIndex) {
+            for (auto r : rowsIndex) {
                 mask[r] |= 0x1u;
             }
 
@@ -237,7 +237,7 @@ namespace testing {
 
             auto dist = std::uniform_real_distribution<float>(0.0, 1.0);
 
-            std::unordered_set<Pair,PairHash,PairEq> indices;
+            std::unordered_set<Pair, PairHash, PairEq> indices;
 
             for (size_t id = 0; id < valsToGen; id++) {
                 auto pr = dist(engine);
@@ -246,8 +246,8 @@ namespace testing {
                 auto r = (cuBool_Index) (pr * (float) nrows);
                 auto c = (cuBool_Index) (pc * (float) ncols);
 
-                r = std::min(r, (cuBool_Index)nrows - 1);
-                c = std::min(c, (cuBool_Index)ncols - 1);
+                r = std::min(r, (cuBool_Index) nrows - 1);
+                c = std::min(c, (cuBool_Index) ncols - 1);
 
                 indices.emplace(Pair{r, c});
             }
@@ -260,7 +260,7 @@ namespace testing {
             matrix.rowsIndex.reserve(matrix.nvals);
             matrix.colsIndex.reserve(matrix.nvals);
 
-            for (auto& p: toSort) {
+            for (auto& p : toSort) {
                 matrix.rowsIndex.push_back(p.i);
                 matrix.colsIndex.push_back(p.j);
             }
@@ -274,9 +274,8 @@ namespace testing {
             out.ncols = ncols;
             return out;
         }
-
     };
-    
-}
 
-#endif //CUBOOL_TESTING_MATRIX_HPP
+}// namespace testing
+
+#endif//CUBOOL_TESTING_MATRIX_HPP

@@ -22,17 +22,17 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <sequential/sq_vector.hpp>
-#include <sequential/sq_matrix.hpp>
-#include <sequential/sq_reduce.hpp>
-#include <sequential/sq_ewiseadd.hpp>
-#include <sequential/sq_ewisemult.hpp>
-#include <sequential/sq_subvector.hpp>
-#include <sequential/sq_spgemv.hpp>
-#include <utils/data_utils.hpp>
-#include <core/error.hpp>
 #include <algorithm>
 #include <cassert>
+#include <core/error.hpp>
+#include <sequential/sq_ewiseadd.hpp>
+#include <sequential/sq_ewisemult.hpp>
+#include <sequential/sq_matrix.hpp>
+#include <sequential/sq_reduce.hpp>
+#include <sequential/sq_spgemv.hpp>
+#include <sequential/sq_subvector.hpp>
+#include <sequential/sq_vector.hpp>
+#include <utils/data_utils.hpp>
 
 namespace cubool {
 
@@ -46,14 +46,14 @@ namespace cubool {
         RAISE_ERROR(NotImplemented, "This function is not implemented");
     }
 
-    void SqVector::build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) {
+    void SqVector::build(const index* rows, size_t nvals, bool isSorted, bool noDuplicates) {
         // Utility used to reduce duplicates and sort values if needed
         DataUtils::buildVectorFromData(mData.nrows, rows, nvals, mData.indices, isSorted, noDuplicates);
 
         mData.nvals = mData.indices.size();
     }
 
-    void SqVector::extract(index *rows, size_t &nvals) {
+    void SqVector::extract(index* rows, size_t& nvals) {
         assert(nvals >= getNvals());
         nvals = mData.nvals;
 
@@ -62,7 +62,7 @@ namespace cubool {
         }
     }
 
-    void SqVector::extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) {
+    void SqVector::extractSubVector(const VectorBase& otherBase, index i, index nrows, bool checkTime) {
         auto other = dynamic_cast<const SqVector*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided vector does not belongs to sequential vector class");
@@ -72,7 +72,7 @@ namespace cubool {
         sq_subvector(other->mData, i, nrows, this->mData);
     }
 
-    void SqVector::extractRow(const class MatrixBase &matrixBase, index i) {
+    void SqVector::extractRow(const class MatrixBase& matrixBase, index i) {
         auto matrix = dynamic_cast<const SqMatrix*>(&matrixBase);
 
         CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
@@ -83,7 +83,7 @@ namespace cubool {
         auto& m = matrix->mData;
 
         auto begin = m.rowOffsets[i];
-        auto end = m.rowOffsets[i + 1];
+        auto end   = m.rowOffsets[i + 1];
 
         VecData r;
         r.nrows = m.ncols;
@@ -95,7 +95,7 @@ namespace cubool {
         mData = std::move(r);
     }
 
-    void SqVector::extractCol(const class MatrixBase &matrixBase, index j) {
+    void SqVector::extractCol(const class MatrixBase& matrixBase, index j) {
         auto matrix = dynamic_cast<const SqMatrix*>(&matrixBase);
 
         CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
@@ -110,10 +110,10 @@ namespace cubool {
 
         for (index i = 0; i < m.nrows; i++) {
             auto beginOffset = m.rowOffsets[i];
-            auto endOffset = m.rowOffsets[i + 1];
+            auto endOffset   = m.rowOffsets[i + 1];
 
             auto begin = m.colIndices.begin() + beginOffset;
-            auto end = m.colIndices.begin() + endOffset;
+            auto end   = m.colIndices.begin() + endOffset;
 
             auto res = std::lower_bound(begin, end, j);
 
@@ -126,7 +126,7 @@ namespace cubool {
         mData = std::move(r);
     }
 
-    void SqVector::clone(const VectorBase &otherBase) {
+    void SqVector::clone(const VectorBase& otherBase) {
         auto other = dynamic_cast<const SqVector*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided vector does not belongs to sequential vector class");
@@ -137,11 +137,11 @@ namespace cubool {
         mData = other->mData;
     }
 
-    void SqVector::reduce(index &result, bool checkTime) {
+    void SqVector::reduce(index& result, bool checkTime) {
         result = getNvals();
     }
 
-    void SqVector::reduceMatrix(const MatrixBase &otherBase, bool transpose, bool checkTime) {
+    void SqVector::reduceMatrix(const MatrixBase& otherBase, bool transpose, bool checkTime) {
         auto other = dynamic_cast<const SqMatrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
@@ -164,7 +164,7 @@ namespace cubool {
         mData = std::move(out);
     }
 
-    void SqVector::eWiseMult(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
+    void SqVector::eWiseMult(const VectorBase& aBase, const VectorBase& bBase, bool checkTime) {
         auto a = dynamic_cast<const SqVector*>(&aBase);
         auto b = dynamic_cast<const SqVector*>(&bBase);
 
@@ -182,7 +182,7 @@ namespace cubool {
         mData = std::move(out);
     }
 
-    void SqVector::eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
+    void SqVector::eWiseAdd(const VectorBase& aBase, const VectorBase& bBase, bool checkTime) {
         auto a = dynamic_cast<const SqVector*>(&aBase);
         auto b = dynamic_cast<const SqVector*>(&bBase);
 
@@ -200,7 +200,7 @@ namespace cubool {
         mData = std::move(out);
     }
 
-    void SqVector::multiplyVxM(const VectorBase &vBase, const class MatrixBase &mBase, bool checkTime) {
+    void SqVector::multiplyVxM(const VectorBase& vBase, const class MatrixBase& mBase, bool checkTime) {
         auto v = dynamic_cast<const SqVector*>(&vBase);
         auto m = dynamic_cast<const SqMatrix*>(&mBase);
 
@@ -218,7 +218,7 @@ namespace cubool {
         mData = std::move(out);
     }
 
-    void SqVector::multiplyMxV(const class MatrixBase &mBase, const VectorBase &vBase, bool checkTime) {
+    void SqVector::multiplyMxV(const class MatrixBase& mBase, const VectorBase& vBase, bool checkTime) {
         auto v = dynamic_cast<const SqVector*>(&vBase);
         auto m = dynamic_cast<const SqMatrix*>(&mBase);
 
@@ -244,4 +244,4 @@ namespace cubool {
         return mData.nvals;
     }
 
-}
+}// namespace cubool

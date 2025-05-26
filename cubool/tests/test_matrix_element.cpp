@@ -30,18 +30,18 @@ void testMatrixSetElement(cuBool_Index m, cuBool_Index n, float density) {
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generateSparse(m, n, density));
 
-    auto I = tmatrix.rowsIndex;
-    auto J = tmatrix.colsIndex;
+    auto   I     = tmatrix.rowsIndex;
+    auto   J     = tmatrix.colsIndex;
     size_t nvals = tmatrix.nvals;
-    size_t dups = nvals * 0.10;
+    size_t dups  = nvals * 0.10;
 
     std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
-    auto dist = std::uniform_real_distribution<float>(0.0, 1.0);
+    auto                       dist = std::uniform_real_distribution<float>(0.0, 1.0);
 
     if (nvals > 0) {
         for (size_t k = 0; k < dups; k++) {
             size_t id = std::min<size_t>(dist(engine) * nvals, nvals - 1);
-            auto i = I[id], j = J[id];
+            auto   i = I[id], j = J[id];
             I.push_back(i);
             J.push_back(j);
         }
@@ -71,16 +71,16 @@ void testMatrixAppendElement(cuBool_Index m, cuBool_Index n, float density) {
 
     std::vector<cuBool_Index> I;
     std::vector<cuBool_Index> J;
-    size_t nvals = tmatrix.nvals;
-    size_t dups = nvals * 0.20;
+    size_t                    nvals = tmatrix.nvals;
+    size_t                    dups  = nvals * 0.20;
 
     std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
-    auto dist = std::uniform_real_distribution<float>(0.0, 1.0);
+    auto                       dist = std::uniform_real_distribution<float>(0.0, 1.0);
 
     if (nvals > 0) {
         for (size_t k = 0; k < dups; k++) {
             size_t id = std::min<size_t>(dist(engine) * nvals, nvals - 1);
-            auto i = tmatrix.rowsIndex[id], j = tmatrix.colsIndex[id];
+            auto   i = tmatrix.rowsIndex[id], j = tmatrix.colsIndex[id];
             I.push_back(i);
             J.push_back(j);
         }
@@ -99,7 +99,7 @@ void testMatrixAppendElement(cuBool_Index m, cuBool_Index n, float density) {
 }
 
 void testMatrixPostAppendElement(cuBool_Index m, cuBool_Index n, float density) {
-    cuBool_Matrix matrix = nullptr;
+    cuBool_Matrix matrix     = nullptr;
     cuBool_Matrix duplicated = nullptr;
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generateSparse(m, n, density));

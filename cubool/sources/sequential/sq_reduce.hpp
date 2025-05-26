@@ -52,6 +52,6 @@ namespace cubool {
      * @param[out] out Where to store result
      */
     void sq_reduce_transposed(const CsrData& a, VecData& out);
-}
+}// namespace cubool
 
-#endif //CUBOOL_SP_REDUCE_HPP
+#endif//CUBOOL_SP_REDUCE_HPP

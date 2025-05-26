@@ -25,13 +25,12 @@
 #include <cuBool_Common.hpp>
 
 cuBool_Status cuBool_Matrix_New(
-        cuBool_Matrix *matrix,
-        cuBool_Index nrows,
-        cuBool_Index ncols
-) {
+        cuBool_Matrix* matrix,
+        cuBool_Index   nrows,
+        cuBool_Index   ncols) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        *matrix = (cuBool_Matrix_t *) cubool::Library::createMatrix(nrows, ncols);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(matrix)
+    *matrix = (cuBool_Matrix_t*) cubool::Library::createMatrix(nrows, ncols);
     CUBOOL_END_BODY
 }

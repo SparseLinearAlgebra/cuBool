@@ -27,7 +27,7 @@
 
 namespace cubool {
 
-    void CudaMatrix::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
+    void CudaMatrix::extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols,
                                       bool checkTime) {
         auto other = dynamic_cast<const CudaMatrix*>(&otherBase);
 
@@ -46,9 +46,9 @@ namespace cubool {
         other->resizeStorageToDim();
 
         kernels::SpSubMatrix<index, details::DeviceAllocator<index>> spSubMatrix;
-        auto result = spSubMatrix(other->mMatrixImpl, i, j, nrows, ncols);
+        auto                                                         result = spSubMatrix(other->mMatrixImpl, i, j, nrows, ncols);
 
         mMatrixImpl = std::move(result);
     }
 
-}
+}// namespace cubool

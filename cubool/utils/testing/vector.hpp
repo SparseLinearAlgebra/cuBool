@@ -25,26 +25,26 @@
 #ifndef CUBOOL_VECTOR_HPP
 #define CUBOOL_VECTOR_HPP
 
-#include <cubool/cubool.h>
-#include <testing/pair.hpp>
-#include <testing/matrix_generator.hpp>
 #include <algorithm>
-#include <chrono>
 #include <cassert>
+#include <chrono>
+#include <cubool/cubool.h>
+#include <testing/matrix_generator.hpp>
+#include <testing/pair.hpp>
 
 namespace testing {
 
     struct Vector {
         std::vector<cuBool_Index> index;
-        size_t nvals = 0;
-        size_t nrows = 0;
+        size_t                    nvals = 0;
+        size_t                    nrows = 0;
 
         Vector subVector(cuBool_Index i, cuBool_Index m) const {
             assert(i + m <= nrows);
 
             Vector out;
 
-            for (auto v: index) {
+            for (auto v : index) {
                 if (i <= v && v < (i + m))
                     out.index.push_back(v - i);
             }
@@ -90,14 +90,14 @@ namespace testing {
 
                 auto r = (cuBool_Index) (pr * (float) nrows);
 
-                r = std::min(r, (cuBool_Index)nrows - 1);
+                r = std::min(r, (cuBool_Index) nrows - 1);
 
                 indices.emplace(r);
             }
 
             std::vector<cuBool_Index> toSort(indices.size());
             std::copy(indices.begin(), indices.end(), toSort.begin());
-            std::sort(toSort.begin(), toSort.end(), [](cuBool_Index a, cuBool_Index b){ return a < b; });
+            std::sort(toSort.begin(), toSort.end(), [](cuBool_Index a, cuBool_Index b) { return a < b; });
 
             vec.nvals = toSort.size();
             vec.index = std::move(toSort);
@@ -112,6 +112,6 @@ namespace testing {
         }
     };
 
-}
+}// namespace testing
 
-#endif //CUBOOL_VECTOR_HPP
+#endif//CUBOOL_VECTOR_HPP

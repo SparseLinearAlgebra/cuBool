@@ -62,56 +62,56 @@ void testRun(cuBool_Index m, float step, cuBool_Hints setup) {
 }
 
 TEST(cuBool_Vector, SubVectorExtractSmall) {
-    cuBool_Index m = 10000;
-    float step = 0.05f;
+    cuBool_Index m    = 10000;
+    float        step = 0.05f;
     testRun(m, step, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Vector, SubVectorExtractMedium) {
-    cuBool_Index m = 50000;
-    float step = 0.05f;
+    cuBool_Index m    = 50000;
+    float        step = 0.05f;
     testRun(m, step, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Vector, SubVectorExtractLarge) {
-    cuBool_Index m = 100000;
-    float step = 0.05f;
+    cuBool_Index m    = 100000;
+    float        step = 0.05f;
     testRun(m, step, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Vector, SubVectorExtractSmallFallback) {
-    cuBool_Index m = 10000;
-    float step = 0.05f;
+    cuBool_Index m    = 10000;
+    float        step = 0.05f;
     testRun(m, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Vector, SubVectorExtractMediumFallback) {
-    cuBool_Index m = 50000;
-    float step = 0.05f;
+    cuBool_Index m    = 50000;
+    float        step = 0.05f;
     testRun(m, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Vector, SubVectorExtractLargeFallback) {
-    cuBool_Index m = 100000;
-    float step = 0.05f;
+    cuBool_Index m    = 100000;
+    float        step = 0.05f;
     testRun(m, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Vector, SubVectorExtractSmallManaged) {
-    cuBool_Index m = 10000;
-    float step = 0.05f;
+    cuBool_Index m    = 10000;
+    float        step = 0.05f;
     testRun(m, step, CUBOOL_HINT_GPU_MEM_MANAGED);
 }
 
 TEST(cuBool_Vector, SubVectorExtractMediumManaged) {
-    cuBool_Index m = 50000;
-    float step = 0.05f;
+    cuBool_Index m    = 50000;
+    float        step = 0.05f;
     testRun(m, step, CUBOOL_HINT_GPU_MEM_MANAGED);
 }
 
 TEST(cuBool_Vector, SubVectorExtractLargeManaged) {
-    cuBool_Index m = 100000;
-    float step = 0.05f;
+    cuBool_Index m    = 100000;
+    float        step = 0.05f;
     testRun(m, step, CUBOOL_HINT_GPU_MEM_MANAGED);
 }
 

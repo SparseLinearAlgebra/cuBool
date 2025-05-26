@@ -22,13 +22,13 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <testing/testing.hpp>
 #include <cstring>
+#include <testing/testing.hpp>
 
 TEST(cuBool_Vector, Duplicate) {
     cuBool_Vector vector = nullptr, duplicated = nullptr;
-    cuBool_Index m = 900;
-    float density = 0.31;
+    cuBool_Index  m       = 900;
+    float         density = 0.31;
 
     testing::Vector tvector = testing::Vector::generateSparse(m, density);
 
@@ -48,9 +48,9 @@ TEST(cuBool_Vector, Duplicate) {
 }
 
 TEST(cuBool_Vector, PropertyQuery) {
-    cuBool_Vector vector = nullptr;
-    cuBool_Index m = 900;
-    float density = 0.21;
+    cuBool_Vector vector  = nullptr;
+    cuBool_Index  m       = 900;
+    float         density = 0.21;
 
     testing::Vector tvector = std::move(testing::Vector::generateSparse(m, density));
 
@@ -74,9 +74,9 @@ TEST(cuBool_Vector, PropertyQuery) {
 }
 
 TEST(cuBool_Vector, ExtractValues) {
-    cuBool_Vector vector = nullptr;
-    cuBool_Index m = 900;
-    float density = 0.21;
+    cuBool_Vector vector  = nullptr;
+    cuBool_Index  m       = 900;
+    float         density = 0.21;
 
     testing::Vector tvector = std::move(testing::Vector::generateSparse(m, density));
 
@@ -85,7 +85,7 @@ TEST(cuBool_Vector, ExtractValues) {
     ASSERT_EQ(cuBool_Vector_New(&vector, m), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_Build(vector, tvector.index.data(), tvector.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-    cuBool_Index nvals = tvector.nvals;
+    cuBool_Index              nvals = tvector.nvals;
     std::vector<cuBool_Index> rows(tvector.nvals);
 
     ASSERT_EQ(cuBool_Vector_ExtractValues(vector, rows.data(), &nvals), CUBOOL_STATUS_SUCCESS);
@@ -98,14 +98,14 @@ TEST(cuBool_Vector, ExtractValues) {
 
 TEST(cuBool_Vector, Marker) {
     cuBool_Vector vector = nullptr;
-    cuBool_Index m;
+    cuBool_Index  m;
 
     m = 100;
 
     const cuBool_Index BUFFER_SIZE = 100;
-    const char* marker = "Test Vector Marker";
-    cuBool_Index size = 0;
-    char buffer[BUFFER_SIZE];
+    const char*        marker      = "Test Vector Marker";
+    cuBool_Index       size        = 0;
+    char               buffer[BUFFER_SIZE];
 
     ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_New(&vector, m), CUBOOL_STATUS_SUCCESS);
@@ -131,14 +131,14 @@ TEST(cuBool_Vector, Marker) {
 
 TEST(cuBool_Vector, MarkerShort) {
     cuBool_Vector vector = nullptr;
-    cuBool_Index m;
+    cuBool_Index  m;
 
     m = 100;
 
     const cuBool_Index BUFFER_SIZE = 10;
-    const char* marker = "Test Vector Marker";
-    cuBool_Index size = BUFFER_SIZE;
-    char buffer[BUFFER_SIZE];
+    const char*        marker      = "Test Vector Marker";
+    cuBool_Index       size        = BUFFER_SIZE;
+    char               buffer[BUFFER_SIZE];
 
     ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Vector_New(&vector, m), CUBOOL_STATUS_SUCCESS);

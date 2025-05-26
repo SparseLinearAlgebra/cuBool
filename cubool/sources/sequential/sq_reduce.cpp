@@ -22,9 +22,9 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
+#include <limits>
 #include <sequential/sq_reduce.hpp>
 #include <utils/algo_utils.hpp>
-#include <limits>
 
 namespace cubool {
 
@@ -70,15 +70,15 @@ namespace cubool {
     }
 
     void sq_reduce_transposed(const CsrData& a, VecData& out) {
-        const auto max = std::numeric_limits<index>::max();
+        const auto         max = std::numeric_limits<index>::max();
         std::vector<index> mask(a.ncols, max);
 
-        for (auto j: a.colIndices) {
+        for (auto j : a.colIndices) {
             mask[j] = j;
         }
 
         size_t size = 0;
-        for (auto v: mask) {
+        for (auto v : mask) {
             if (v != max) {
                 size += 1;
             }
@@ -87,11 +87,11 @@ namespace cubool {
         out.indices.reserve(size);
         out.nvals = size;
 
-        for (auto v: mask) {
+        for (auto v : mask) {
             if (v != max) {
                 out.indices.push_back(v);
             }
         }
     }
 
-}
+}// namespace cubool

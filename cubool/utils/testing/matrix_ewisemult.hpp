@@ -37,8 +37,8 @@ namespace testing {
             std::unordered_set<uint64_t> values;
 
             for (size_t i = 0; i < a.nvals; i++) {
-                uint64_t row = a.rowsIndex[i];
-                uint64_t col = a.colsIndex[i];
+                uint64_t row   = a.rowsIndex[i];
+                uint64_t col   = a.colsIndex[i];
                 uint64_t index = row * a.ncols + col;
 
                 values.insert(index);
@@ -49,8 +49,8 @@ namespace testing {
             out.ncols = a.ncols;
 
             for (size_t i = 0; i < b.nvals; i++) {
-                uint64_t row = b.rowsIndex[i];
-                uint64_t col = b.colsIndex[i];
+                uint64_t row   = b.rowsIndex[i];
+                uint64_t col   = b.colsIndex[i];
                 uint64_t index = row * b.ncols + col;
 
                 if (values.find(index) != values.end()) {
@@ -65,6 +65,6 @@ namespace testing {
         }
     };
 
-}
+}// namespace testing
 
-#endif //CUBOOL_MATRIX_EWISEMULT_HPP
+#endif//CUBOOL_MATRIX_EWISEMULT_HPP

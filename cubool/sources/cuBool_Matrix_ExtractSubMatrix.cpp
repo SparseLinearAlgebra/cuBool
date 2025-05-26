@@ -27,18 +27,17 @@
 cuBool_Status cuBool_Matrix_ExtractSubMatrix(
         cuBool_Matrix result,
         cuBool_Matrix matrix,
-        cuBool_Index i,
-        cuBool_Index j,
-        cuBool_Index nrows,
-        cuBool_Index ncols,
-        cuBool_Hints hints
-) {
+        cuBool_Index  i,
+        cuBool_Index  j,
+        cuBool_Index  nrows,
+        cuBool_Index  ncols,
+        cuBool_Hints  hints) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(matrix)
-        auto r = (cubool::Matrix*) result;
-        auto m = (cubool::Matrix*) matrix;
-        r->extractSubMatrix(*m, i, j, nrows, ncols, hints & CUBOOL_HINT_TIME_CHECK);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(result)
+    CUBOOL_ARG_NOT_NULL(matrix)
+    auto r = (cubool::Matrix*) result;
+    auto m = (cubool::Matrix*) matrix;
+    r->extractSubMatrix(*m, i, j, nrows, ncols, hints & CUBOOL_HINT_TIME_CHECK);
     CUBOOL_END_BODY
 }

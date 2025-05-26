@@ -22,30 +22,30 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <core/vector.hpp>
-#include <core/matrix.hpp>
 #include <core/error.hpp>
 #include <core/library.hpp>
-#include <utils/timer.hpp>
+#include <core/matrix.hpp>
+#include <core/vector.hpp>
 #include <io/logger.hpp>
+#include <utils/timer.hpp>
 
-#define TIMER_ACTION(timer, action)              \
-    Timer timer;                                 \
-    timer.start();                               \
-    action;                                      \
+#define TIMER_ACTION(timer, action) \
+    Timer timer;                    \
+    timer.start();                  \
+    action;                         \
     timer.end()
 
 namespace cubool {
 
-    Vector::Vector(size_t nrows, BackendBase &backend) {
-        mHnd = backend.createVector(nrows);
+    Vector::Vector(size_t nrows, BackendBase& backend) {
+        mHnd      = backend.createVector(nrows);
         mProvider = &backend;
     }
 
     Vector::~Vector() {
         if (mHnd) {
             mProvider->releaseVector(mHnd);
-            mHnd = nullptr;
+            mHnd      = nullptr;
             mProvider = nullptr;
         }
     }
@@ -57,7 +57,7 @@ namespace cubool {
         mCachedI.push_back(i);
     }
 
-    void Vector::build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) {
+    void Vector::build(const index* rows, size_t nvals, bool isSorted, bool noDuplicates) {
         CHECK_RAISE_ERROR(rows != nullptr || nvals == 0, InvalidArgument, "Null ptr rows array");
 
         this->releaseCache();
@@ -71,7 +71,7 @@ namespace cubool {
         mHnd->build(rows, nvals, isSorted, noDuplicates);
     }
 
-    void Vector::extract(index *rows, size_t &nvals) {
+    void Vector::extract(index* rows, size_t& nvals) {
         CHECK_RAISE_ERROR(rows != nullptr || getNvals() == 0, InvalidArgument, "Null ptr rows array");
         CHECK_RAISE_ERROR(getNvals() <= nvals, InvalidArgument, "Passed arrays size must be more or equal to the nvals of the vector");
 
@@ -79,7 +79,7 @@ namespace cubool {
         mHnd->extract(rows, nvals);
     }
 
-    void Vector::extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) {
+    void Vector::extractSubVector(const VectorBase& otherBase, index i, index nrows, bool checkTime) {
         const auto* other = dynamic_cast<const Vector*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed vector does not belong to core vector class");
@@ -91,7 +91,7 @@ namespace cubool {
         CHECK_RAISE_ERROR(nrows == this->getNrows(), InvalidArgument, "Result matrix has incompatible size for extracted sub-matrix range");
 
         other->commitCache();
-        this->releaseCache(); // Values of this vector won't be used any more
+        this->releaseCache();// Values of this vector won't be used any more
 
         if (checkTime) {
             TIMER_ACTION(timer, mHnd->extractSubVector(*other->mHnd, i, nrows, false));
@@ -110,7 +110,7 @@ namespace cubool {
         mHnd->extractSubVector(*other->mHnd, i, nrows, false);
     }
 
-    void Vector::extractRow(const class MatrixBase &matrixBase, index i) {
+    void Vector::extractRow(const class MatrixBase& matrixBase, index i) {
         const auto* matrix = dynamic_cast<const Matrix*>(&matrixBase);
 
         CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
@@ -122,7 +122,7 @@ namespace cubool {
         mHnd->extractRow(*matrix->mHnd, i);
     }
 
-    void Vector::extractCol(const class MatrixBase &matrixBase, index j) {
+    void Vector::extractCol(const class MatrixBase& matrixBase, index j) {
         const auto* matrix = dynamic_cast<const Matrix*>(&matrixBase);
 
         CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
@@ -134,7 +134,7 @@ namespace cubool {
         mHnd->extractCol(*matrix->mHnd, j);
     }
 
-    void Vector::clone(const VectorBase &otherBase) {
+    void Vector::clone(const VectorBase& otherBase) {
         const auto* other = dynamic_cast<const Vector*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Passed vector does not belong to core vector class");
@@ -147,12 +147,12 @@ namespace cubool {
         CHECK_RAISE_ERROR(M == this->getNrows(), InvalidArgument, "Cloned vector has incompatible size");
 
         other->commitCache();
-        this->releaseCache(); // Values of this vector won't be used any more
+        this->releaseCache();// Values of this vector won't be used any more
 
         mHnd->clone(*other->mHnd);
     }
 
-    void Vector::reduce(index &result, bool checkTime) {
+    void Vector::reduce(index& result, bool checkTime) {
         this->commitCache();
 
         if (checkTime) {
@@ -172,15 +172,14 @@ namespace cubool {
         mHnd->reduce(result, false);
     }
 
-    void Vector::reduceMatrix(const MatrixBase &matrixBase, bool transpose, bool checkTime) {
+    void Vector::reduceMatrix(const MatrixBase& matrixBase, bool transpose, bool checkTime) {
         const auto* matrix = dynamic_cast<const Matrix*>(&matrixBase);
 
         CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Passed matrix does not belong to core matrix class");
 
         if (transpose) {
             CHECK_RAISE_ERROR(matrix->getNcols() == this->getNrows(), InvalidArgument, "Passed matrix has incompatible size");
-        }
-        else {
+        } else {
             CHECK_RAISE_ERROR(matrix->getNrows() == this->getNrows(), InvalidArgument, "Passed matrix has incompatible size");
         }
 
@@ -203,7 +202,7 @@ namespace cubool {
         mHnd->reduceMatrix(*matrix->mHnd, transpose, false);
     }
 
-    void Vector::eWiseMult(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
+    void Vector::eWiseMult(const VectorBase& aBase, const VectorBase& bBase, bool checkTime) {
         const auto* a = dynamic_cast<const Vector*>(&aBase);
         const auto* b = dynamic_cast<const Vector*>(&bBase);
 
@@ -236,7 +235,7 @@ namespace cubool {
         mHnd->eWiseMult(*a->mHnd, *b->mHnd, false);
     }
 
-    void Vector::eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
+    void Vector::eWiseAdd(const VectorBase& aBase, const VectorBase& bBase, bool checkTime) {
         const auto* a = dynamic_cast<const Vector*>(&aBase);
         const auto* b = dynamic_cast<const Vector*>(&bBase);
 
@@ -269,7 +268,7 @@ namespace cubool {
         mHnd->eWiseAdd(*a->mHnd, *b->mHnd, false);
     }
 
-    void Vector::multiplyVxM(const VectorBase &vBase, const class MatrixBase &mBase, bool checkTime) {
+    void Vector::multiplyVxM(const VectorBase& vBase, const class MatrixBase& mBase, bool checkTime) {
         const auto* v = dynamic_cast<const Vector*>(&vBase);
         const auto* m = dynamic_cast<const Matrix*>(&mBase);
 
@@ -300,7 +299,7 @@ namespace cubool {
         mHnd->multiplyVxM(*v->mHnd, *m->mHnd, false);
     }
 
-    void Vector::multiplyMxV(const class MatrixBase &mBase, const VectorBase &vBase, bool checkTime) {
+    void Vector::multiplyMxV(const class MatrixBase& mBase, const VectorBase& vBase, bool checkTime) {
         const auto* v = dynamic_cast<const Vector*>(&vBase);
         const auto* m = dynamic_cast<const Matrix*>(&mBase);
 
@@ -351,7 +350,7 @@ namespace cubool {
         if (cachedNvals == 0)
             return;
 
-        bool isSorted = false;
+        bool isSorted     = false;
         bool noDuplicates = false;
 
         if (mHnd->getNvals() > 0) {
@@ -362,8 +361,7 @@ namespace cubool {
             tmp->build(mCachedI.data(), cachedNvals, isSorted, noDuplicates);
             mHnd->eWiseAdd(*mHnd, *tmp, false);
             mProvider->releaseVector(tmp);
-        }
-        else {
+        } else {
             // Otherwise, new values are used to build vector content
             mHnd->build(mCachedI.data(), cachedNvals, isSorted, noDuplicates);
         }
@@ -372,4 +370,4 @@ namespace cubool {
         releaseCache();
     }
 
-}
+}// namespace cubool

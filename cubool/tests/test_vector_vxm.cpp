@@ -43,7 +43,7 @@ void testVectorMatrixMultiplyAdd(cuBool_Index m, cuBool_Index n, float density) 
 
     // Evaluate naive on the cpu to compare results
     testing::VectorMatrixMultiplyFunctor functor;
-    testing::Vector tr = functor(tv, ta);
+    testing::Vector                      tr = functor(tv, ta);
 
     // Evaluate r = v x M
     ASSERT_EQ(cuBool_VxM(r, v, a, CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);

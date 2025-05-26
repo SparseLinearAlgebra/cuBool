@@ -25,10 +25,10 @@
 #ifndef CUBOOL_MATRIX_HPP
 #define CUBOOL_MATRIX_HPP
 
+#include <backend/backend_base.hpp>
+#include <backend/matrix_base.hpp>
 #include <core/config.hpp>
 #include <core/object.hpp>
-#include <backend/matrix_base.hpp>
-#include <backend/backend_base.hpp>
 #include <vector>
 
 namespace cubool {
@@ -37,26 +37,26 @@ namespace cubool {
      * Proxy matrix for the actual backend matrix implementation.
      * Behaves as validation/auxiliary layer.
      */
-    class Matrix final: public MatrixBase, public Object {
+    class Matrix final : public MatrixBase, public Object {
     public:
         Matrix(size_t nrows, size_t ncols, BackendBase& backend);
         ~Matrix() override;
 
         void setElement(index i, index j) override;
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) override;
-        void extract(index *rows, index *cols, size_t &nvals) override;
-        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
+        void build(const index* rows, const index* cols, size_t nvals, bool isSorted, bool noDuplicates) override;
+        void extract(index* rows, index* cols, size_t& nvals) override;
+        void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols,
                               bool checkTime) override;
 
-        void clone(const MatrixBase &otherBase) override;
-        void transpose(const MatrixBase &otherBase, bool checkTime) override;
-        void reduce(const MatrixBase &otherBase, bool checkTime) override;
+        void clone(const MatrixBase& otherBase) override;
+        void transpose(const MatrixBase& otherBase, bool checkTime) override;
+        void reduce(const MatrixBase& otherBase, bool checkTime) override;
 
-        void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) override;
-        void kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
-        void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
-        void eWiseMult(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
-        void eWiseMultInverted(const MatrixBase &matrix, const MatrixBase &mask, bool checkTime) override;
+        void multiply(const MatrixBase& aBase, const MatrixBase& bBase, bool accumulate, bool checkTime) override;
+        void kronecker(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) override;
+        void eWiseAdd(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) override;
+        void eWiseMult(const MatrixBase& a, const MatrixBase& b, bool checkTime) override;
+        void eWiseMultInverted(const MatrixBase& matrix, const MatrixBase& mask, bool checkTime) override;
 
         index getNrows() const override;
         index getNcols() const override;
@@ -72,10 +72,10 @@ namespace cubool {
         mutable std::vector<index> mCachedJ;
 
         // Implementation handle references
-        MatrixBase* mHnd = nullptr;
+        MatrixBase*  mHnd      = nullptr;
         BackendBase* mProvider = nullptr;
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_MATRIX_HPP
+#endif//CUBOOL_MATRIX_HPP

@@ -25,10 +25,10 @@
 #ifndef CUBOOL_LOGGER_HPP
 #define CUBOOL_LOGGER_HPP
 
-#include <string>
-#include <vector>
 #include <functional>
 #include <sstream>
+#include <string>
+#include <vector>
 
 namespace cubool {
 
@@ -38,18 +38,18 @@ namespace cubool {
     class Logger {
     public:
         enum class Level {
-            Info,       // Logged basic info (can be ignored)
-            Warning,    // Logged warning (can be ignored)
-            Error,      // Logged error (can be ignored)
-            Always      // Logged always (cannot be ignored)
+            Info,   // Logged basic info (can be ignored)
+            Warning,// Logged warning (can be ignored)
+            Error,  // Logged error (can be ignored)
+            Always  // Logged always (cannot be ignored)
         };
 
-        virtual ~Logger() = default;
-        virtual void log(Level level, const std::string &message) = 0;
-        virtual void logInfo(const std::string &message);
-        virtual void logWarning(const std::string &message);
-        virtual void logError(const std::string &message);
-        virtual bool isDummy() const = 0;
+        virtual ~Logger()                                           = default;
+        virtual void   log(Level level, const std::string& message) = 0;
+        virtual void   logInfo(const std::string& message);
+        virtual void   logWarning(const std::string& message);
+        virtual void   logError(const std::string& message);
+        virtual bool   isDummy() const          = 0;
         virtual size_t getMessagesCount() const = 0;
     };
 
@@ -60,7 +60,7 @@ namespace cubool {
      * Allows add filters to ignore some messages.
      * Allows commit messages to the output log file.
      */
-    class TextLogger final: public Logger {
+    class TextLogger final : public Logger {
     public:
         /** Allows filter logged messages (before they are actually saved inside) */
         using Filter = std::function<bool(Level level, const std::string& message)>;
@@ -68,9 +68,9 @@ namespace cubool {
         using OnLogged = std::function<void(size_t id, Level level, const std::string& message)>;
 
         ~TextLogger() override = default;
-        void log(Level level, const std::string &message) override;
+        void   log(Level level, const std::string& message) override;
         size_t getMessagesCount() const override;
-        bool isDummy() const override;
+        bool   isDummy() const override;
 
         void addFilter(Filter filter);
         void removeAllFilters();
@@ -80,26 +80,26 @@ namespace cubool {
     private:
         struct Entry {
             std::string message;
-            Level level;
-            size_t id;
+            Level       level;
+            size_t      id;
         };
 
-        std::vector<Entry> mEntries;
-        std::vector<Filter> mFilters;
+        std::vector<Entry>    mEntries;
+        std::vector<Filter>   mFilters;
         std::vector<OnLogged> mOnLogged;
-        size_t mNextMessageId = 0;
+        size_t                mNextMessageId = 0;
     };
 
     /**
      * No logging logic.
      */
-    class DummyLogger final: public Logger {
+    class DummyLogger final : public Logger {
     public:
-        DummyLogger() noexcept = default;
+        DummyLogger() noexcept  = default;
         ~DummyLogger() override = default;
-        void log(Level level, const std::string &message) override;
+        void   log(Level level, const std::string& message) override;
         size_t getMessagesCount() const override;
-        bool isDummy() const override;
+        bool   isDummy() const override;
     };
 
     /**
@@ -112,10 +112,10 @@ namespace cubool {
 
         explicit LogStream(Logger& logger)
             : mLogger(logger), mLevel(Logger::Level::Info) {
-        };
+              };
 
         LogStream(LogStream&& other) noexcept = default;
-        ~LogStream() = default;
+        ~LogStream()                          = default;
 
         void commit() {
             if (!mLogger.isDummy()) {
@@ -150,11 +150,11 @@ namespace cubool {
         }
 
     private:
-        Logger& mLogger;
-        Logger::Level mLevel;
+        Logger&           mLogger;
+        Logger::Level     mLevel;
         std::stringstream mStream;
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_LOGGER_HPP
+#endif//CUBOOL_LOGGER_HPP

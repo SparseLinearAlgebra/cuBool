@@ -60,16 +60,16 @@ TEST(cuBool, Setup) {
  * @return Status on this operation
  */
 cuBool_Status TransitiveClosure(cuBool_Matrix A, cuBool_Matrix* T) {
-    cuBool_Matrix_Duplicate(A, T);                              /* Duplicate A to result T */
+    cuBool_Matrix_Duplicate(A, T); /* Duplicate A to result T */
 
     cuBool_Index total = 0;
     cuBool_Index current;
 
-    cuBool_Matrix_Nvals(*T, &current);                          /* Query current nvals value */
+    cuBool_Matrix_Nvals(*T, &current); /* Query current nvals value */
 
-    while (current != total) {                                  /* Iterate, while new values are added */
+    while (current != total) { /* Iterate, while new values are added */
         total = current;
-        cuBool_MxM(*T, *T, *T, CUBOOL_HINT_ACCUMULATE);  /* T += T x T */
+        cuBool_MxM(*T, *T, *T, CUBOOL_HINT_ACCUMULATE); /* T += T x T */
         cuBool_Matrix_Nvals(*T, &current);
     }
 
@@ -85,22 +85,21 @@ TEST(cuBool, TsExample) {
     cuBool_Initialize(CUBOOL_HINT_NO);
     cuBool_Matrix_New(&A, n, n);
 
-    testing::Matrix ta = testing::Matrix::generateSparse(n , n, 0.2);
+    testing::Matrix ta = testing::Matrix::generateSparse(n, n, 0.2);
 
     cuBool_Matrix_Build(A, ta.rowsIndex.data(), ta.colsIndex.data(), ta.nvals, CUBOOL_HINT_VALUES_SORTED);
 
     TransitiveClosure(A, &T);
 
     testing::Matrix tr = ta;
-    size_t total;
+    size_t          total;
 
     do {
         total = tr.nvals;
 
         testing::MatrixMultiplyFunctor functor;
         tr = std::move(functor(tr, tr, tr, true));
-    }
-    while (tr.nvals != total);
+    } while (tr.nvals != total);
 
     ASSERT_TRUE(tr.areEqual(T));
 
@@ -128,10 +127,10 @@ TEST(cuBool, DeviceCaps) {
     ASSERT_EQ(cuBool_GetDeviceCaps(&caps), CUBOOL_STATUS_SUCCESS);
 
     std::cout
-        << "name: " << caps.name << std::endl
-        << "major: " << caps.major << std::endl
-        << "minor: " << caps.minor << std::endl
-        << "cuda supported: " << caps.cudaSupported << std::endl;
+            << "name: " << caps.name << std::endl
+            << "major: " << caps.major << std::endl
+            << "minor: " << caps.minor << std::endl
+            << "cuda supported: " << caps.cudaSupported << std::endl;
 
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }

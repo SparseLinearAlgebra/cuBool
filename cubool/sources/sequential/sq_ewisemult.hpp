@@ -47,6 +47,6 @@ namespace cubool {
      */
     void sq_ewisemult(const VecData& a, const VecData& b, VecData& out);
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_SQ_EWISEMULT_HPP
+#endif//CUBOOL_SQ_EWISEMULT_HPP

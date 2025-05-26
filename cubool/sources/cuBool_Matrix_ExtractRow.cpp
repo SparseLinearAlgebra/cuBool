@@ -27,14 +27,13 @@
 cuBool_Status cuBool_Matrix_ExtractRow(
         cuBool_Vector result,
         cuBool_Matrix matrix,
-        cuBool_Index i,
-        cuBool_Hints hints
-) {
+        cuBool_Index  i,
+        cuBool_Hints  hints) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(matrix)
-        auto r = (cubool::Vector*) result;
-        auto m = (cubool::Matrix*) matrix;
-        r->extractRow(*m, i);
+    CUBOOL_ARG_NOT_NULL(result)
+    CUBOOL_ARG_NOT_NULL(matrix)
+    auto r = (cubool::Vector*) result;
+    auto m = (cubool::Matrix*) matrix;
+    r->extractRow(*m, i);
     CUBOOL_END_BODY
 }

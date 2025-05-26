@@ -27,7 +27,7 @@
 
 namespace cubool {
 
-    void CudaMatrix::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+    void CudaMatrix::eWiseAdd(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) {
         auto a = dynamic_cast<const CudaMatrix*>(&aBase);
         auto b = dynamic_cast<const CudaMatrix*>(&bBase);
 
@@ -58,10 +58,10 @@ namespace cubool {
         b->resizeStorageToDim();
 
         kernels::SpMergeFunctor<index, DeviceAlloc<index>> spMergeFunctor;
-        auto result = spMergeFunctor(a->mMatrixImpl, b->mMatrixImpl);
+        auto                                               result = spMergeFunctor(a->mMatrixImpl, b->mMatrixImpl);
 
         // Assign the actual impl result to this storage
         this->mMatrixImpl = std::move(result);
     }
 
-}
+}// namespace cubool

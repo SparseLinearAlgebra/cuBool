@@ -108,55 +108,55 @@ void testRun(cuBool_Index m, cuBool_Index n, float step, cuBool_Hints setup) {
 
 TEST(cuBool_Matrix, ReduceSmall) {
     cuBool_Index m = 100, n = 200;
-    float step = 0.05f;
+    float        step = 0.05f;
     testRun(m, n, step, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Matrix, ReduceMedium) {
     cuBool_Index m = 400, n = 700;
-    float step = 0.05f;
+    float        step = 0.05f;
     testRun(m, n, step, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Matrix, ReduceLarge) {
     cuBool_Index m = 2000, n = 4000;
-    float step = 0.01f;
+    float        step = 0.01f;
     testRun(m, n, step, CUBOOL_HINT_NO);
 }
 
 TEST(cuBool_Matrix, ReduceSmallFallback) {
     cuBool_Index m = 100, n = 200;
-    float step = 0.05f;
+    float        step = 0.05f;
     testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Matrix, ReduceMediumFallback) {
     cuBool_Index m = 400, n = 700;
-    float step = 0.05f;
+    float        step = 0.05f;
     testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Matrix, ReduceLargeFallback) {
     cuBool_Index m = 2000, n = 4000;
-    float step = 0.01f;
+    float        step = 0.01f;
     testRun(m, n, step, CUBOOL_HINT_CPU_BACKEND);
 }
 
 TEST(cuBool_Matrix, ReduceSmallManaged) {
     cuBool_Index m = 100, n = 200;
-    float step = 0.05f;
+    float        step = 0.05f;
     testRun(m, n, step, CUBOOL_HINT_GPU_MEM_MANAGED);
 }
 
 TEST(cuBool_Matrix, ReduceMediumManaged) {
     cuBool_Index m = 400, n = 700;
-    float step = 0.05f;
+    float        step = 0.05f;
     testRun(m, n, step, CUBOOL_HINT_GPU_MEM_MANAGED);
 }
 
 TEST(cuBool_Matrix, ReduceLargeManaged) {
     cuBool_Index m = 2000, n = 4000;
-    float step = 0.01f;
+    float        step = 0.01f;
     testRun(m, n, step, CUBOOL_HINT_GPU_MEM_MANAGED);
 }
 

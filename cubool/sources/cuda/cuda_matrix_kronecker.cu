@@ -27,7 +27,7 @@
 
 namespace cubool {
 
-    void CudaMatrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+    void CudaMatrix::kronecker(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) {
         auto a = dynamic_cast<const CudaMatrix*>(&aBase);
         auto b = dynamic_cast<const CudaMatrix*>(&bBase);
 
@@ -53,10 +53,10 @@ namespace cubool {
         b->resizeStorageToDim();
 
         kernels::SpKronFunctor<index, DeviceAlloc<index>> spKronFunctor;
-        auto result = spKronFunctor(a->mMatrixImpl, b->mMatrixImpl);
+        auto                                              result = spKronFunctor(a->mMatrixImpl, b->mMatrixImpl);
 
         // Assign result to this
         this->mMatrixImpl = std::move(result);
     }
 
-}
+}// namespace cubool

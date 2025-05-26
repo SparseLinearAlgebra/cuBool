@@ -119,12 +119,12 @@ typedef struct cuBool_DeviceCaps {
     char name[256];
     bool cudaSupported;
     bool managedMem;
-    int major;
-    int minor;
-    int warp;
-    int globalMemoryKiBs;
-    int sharedMemoryPerMultiProcKiBs;
-    int sharedMemoryPerBlockKiBs;
+    int  major;
+    int  minor;
+    int  warp;
+    int  globalMemoryKiBs;
+    int  sharedMemoryPerMultiProcKiBs;
+    int  sharedMemoryPerBlockKiBs;
 } cuBool_DeviceCaps;
 
 /**
@@ -133,8 +133,7 @@ typedef struct cuBool_DeviceCaps {
  *
  * @return Read-only library about info
  */
-CUBOOL_EXPORT CUBOOL_API const char* cuBool_GetAbout(
-);
+CUBOOL_EXPORT CUBOOL_API const char* cuBool_GetAbout();
 
 /**
  * Query human-readable text info about the project implementation
@@ -142,8 +141,7 @@ CUBOOL_EXPORT CUBOOL_API const char* cuBool_GetAbout(
 
  * @return Read-only library license info
  */
-CUBOOL_EXPORT CUBOOL_API const char* cuBool_GetLicenseInfo(
-);
+CUBOOL_EXPORT CUBOOL_API const char* cuBool_GetLicenseInfo();
 
 /**
  * Query library version number in form MAJOR.MINOR
@@ -156,10 +154,9 @@ CUBOOL_EXPORT CUBOOL_API const char* cuBool_GetLicenseInfo(
  * @return Error if failed to query version info
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_GetVersion(
-    int* major,
-    int* minor,
-    int* sub
-);
+        int* major,
+        int* minor,
+        int* sub);
 
 /**
  * Allows to setup logging file for all operations, invoked after this function call.
@@ -177,9 +174,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_GetVersion(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_SetupLogging(
-    const char* logFileName,
-    cuBool_Hints hints
-);
+        const char*  logFileName,
+        cuBool_Hints hints);
 
 /**
  * Initialize library instance object, which provides context to all library operations and primitives.
@@ -193,8 +189,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_SetupLogging(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Initialize(
-    cuBool_Hints hints
-);
+        cuBool_Hints hints);
 
 /**
  * Finalize library state and all objects, which were created on this library context.
@@ -205,8 +200,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Initialize(
  *
  * @return Error code on this operation
  */
-CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Finalize(
-);
+CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Finalize();
 
 /**
  * Query device capabilities/properties if cuda compatible device is present.
@@ -217,8 +211,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Finalize(
  * @return Error if cuda device not present or if failed to query capabilities
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_GetDeviceCaps(
-    cuBool_DeviceCaps* deviceCaps
-);
+        cuBool_DeviceCaps* deviceCaps);
 
 /**
  * Creates new sparse matrix with specified size.
@@ -230,10 +223,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_GetDeviceCaps(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_New(
-    cuBool_Matrix* matrix,
-    cuBool_Index nrows,
-    cuBool_Index ncols
-);
+        cuBool_Matrix* matrix,
+        cuBool_Index   nrows,
+        cuBool_Index   ncols);
 
 /**
  * Build sparse matrix from provided pairs array. Pairs are supposed to be stored
@@ -252,12 +244,11 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_New(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Build(
-    cuBool_Matrix matrix,
-    const cuBool_Index* rows,
-    const cuBool_Index* cols,
-    cuBool_Index nvals,
-    cuBool_Hints hints
-);
+        cuBool_Matrix       matrix,
+        const cuBool_Index* rows,
+        const cuBool_Index* cols,
+        cuBool_Index        nvals,
+        cuBool_Hints        hints);
 
 /**
  * Sets specified (i, j) value of the matrix to True.
@@ -271,10 +262,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Build(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_SetElement(
-    cuBool_Matrix matrix,
-    cuBool_Index i,
-    cuBool_Index j
-);
+        cuBool_Matrix matrix,
+        cuBool_Index  i,
+        cuBool_Index  j);
 
 /**
  * Sets to the matrix specific debug string marker.
@@ -286,9 +276,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_SetElement(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_SetMarker(
-    cuBool_Matrix matrix,
-    const char* marker
-);
+        cuBool_Matrix matrix,
+        const char*   marker);
 
 /**
  * Allows to get matrix debug string marker.
@@ -306,10 +295,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_SetMarker(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Marker(
-    cuBool_Matrix matrix,
-    char* marker,
-    cuBool_Index* size
-);
+        cuBool_Matrix matrix,
+        char*         marker,
+        cuBool_Index* size);
 
 /**
  * Reads matrix data to the host visible CPU buffer as an array of values pair.
@@ -325,11 +313,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Marker(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractPairs(
-    cuBool_Matrix matrix,
-    cuBool_Index* rows,
-    cuBool_Index* cols,
-    cuBool_Index* nvals
-);
+        cuBool_Matrix matrix,
+        cuBool_Index* rows,
+        cuBool_Index* cols,
+        cuBool_Index* nvals);
 
 /**
  * Extracts sub-matrix of the input matrix and stores it into result matrix.
@@ -355,14 +342,13 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractPairs(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractSubMatrix(
-    cuBool_Matrix result,
-    cuBool_Matrix matrix,
-    cuBool_Index i,
-    cuBool_Index j,
-    cuBool_Index nrows,
-    cuBool_Index ncols,
-    cuBool_Hints hints
-);
+        cuBool_Matrix result,
+        cuBool_Matrix matrix,
+        cuBool_Index  i,
+        cuBool_Index  j,
+        cuBool_Index  nrows,
+        cuBool_Index  ncols,
+        cuBool_Hints  hints);
 
 /**
  * Extract specified matrix row as vector.
@@ -379,11 +365,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractSubMatrix(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractRow(
-    cuBool_Vector result,
-    cuBool_Matrix matrix,
-    cuBool_Index i,
-    cuBool_Hints hints
-);
+        cuBool_Vector result,
+        cuBool_Matrix matrix,
+        cuBool_Index  i,
+        cuBool_Hints  hints);
 
 /**
  * Extract specified matrix col as vector.
@@ -400,11 +385,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractRow(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractCol(
-    cuBool_Vector result,
-    cuBool_Matrix matrix,
-    cuBool_Index j,
-    cuBool_Hints hints
-);
+        cuBool_Vector result,
+        cuBool_Matrix matrix,
+        cuBool_Index  j,
+        cuBool_Hints  hints);
 
 /**
  * Creates new sparse matrix, duplicates content and stores handle in the provided pointer.
@@ -415,9 +399,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_ExtractCol(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Duplicate(
-    cuBool_Matrix matrix,
-    cuBool_Matrix* duplicated
-);
+        cuBool_Matrix  matrix,
+        cuBool_Matrix* duplicated);
 
 /**
  * Transpose source matrix and store result of this operation in result matrix.
@@ -432,10 +415,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Duplicate(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Transpose(
-    cuBool_Matrix result,
-    cuBool_Matrix matrix,
-    cuBool_Hints hints
-);
+        cuBool_Matrix result,
+        cuBool_Matrix matrix,
+        cuBool_Hints  hints);
 
 /**
  * Query number of non-zero values of the matrix.
@@ -446,9 +428,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Transpose(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Nvals(
-    cuBool_Matrix matrix,
-    cuBool_Index* nvals
-);
+        cuBool_Matrix matrix,
+        cuBool_Index* nvals);
 
 /**
  * Query number of rows in the matrix.
@@ -459,9 +440,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Nvals(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Nrows(
-    cuBool_Matrix matrix,
-    cuBool_Index* nrows
-);
+        cuBool_Matrix matrix,
+        cuBool_Index* nrows);
 
 /**
  * Query number of columns in the matrix.
@@ -472,9 +452,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Nrows(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Ncols(
-    cuBool_Matrix matrix,
-    cuBool_Index* ncols
-);
+        cuBool_Matrix matrix,
+        cuBool_Index* ncols);
 
 /**
  * Deletes sparse matrix object.
@@ -484,8 +463,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Ncols(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Free(
-    cuBool_Matrix matrix
-);
+        cuBool_Matrix matrix);
 
 /**
  * Reduce the source matrix to the column vector.
@@ -503,10 +481,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Free(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
-    cuBool_Vector result,
-    cuBool_Matrix matrix,
-    cuBool_Hints hints
-);
+        cuBool_Vector result,
+        cuBool_Matrix matrix,
+        cuBool_Hints  hints);
 
 /**
  * Reduce the source matrix to the column matrix result (column vector).
@@ -525,10 +502,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce2(
-    cuBool_Matrix result,
-    cuBool_Matrix matrix,
-    cuBool_Hints hints
-);
+        cuBool_Matrix result,
+        cuBool_Matrix matrix,
+        cuBool_Hints  hints);
 
 /**
  * Performs result = left + right, where '+' is boolean semiring 'or' operation.
@@ -548,11 +524,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_Reduce2(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
-    cuBool_Matrix result,
-    cuBool_Matrix left,
-    cuBool_Matrix right,
-    cuBool_Hints hints
-);
+        cuBool_Matrix result,
+        cuBool_Matrix left,
+        cuBool_Matrix right,
+        cuBool_Hints  hints);
 
 /**
  * Performs result = left * right, where '*' is boolean semiring 'and' operation.
@@ -572,11 +547,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseAdd(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseMult(
-    cuBool_Matrix result,
-    cuBool_Matrix left,
-    cuBool_Matrix right,
-    cuBool_Hints hints
-);
+        cuBool_Matrix result,
+        cuBool_Matrix left,
+        cuBool_Matrix right,
+        cuBool_Hints  hints);
 
 /**
  * Creates new sparse vector with specified size.
@@ -587,9 +561,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseMult(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_New(
-    cuBool_Vector* vector,
-    cuBool_Index nrows
-);
+        cuBool_Vector* vector,
+        cuBool_Index   nrows);
 
 /**
  * Build sparse vector from provided indices array.
@@ -606,11 +579,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_New(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Build(
-    cuBool_Vector vector,
-    const cuBool_Index* rows,
-    cuBool_Index nvals,
-    cuBool_Hints hints
-);
+        cuBool_Vector       vector,
+        const cuBool_Index* rows,
+        cuBool_Index        nvals,
+        cuBool_Hints        hints);
 
 /**
  * Sets specified (j) value of the vector to True.
@@ -623,9 +595,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Build(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_SetElement(
-    cuBool_Vector vector,
-    cuBool_Index i
-);
+        cuBool_Vector vector,
+        cuBool_Index  i);
 
 /**
  * Sets to the vector specific debug string marker.
@@ -637,9 +608,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_SetElement(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_SetMarker(
-    cuBool_Vector vector,
-    const char* marker
-);
+        cuBool_Vector vector,
+        const char*   marker);
 
 /**
  * Allows to get vector debug string marker.
@@ -657,10 +627,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_SetMarker(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Marker(
-    cuBool_Vector vector,
-    char* marker,
-    cuBool_Index* size
-);
+        cuBool_Vector vector,
+        char*         marker,
+        cuBool_Index* size);
 
 /**
  * Reads vector data to the host visible CPU buffer as an array of indices.
@@ -675,10 +644,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Marker(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_ExtractValues(
-    cuBool_Vector vector,
-    cuBool_Index* rows,
-    cuBool_Index* nvals
-);
+        cuBool_Vector vector,
+        cuBool_Index* rows,
+        cuBool_Index* nvals);
 
 /**
  * Extracts sub-vector of the input vector and stores it into result vector.
@@ -702,12 +670,11 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_ExtractValues(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_ExtractSubVector(
-    cuBool_Vector result,
-    cuBool_Vector vector,
-    cuBool_Index i,
-    cuBool_Index nrows,
-    cuBool_Hints hints
-);
+        cuBool_Vector result,
+        cuBool_Vector vector,
+        cuBool_Index  i,
+        cuBool_Index  nrows,
+        cuBool_Hints  hints);
 
 /**
  * Creates new sparse vector, duplicates content and stores handle in the provided pointer.
@@ -718,9 +685,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_ExtractSubVector(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Duplicate(
-    cuBool_Vector vector,
-    cuBool_Vector* duplicated
-);
+        cuBool_Vector  vector,
+        cuBool_Vector* duplicated);
 
 /**
  * Query number of non-zero values of the vector.
@@ -731,9 +697,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Duplicate(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Nvals(
-    cuBool_Vector vector,
-    cuBool_Index* nvals
-);
+        cuBool_Vector vector,
+        cuBool_Index* nvals);
 
 /**
  * Query number of rows in the vector.
@@ -744,9 +709,8 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Nvals(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Nrows(
-    cuBool_Vector vector,
-    cuBool_Index* nrows
-);
+        cuBool_Vector vector,
+        cuBool_Index* nrows);
 
 /**
  * Deletes sparse vector object.
@@ -756,8 +720,7 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Nrows(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Free(
-    cuBool_Vector vector
-);
+        cuBool_Vector vector);
 
 
 /**
@@ -772,10 +735,9 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Free(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Reduce(
-    cuBool_Index* result,
-    cuBool_Vector vector,
-    cuBool_Hints hints
-);
+        cuBool_Index* result,
+        cuBool_Vector vector,
+        cuBool_Hints  hints);
 
 /**
  * Performs result = left + right, where '+' is boolean semiring 'or' operation.
@@ -795,11 +757,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Reduce(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_EWiseAdd(
-    cuBool_Vector result,
-    cuBool_Vector left,
-    cuBool_Vector right,
-    cuBool_Hints hints
-);
+        cuBool_Vector result,
+        cuBool_Vector left,
+        cuBool_Vector right,
+        cuBool_Hints  hints);
 
 /**
  * Performs result = left * right, where '*' is boolean semiring 'and' operation.
@@ -819,11 +780,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_EWiseAdd(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_EWiseMult(
-    cuBool_Vector result,
-    cuBool_Vector left,
-    cuBool_Vector right,
-    cuBool_Hints hints
-);
+        cuBool_Vector result,
+        cuBool_Vector left,
+        cuBool_Vector right,
+        cuBool_Hints  hints);
 
 /**
  * Performs result (accum)= left x right evaluation, where source '+' and 'x' are boolean semiring operations.
@@ -845,11 +805,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_EWiseMult(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxM(
-    cuBool_Matrix result,
-    cuBool_Matrix left,
-    cuBool_Matrix right,
-    cuBool_Hints hints
-);
+        cuBool_Matrix result,
+        cuBool_Matrix left,
+        cuBool_Matrix right,
+        cuBool_Hints  hints);
 
 /**
  * Performs result = left x right evaluation, where source '+' and 'x' are boolean semiring operations.
@@ -870,11 +829,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxM(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxV(
-    cuBool_Vector result,
-    cuBool_Matrix left,
-    cuBool_Vector right,
-    cuBool_Hints hints
-);
+        cuBool_Vector result,
+        cuBool_Matrix left,
+        cuBool_Vector right,
+        cuBool_Hints  hints);
 
 /**
  * Performs result = left x right evaluation, where source '+' and 'x' are boolean semiring operations.
@@ -895,11 +853,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_MxV(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_VxM(
-    cuBool_Vector result,
-    cuBool_Vector left,
-    cuBool_Matrix right,
-    cuBool_Hints hints
-);
+        cuBool_Vector result,
+        cuBool_Vector left,
+        cuBool_Matrix right,
+        cuBool_Hints  hints);
 
 /**
  * Performs result = left `kron` right, where `kron` is a Kronecker product for boolean semiring.
@@ -919,11 +876,10 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_VxM(
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Kronecker(
-    cuBool_Matrix result,
-    cuBool_Matrix left,
-    cuBool_Matrix right,
-    cuBool_Hints hints
-);
+        cuBool_Matrix result,
+        cuBool_Matrix left,
+        cuBool_Matrix right,
+        cuBool_Hints  hints);
 
 /**
  * Performs result = left * ~right, where
@@ -938,17 +894,16 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Kronecker(
  * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
  *
  * @param result[out] Destination matrix to store result
- * @param left Source matrix to be multiplied
- * @param right Source matrix to be inverted and multiplied
+ * @param matrix Source matrix to be multiplied
+ * @param mask Source matrix to be inverted and multiplied
  * @param hints Hints for the operation
  *
  * @return Error code on this operation
  */
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Matrix_EWiseMulInverted(
-    cuBool_Matrix result,
-    cuBool_Matrix matrix,
-    cuBool_Matrix mask,
-    cuBool_Hints hints
-);
+        cuBool_Matrix result,
+        cuBool_Matrix matrix,
+        cuBool_Matrix mask,
+        cuBool_Hints  hints);
 
-#endif //CUBOOL_CUBOOL_H
+#endif//CUBOOL_CUBOOL_H
