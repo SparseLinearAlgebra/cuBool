@@ -926,13 +926,13 @@ CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Kronecker(
 );
 
 /**
- * Performs result = left * ~right, where
+ * Performs result = matrix * ~mask, where
  *     '*' is boolean semiring 'and' operation
  *     '~' is operation for invert matrix (0 swaps to 1 and 1 to 0)
  *
  * @note To perform this operation matrices must be compatible
- *          dim(left) = M x T
- *          dim(right) = T x N
+ *          dim(matrix) = M x T
+ *          dim(mask) = T x N
  *          dim(result) = M x N
  *
  * @note Pass `CUBOOL_HINT_TIME_CHECK` hint to measure operation time
