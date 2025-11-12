@@ -30,6 +30,8 @@
 #include <nsparse/matrix.h>
 #include <cmath>
 
+#include <thrust/set_operations.h>
+
 namespace cubool {
     namespace kernels {
 

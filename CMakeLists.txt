@@ -11,6 +11,8 @@ option(CUBOOL_WITH_NAIVE         "Build library with naive and naive-shared dens
 option(CUBOOL_BUILD_TESTS        "Build project unit-tests with gtest" ON)
 option(CUBOOL_COPY_TO_PY_PACKAGE "Copy compiled shared library into python package folder (for package use purposes)" ON)
 
+option(CUBOOL_USE_NSPARSE_MERGE_FUNCTOR "Use nsparse optimiztion for matrix addition function" ON)
+
 set(CUBOOL_VERSION_MAJOR 1)
 set(CUBOOL_VERSION_MINOR 0)
 set(CUBOOL_VERSION_SUB 0)
@@ -32,14 +34,6 @@ endif()
 
 # Configure cuda dependencies
 if (CUBOOL_WITH_CUDA)
-    message(STATUS "Add cub as cuda utility")
-    set(CUB_ENABLE_HEADER_TESTING OFF CACHE BOOL "" FORCE)
-    set(CUB_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
-    set(CUB_ENABLE_EXAMPLES OFF CACHE BOOL "" FORCE)
-    add_subdirectory(deps/cub)
-    add_library(cub INTERFACE IMPORTED)
-    target_link_libraries(cub INTERFACE CUB::CUB)
-
     message(STATUS "Add nsparse library as crs matrix multiplication backend")
     add_subdirectory(deps/nsparse-um)
 endif()

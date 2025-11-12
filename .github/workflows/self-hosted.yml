@@ -1,4 +1,4 @@
-name: Ubuntu
+name: Self-Hosted
 
 on:
   push:
@@ -9,67 +9,59 @@ on:
 
 env:
   build_dir: "build"
-  artifact: "cubool-ubuntu-build.tar.xz"
 
 jobs:
   build:
-    name: Build ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.os }} GCC ${{ matrix.gcc }} CUDA ${{ matrix.cuda }}
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
+            cuda: "12.8"
+            gcc: 13
     env:
       config: "Release"
 
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
+
+      - name: Set environment variables
+        run: |
+          echo "CUDA_PATH=/usr/local/cuda-12.8" >> $GITHUB_ENV
+          echo "${CUDA_PATH}/bin" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=${CUDA_PATH}/lib64:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+          echo "CC=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+          echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+          echo "CUDACXX=/usr/local/cuda-${{ matrix.cuda }}/bin/nvcc" >> $GITHUB_ENV
 
       - name: Configure CMake build
         run: |
-          cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON -DCUBOOL_WITH_CUDA=OFF
+          cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DCUBOOL_BUILD_TESTS=ON
 
       - name: Build library sources
         run: |
           cmake --build ${{ env.build_dir }} --target all --verbose -j `nproc`
 
-      - name: Prepare upload binary
-        run: |
-          tar cfz ${{ env.artifact }} ${{ env.build_dir }}
-
-      - name: Upload binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.artifact }}
-          path: ${{ env.artifact }}
-
   test:
-    name: Test CPU ${{ matrix.cpu }}
+    name: Test GPU ${{ matrix.gpu }} CUDA ${{ matrix.cuda }}
     needs: build
-    runs-on: ${{ matrix.os }}
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
-            cpu: AMD-EPYC-7763
+          - gpu: NVIDIA-GeForce-GT-1030
+            cuda: "12.9"
     env:
-      unit-test-file: cpu_test_all.log
-      regression-test-file: cpu_test_regression.log
+      unit-test-file: gpu_test_all.log
+      regression-test-file: gpu_test_regression.log
 
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.artifact }}
-
-      - name: Unarchive artifact
-        run: |
-          tar xzf ${{ env.artifact }}
-          rm ${{ env.artifact }}
-
       - name: Run unit-tests
         working-directory: ${{ env.build_dir }}
         run: |
@@ -101,3 +93,15 @@ jobs:
         working-directory: ${{ env.build_dir }}/python
         run: |
           ! grep -q "FAILED" ${{ env.regression-test-file }}
+
+  clean:
+    name: Cleanup workspace
+    needs: test
+    if: always()
+    runs-on: self-hosted
+
+    steps:
+      - name: Cleanup workspace
+        run: |
+          rm -rf ${{ github.workspace }}/*
+          rm -rf ${{ github.workspace }}/.*

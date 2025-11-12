@@ -87,6 +87,7 @@ set(CUBOOL_C_API_SOURCES
     sources/cuBool_Matrix_Reduce2.cpp
     sources/cuBool_Matrix_EWiseAdd.cpp
     sources/cuBool_Matrix_EWiseMult.cpp
+    sources/cuBool_Matrix_EWiseMultInverted.cpp
     sources/cuBool_Vector_New.cpp
     sources/cuBool_Vector_Build.cpp
     sources/cuBool_Vector_SetElement.cpp
@@ -125,6 +126,7 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/cuda_matrix.cu
         sources/cuda/cuda_matrix_ewiseadd.cu
         sources/cuda/cuda_matrix_ewisemult.cu
+        sources/cuda/cuda_matrix_ewisemult_inverted.cu
         sources/cuda/cuda_matrix_kronecker.cu
         sources/cuda/cuda_matrix_multiply.cu
         sources/cuda/cuda_matrix_transpose.cu
@@ -147,6 +149,7 @@ if (CUBOOL_WITH_CUDA)
         sources/cuda/kernels/spgemv_t.cuh
         sources/cuda/kernels/spewiseadd.cuh
         sources/cuda/kernels/spewisemult.cuh
+        sources/cuda/kernels/spewisemultinverted.cuh
         sources/cuda/kernels/sptranspose.cuh
         sources/cuda/kernels/sptranspose2.cuh
         sources/cuda/kernels/spkron.cuh
@@ -173,6 +176,8 @@ if (CUBOOL_WITH_SEQUENTIAL)
         sources/sequential/sq_ewiseadd.hpp
         sources/sequential/sq_ewisemult.cpp
         sources/sequential/sq_ewisemult.hpp
+        sources/sequential/sq_ewisemultinverted.cpp
+        sources/sequential/sq_ewisemultinverted.hpp
         sources/sequential/sq_spgemm.cpp
         sources/sequential/sq_spgemm.hpp
         sources/sequential/sq_spgemv.cpp
@@ -201,11 +206,9 @@ target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_MAJOR=${CUBOOL_VERSION_
 target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_MINOR=${CUBOOL_VERSION_MINOR})
 target_compile_definitions(cubool PRIVATE CUBOOL_VERSION_SUB=${CUBOOL_VERSION_SUB})
 
-target_compile_features(cubool PUBLIC cxx_std_14)
+target_compile_definitions(cubool PRIVATE CUBOOL_USE_NSPARSE_MERGE_FUNCTOR=$<BOOL:${CUBOOL_USE_NSPARSE_MERGE_FUNCTOR}>)
 
-target_compile_options(cubool PRIVATE $<$<COMPILE_LANGUAGE:CXX>: -Wall>)
-target_compile_options(cubool PRIVATE $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>: -O2>)
-target_compile_options(cubool PRIVATE $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>: -O0>)
+target_compile_features(cubool PUBLIC cxx_std_17)
 
 set_target_properties(cubool PROPERTIES CXX_STANDARD 17)
 set_target_properties(cubool PROPERTIES CXX_STANDARD_REQUIRED ON)
@@ -219,7 +222,6 @@ endforeach()
 if (CUBOOL_WITH_CUDA)
     set_target_properties(cubool PROPERTIES CUDA_STANDARD 14)
     set_target_properties(cubool PROPERTIES CUDA_STANDARD_REQUIRED ON)
-    set_target_properties(cubool PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     # Settings: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
 

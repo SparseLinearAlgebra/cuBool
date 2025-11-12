@@ -22,73 +22,27 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_SPMERGE_CUH
-#define CUBOOL_SPMERGE_CUH
+#ifndef CUBOOL_SPEWISEMULT_CUH
+#define CUBOOL_SPEWISEMULT_CUH
 
-#include <core/config.hpp>
-#include <nsparse/matrix.h>
-#include <nsparse/detail/merge.h>
-
+#include <cuda/details/sp_vector.hpp>
 #include <cuda/kernels/bin_search.cuh>
+#include <nsparse/matrix.h>
+#include <cmath>
+
 #include <thrust/set_operations.h>
 
 namespace cubool {
     namespace kernels {
 
-#if CUBOOL_USE_NSPARSE_MERGE_FUNCTOR
         template <typename IndexType, typename AllocType>
-        class SpMergeFunctor {
-        public:
-            using MatrixType = nsparse::matrix<bool, IndexType, typename AllocType::template rebind<IndexType>::other>;
-
-            /**
-             * evaluates r = a + b, where '+' is boolean semiring plus operation
-             *
-             * @param a Csr matrix
-             * @param b Csr matrix
-             *
-             * @return a + b
-             */
-            MatrixType operator()(const MatrixType& a, const MatrixType& b) {
-                using namespace nsparse::meta;
-                constexpr size_t max = std::numeric_limits<size_t>::max();
-
-                assert(a.m_rows == b.m_rows);
-                assert(a.m_cols == b.m_cols);
-
-                IndexType rows = a.m_rows;
-                IndexType cols = a.m_cols;
-
-                constexpr auto config_merge =
-                    make_bin_seq<
-                        bin_info_t<merge_conf_t<128>, 64, max>,
-                        bin_info_t<merge_conf_t<64>, 32, 64>,
-                        bin_info_t<merge_conf_t<32>, 0, 32>
-                    >;
-
-                auto merge_res = uniqueMergeFunctor(a.m_row_index, a.m_col_index, b.m_row_index, b.m_col_index, config_merge);
-
-                auto& rpt_result = merge_res.first;
-                auto& col_result = merge_res.second;
-                IndexType vals = col_result.size();
-
-                assert(rpt_result.size() == rows + 1);
-                assert(col_result.size() == rpt_result.back());
-
-                return MatrixType(std::move(col_result), std::move(rpt_result), rows, cols, vals);
-            }
-
-        private:
-            nsparse::unique_merge_functor_t<IndexType, AllocType> uniqueMergeFunctor;
-        };
-#else
-        template <typename IndexType, typename AllocType>
-        class SpMergeFunctor {
-        public:
+        struct SpVectorEWiseMultInverted {
             template<typename T>
             using ContainerType = thrust::device_vector<T, typename AllocType::template rebind<T>::other>;
             using MatrixType = nsparse::matrix<bool, IndexType, AllocType>;
             using LargeIndexType = unsigned long;
+
+            static_assert(sizeof(LargeIndexType) > sizeof(IndexType), "Values intersection index must be larger");
 
             static void fillIndices(const MatrixType& m, ContainerType<LargeIndexType>& out) {
                 thrust::for_each(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(m.m_vals),
@@ -104,7 +58,7 @@ namespace cubool {
             MatrixType operator()(const MatrixType& a, const MatrixType& b) {
                 auto aNvals = a.m_vals;
                 auto bNvals = b.m_vals;
-                auto worst = aNvals + bNvals;
+                auto worst = aNvals;
 
                 // Allocate memory for the worst case scenario
                 ContainerType<LargeIndexType> inputA(aNvals);
@@ -115,9 +69,9 @@ namespace cubool {
 
                 ContainerType<LargeIndexType> intersected(worst);
 
-                auto out = thrust::set_union(inputA.begin(), inputA.end(),
-                                             inputB.begin(), inputB.end(),
-                                             intersected.begin());
+                auto out = thrust::set_difference(inputA.begin(), inputA.end(),
+                                                  inputB.begin(), inputB.end(),
+                                                  intersected.begin());
 
                 // Count result nvals count
                 auto nvals = thrust::distance(intersected.begin(), out);
@@ -146,12 +100,7 @@ namespace cubool {
             }
         };
 
-#endif
-
     }
 }
 
-
-
-
-#endif //CUBOOL_SPMERGE_CUH
+#endif //CUBOOL_SPEWISEMULT_CUH

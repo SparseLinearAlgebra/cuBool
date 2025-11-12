@@ -30,6 +30,8 @@
 #include <thrust/device_vector.h>
 #include <nsparse/matrix.h>
 
+#include <thrust/sort.h>
+
 namespace cubool {
     namespace kernels {
 

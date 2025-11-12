@@ -29,6 +29,8 @@
 #include <utils/data_utils.hpp>
 #include <limits>
 
+#include <thrust/sort.h>
+
 namespace cubool {
 
     CudaVector::CudaVector(size_t nrows, CudaInstance &instance)

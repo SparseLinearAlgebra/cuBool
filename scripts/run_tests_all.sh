@@ -1,3 +1,4 @@
+#!/bin/bash
 # Runs all tests executables
 # Invoke this script within build directory
 ./cubool/tests/test_library_api

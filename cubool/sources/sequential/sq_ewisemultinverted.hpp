@@ -22,42 +22,21 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#ifndef CUBOOL_MATRIX_BASE_HPP
-#define CUBOOL_MATRIX_BASE_HPP
+#ifndef CUBOOL_SQ_EWISEMULTINVERTED_HPP
+#define CUBOOL_SQ_EWISEMULTINVERTED_HPP
 
-#include <core/config.hpp>
+#include <sequential/sq_data.hpp>
 
 namespace cubool {
 
     /**
-     * Base class for boolean matrix representation.
+     * Element-wise multiplication of the matrices `a` and inverted `b`.
+     *
+     * @param a Input matrix
+     * @param b Input matrix, which will be inverted before multiplication
+     * @param[out] out Where to store the result
      */
-    class MatrixBase {
-    public:
-        virtual ~MatrixBase() = default;
-
-        virtual void setElement(index i, index j) = 0;
-        virtual void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) = 0;
-        virtual void extract(index* rows, index* cols, size_t &nvals) = 0;
-        virtual void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols, bool checkTime) = 0;
-
-        virtual void clone(const MatrixBase& otherBase) = 0;
-        virtual void transpose(const MatrixBase &otherBase, bool checkTime) = 0;
-        virtual void reduce(const MatrixBase &otherBase, bool checkTime) = 0;
-
-        virtual void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) = 0;
-        virtual void kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) = 0;
-        virtual void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) = 0;
-        virtual void eWiseMult(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) = 0;
-        virtual void eWiseMultInverted(const MatrixBase &matrix, const MatrixBase &mask, bool checkTime) = 0;
-
-        virtual index getNrows() const = 0;
-        virtual index getNcols() const = 0;
-        virtual index getNvals() const = 0;
-
-        bool isZeroDim() const { return (size_t)getNrows() * (size_t)getNcols() == 0; }
-    };
-
+    void sq_ewisemultinverted(const CsrData& a, const CsrData& b, CsrData& out);
 }
 
-#endif //CUBOOL_MATRIX_BASE_HPP
+#endif //CUBOOL_SQ_EWISEMULTINVERTED_HPP

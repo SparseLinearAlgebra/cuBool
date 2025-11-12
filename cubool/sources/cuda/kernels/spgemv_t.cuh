@@ -32,6 +32,8 @@
 #include <nsparse/detail/meta.h>
 #include <limits>
 
+#include <thrust/sort.h>
+
 namespace cubool {
     namespace kernels {
 
