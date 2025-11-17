@@ -25,21 +25,21 @@
 #ifndef CUBOOL_META_HPP
 #define CUBOOL_META_HPP
 
+#include <cstddef>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
-#include <cstddef>
 
 namespace cubool {
 
-    template <typename Config>
+    template<typename Config>
     struct StreamsWrapper {
         StreamsWrapper() {
-            for (auto& s: streams)
+            for (auto& s : streams)
                 cudaStreamCreate(&s);
         }
 
         ~StreamsWrapper() {
-            for (auto& s: streams)
+            for (auto& s : streams)
                 cudaStreamDestroy(s);
         }
 
@@ -50,22 +50,21 @@ namespace cubool {
     struct Bin {
         static_assert(Threads <= BlocksSize, "Block size must be >= threads in this block");
 
-        static constexpr size_t threads = Threads;
-        static constexpr size_t blockSize = BlocksSize;
+        static constexpr size_t threads       = Threads;
+        static constexpr size_t blockSize     = BlocksSize;
         static constexpr size_t dispatchRatio = BlocksSize / Threads;
-        static constexpr size_t min = Max;
-        static constexpr size_t max = Min;
-        static constexpr size_t id = Id;
+        static constexpr size_t min           = Max;
+        static constexpr size_t max           = Min;
+        static constexpr size_t id            = Id;
     };
 
 
-    template <typename ... Bins>
+    template<typename... Bins>
     struct Config {
     public:
-
         static __host__ __device__ size_t selectBin(size_t rowSize) {
-            static constexpr size_t mins[] = { Bins::min... };
-            static constexpr size_t maxs[] = { Bins::max... };
+            static constexpr size_t mins[] = {Bins::min...};
+            static constexpr size_t maxs[] = {Bins::max...};
 
             for (size_t i = 0; i < binsCount(); i++) {
                 if (mins[i] <= rowSize && rowSize <= maxs[i])
@@ -76,7 +75,7 @@ namespace cubool {
         }
 
         static __host__ __device__ constexpr size_t binBlockSize(size_t id) {
-            constexpr size_t blockSizes[] = { Bins::blockSize... };
+            constexpr size_t blockSizes[] = {Bins::blockSize...};
             return blockSizes[id];
         }
 
@@ -87,9 +86,8 @@ namespace cubool {
         static __host__ __device__ constexpr size_t unusedBinId() {
             return binsCount() + 1;
         }
-
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_META_HPP
+#endif//CUBOOL_META_HPP

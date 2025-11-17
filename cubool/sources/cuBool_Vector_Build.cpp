@@ -25,15 +25,14 @@
 #include <cuBool_Common.hpp>
 
 cuBool_Status cuBool_Vector_Build(
-        cuBool_Vector vector,
+        cuBool_Vector       vector,
         const cuBool_Index* rows,
-        cuBool_Index nvals,
-        cuBool_Hints hints
-) {
+        cuBool_Index        nvals,
+        cuBool_Hints        hints) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(vector)
-        auto v = (cubool::Vector *) vector;
-        v->build(rows, nvals, hints & CUBOOL_HINT_VALUES_SORTED, hints & CUBOOL_HINT_NO_DUPLICATES);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(vector)
+    auto v = (cubool::Vector*) vector;
+    v->build(rows, nvals, hints & CUBOOL_HINT_VALUES_SORTED, hints & CUBOOL_HINT_NO_DUPLICATES);
     CUBOOL_END_BODY
 }

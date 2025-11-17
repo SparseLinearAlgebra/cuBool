@@ -25,33 +25,33 @@
 #ifndef CUBOOL_VECTOR_HPP
 #define CUBOOL_VECTOR_HPP
 
+#include <backend/backend_base.hpp>
+#include <backend/vector_base.hpp>
 #include <core/config.hpp>
 #include <core/object.hpp>
-#include <backend/vector_base.hpp>
-#include <backend/backend_base.hpp>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace cubool {
 
-    class Vector final: public VectorBase, public Object {
+    class Vector final : public VectorBase, public Object {
     public:
         Vector(size_t nrows, BackendBase& backendBase);
         ~Vector() override;
 
         void setElement(index i) override;
-        void build(const index *rows, size_t nvals, bool isSorted, bool noDuplicates) override;
-        void extract(index *rows, size_t &nvals) override;
-        void extractSubVector(const VectorBase &otherBase, index i, index nrows, bool checkTime) override;
+        void build(const index* rows, size_t nvals, bool isSorted, bool noDuplicates) override;
+        void extract(index* rows, size_t& nvals) override;
+        void extractSubVector(const VectorBase& otherBase, index i, index nrows, bool checkTime) override;
         void extractRow(const class MatrixBase& matrixBase, index i) override;
         void extractCol(const class MatrixBase& matrixBase, index j) override;
 
-        void clone(const VectorBase &otherBase) override;
-        void reduce(index &result, bool checkTime) override;
-        void reduceMatrix(const MatrixBase &matrix, bool transpose, bool checkTime) override;
+        void clone(const VectorBase& otherBase) override;
+        void reduce(index& result, bool checkTime) override;
+        void reduceMatrix(const MatrixBase& matrix, bool transpose, bool checkTime) override;
 
-        void eWiseMult(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) override;
-        void eWiseAdd(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) override;
+        void eWiseMult(const VectorBase& aBase, const VectorBase& bBase, bool checkTime) override;
+        void eWiseAdd(const VectorBase& aBase, const VectorBase& bBase, bool checkTime) override;
         void multiplyVxM(const VectorBase& vBase, const class MatrixBase& mBase, bool checkTime) override;
         void multiplyMxV(const class MatrixBase& mBase, const VectorBase& vBase, bool checkTime) override;
 
@@ -59,7 +59,6 @@ namespace cubool {
         index getNvals() const override;
 
     private:
-
         void releaseCache() const;
         void commitCache() const;
 
@@ -67,10 +66,10 @@ namespace cubool {
         mutable std::vector<index> mCachedI;
 
         // Implementation handle references
-        VectorBase* mHnd = nullptr;
+        VectorBase*  mHnd      = nullptr;
         BackendBase* mProvider = nullptr;
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_VECTOR_HPP
+#endif//CUBOOL_VECTOR_HPP

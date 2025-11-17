@@ -25,10 +25,9 @@
 #include <cuBool_Common.hpp>
 
 cuBool_Status cuBool_SetupLogging(
-        const char* logFileName,
-        cuBool_Hints hints
-) {
+        const char*  logFileName,
+        cuBool_Hints hints) {
     CUBOOL_BEGIN_BODY
-        cubool::Library::setupLogging(logFileName, hints);
+    cubool::Library::setupLogging(logFileName, hints);
     CUBOOL_END_BODY
 }

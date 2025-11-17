@@ -1,19 +1,19 @@
 #include "cubool/cubool.h"
-#include <testing/testing.hpp>
 #include <algorithm>
+#include <testing/testing.hpp>
 
 using DataMatrix = std::vector<std::vector<int>>;
 
-void testApplyNotMask(const DataMatrix &matrix_data, const DataMatrix &mask_data) {
+void testApplyNotMask(const DataMatrix& matrix_data, const DataMatrix& mask_data) {
     cuBool_Index nrows, ncols;
-    nrows = matrix_data.size();
-    ncols = matrix_data[0].size();
+    nrows                       = matrix_data.size();
+    ncols                       = matrix_data[0].size();
     testing::Matrix test_matrix = testing::Matrix::generatet(nrows, ncols,
-        [&matrix_data](cuBool_Index i, cuBool_Index j) { return matrix_data[i][j]; });
-    nrows = mask_data.size();
-    ncols = mask_data[0].size();
-    testing::Matrix test_mask = testing::Matrix::generatet(nrows, ncols,
-        [&mask_data](cuBool_Index i, cuBool_Index j) { return mask_data[i][j]; });
+                                                             [&matrix_data](cuBool_Index i, cuBool_Index j) { return matrix_data[i][j]; });
+    nrows                       = mask_data.size();
+    ncols                       = mask_data[0].size();
+    testing::Matrix test_mask   = testing::Matrix::generatet(nrows, ncols,
+                                                             [&mask_data](cuBool_Index i, cuBool_Index j) { return mask_data[i][j]; });
 
     cuBool_Matrix matrix, mask, result;
     ASSERT_EQ(cuBool_Matrix_New(&matrix, test_matrix.nrows, test_matrix.ncols), CUBOOL_STATUS_SUCCESS);
@@ -21,9 +21,11 @@ void testApplyNotMask(const DataMatrix &matrix_data, const DataMatrix &mask_data
     ASSERT_EQ(cuBool_Matrix_New(&result, test_matrix.nrows, test_matrix.ncols), CUBOOL_STATUS_SUCCESS);
 
     ASSERT_EQ(cuBool_Matrix_Build(matrix, test_matrix.rowsIndex.data(), test_matrix.colsIndex.data(), test_matrix.nvals,
-        CUBOOL_HINT_VALUES_SORTED & CUBOOL_HINT_NO_DUPLICATES), CUBOOL_STATUS_SUCCESS);
+                                  CUBOOL_HINT_VALUES_SORTED & CUBOOL_HINT_NO_DUPLICATES),
+              CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Matrix_Build(mask, test_mask.rowsIndex.data(), test_mask.colsIndex.data(), test_mask.nvals,
-        CUBOOL_HINT_VALUES_SORTED & CUBOOL_HINT_NO_DUPLICATES), CUBOOL_STATUS_SUCCESS);
+                                  CUBOOL_HINT_VALUES_SORTED & CUBOOL_HINT_NO_DUPLICATES),
+              CUBOOL_STATUS_SUCCESS);
 
     cuBool_Matrix_EWiseMulInverted(result, matrix, mask, CUBOOL_HINT_NO);
 
@@ -38,8 +40,8 @@ void testApplyNotMask(const DataMatrix &matrix_data, const DataMatrix &mask_data
     cuBool_Matrix_Free(result);
 
     auto mask_data_inverted = mask_data;
-    for (auto &row : mask_data_inverted) {
-        for (int &value : row) {
+    for (auto& row : mask_data_inverted) {
+        for (int& value : row) {
             value = !value;
         }
     }
@@ -54,22 +56,21 @@ void testApplyNotMask(const DataMatrix &matrix_data, const DataMatrix &mask_data
             ASSERT_EQ(matrix_data[i][j] * mask_data_inverted[i][j], result_data[i][j]);
         }
     }
-
 }
 
 TEST(cuBool_Matrix, ApplyMatrix) {
     ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
 
-    DataMatrix matrix {
-        {1, 0, 0},
-        {0, 0, 0},
-        {0, 1, 0},
+    DataMatrix matrix{
+            {1, 0, 0},
+            {0, 0, 0},
+            {0, 1, 0},
     };
 
-    DataMatrix mask {
-        {0, 1, 1},
-        {1, 0, 1},
-        {0, 1, 1},
+    DataMatrix mask{
+            {0, 1, 1},
+            {1, 0, 1},
+            {0, 1, 1},
     };
     // iverted is
     // 1 0 0
@@ -95,7 +96,7 @@ TEST(cuBool_Matrix, ApplyMatrixRandom) {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
                 matrix[i][j] = rand() & 1;
-                mask[i][j] = rand() & 1;
+                mask[i][j]   = rand() & 1;
             }
         }
 

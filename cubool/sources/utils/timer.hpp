@@ -50,12 +50,12 @@ namespace cubool {
         }
 
     private:
-        using clock = std::chrono::high_resolution_clock;
+        using clock     = std::chrono::high_resolution_clock;
         using timepoint = clock::time_point;
         timepoint mStart;
         timepoint mEnd;
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_TIMER_HPP
+#endif//CUBOOL_TIMER_HPP

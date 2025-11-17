@@ -26,13 +26,12 @@
 
 cuBool_Status cuBool_Vector_Nvals(
         cuBool_Vector vector,
-        cuBool_Index* nvals
-) {
+        cuBool_Index* nvals) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(vector)
-        CUBOOL_ARG_NOT_NULL(nvals)
-        auto v = (cubool::Vector *) vector;
-        *nvals = v->getNvals();
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(vector)
+    CUBOOL_ARG_NOT_NULL(nvals)
+    auto v = (cubool::Vector*) vector;
+    *nvals = v->getNvals();
     CUBOOL_END_BODY
 }

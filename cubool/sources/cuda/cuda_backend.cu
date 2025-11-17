@@ -22,10 +22,10 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
+#include <core/library.hpp>
 #include <cuda/cuda_backend.hpp>
 #include <cuda/cuda_matrix.hpp>
 #include <cuda/cuda_vector.hpp>
-#include <core/library.hpp>
 #include <io/logger.hpp>
 
 #include <iostream>
@@ -71,7 +71,7 @@ namespace cubool {
         return mInstance != nullptr;
     }
 
-    MatrixBase *CudaBackend::createMatrix(size_t nrows, size_t ncols) {
+    MatrixBase* CudaBackend::createMatrix(size_t nrows, size_t ncols) {
         mMatCount++;
         return new CudaMatrix(nrows, ncols, getInstance());
     }
@@ -81,22 +81,22 @@ namespace cubool {
         return new CudaVector(nrows, getInstance());
     }
 
-    void CudaBackend::releaseMatrix(MatrixBase *matrixBase) {
+    void CudaBackend::releaseMatrix(MatrixBase* matrixBase) {
         mMatCount--;
         delete matrixBase;
     }
 
-    void CudaBackend::releaseVector(VectorBase *vectorBase) {
+    void CudaBackend::releaseVector(VectorBase* vectorBase) {
         mVecCount--;
         delete vectorBase;
     }
 
-    void CudaBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
+    void CudaBackend::queryCapabilities(cuBool_DeviceCaps& caps) {
         mInstance->queryDeviceCapabilities(caps);
     }
 
-    CudaInstance & CudaBackend::getInstance() {
+    CudaInstance& CudaBackend::getInstance() {
         return *mInstance;
     }
 
-}
+}// namespace cubool

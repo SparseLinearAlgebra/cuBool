@@ -38,6 +38,6 @@ namespace cubool {
      */
     void sq_spgemm(const CsrData& a, const CsrData& b, CsrData& out);
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_SQ_SPGEMM_HPP
+#endif//CUBOOL_SQ_SPGEMM_HPP

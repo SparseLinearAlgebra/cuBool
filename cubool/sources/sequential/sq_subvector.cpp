@@ -32,11 +32,11 @@ namespace cubool {
         }
 
         index first = i;
-        index last = i + nrows;
+        index last  = i + nrows;
 
         size_t size = 0;
 
-        for (auto v: a.indices) {
+        for (auto v : a.indices) {
             if (first <= v && v < last) {
                 size += 1;
             }
@@ -46,11 +46,11 @@ namespace cubool {
         out.indices.reserve(size);
         out.nvals = size;
 
-        for (auto v: a.indices) {
+        for (auto v : a.indices) {
             if (first <= v && v < last) {
                 out.indices.push_back(v - i);
             }
         }
     }
 
-}
+}// namespace cubool

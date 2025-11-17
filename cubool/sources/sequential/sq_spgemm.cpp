@@ -22,10 +22,10 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <sequential/sq_spgemm.hpp>
-#include <utils/algo_utils.hpp>
 #include <algorithm>
 #include <limits>
+#include <sequential/sq_spgemm.hpp>
+#include <utils/algo_utils.hpp>
 
 namespace cubool {
 
@@ -69,9 +69,9 @@ namespace cubool {
         mask.resize(b.ncols, max);
 
         for (index i = 0; i < a.nrows; i++) {
-            size_t id = 0;
+            size_t id    = 0;
             size_t first = out.rowOffsets[i];
-            size_t last = out.rowOffsets[i + 1];
+            size_t last  = out.rowOffsets[i + 1];
 
             for (index ak = a.rowOffsets[i]; ak < a.rowOffsets[i + 1]; ak++) {
                 index k = a.colIndices[ak];
@@ -81,7 +81,7 @@ namespace cubool {
 
                     // Do not compute col nnz twice
                     if (mask[j] != i) {
-                        mask[j] = i;
+                        mask[j]                    = i;
                         out.colIndices[first + id] = j;
                         id += 1;
                     }
@@ -93,4 +93,4 @@ namespace cubool {
         }
     }
 
-}
+}// namespace cubool

@@ -36,6 +36,6 @@ namespace cubool {
      */
     void sq_transpose(const CsrData& a, CsrData& at);
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_SQ_TRANSPOSE_HPP
+#endif//CUBOOL_SQ_TRANSPOSE_HPP

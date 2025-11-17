@@ -22,33 +22,32 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuBool_Common.hpp>
-#include <cstring>
 #include <cmath>
+#include <cstring>
+#include <cuBool_Common.hpp>
 
 cuBool_Status cuBool_Matrix_Marker(
         cuBool_Matrix matrix,
-        char* marker,
-        cuBool_Index* size
-) {
+        char*         marker,
+        cuBool_Index* size) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        CUBOOL_ARG_NOT_NULL(size)
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(matrix)
+    CUBOOL_ARG_NOT_NULL(size)
 
-        auto m = (cubool::Matrix*) matrix;
-        auto actualSize = m->getDebugMarkerSizeWithNullT();
-        auto toCopy = std::min(*size, actualSize);
+    auto m          = (cubool::Matrix*) matrix;
+    auto actualSize = m->getDebugMarkerSizeWithNullT();
+    auto toCopy     = std::min(*size, actualSize);
 
-        if (marker != nullptr && toCopy > 0) {
-            // C str (with \0)
-            const auto* text = m->getDebugMarker();
-            std::memcpy(marker, text, toCopy);
+    if (marker != nullptr && toCopy > 0) {
+        // C str (with \0)
+        const auto* text = m->getDebugMarker();
+        std::memcpy(marker, text, toCopy);
 
-            // Explicitly terminate (for case size < actualSize)
-            marker[toCopy - 1] = '\0';
-        }
+        // Explicitly terminate (for case size < actualSize)
+        marker[toCopy - 1] = '\0';
+    }
 
-        *size = actualSize;
+    *size = actualSize;
     CUBOOL_END_BODY
 }

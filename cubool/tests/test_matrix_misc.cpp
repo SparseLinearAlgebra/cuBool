@@ -22,13 +22,13 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <testing/testing.hpp>
 #include <cstring>
+#include <testing/testing.hpp>
 
 TEST(cuBool_Matrix, Duplicate) {
     cuBool_Matrix matrix = nullptr, duplicated = nullptr;
-    cuBool_Index m = 900, n = 600;
-    float density = 0.31;
+    cuBool_Index  m = 900, n = 600;
+    float         density = 0.31;
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generateSparse(m, n, density));
 
@@ -49,8 +49,8 @@ TEST(cuBool_Matrix, Duplicate) {
 
 TEST(cuBool_Matrix, PropertyQuery) {
     cuBool_Matrix matrix = nullptr;
-    cuBool_Index m = 900, n = 600;
-    float density = 0.21;
+    cuBool_Index  m = 900, n = 600;
+    float         density = 0.21;
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generateSparse(m, n, density));
 
@@ -78,8 +78,8 @@ TEST(cuBool_Matrix, PropertyQuery) {
 
 TEST(cuBool_Matrix, ExtractPairs) {
     cuBool_Matrix matrix = nullptr;
-    cuBool_Index m = 900, n = 600;
-    float density = 0.21;
+    cuBool_Index  m = 900, n = 600;
+    float         density = 0.21;
 
     testing::Matrix tmatrix = std::move(testing::Matrix::generateSparse(m, n, density));
 
@@ -88,7 +88,7 @@ TEST(cuBool_Matrix, ExtractPairs) {
     ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Matrix_Build(matrix, tmatrix.rowsIndex.data(), tmatrix.colsIndex.data(), tmatrix.nvals, CUBOOL_HINT_VALUES_SORTED), CUBOOL_STATUS_SUCCESS);
 
-    cuBool_Index nvals = tmatrix.nvals;
+    cuBool_Index              nvals = tmatrix.nvals;
     std::vector<cuBool_Index> rows(tmatrix.nvals);
     std::vector<cuBool_Index> cols(tmatrix.nvals);
 
@@ -101,14 +101,14 @@ TEST(cuBool_Matrix, ExtractPairs) {
 
 TEST(cuBool_Matrix, Marker) {
     cuBool_Matrix matrix = nullptr;
-    cuBool_Index m, n;
+    cuBool_Index  m, n;
 
     m = n = 100;
 
     const cuBool_Index BUFFER_SIZE = 100;
-    const char* marker = "Test Matrix Marker";
-    cuBool_Index size = 0;
-    char buffer[BUFFER_SIZE];
+    const char*        marker      = "Test Matrix Marker";
+    cuBool_Index       size        = 0;
+    char               buffer[BUFFER_SIZE];
 
     ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);
@@ -128,14 +128,14 @@ TEST(cuBool_Matrix, Marker) {
 
 TEST(cuBool_Matrix, MarkerShort) {
     cuBool_Matrix matrix = nullptr;
-    cuBool_Index m, n;
+    cuBool_Index  m, n;
 
     m = n = 100;
 
     const cuBool_Index BUFFER_SIZE = 10;
-    const char* marker = "Test Matrix Marker";
-    cuBool_Index size = BUFFER_SIZE;
-    char buffer[BUFFER_SIZE];
+    const char*        marker      = "Test Matrix Marker";
+    cuBool_Index       size        = BUFFER_SIZE;
+    char               buffer[BUFFER_SIZE];
 
     ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
     ASSERT_EQ(cuBool_Matrix_New(&matrix, m, n), CUBOOL_STATUS_SUCCESS);

@@ -29,11 +29,11 @@
 
 namespace testing {
 
-    template <typename Stream>
+    template<typename Stream>
     void printMatrix(Stream& stream, const cuBool_Index* rowsIndex, const cuBool_Index* colsIndex, cuBool_Index nrows, cuBool_Index ncols, cuBool_Index nvals) {
         cuBool_Index currentRow = 0;
         cuBool_Index currentCol = 0;
-        cuBool_Index currentId = 0;
+        cuBool_Index currentId  = 0;
 
         while (currentId < nvals) {
             auto i = rowsIndex[currentId];
@@ -76,8 +76,8 @@ namespace testing {
         cuBool_Matrix matrix;
     };
 
-    template <typename Stream>
-    Stream& operator <<(Stream& stream, Print p) {
+    template<typename Stream>
+    Stream& operator<<(Stream& stream, Print p) {
         cuBool_Matrix matrix = p.matrix;
         assert(matrix);
 
@@ -99,12 +99,12 @@ namespace testing {
         return stream;
     }
 
-    template <typename Stream>
-    Stream& operator <<(Stream& stream, const Matrix& a) {
+    template<typename Stream>
+    Stream& operator<<(Stream& stream, const Matrix& a) {
         printMatrix(stream, a.rowsIndex.data(), a.colsIndex.data(), a.nrows, a.ncols, a.nvals);
         return stream;
     }
-    
-}
 
-#endif //CUBOOL_TESTING_MATRIXPRINTING_HPP
+}// namespace testing
+
+#endif//CUBOOL_TESTING_MATRIXPRINTING_HPP

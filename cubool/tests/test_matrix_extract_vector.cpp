@@ -50,7 +50,7 @@ void testMatrixExtractRow(cuBool_Index m, cuBool_Index n, float density, cuBool_
 void testMatrixExtractCol(cuBool_Index m, cuBool_Index n, float density, cuBool_Hints flags) {
     cuBool_Matrix a;
 
-    auto ta = testing::Matrix::generateSparse(m, n, density);
+    auto ta  = testing::Matrix::generateSparse(m, n, density);
     auto taT = ta.transpose();
 
     ASSERT_EQ(cuBool_Matrix_New(&a, m, n), CUBOOL_STATUS_SUCCESS);

@@ -32,7 +32,7 @@ namespace cubool {
     /**
      * Sequential backend for Cpu side computations (fallback).
      */
-    class SqBackend final: public BackendBase {
+    class SqBackend final : public BackendBase {
     public:
         ~SqBackend() override = default;
 
@@ -40,10 +40,10 @@ namespace cubool {
         void finalize() override;
         bool isInitialized() const override;
 
-        MatrixBase *createMatrix(size_t nrows, size_t ncols) override;
+        MatrixBase* createMatrix(size_t nrows, size_t ncols) override;
         VectorBase* createVector(size_t nrows) override;
-        void releaseMatrix(MatrixBase *matrixBase) override;
-        void releaseVector(VectorBase* vectorBase) override;
+        void        releaseMatrix(MatrixBase* matrixBase) override;
+        void        releaseVector(VectorBase* vectorBase) override;
 
         void queryCapabilities(cuBool_DeviceCaps& caps) override;
 
@@ -52,6 +52,6 @@ namespace cubool {
         size_t mVecCount = 0;
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_SQ_BACKEND_HPP
+#endif//CUBOOL_SQ_BACKEND_HPP

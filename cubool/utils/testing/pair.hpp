@@ -37,30 +37,30 @@ namespace testing {
 
     struct PairHash {
     public:
-        std::size_t operator()(const Pair &x) const {
+        std::size_t operator()(const Pair& x) const {
             return std::hash<size_t>()(x.i) ^ std::hash<size_t>()(x.j);
         }
     };
 
     struct PairCmp {
     public:
-        bool operator()(const Pair &a, const Pair& b) const {
+        bool operator()(const Pair& a, const Pair& b) const {
             return a.i < b.i || (a.i == b.i && a.j < b.j);
         }
     };
 
     struct PairEq {
     public:
-        bool operator()(const Pair &a, const Pair& b)  const {
+        bool operator()(const Pair& a, const Pair& b) const {
             return a.i == b.i && a.j == b.j;
         }
     };
 
-    bool operator ==(const Pair& a, const Pair& b) {
+    bool operator==(const Pair& a, const Pair& b) {
         PairEq pairEq;
         return pairEq(a, b);
     }
 
-}
+}// namespace testing
 
-#endif //CUBOOL_TESTING_PAIR_HPP
+#endif//CUBOOL_TESTING_PAIR_HPP

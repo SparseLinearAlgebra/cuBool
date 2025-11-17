@@ -63,7 +63,7 @@ namespace testing {
 
             std::sort(vals.begin(), vals.end(), PairCmp{});
 
-            for (auto& p: vals) {
+            for (auto& p : vals) {
                 result.rowsIndex.push_back(p.i);
                 result.colsIndex.push_back(p.j);
             }
@@ -72,6 +72,6 @@ namespace testing {
         }
     };
 
-}
+}// namespace testing
 
-#endif //CUBOOL_TESTING_MATRIXKRONECKER_HPP
+#endif//CUBOOL_TESTING_MATRIXKRONECKER_HPP

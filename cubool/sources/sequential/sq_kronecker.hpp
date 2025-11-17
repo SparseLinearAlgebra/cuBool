@@ -37,6 +37,6 @@ namespace cubool {
      */
     void sq_kronecker(const CsrData& a, const CsrData& b, CsrData& out);
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_SP_KRONECKER_HPP
+#endif//CUBOOL_SP_KRONECKER_HPP

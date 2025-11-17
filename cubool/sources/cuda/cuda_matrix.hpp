@@ -26,37 +26,37 @@
 #define CUBOOL_CUDA_MATRIX_HPP
 
 #include <backend/matrix_base.hpp>
-#include <cuda/details/host_allocator.hpp>
 #include <cuda/details/device_allocator.cuh>
+#include <cuda/details/host_allocator.hpp>
 #include <nsparse/matrix.h>
 
 namespace cubool {
 
-    class CudaMatrix: public MatrixBase {
+    class CudaMatrix : public MatrixBase {
     public:
         template<typename T>
         using DeviceAlloc = details::DeviceAllocator<T>;
         template<typename T>
-        using HostAlloc = details::HostAllocator<T>;
+        using HostAlloc      = details::HostAllocator<T>;
         using MatrixImplType = nsparse::matrix<bool, index, DeviceAlloc<index>>;
 
         CudaMatrix(size_t nrows, size_t ncols, CudaInstance& instance);
         ~CudaMatrix() override = default;
 
         void setElement(index i, index j) override;
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) override;
-        void extract(index* rows, index* cols, size_t &nvals) override;
-        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols, bool checkTime) override;
+        void build(const index* rows, const index* cols, size_t nvals, bool isSorted, bool noDuplicates) override;
+        void extract(index* rows, index* cols, size_t& nvals) override;
+        void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols, bool checkTime) override;
 
-        void clone(const MatrixBase &other) override;
-        void transpose(const MatrixBase &other, bool checkTime) override;
-        void reduce(const MatrixBase &other, bool checkTime) override;
+        void clone(const MatrixBase& other) override;
+        void transpose(const MatrixBase& other, bool checkTime) override;
+        void reduce(const MatrixBase& other, bool checkTime) override;
 
-        void multiply(const MatrixBase &a, const MatrixBase &b, bool accumulate, bool checkTime) override;
-        void kronecker(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
-        void eWiseAdd(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
-        void eWiseMult(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
-        void eWiseMultInverted(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
+        void multiply(const MatrixBase& a, const MatrixBase& b, bool accumulate, bool checkTime) override;
+        void kronecker(const MatrixBase& a, const MatrixBase& b, bool checkTime) override;
+        void eWiseAdd(const MatrixBase& a, const MatrixBase& b, bool checkTime) override;
+        void eWiseMult(const MatrixBase& a, const MatrixBase& b, bool checkTime) override;
+        void eWiseMultInverted(const MatrixBase& a, const MatrixBase& b, bool checkTime) override;
 
         index getNrows() const override;
         index getNcols() const override;
@@ -68,16 +68,16 @@ namespace cubool {
         void resizeStorageToDim() const;
         void clearAndResizeStorageToDim() const;
         bool isMatrixEmpty() const;
-        void transferToDevice(const std::vector<index> &rowOffsets, const std::vector<index> &colIndices) const;
-        void transferFromDevice(std::vector<index> &rowOffsets, std::vector<index> &colIndices) const;
+        void transferToDevice(const std::vector<index>& rowOffsets, const std::vector<index>& colIndices) const;
+        void transferFromDevice(std::vector<index>& rowOffsets, std::vector<index>& colIndices) const;
 
         // Uses nsparse csr matrix implementation as a backend
         mutable MatrixImplType mMatrixImpl;
 
-        size_t mNrows = 0;
-        size_t mNcols = 0;
+        size_t        mNrows = 0;
+        size_t        mNcols = 0;
         CudaInstance& mInstance;
     };
-};
+};// namespace cubool
 
-#endif //CUBOOL_CUDA_MATRIX_HPP
+#endif//CUBOOL_CUDA_MATRIX_HPP

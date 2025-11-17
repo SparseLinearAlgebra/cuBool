@@ -22,12 +22,12 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
+#include <cassert>
+#include <core/library.hpp>
+#include <io/logger.hpp>
 #include <sequential/sq_backend.hpp>
 #include <sequential/sq_matrix.hpp>
 #include <sequential/sq_vector.hpp>
-#include <core/library.hpp>
-#include <io/logger.hpp>
-#include <cassert>
 
 namespace cubool {
 
@@ -56,7 +56,7 @@ namespace cubool {
         return true;
     }
 
-    MatrixBase *SqBackend::createMatrix(size_t nrows, size_t ncols) {
+    MatrixBase* SqBackend::createMatrix(size_t nrows, size_t ncols) {
         mMatCount++;
         return new SqMatrix(nrows, ncols);
     }
@@ -66,18 +66,18 @@ namespace cubool {
         return new SqVector(nrows);
     }
 
-    void SqBackend::releaseMatrix(MatrixBase *matrixBase) {
+    void SqBackend::releaseMatrix(MatrixBase* matrixBase) {
         mMatCount--;
         delete matrixBase;
     }
 
-    void SqBackend::releaseVector(VectorBase *vectorBase) {
+    void SqBackend::releaseVector(VectorBase* vectorBase) {
         mVecCount--;
         delete vectorBase;
     }
 
-    void SqBackend::queryCapabilities(cuBool_DeviceCaps &caps) {
+    void SqBackend::queryCapabilities(cuBool_DeviceCaps& caps) {
         caps.cudaSupported = false;
     }
 
-}
+}// namespace cubool

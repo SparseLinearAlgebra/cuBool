@@ -25,11 +25,10 @@
 #include <cuBool_Common.hpp>
 
 cuBool_Status cuBool_GetDeviceCaps(
-        cuBool_DeviceCaps* deviceCaps
-) {
+        cuBool_DeviceCaps* deviceCaps) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(deviceCaps)
-        cubool::Library::queryCapabilities(*deviceCaps);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(deviceCaps)
+    cubool::Library::queryCapabilities(*deviceCaps);
     CUBOOL_END_BODY
 }

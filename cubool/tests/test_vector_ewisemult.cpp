@@ -44,7 +44,7 @@ void testVectorMult(cuBool_Index m, float density, cuBool_Hints flags) {
 
     // Evaluate naive r += a on the cpu to compare results
     testing::VectorEWiseMultFunctor functor;
-    auto tr = std::move(functor(ta, tb));
+    auto                            tr = std::move(functor(ta, tb));
 
     // Compare results
     ASSERT_EQ(tr.areEqual(r), true);

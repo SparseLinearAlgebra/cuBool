@@ -25,13 +25,12 @@
 #include <cuBool_Common.hpp>
 
 cuBool_Status cuBool_GetVersion(
-        int *major,
-        int *minor,
-        int *sub
-) {
-    auto MAJOR = (uint32_t)(CUBOOL_MAJOR);
-    auto MINOR = (uint32_t)(CUBOOL_MINOR);
-    auto SUB = (uint32_t)(CUBOOL_SUB);
+        int* major,
+        int* minor,
+        int* sub) {
+    auto MAJOR = (uint32_t) (CUBOOL_MAJOR);
+    auto MINOR = (uint32_t) (CUBOOL_MINOR);
+    auto SUB   = (uint32_t) (CUBOOL_SUB);
 
     if (major)
         *major = MAJOR;

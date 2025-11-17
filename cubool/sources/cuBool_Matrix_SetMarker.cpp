@@ -26,13 +26,12 @@
 
 cuBool_Status cuBool_Matrix_SetMarker(
         cuBool_Matrix matrix,
-        const char* marker
-) {
+        const char*   marker) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        CUBOOL_ARG_NOT_NULL(marker)
-        auto m = (cubool::Matrix*) matrix;
-        m->setDebugMarker(marker);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(matrix)
+    CUBOOL_ARG_NOT_NULL(marker)
+    auto m = (cubool::Matrix*) matrix;
+    m->setDebugMarker(marker);
     CUBOOL_END_BODY
 }

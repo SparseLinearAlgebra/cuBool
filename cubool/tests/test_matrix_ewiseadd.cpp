@@ -44,7 +44,7 @@ void testMatrixAdd(cuBool_Index m, cuBool_Index n, float density, cuBool_Hints f
 
     // Evaluate naive r += a on the cpu to compare results
     testing::MatrixEWiseAddFunctor functor;
-    auto tr = std::move(functor(ta, tb));
+    auto                           tr = std::move(functor(ta, tb));
 
     // Compare results
     ASSERT_EQ(tr.areEqual(r), true);

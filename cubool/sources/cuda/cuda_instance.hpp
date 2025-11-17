@@ -35,40 +35,39 @@ namespace cubool {
      */
     class CudaInstance {
     public:
-
         enum MemType {
             Default,
             Managed
         };
 
         explicit CudaInstance(bool useManagedMemory);
-        CudaInstance(const CudaInstance& other) = delete;
+        CudaInstance(const CudaInstance& other)     = delete;
         CudaInstance(CudaInstance&& other) noexcept = delete;
         ~CudaInstance();
 
         // For custom host & device allocators
-        void allocate(void* &ptr, size_t s) const;
-        void allocateOnGpu(void* &ptr, size_t s) const;
+        void allocate(void*& ptr, size_t s) const;
+        void allocateOnGpu(void*& ptr, size_t s) const;
         void deallocate(void* ptr) const;
         void deallocateOnGpu(void* ptr) const;
         void queryDeviceCapabilities(cuBool_DeviceCaps& deviceCaps) const;
 
-        void syncHostDevice() const;
+        void    syncHostDevice() const;
         MemType getMemoryType() const;
 
-        static bool isCudaDeviceSupported();
+        static bool          isCudaDeviceSupported();
         static CudaInstance& getInstanceRef();
         static CudaInstance* getInstancePtr();
-        static bool isInstancePresent();
+        static bool          isInstancePresent();
 
     private:
-        MemType mMemoryType = Default;
-        mutable size_t mHostAllocCount = 0;
+        MemType        mMemoryType       = Default;
+        mutable size_t mHostAllocCount   = 0;
         mutable size_t mDeviceAllocCount = 0;
 
         static volatile CudaInstance* gInstance;
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_CUDA_INSTANCE_HPP
+#endif//CUBOOL_CUDA_INSTANCE_HPP

@@ -28,16 +28,15 @@ cuBool_Status cuBool_MxV(
         cuBool_Vector result,
         cuBool_Matrix matrix,
         cuBool_Vector vector,
-        cuBool_Hints hints
-) {
+        cuBool_Hints  hints) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(matrix)
-        CUBOOL_ARG_NOT_NULL(vector)
-        auto resultV = (cubool::Vector *) result;
-        auto left = (cubool::Matrix *) matrix;
-        auto right = (cubool::Vector *) vector;
-        resultV->multiplyMxV(*left, *right, hints & CUBOOL_HINT_TIME_CHECK);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(result)
+    CUBOOL_ARG_NOT_NULL(matrix)
+    CUBOOL_ARG_NOT_NULL(vector)
+    auto resultV = (cubool::Vector*) result;
+    auto left    = (cubool::Matrix*) matrix;
+    auto right   = (cubool::Vector*) vector;
+    resultV->multiplyMxV(*left, *right, hints & CUBOOL_HINT_TIME_CHECK);
     CUBOOL_END_BODY
 }

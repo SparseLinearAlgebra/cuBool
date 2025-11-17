@@ -37,6 +37,6 @@ namespace cubool {
      * @param[out] out Where to store the result
      */
     void sq_ewisemultinverted(const CsrData& a, const CsrData& b, CsrData& out);
-}
+}// namespace cubool
 
-#endif //CUBOOL_SQ_EWISEMULTINVERTED_HPP
+#endif//CUBOOL_SQ_EWISEMULTINVERTED_HPP

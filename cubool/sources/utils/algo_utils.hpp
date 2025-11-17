@@ -27,17 +27,17 @@
 
 namespace cubool {
 
-    template <typename FirstT, typename LastT, typename T>
+    template<typename FirstT, typename LastT, typename T>
     void exclusive_scan(FirstT firstT, LastT lastT, T initial) {
         T sum = initial;
         while (firstT != lastT) {
-            T next = sum + *firstT;
+            T next  = sum + *firstT;
             *firstT = sum;
-            sum = next;
+            sum     = next;
             firstT++;
         }
     }
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_ALGO_UTILS_HPP
+#endif//CUBOOL_ALGO_UTILS_HPP

@@ -25,10 +25,10 @@
 #ifndef CUBOOL_TESTING_MATRIXGENERATOR_HPP
 #define CUBOOL_TESTING_MATRIXGENERATOR_HPP
 
+#include <ctime>
+#include <random>
 #include <testing/pair.hpp>
 #include <vector>
-#include <random>
-#include <ctime>
 
 namespace testing {
 
@@ -46,19 +46,20 @@ namespace testing {
 
     struct Condition3 {
     public:
-        explicit Condition3(float density): mDensity(density) {
+        explicit Condition3(float density) : mDensity(density) {
             mRandomEngine.seed(std::time(0));
         }
         bool operator()(cuBool_Index i, cuBool_Index j) {
             return std::uniform_real_distribution<float>(0.0f, 1.0f)(mRandomEngine) <= mDensity;
         }
+
     private:
         std::default_random_engine mRandomEngine;
-        float mDensity = 1.0f;
+        float                      mDensity = 1.0f;
     };
 
     template<typename Condition>
-    static void generateTestData(size_t rows, size_t columns, std::vector<Pair> &values, Condition&& condition) {
+    static void generateTestData(size_t rows, size_t columns, std::vector<Pair>& values, Condition&& condition) {
         for (cuBool_Index i = 0; i < rows; i++) {
             for (cuBool_Index j = 0; j < columns; j++) {
                 // is i and j power of two or 0
@@ -70,7 +71,7 @@ namespace testing {
     }
 
     template<typename Condition>
-    static void generateTestData(size_t nrows, size_t ncols, std::vector<cuBool_Index> &rows, std::vector<cuBool_Index> &cols, size_t& nvals, Condition&& condition) {
+    static void generateTestData(size_t nrows, size_t ncols, std::vector<cuBool_Index>& rows, std::vector<cuBool_Index>& cols, size_t& nvals, Condition&& condition) {
         nvals = 0;
         for (cuBool_Index i = 0; i < nrows; i++) {
             for (cuBool_Index j = 0; j < ncols; j++) {
@@ -83,7 +84,7 @@ namespace testing {
             }
         }
     }
-    
-}
 
-#endif //CUBOOL_TESTING_MATRIXGENERATOR_HPP
+}// namespace testing
+
+#endif//CUBOOL_TESTING_MATRIXGENERATOR_HPP

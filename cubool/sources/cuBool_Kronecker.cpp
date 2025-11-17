@@ -28,16 +28,15 @@ cuBool_Status cuBool_Kronecker(
         cuBool_Matrix result,
         cuBool_Matrix left,
         cuBool_Matrix right,
-        cuBool_Hints hints
-) {
+        cuBool_Hints  hints) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(result)
-        CUBOOL_ARG_NOT_NULL(left)
-        CUBOOL_ARG_NOT_NULL(right)
-        auto resultM = (cubool::Matrix *) result;
-        auto leftM = (cubool::Matrix *) left;
-        auto rightM = (cubool::Matrix *) right;
-        resultM->kronecker(*leftM, *rightM, hints & CUBOOL_HINT_TIME_CHECK);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(result)
+    CUBOOL_ARG_NOT_NULL(left)
+    CUBOOL_ARG_NOT_NULL(right)
+    auto resultM = (cubool::Matrix*) result;
+    auto leftM   = (cubool::Matrix*) left;
+    auto rightM  = (cubool::Matrix*) right;
+    resultM->kronecker(*leftM, *rightM, hints & CUBOOL_HINT_TIME_CHECK);
     CUBOOL_END_BODY
 }

@@ -26,23 +26,23 @@
 
 namespace cubool {
 
-    void Logger::logInfo(const std::string &message) {
+    void Logger::logInfo(const std::string& message) {
         this->log(Level::Info, message);
     }
 
-    void Logger::logWarning(const std::string &message) {
+    void Logger::logWarning(const std::string& message) {
         this->log(Level::Warning, message);
     }
 
-    void Logger::logError(const std::string &message) {
+    void Logger::logError(const std::string& message) {
         this->log(Level::Error, message);
     }
 
-    void TextLogger::log(Logger::Level level, const std::string &message) {
+    void TextLogger::log(Logger::Level level, const std::string& message) {
         bool pass = true;
 
         // If pass all filters
-        for (const auto& filter: mFilters) {
+        for (const auto& filter : mFilters) {
             pass = pass && filter(level, message);
         }
 
@@ -51,13 +51,13 @@ namespace cubool {
 
             Entry entry;
             entry.message = message;
-            entry.level = level;
-            entry.id = id;
+            entry.level   = level;
+            entry.id      = id;
 
             mEntries.emplace_back(std::move(entry));
 
             // Notify listeners
-            for (const auto& action: mOnLogged) {
+            for (const auto& action : mOnLogged) {
                 action(id, level, message);
             }
         }
@@ -87,7 +87,7 @@ namespace cubool {
         mOnLogged.clear();
     }
 
-    void DummyLogger::log(Logger::Level level, const std::string &message) {
+    void DummyLogger::log(Logger::Level level, const std::string& message) {
         // no op.
     }
 
@@ -98,4 +98,4 @@ namespace cubool {
     bool DummyLogger::isDummy() const {
         return true;
     }
-}
+}// namespace cubool

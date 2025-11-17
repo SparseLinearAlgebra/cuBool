@@ -45,7 +45,7 @@ namespace testing {
         }
 
     private:
-        using clock = std::chrono::high_resolution_clock;
+        using clock     = std::chrono::high_resolution_clock;
         using timepoint = clock::time_point;
         timepoint mStart;
         timepoint mEnd;
@@ -63,13 +63,13 @@ namespace testing {
         }
 
     private:
-        double mTimeSumMS = 0.0f;
-        int mSamplesCount = 0;
+        double mTimeSumMS    = 0.0f;
+        int    mSamplesCount = 0;
     };
 
     struct TimeScope {
     public:
-        explicit TimeScope(TimeQuery &query) : mTimeQuery(query) {
+        explicit TimeScope(TimeQuery& query) : mTimeQuery(query) {
             mTimer.start();
         }
 
@@ -79,10 +79,10 @@ namespace testing {
         }
 
     private:
-        Timer mTimer;
-        TimeQuery &mTimeQuery;
+        Timer      mTimer;
+        TimeQuery& mTimeQuery;
     };
 
-}
+}// namespace testing
 
-#endif //CUBOOL_TESTING_TIMER_HPP
+#endif//CUBOOL_TESTING_TIMER_HPP

@@ -34,4 +34,4 @@
 /** Defined in cmake */
 #define CUBOOL_SUB CUBOOL_VERSION_SUB
 
-#endif //CUBOOL_VERSION_HPP
+#endif//CUBOOL_VERSION_HPP

@@ -22,14 +22,14 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
+#include <cassert>
+#include <core/error.hpp>
 #include <cuda/cuda_vector.hpp>
 #include <cuda/kernels/spewisemult.cuh>
-#include <core/error.hpp>
-#include <cassert>
 
 namespace cubool {
 
-    void CudaVector::eWiseMult(const VectorBase &aBase, const VectorBase &bBase, bool checkTime) {
+    void CudaVector::eWiseMult(const VectorBase& aBase, const VectorBase& bBase, bool checkTime) {
         const auto* a = dynamic_cast<const CudaVector*>(&aBase);
         const auto* b = dynamic_cast<const CudaVector*>(&bBase);
 
@@ -39,8 +39,9 @@ namespace cubool {
         assert(a->getNrows() == b->getNrows());
 
         kernels::SpVectorEWiseMult<index, DeviceAlloc<index>> functor;
-        auto result = functor(a->mVectorImpl, b->mVectorImpl);
+        auto                                                  result = functor(a->mVectorImpl, b->mVectorImpl);
 
-        mVectorImpl = std::move(result);    }
+        mVectorImpl = std::move(result);
+    }
 
-}
+}// namespace cubool

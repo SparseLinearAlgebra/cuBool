@@ -26,13 +26,12 @@
 
 cuBool_Status cuBool_Matrix_SetElement(
         cuBool_Matrix matrix,
-        cuBool_Index i,
-        cuBool_Index j
-) {
+        cuBool_Index  i,
+        cuBool_Index  j) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(matrix)
-        auto m = (cubool::Matrix*) matrix;
-        m->setElement(i, j);
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(matrix)
+    auto m = (cubool::Matrix*) matrix;
+    m->setElement(i, j);
     CUBOOL_END_BODY
 }

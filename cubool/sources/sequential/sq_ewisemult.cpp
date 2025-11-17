@@ -34,13 +34,13 @@ namespace cubool {
 
         // Count nnz of the result matrix to allocate memory
         for (index i = 0; i < a.nrows; i++) {
-            index ak = a.rowOffsets[i];
-            index bk = b.rowOffsets[i];
+            index ak    = a.rowOffsets[i];
+            index bk    = b.rowOffsets[i];
             index asize = a.rowOffsets[i + 1] - ak;
             index bsize = b.rowOffsets[i + 1] - bk;
 
-            const index* ar = &a.colIndices[ak];
-            const index* br = &b.colIndices[bk];
+            const index* ar    = &a.colIndices[ak];
+            const index* br    = &b.colIndices[bk];
             const index* arend = ar + asize;
             const index* brend = br + bsize;
 
@@ -51,11 +51,9 @@ namespace cubool {
                     nvalsInRow++;
                     ar++;
                     br++;
-                }
-                else if (*ar < *br) {
+                } else if (*ar < *br) {
                     ar++;
-                }
-                else {
+                } else {
                     br++;
                 }
             }
@@ -74,8 +72,8 @@ namespace cubool {
         // Fill sorted column indices
         size_t k = 0;
         for (index i = 0; i < a.nrows; i++) {
-            const index* ar = &a.colIndices[a.rowOffsets[i]];
-            const index* br = &b.colIndices[b.rowOffsets[i]];
+            const index* ar    = &a.colIndices[a.rowOffsets[i]];
+            const index* br    = &b.colIndices[b.rowOffsets[i]];
             const index* arend = &a.colIndices[a.rowOffsets[i + 1]];
             const index* brend = &b.colIndices[b.rowOffsets[i + 1]];
 
@@ -85,11 +83,9 @@ namespace cubool {
                     k++;
                     ar++;
                     br++;
-                }
-                else if (*ar < *br) {
+                } else if (*ar < *br) {
                     ar++;
-                }
-                else {
+                } else {
                     br++;
                 }
             }
@@ -110,11 +106,9 @@ namespace cubool {
                 out.indices.push_back(*aP);
                 aP++;
                 bP++;
-            }
-            else if (*aP < *bP) {
+            } else if (*aP < *bP) {
                 aP++;
-            }
-            else {
+            } else {
                 bP++;
             }
         }
@@ -122,4 +116,4 @@ namespace cubool {
         out.nvals = out.indices.size();
     }
 
-}
+}// namespace cubool

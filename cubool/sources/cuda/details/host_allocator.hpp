@@ -25,44 +25,43 @@
 #ifndef CUBOOL_HOST_ALLOCATOR_HPP
 #define CUBOOL_HOST_ALLOCATOR_HPP
 
-#include <cuda/cuda_instance.hpp>
 #include <core/error.hpp>
+#include <cuda/cuda_instance.hpp>
 
 namespace cubool {
     namespace details {
 
-        template <class T>
+        template<class T>
         class HostAllocator {
         public:
-            typedef size_t size_type;
-            typedef T value_type;
-            typedef T* pointer;
+            typedef size_t   size_type;
+            typedef T        value_type;
+            typedef T*       pointer;
             typedef const T* const_pointer;
-            typedef T& reference;
+            typedef T&       reference;
             typedef const T& const_reference;
 
-            template <class U>
-            struct rebind { typedef HostAllocator<U> other; };
+            template<class U>
+            struct rebind {
+                typedef HostAllocator<U> other;
+            };
 
-            explicit HostAllocator(): mInstanceRef(CudaInstance::getInstanceRef()) {
-
+            explicit HostAllocator() : mInstanceRef(CudaInstance::getInstanceRef()) {
             }
 
-            HostAllocator(const HostAllocator<T> &other): mInstanceRef(other.mInstanceRef) {
-
+            HostAllocator(const HostAllocator<T>& other) : mInstanceRef(other.mInstanceRef) {
             }
 
-            HostAllocator(HostAllocator<T> &&other) noexcept: mInstanceRef(other.mInstanceRef) {
-
+            HostAllocator(HostAllocator<T>&& other) noexcept : mInstanceRef(other.mInstanceRef) {
             }
 
             ~HostAllocator() = default;
 
-            bool operator!=(const HostAllocator<T> &other) const {
+            bool operator!=(const HostAllocator<T>& other) const {
                 return &mInstanceRef != &other.mInstanceRef;
             }
 
-            HostAllocator& operator=(const HostAllocator<T> &other) {
+            HostAllocator& operator=(const HostAllocator<T>& other) {
                 this->~HostAllocator();
                 new (this) HostAllocator<T>(other);
                 return *this;
@@ -75,7 +74,7 @@ namespace cubool {
             }
 
             void deallocate(pointer p, size_type n) {
-                (void)n;
+                (void) n;
                 mInstanceRef.deallocate(p);
             }
 
@@ -83,7 +82,7 @@ namespace cubool {
             CudaInstance& mInstanceRef;
         };
 
-    }
-}
+    }// namespace details
+}// namespace cubool
 
-#endif //CUBOOL_HOST_ALLOCATOR_HPP
+#endif//CUBOOL_HOST_ALLOCATOR_HPP

@@ -28,8 +28,8 @@
 namespace cubool {
 
     void sq_submatrix(const CsrData& a, CsrData& sub, index i, index j, index nrows, index ncols) {
-        index first = i;
-        index last = i + nrows;
+        index  first = i;
+        index  last  = i + nrows;
         size_t nvals = 0;
 
         for (index ai = first; ai < last; ai++) {
@@ -67,4 +67,4 @@ namespace cubool {
         exclusive_scan(sub.rowOffsets.begin(), sub.rowOffsets.end(), 0);
     }
 
-}
+}// namespace cubool

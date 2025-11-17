@@ -33,25 +33,25 @@ namespace cubool {
     /**
      * Csr matrix for Cpu side operations in sequential backend.
      */
-    class SqMatrix final: public MatrixBase {
+    class SqMatrix final : public MatrixBase {
     public:
         SqMatrix(size_t nrows, size_t ncols);
         ~SqMatrix() override = default;
 
         void setElement(index i, index j) override;
-        void build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) override;
-        void extract(index *rows, index *cols, size_t &nvals) override;
-        void extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols, bool checkTime) override;
+        void build(const index* rows, const index* cols, size_t nvals, bool isSorted, bool noDuplicates) override;
+        void extract(index* rows, index* cols, size_t& nvals) override;
+        void extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols, bool checkTime) override;
 
-        void clone(const MatrixBase &otherBase) override;
-        void transpose(const MatrixBase &otherBase, bool checkTime) override;
-        void reduce(const MatrixBase &otherBase, bool checkTime) override;
+        void clone(const MatrixBase& otherBase) override;
+        void transpose(const MatrixBase& otherBase, bool checkTime) override;
+        void reduce(const MatrixBase& otherBase, bool checkTime) override;
 
-        void multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) override;
-        void kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
-        void eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) override;
-        void eWiseMult(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
-        void eWiseMultInverted(const MatrixBase &a, const MatrixBase &b, bool checkTime) override;
+        void multiply(const MatrixBase& aBase, const MatrixBase& bBase, bool accumulate, bool checkTime) override;
+        void kronecker(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) override;
+        void eWiseAdd(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) override;
+        void eWiseMult(const MatrixBase& a, const MatrixBase& b, bool checkTime) override;
+        void eWiseMultInverted(const MatrixBase& a, const MatrixBase& b, bool checkTime) override;
 
         index getNrows() const override;
         index getNcols() const override;
@@ -64,6 +64,6 @@ namespace cubool {
         mutable CsrData mData;
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_SQ_MATRIX_HPP
+#endif//CUBOOL_SQ_MATRIX_HPP

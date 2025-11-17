@@ -33,7 +33,7 @@ namespace cubool {
     /**
      * Main entry to cuda provided backend implementation.
      */
-    class CudaBackend final: public BackendBase {
+    class CudaBackend final : public BackendBase {
     public:
         ~CudaBackend() override = default;
 
@@ -41,20 +41,20 @@ namespace cubool {
         void finalize() override;
         bool isInitialized() const override;
 
-        MatrixBase *createMatrix(size_t nrows, size_t ncols) override;
+        MatrixBase* createMatrix(size_t nrows, size_t ncols) override;
         VectorBase* createVector(size_t nrows) override;
-        void releaseMatrix(MatrixBase *matrixBase) override;
-        void releaseVector(VectorBase* vectorBase) override;
-        void queryCapabilities(cuBool_DeviceCaps& caps) override;
+        void        releaseMatrix(MatrixBase* matrixBase) override;
+        void        releaseVector(VectorBase* vectorBase) override;
+        void        queryCapabilities(cuBool_DeviceCaps& caps) override;
 
         CudaInstance& getInstance();
 
     private:
         CudaInstance* mInstance;
-        size_t mMatCount = 0;
-        size_t mVecCount = 0;
+        size_t        mMatCount = 0;
+        size_t        mVecCount = 0;
     };
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_CUDA_BACKEND_HPP
+#endif//CUBOOL_CUDA_BACKEND_HPP

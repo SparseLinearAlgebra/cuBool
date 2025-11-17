@@ -47,6 +47,6 @@ namespace cubool {
      */
     void sq_spgemv_transposed(const CsrData& a, const VecData& b, VecData& out);
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_SQ_SPGEMV_HPP
+#endif//CUBOOL_SQ_SPGEMV_HPP

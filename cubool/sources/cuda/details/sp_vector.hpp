@@ -33,29 +33,29 @@ namespace cubool {
         template<typename IndexType, typename AllocType>
         struct SpVector {
         public:
-            typedef bool value_type;
-            typedef IndexType index_type;
-            typedef AllocType alloc_type;
+            typedef bool                                        value_type;
+            typedef IndexType                                   index_type;
+            typedef AllocType                                   alloc_type;
             typedef thrust::device_vector<IndexType, AllocType> container_type;
 
             SpVector()
                 : m_rows_index{}, m_rows{0}, m_vals{0} {}
 
             SpVector(index_type rows)
-                : m_rows_index{}, m_rows (rows), m_vals{0} {}
+                : m_rows_index{}, m_rows(rows), m_vals{0} {}
 
             SpVector(thrust::device_vector<index_type, alloc_type> rows_index, index_type rows, index_type vals)
-                : m_rows_index{ std::move(rows_index) }, m_rows{ rows }, m_vals{ vals }  {
+                : m_rows_index{std::move(rows_index)}, m_rows{rows}, m_vals{vals} {
                 assert(m_rows > 0);
                 assert(m_rows_index.size() == m_vals);
             }
 
         public:
             thrust::device_vector<index_type, alloc_type> m_rows_index;
-            index_type m_rows;
-            index_type m_vals;
+            index_type                                    m_rows;
+            index_type                                    m_vals;
         };
-    }
-}
+    }// namespace details
+}// namespace cubool
 
-#endif //CUBOOL_SP_VECTOR_HPP
+#endif//CUBOOL_SP_VECTOR_HPP

@@ -22,8 +22,8 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <core/object.hpp>
 #include <core/error.hpp>
+#include <core/object.hpp>
 
 namespace cubool {
 
@@ -34,7 +34,7 @@ namespace cubool {
         mMarker = s.str();
     }
 
-    void Object::setDebugMarker(const char *marker) {
+    void Object::setDebugMarker(const char* marker) {
         CHECK_RAISE_ERROR(marker, InvalidArgument, "Null pointer marker string");
 
         // Marker = "$marker (address)"
@@ -51,4 +51,4 @@ namespace cubool {
         return mMarker.length() + 1;
     }
 
-}
+}// namespace cubool

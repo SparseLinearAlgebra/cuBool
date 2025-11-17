@@ -26,23 +26,23 @@
 #define CUBOOL_TESTING_TESTING_HPP
 
 #include <gtest/gtest.h>
-#include <testing/pair.hpp>
-#include <testing/timer.hpp>
 #include <testing/matrix.hpp>
-#include <testing/matrix_printing.hpp>
-#include <testing/matrix_generator.hpp>
 #include <testing/matrix_ewiseadd.hpp>
 #include <testing/matrix_ewisemult.hpp>
-#include <testing/matrix_mxm.hpp>
+#include <testing/matrix_generator.hpp>
 #include <testing/matrix_kronecker.hpp>
+#include <testing/matrix_mxm.hpp>
+#include <testing/matrix_printing.hpp>
+#include <testing/pair.hpp>
+#include <testing/timer.hpp>
 #include <testing/vector.hpp>
 #include <testing/vector_functors.hpp>
 
 // Put in the end of the unit test file
-#define CUBOOL_GTEST_MAIN                                                       \
-    int main(int argc, char *argv[]) {                                          \
-        ::testing::InitGoogleTest(&argc, argv);                                 \
-        return RUN_ALL_TESTS();                                                 \
+#define CUBOOL_GTEST_MAIN                       \
+    int main(int argc, char* argv[]) {          \
+        ::testing::InitGoogleTest(&argc, argv); \
+        return RUN_ALL_TESTS();                 \
     }
 
-#endif //CUBOOL_TESTING_TESTING_HPP
+#endif//CUBOOL_TESTING_TESTING_HPP

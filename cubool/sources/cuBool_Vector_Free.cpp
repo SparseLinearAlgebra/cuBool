@@ -25,11 +25,10 @@
 #include <cuBool_Common.hpp>
 
 CUBOOL_EXPORT CUBOOL_API cuBool_Status cuBool_Vector_Free(
-        cuBool_Vector vector
-) {
+        cuBool_Vector vector) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        auto v = (cubool::Vector *) vector;
-        cubool::Library::releaseVector(v);
+    CUBOOL_VALIDATE_LIBRARY
+    auto v = (cubool::Vector*) vector;
+    cubool::Library::releaseVector(v);
     CUBOOL_END_BODY
 }

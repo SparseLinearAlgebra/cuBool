@@ -22,18 +22,18 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <sequential/sq_matrix.hpp>
-#include <sequential/sq_transpose.hpp>
-#include <sequential/sq_submatrix.hpp>
-#include <sequential/sq_kronecker.hpp>
+#include <cassert>
+#include <core/error.hpp>
 #include <sequential/sq_ewiseadd.hpp>
 #include <sequential/sq_ewisemult.hpp>
 #include <sequential/sq_ewisemultinverted.hpp>
-#include <sequential/sq_spgemm.hpp>
+#include <sequential/sq_kronecker.hpp>
+#include <sequential/sq_matrix.hpp>
 #include <sequential/sq_reduce.hpp>
+#include <sequential/sq_spgemm.hpp>
+#include <sequential/sq_submatrix.hpp>
+#include <sequential/sq_transpose.hpp>
 #include <utils/data_utils.hpp>
-#include <core/error.hpp>
-#include <cassert>
 
 namespace cubool {
 
@@ -49,7 +49,7 @@ namespace cubool {
         RAISE_ERROR(NotImplemented, "This function is not supported for this matrix class");
     }
 
-    void SqMatrix::build(const index *rows, const index *cols, size_t nvals, bool isSorted, bool noDuplicates) {
+    void SqMatrix::build(const index* rows, const index* cols, size_t nvals, bool isSorted, bool noDuplicates) {
         auto nrows = mData.nrows;
         auto ncols = mData.ncols;
 
@@ -62,7 +62,7 @@ namespace cubool {
         mData.nvals = mData.colIndices.size();
     }
 
-    void SqMatrix::extract(index *rows, index *cols, size_t &nvals) {
+    void SqMatrix::extract(index* rows, index* cols, size_t& nvals) {
         assert(nvals >= getNvals());
         nvals = getNvals();
 
@@ -71,7 +71,7 @@ namespace cubool {
         }
     }
 
-    void SqMatrix::extractSubMatrix(const MatrixBase &otherBase, index i, index j, index nrows, index ncols,
+    void SqMatrix::extractSubMatrix(const MatrixBase& otherBase, index i, index j, index nrows, index ncols,
                                     bool checkTime) {
         auto other = dynamic_cast<const SqMatrix*>(&otherBase);
 
@@ -86,7 +86,7 @@ namespace cubool {
         sq_submatrix(other->mData, this->mData, i, j, nrows, ncols);
     }
 
-    void SqMatrix::clone(const MatrixBase &otherBase) {
+    void SqMatrix::clone(const MatrixBase& otherBase) {
         auto other = dynamic_cast<const SqMatrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
@@ -98,7 +98,7 @@ namespace cubool {
         this->mData = other->mData;
     }
 
-    void SqMatrix::transpose(const MatrixBase &otherBase, bool checkTime) {
+    void SqMatrix::transpose(const MatrixBase& otherBase, bool checkTime) {
         auto other = dynamic_cast<const SqMatrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
@@ -117,7 +117,7 @@ namespace cubool {
         this->mData = std::move(out);
     }
 
-    void SqMatrix::reduce(const MatrixBase &otherBase, bool checkTime) {
+    void SqMatrix::reduce(const MatrixBase& otherBase, bool checkTime) {
         auto other = dynamic_cast<const SqMatrix*>(&otherBase);
 
         CHECK_RAISE_ERROR(other != nullptr, InvalidArgument, "Provided matrix does not belongs to sequential matrix class");
@@ -136,7 +136,7 @@ namespace cubool {
         this->mData = std::move(out);
     }
 
-    void SqMatrix::multiply(const MatrixBase &aBase, const MatrixBase &bBase, bool accumulate, bool checkTime) {
+    void SqMatrix::multiply(const MatrixBase& aBase, const MatrixBase& bBase, bool accumulate, bool checkTime) {
         auto a = dynamic_cast<const SqMatrix*>(&aBase);
         auto b = dynamic_cast<const SqMatrix*>(&bBase);
 
@@ -169,7 +169,7 @@ namespace cubool {
         this->mData = std::move(out);
     }
 
-    void SqMatrix::kronecker(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+    void SqMatrix::kronecker(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) {
         auto a = dynamic_cast<const SqMatrix*>(&aBase);
         auto b = dynamic_cast<const SqMatrix*>(&bBase);
 
@@ -190,7 +190,7 @@ namespace cubool {
         this->mData = std::move(out);
     }
 
-    void SqMatrix::eWiseAdd(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+    void SqMatrix::eWiseAdd(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) {
         auto a = dynamic_cast<const SqMatrix*>(&aBase);
         auto b = dynamic_cast<const SqMatrix*>(&bBase);
 
@@ -213,7 +213,7 @@ namespace cubool {
         this->mData = std::move(out);
     }
 
-    void SqMatrix::eWiseMult(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+    void SqMatrix::eWiseMult(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) {
         auto a = dynamic_cast<const SqMatrix*>(&aBase);
         auto b = dynamic_cast<const SqMatrix*>(&bBase);
 
@@ -236,7 +236,7 @@ namespace cubool {
         this->mData = std::move(out);
     }
 
-    void SqMatrix::eWiseMultInverted(const MatrixBase &aBase, const MatrixBase &bBase, bool checkTime) {
+    void SqMatrix::eWiseMultInverted(const MatrixBase& aBase, const MatrixBase& bBase, bool checkTime) {
         auto a = dynamic_cast<const SqMatrix*>(&aBase);
         auto b = dynamic_cast<const SqMatrix*>(&bBase);
 
@@ -260,7 +260,6 @@ namespace cubool {
     }
 
 
-
     index SqMatrix::getNrows() const {
         return mData.nrows;
     }
@@ -279,4 +278,4 @@ namespace cubool {
             mData.rowOffsets.resize(getNrows() + 1, 0);
         }
     }
-}
+}// namespace cubool

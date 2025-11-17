@@ -24,10 +24,9 @@
 
 #include <cuBool_Common.hpp>
 
-cuBool_Status cuBool_Finalize(
-) {
+cuBool_Status cuBool_Finalize() {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        cubool::Library::finalize();
+    CUBOOL_VALIDATE_LIBRARY
+    cubool::Library::finalize();
     CUBOOL_END_BODY
 }

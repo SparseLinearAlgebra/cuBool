@@ -25,14 +25,17 @@
 #ifndef CUBOOL_CONFIG_HPP
 #define CUBOOL_CONFIG_HPP
 
-#include <cubool/cubool.h>
 #include <cinttypes>
 #include <cstddef>
+#include <cubool/cubool.h>
 
 namespace cubool {
     using index = cuBool_Index;
     using hints = cuBool_Hints;
-    struct Pair { cuBool_Index i; cuBool_Index j; };
-}
+    struct Pair {
+        cuBool_Index i;
+        cuBool_Index j;
+    };
+}// namespace cubool
 
-#endif //CUBOOL_CONFIG_HPP
+#endif//CUBOOL_CONFIG_HPP

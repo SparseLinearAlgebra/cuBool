@@ -25,16 +25,15 @@
 #include <cuBool_Common.hpp>
 
 cuBool_Status cuBool_Vector_Duplicate(
-        cuBool_Vector vector,
-        cuBool_Vector* duplicated
-) {
+        cuBool_Vector  vector,
+        cuBool_Vector* duplicated) {
     CUBOOL_BEGIN_BODY
-        CUBOOL_VALIDATE_LIBRARY
-        CUBOOL_ARG_NOT_NULL(vector)
-        CUBOOL_ARG_NOT_NULL(duplicated)
-        auto v = (cubool::Vector *) vector;
-        auto d = cubool::Library::createVector(v->getNrows());
-        d->clone(*v);
-        *duplicated = (cuBool_Vector_t *) d;
+    CUBOOL_VALIDATE_LIBRARY
+    CUBOOL_ARG_NOT_NULL(vector)
+    CUBOOL_ARG_NOT_NULL(duplicated)
+    auto v = (cubool::Vector*) vector;
+    auto d = cubool::Library::createVector(v->getNrows());
+    d->clone(*v);
+    *duplicated = (cuBool_Vector_t*) d;
     CUBOOL_END_BODY
 }

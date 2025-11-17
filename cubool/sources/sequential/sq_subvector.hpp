@@ -39,6 +39,6 @@ namespace cubool {
      */
     void sq_subvector(const VecData& a, index i, index nrows, VecData& out);
 
-}
+}// namespace cubool
 
-#endif //CUBOOL_SQ_SUBVECTOR_HPP
+#endif//CUBOOL_SQ_SUBVECTOR_HPP

@@ -22,15 +22,15 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <cuda/cuda_vector.hpp>
-#include <cuda/cuda_matrix.hpp>
-#include <cuda/kernels/spreduce.cuh>
-#include <core/error.hpp>
 #include <cassert>
+#include <core/error.hpp>
+#include <cuda/cuda_matrix.hpp>
+#include <cuda/cuda_vector.hpp>
+#include <cuda/kernels/spreduce.cuh>
 
 namespace cubool {
 
-    void CudaVector::reduceMatrix(const struct MatrixBase &matrixBase, bool transpose, bool checkTime) {
+    void CudaVector::reduceMatrix(const struct MatrixBase& matrixBase, bool transpose, bool checkTime) {
         auto matrix = dynamic_cast<const CudaMatrix*>(&matrixBase);
 
         CHECK_RAISE_ERROR(matrix != nullptr, InvalidArgument, "Provided matrix does not belongs to cuda matrix class");
@@ -42,8 +42,7 @@ namespace cubool {
             // Reduce to row-vector
             kernels::SpVectorMatrixTransposedReduceFunctor<index, DeviceAlloc<index>> functor;
             mVectorImpl = std::move(functor(matrix->mMatrixImpl));
-        }
-        else {
+        } else {
             assert(matrix->getNrows() == this->getNrows());
             matrix->resizeStorageToDim();
 
@@ -53,4 +52,4 @@ namespace cubool {
         }
     }
 
-}
+}// namespace cubool
