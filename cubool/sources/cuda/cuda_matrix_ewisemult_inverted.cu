@@ -44,7 +44,7 @@ namespace cubool {
         assert(b->getNrows() == M);
         assert(b->getNcols() == N);
 
-        if (a->isMatrixEmpty() || b->isMatrixEmpty()) {
+        if (a->isMatrixEmpty()) {
             this->clearAndResizeStorageToDim();
             return;
         }
