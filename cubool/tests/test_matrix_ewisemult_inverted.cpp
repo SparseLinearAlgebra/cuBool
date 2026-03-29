@@ -106,5 +106,64 @@ TEST(cuBool_Matrix, ApplyMatrixRandom) {
     ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
 }
 
+TEST(cuBool_Matrix, ApplyMatrixEmptyMask) {
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
+
+    DataMatrix matrix{
+            {1, 0, 1},
+            {0, 1, 0},
+            {1, 1, 0},
+    };
+
+    DataMatrix mask{
+            {0, 0, 0},
+            {0, 0, 0},
+            {0, 0, 0},
+    };
+
+    testApplyNotMask(matrix, mask);
+
+    ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(cuBool_Matrix, ApplyMatrixEmptySource) {
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
+
+    DataMatrix matrix{
+            {0, 0, 0},
+            {0, 0, 0},
+            {0, 0, 0},
+    };
+
+    DataMatrix mask{
+            {1, 0, 1},
+            {0, 1, 0},
+            {1, 1, 0},
+    };
+
+    testApplyNotMask(matrix, mask);
+
+    ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
+
+TEST(cuBool_Matrix, ApplyMatrixBothEmpty) {
+    ASSERT_EQ(cuBool_Initialize(CUBOOL_HINT_NO), CUBOOL_STATUS_SUCCESS);
+
+    DataMatrix matrix{
+            {0, 0, 0},
+            {0, 0, 0},
+            {0, 0, 0},
+    };
+
+    DataMatrix mask{
+            {0, 0, 0},
+            {0, 0, 0},
+            {0, 0, 0},
+    };
+
+    testApplyNotMask(matrix, mask);
+
+    ASSERT_EQ(cuBool_Finalize(), CUBOOL_STATUS_SUCCESS);
+}
 
 CUBOOL_GTEST_MAIN

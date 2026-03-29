@@ -20,3 +20,4 @@
 ./cubool/tests/test_vector_mxv
 ./cubool/tests/test_vector_vxm
 ./cubool/tests/test_vector_sub_vector
+./cubool/tests/test_matrix_ewisemult_inverted
