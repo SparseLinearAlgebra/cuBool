@@ -40,6 +40,14 @@ namespace cubool {
         assert(this->getNrows() == M);
         assert(this->getNcols() == N);
 
+        if (!accumulate && (this == a || this == b)) {
+            // Keep both operands intact until the product is ready.
+            CudaMatrix temporary(M, N, mInstance);
+            temporary.multiply(aBase, bBase, false, checkTime);
+            mMatrixImpl = std::move(temporary.mMatrixImpl);
+            return;
+        }
+
         if (!accumulate) {
             // Clear all values
             this->clearAndResizeStorageToDim();
